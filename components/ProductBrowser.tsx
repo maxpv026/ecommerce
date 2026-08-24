@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Loader2, Sparkles } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
 import { useCartStore } from "@/lib/store/cart";
@@ -482,7 +483,7 @@ export default function ProductBrowser({ products, initialCategory }: ProductBro
                             }}
                           />
 
-                          <div className="relative m-3.5 mb-0 flex h-[168px] items-center justify-center overflow-hidden rounded-[18px] bg-slate-100 dark:bg-surface-3">
+                          <Link href={`/products/${product.id}`} className="relative m-3.5 mb-0 flex h-[168px] items-center justify-center overflow-hidden rounded-[18px] bg-slate-100 dark:bg-surface-3">
                             <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(127,127,140,.07)_0_1px,transparent_1px_9px)]" />
                             <div className="relative h-[108px] w-[58px] rounded-t-[30px] rounded-b-lg border border-dashed border-slate-900/[.24] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.28] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))]" />
                             <span
@@ -501,11 +502,13 @@ export default function ProductBrowser({ products, initialCategory }: ProductBro
                                 {t("aiMatchTag")}
                               </span>
                             )}
-                          </div>
+                          </Link>
 
                           <div className="relative p-5">
                             <div className="flex items-baseline justify-between gap-3">
-                              <span className="text-[15px] font-semibold tracking-[-.03em]">{product.name}</span>
+                              <Link href={`/products/${product.id}`} className="text-[15px] font-semibold tracking-[-.03em] hover:text-blue-700 dark:hover:text-blue-400">
+                                {product.name}
+                              </Link>
                               <span className="text-[11px] text-slate-400 dark:text-ink-muted">{product.sku}</span>
                             </div>
                             <div className="mt-[5px] text-[11.5px] text-slate-400 dark:text-ink-muted">

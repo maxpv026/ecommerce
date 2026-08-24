@@ -248,3 +248,29 @@ body {
     background-position: 300% 50%;
   }
 }
+
+/* PDP 3D-stage idle motion (stylized fallback cylinder) */
+@keyframes hc-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+
+@keyframes hc-sway {
+  0%, 100% { transform: rotateY(-16deg); }
+  50% { transform: rotateY(16deg); }
+}
+
+@keyframes hc-sheen {
+  0%, 100% { transform: translateX(0); opacity: 0.55; }
+  50% { transform: translateX(300%); opacity: 0.95; }
+}
+
+@keyframes hc-breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.1); }
+}
+
+@keyframes hc-dots {
+  0%, 80%, 100% { opacity: 0.25; }
+  40% { opacity: 1; }
+}
