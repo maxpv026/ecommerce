@@ -34,7 +34,7 @@ interface CategorySpec {
   span: string;
   tall: boolean;
   tint: string;
-  href: { pathname: "/cylinders" | "/compliance/sds"; query?: Record<string, string> };
+  href: { pathname: "/products" | "/compliance/sds"; query?: Record<string, string> };
 }
 
 // span = 6-column bento occupancy — the asymmetry of the design.
@@ -49,7 +49,7 @@ const CATEGORIES: CategorySpec[] = [
     span: "md:col-span-4",
     tall: true,
     tint: "#22d3ee",
-    href: { pathname: "/cylinders", query: { category: "cylinders" } },
+    href: { pathname: "/products", query: { category: "cylinders" } },
   },
   {
     slug: "blends",
@@ -61,7 +61,7 @@ const CATEGORIES: CategorySpec[] = [
     span: "md:col-span-2",
     tall: true,
     tint: "#7c3aed",
-    href: { pathname: "/cylinders", query: { category: "blends" } },
+    href: { pathname: "/products", query: { category: "blends" } },
   },
   {
     slug: "equipment",
@@ -73,7 +73,7 @@ const CATEGORIES: CategorySpec[] = [
     span: "md:col-span-2",
     tall: false,
     tint: "#2563eb",
-    href: { pathname: "/cylinders", query: { category: "equipment" } },
+    href: { pathname: "/products", query: { category: "equipment" } },
   },
   {
     slug: "recovery",
@@ -85,7 +85,7 @@ const CATEGORIES: CategorySpec[] = [
     span: "md:col-span-2",
     tall: false,
     tint: "#22d3ee",
-    href: { pathname: "/cylinders", query: { category: "recovery" } },
+    href: { pathname: "/products", query: { category: "recovery" } },
   },
   {
     slug: "compliance",

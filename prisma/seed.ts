@@ -148,6 +148,43 @@ async function main() {
     )
   );
 
+  // Product-list facets (purity %, GWP, stock level) for every cylinder
+  // SKU, plus the three non-cylinder categories as real rows so the
+  // /products filters operate on live data.
+  const FACETS: Record<string, { purity: number; gwp: number; stock?: string }> = {
+    "HC-R410A-25": { purity: 99.98, gwp: 2088 },
+    "HC-R32-25": { purity: 99.95, gwp: 675 },
+    "HC-R134A-30": { purity: 99.9, gwp: 1430, stock: "low" },
+    "HC-410A-100": { purity: 99.92, gwp: 2088, stock: "low" },
+    "HC-410A-50": { purity: 99.95, gwp: 2088 },
+    "HC-404A-24": { purity: 99.92, gwp: 3922 },
+    "HC-404A-50": { purity: 99.92, gwp: 3922, stock: "low" },
+    "HC-407C-25": { purity: 99.9, gwp: 1774 },
+    "HC-407C-100": { purity: 99.9, gwp: 1774 },
+    "HC-134A-50": { purity: 99.9, gwp: 1430 },
+    "HC-134A-25": { purity: 99.93, gwp: 1430 },
+    "HC-R32-50": { purity: 99.95, gwp: 675 },
+  };
+  for (const [sku, f] of Object.entries(FACETS)) {
+    await prisma.product.updateMany({
+      where: { sku },
+      data: { purity: f.purity, gwp: f.gwp, stock: f.stock ?? "in", category: "cylinders" },
+    });
+  }
+
+  const extraCategories = [
+    { sku: "HC-BLEND-C1", name: "Custom Blend C1", price: 342, weight: "25 lb cylinder", gwpClass: "A2L", purity: 99.99, gwp: 890, stock: "order", category: "blends" },
+    { sku: "HC-MAN-4V", name: "4-Valve Manifold", price: 148, weight: "Set", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "equipment" },
+    { sku: "HC-REC-50", name: "Recovery Cylinder 50 lb", price: 132, weight: "50 lb cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "recovery" },
+  ];
+  for (const p of extraCategories) {
+    await prisma.product.upsert({
+      where: { sku: p.sku },
+      update: { stock: p.stock, category: p.category },
+      create: { ...p, inStock: true },
+    });
+  }
+
   await prisma.order.upsert({
     where: { orderNumber: "ORD-8472-EU" },
     // DHL's documented sandbox parcel number — resolves against

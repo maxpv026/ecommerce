@@ -137,6 +137,14 @@ model Product {
   gwpClass   String
   inStock    Boolean @default(true)
 
+  // Product-list facets (My Energy Products design): batch purity %, GWP
+  // figure, stock level ("in" | "low" | "order"), and catalog category
+  // ("cylinders" | "blends" | "equipment" | "recovery").
+  purity   Decimal? @db.Decimal(5, 2)
+  gwp      Int?
+  stock    String   @default("in")
+  category String   @default("cylinders")
+
   orderItems OrderItem[]
 
   createdAt DateTime @default(now())

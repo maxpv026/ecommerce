@@ -21,6 +21,14 @@ export interface StoreProduct {
   price: number;
   inStock: boolean;
   gwpClass: string;
+  /** Batch purity % (null for equipment/services). */
+  purity: number | null;
+  /** GWP figure (null where not applicable). */
+  gwp: number | null;
+  /** Stock level facet: "in" | "low" | "order". */
+  stockLevel: "in" | "low" | "order";
+  /** Catalog category slug: cylinders | blends | equipment | recovery. */
+  category: string;
   /** Best-effort link into the existing (pre-Prisma) PDP mock catalog, keyed by refrigerant type. */
   pdpHref: string;
 }
@@ -49,6 +57,10 @@ function toStoreProduct(product: {
   weight: string;
   gwpClass: string;
   inStock: boolean;
+  purity?: unknown;
+  gwp?: number | null;
+  stock?: string;
+  category?: string;
 }): StoreProduct {
   const type = deriveRefrigerantType(product.name);
   const weightMatch = product.weight.match(/\d+/);
@@ -63,6 +75,10 @@ function toStoreProduct(product: {
     price: Number(product.price),
     inStock: product.inStock,
     gwpClass: product.gwpClass,
+    purity: product.purity == null ? null : Number(product.purity),
+    gwp: product.gwp ?? null,
+    stockLevel: product.stock === "low" ? "low" : product.stock === "order" ? "order" : "in",
+    category: product.category ?? "cylinders",
     pdpHref: pdp ? `/product/${pdp.id}?weight=${pdp.weightId}` : "/cylinders",
   };
 }

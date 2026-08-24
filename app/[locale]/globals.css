@@ -195,3 +195,56 @@ body {
     opacity: 0.45;
   }
 }
+
+/* Range sliders on /products: minimal track (painted inline as a gradient
+   whose fill stop tracks the value) + a glowing accent thumb. */
+.hc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.hc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 12px -1px rgba(29, 78, 216, 0.8);
+  cursor: grab;
+}
+
+.hc-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 12px -1px rgba(29, 78, 216, 0.8);
+  cursor: grab;
+}
+
+.dark .hc-range::-webkit-slider-thumb {
+  border-color: #141518;
+}
+
+.dark .hc-range::-moz-range-thumb {
+  border-color: #141518;
+}
+
+@keyframes hc-shimmer {
+  to {
+    background-position: 340px 0;
+  }
+}
+
+@keyframes hc-sweep {
+  to {
+    background-position: 300% 50%;
+  }
+}
