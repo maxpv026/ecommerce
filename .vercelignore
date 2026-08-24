@@ -1,0 +1,4 @@
+# Never upload local secrets — production reads Vercel's env store instead.
+.env
+.env.local
+.env*.local
