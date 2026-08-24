@@ -16,6 +16,14 @@
 # misc
 .DS_Store
 *.pem
+*.log
+
+# editors
+.vscode/
+.idea/
+
+# local AI tooling state (machine-specific permissions)
+.claude/settings.local.json
 
 # debug
 npm-debug.log*
