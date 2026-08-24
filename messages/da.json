@@ -16,7 +16,8 @@
     "menuDashboard": "Oversigt",
     "menuOrders": "Ordrer",
     "menuSettings": "Indstillinger",
-    "menuSignOut": "Log ud"
+    "menuSignOut": "Log ud",
+    "productList": "Produktliste"
   },
   "Auth": {
     "welcomeTitle": "Velkommen til My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Adgangskoden er opdateret.",
     "pwErrorComplexity": "Mindst 8 tegn, med et bogstav og et tal.",
     "pwLastChanged": "Senest ændret {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUKTLISTE",
+    "title": "Alt, vi leverer — efter kategori.",
+    "subtitle": "Fabriksforseglede kølemidler, specialblandinger samt udstyr og dokumentation, der holder en F-gascertificeret flåde compliant i hele EU.",
+    "productCount": "{count} produkter",
+    "cylTitle": "Kølemiddelcylindre",
+    "cylBlurb": "Fabriksforseglede R-410A, R-32, R-134a og R-454B fra 25 lb til ISO-tank. AHRI-700-certificerede, sporbare pr. batch.",
+    "cylCta": "Se cylindre",
+    "blendTitle": "Specialgasblandinger",
+    "blendBlurb": "Blandinger efter specifikation med analysecertifikat pr. parti.",
+    "blendCta": "Anmod om en blanding",
+    "blendCount": "12 produkter",
+    "eqTitle": "HVAC-udstyr",
+    "eqBlurb": "Manifolde, vakuumpumper, vægte og lækagesøgere.",
+    "eqCta": "Se udstyr",
+    "eqCount": "48 produkter",
+    "recTitle": "Genvinding & genanvendelse",
+    "recBlurb": "Genvindingscylindre og tilbagetagning af udtjent kølemiddel.",
+    "recCta": "Se programmet",
+    "recCount": "9 services",
+    "compTitle": "Compliance-værktøjer",
+    "compBlurb": "SDS-pakker, F-gaslogbøger og EU-rapporteksporter.",
+    "compCta": "Åbn biblioteket",
+    "compCount": "Dokumentation",
+    "aiTitle": "I tvivl om hvilket kølemiddel der passer?",
+    "aiBody": "Giv AI-beregneren et modelnummer, og få den præcise fyldning og antal cylindre."
   }
 }

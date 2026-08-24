@@ -16,7 +16,8 @@
     "menuDashboard": "控制台",
     "menuOrders": "订单",
     "menuSettings": "设置",
-    "menuSignOut": "退出登录"
+    "menuSignOut": "退出登录",
+    "productList": "产品目录"
   },
   "Auth": {
     "welcomeTitle": "欢迎来到 My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "密码已更新。",
     "pwErrorComplexity": "至少 8 个字符,须包含字母和数字。",
     "pwLastChanged": "上次修改:{date}"
+  },
+  "Categories": {
+    "eyebrow": "产品目录",
+    "title": "我们供应的一切,按类别分列。",
+    "subtitle": "工厂密封的制冷剂、定制混合气,以及让 F-Gas 认证车队在全欧盟保持合规的设备与文档。",
+    "productCount": "{count} 个产品",
+    "cylTitle": "制冷剂钢瓶",
+    "cylBlurb": "工厂密封的 R-410A、R-32、R-134a 和 R-454B,规格从 25 lb 到 ISO 罐。AHRI-700 认证,可按批次追溯。",
+    "cylCta": "浏览钢瓶",
+    "blendTitle": "定制混合气体",
+    "blendBlurb": "按规格调配的混合气,每批附分析证书。",
+    "blendCta": "申请定制",
+    "blendCount": "12 个产品",
+    "eqTitle": "暖通空调设备",
+    "eqBlurb": "歧管表组、真空泵、电子秤和检漏仪。",
+    "eqCta": "浏览设备",
+    "eqCount": "48 个产品",
+    "recTitle": "回收与再生",
+    "recBlurb": "回收钢瓶及报废制冷剂回收服务。",
+    "recCta": "查看计划",
+    "recCount": "9 项服务",
+    "compTitle": "合规工具",
+    "compBlurb": "SDS 资料包、F-Gas 台账和欧盟申报导出。",
+    "compCta": "打开资料库",
+    "compCount": "文档",
+    "aiTitle": "不确定哪种制冷剂合适?",
+    "aiBody": "把型号告诉 AI 计算器,即可得到精确充注量和钢瓶数量。"
   }
 }

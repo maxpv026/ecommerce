@@ -16,7 +16,8 @@
     "menuDashboard": "Nadzorna plošča",
     "menuOrders": "Naročila",
     "menuSettings": "Nastavitve",
-    "menuSignOut": "Odjava"
+    "menuSignOut": "Odjava",
+    "productList": "Seznam izdelkov"
   },
   "Auth": {
     "welcomeTitle": "Dobrodošli v My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Geslo posodobljeno.",
     "pwErrorComplexity": "Vsaj 8 znakov, s črko in številko.",
     "pwLastChanged": "Nazadnje spremenjeno {date}"
+  },
+  "Categories": {
+    "eyebrow": "SEZNAM IZDELKOV",
+    "title": "Vse, kar pošiljamo — po kategorijah.",
+    "subtitle": "Tovarniško zapečatena hladiva, mešanice po meri ter oprema in dokumentacija, ki flote s certifikatom F-Gas ohranjajo skladne po vsej EU.",
+    "productCount": "{count} izdelkov",
+    "cylTitle": "Jeklenke s hladivom",
+    "cylBlurb": "Tovarniško zapečatene R-410A, R-32, R-134a in R-454B od 25 lb do ISO cisterne. Certifikat AHRI-700, sledljivost serij.",
+    "cylCta": "Prebrskaj jeklenke",
+    "blendTitle": "Plinske mešanice po meri",
+    "blendBlurb": "Mešanice po specifikaciji s certifikatom analize za vsako serijo.",
+    "blendCta": "Zahtevaj mešanico",
+    "blendCount": "12 izdelkov",
+    "eqTitle": "Oprema HVAC",
+    "eqBlurb": "Manometrski setovi, vakuumske črpalke, tehtnice in detektorji puščanja.",
+    "eqCta": "Prebrskaj opremo",
+    "eqCount": "48 izdelkov",
+    "recTitle": "Zajem in predelava",
+    "recBlurb": "Jeklenke za zajem in prevzem izrabljenega hladiva.",
+    "recCta": "Ogled programa",
+    "recCount": "9 storitev",
+    "compTitle": "Orodja za skladnost",
+    "compBlurb": "Paketi SDS, dnevniki F-Gas in izvozi za poročanje EU.",
+    "compCta": "Odpri knjižnico",
+    "compCount": "Dokumentacija",
+    "aiTitle": "Ne veste, katero hladivo ustreza?",
+    "aiBody": "AI kalkulatorju podajte številko modela in vrne točno polnitev ter število jeklenk."
   }
 }

@@ -16,7 +16,8 @@
     "menuDashboard": "Töölaud",
     "menuOrders": "Tellimused",
     "menuSettings": "Seaded",
-    "menuSignOut": "Logi välja"
+    "menuSignOut": "Logi välja",
+    "productList": "Tootenimekiri"
   },
   "Auth": {
     "welcomeTitle": "Tere tulemast My Energy'i",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Parool uuendatud.",
     "pwErrorComplexity": "Vähemalt 8 tähemärki, sh täht ja number.",
     "pwLastChanged": "Viimati muudetud {date}"
+  },
+  "Categories": {
+    "eyebrow": "TOOTENIMEKIRI",
+    "title": "Kõik, mida tarnime — kategooriate kaupa.",
+    "subtitle": "Tehases pitseeritud külmaained, eritellimusel segud ning seadmed ja dokumentatsioon, mis hoiavad F-gaasi sertifikaadiga pargi kogu EL-is nõuetele vastavana.",
+    "productCount": "{count} toodet",
+    "cylTitle": "Külmaaine balloonid",
+    "cylBlurb": "Tehases pitseeritud R-410A, R-32, R-134a ja R-454B alates 25 lb kuni ISO-mahutini. AHRI-700 sertifikaadiga, partii kaupa jälgitavad.",
+    "cylCta": "Sirvi balloone",
+    "blendTitle": "Eritellimusel gaasisegud",
+    "blendBlurb": "Spetsifikatsiooni järgi segud, analüüsisertifikaat iga partii kohta.",
+    "blendCta": "Telli segu",
+    "blendCount": "12 toodet",
+    "eqTitle": "HVAC seadmed",
+    "eqBlurb": "Manomeetrikomplektid, vaakumpumbad, kaalud ja lekkedetektorid.",
+    "eqCta": "Sirvi seadmeid",
+    "eqCount": "48 toodet",
+    "recTitle": "Kogumine ja taastamine",
+    "recBlurb": "Kogumisballoonid ja kasutuselt kõrvaldatud külmaaine vastuvõtt.",
+    "recCta": "Vaata programmi",
+    "recCount": "9 teenust",
+    "compTitle": "Vastavustööriistad",
+    "compBlurb": "SDS-paketid, F-gaasi logid ja EL-i aruandluse ekspordid.",
+    "compCta": "Ava raamatukogu",
+    "compCount": "Dokumentatsioon",
+    "aiTitle": "Pole kindel, milline külmaaine sobib?",
+    "aiBody": "Andke AI-kalkulaatorile mudelinumber ja see tagastab täpse täite ning balloonide arvu."
   }
 }

@@ -16,7 +16,8 @@
     "menuDashboard": "Přehled",
     "menuOrders": "Objednávky",
     "menuSettings": "Nastavení",
-    "menuSignOut": "Odhlásit se"
+    "menuSignOut": "Odhlásit se",
+    "productList": "Seznam produktů"
   },
   "Auth": {
     "welcomeTitle": "Vítejte v My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Heslo aktualizováno.",
     "pwErrorComplexity": "Alespoň 8 znaků, s písmenem a číslicí.",
     "pwLastChanged": "Naposledy změněno {date}"
+  },
+  "Categories": {
+    "eyebrow": "SEZNAM PRODUKTŮ",
+    "title": "Vše, co dodáváme — podle kategorií.",
+    "subtitle": "Továrně zaplombovaná chladiva, směsi na míru a vybavení s dokumentací, díky nimž zůstává flotila s certifikací F-Gas v souladu v celé EU.",
+    "productCount": "{count} produktů",
+    "cylTitle": "Lahve s chladivem",
+    "cylBlurb": "Továrně zaplombované R-410A, R-32, R-134a a R-454B od 25 lb po ISO nádrž. Certifikace AHRI-700, dohledatelnost šarží.",
+    "cylCta": "Procházet lahve",
+    "blendTitle": "Plynové směsi na míru",
+    "blendBlurb": "Směsi dle specifikace s certifikátem analýzy pro každou šarži.",
+    "blendCta": "Poptat směs",
+    "blendCount": "12 produktů",
+    "eqTitle": "HVAC vybavení",
+    "eqBlurb": "Manometrické soupravy, vývěvy, váhy a detektory úniku.",
+    "eqCta": "Procházet vybavení",
+    "eqCount": "48 produktů",
+    "recTitle": "Recyklace a regenerace",
+    "recBlurb": "Recyklační lahve a zpětný odběr chladiva na konci životnosti.",
+    "recCta": "Zobrazit program",
+    "recCount": "9 služeb",
+    "compTitle": "Nástroje compliance",
+    "compBlurb": "Balíčky SDS, evidence F-Gas a exporty pro EU reporting.",
+    "compCta": "Otevřít knihovnu",
+    "compCount": "Dokumentace",
+    "aiTitle": "Nevíte, které chladivo se hodí?",
+    "aiBody": "Zadejte AI kalkulačce číslo modelu a vrátí přesnou náplň i počet lahví."
   }
 }

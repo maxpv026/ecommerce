@@ -16,7 +16,8 @@
     "menuDashboard": "대시보드",
     "menuOrders": "주문 내역",
     "menuSettings": "설정",
-    "menuSignOut": "로그아웃"
+    "menuSignOut": "로그아웃",
+    "productList": "제품 목록"
   },
   "Auth": {
     "welcomeTitle": "My Energy에 오신 것을 환영합니다",
@@ -436,5 +437,32 @@
     "pwToastChanged": "비밀번호가 변경되었습니다.",
     "pwErrorComplexity": "문자와 숫자를 포함해 8자 이상이어야 합니다.",
     "pwLastChanged": "마지막 변경: {date}"
+  },
+  "Categories": {
+    "eyebrow": "제품 목록",
+    "title": "카테고리별 전체 제품 안내",
+    "subtitle": "공장 봉인 냉매, 맞춤 혼합 가스, 그리고 F-Gas 인증 차량을 EU 전역에서 규정에 맞게 유지하는 장비와 문서.",
+    "productCount": "{count}개 제품",
+    "cylTitle": "냉매 실린더",
+    "cylBlurb": "25 lb부터 ISO 탱크까지 공장 봉인 R-410A, R-32, R-134a, R-454B. AHRI-700 인증, 배치 추적 가능.",
+    "cylCta": "실린더 둘러보기",
+    "blendTitle": "맞춤 가스 혼합",
+    "blendBlurb": "로트별 분석 증명서가 포함된 사양 맞춤 혼합.",
+    "blendCta": "혼합 요청",
+    "blendCount": "12개 제품",
+    "eqTitle": "HVAC 장비",
+    "eqBlurb": "매니폴드, 진공 펌프, 저울, 누설 감지기.",
+    "eqCta": "장비 둘러보기",
+    "eqCount": "48개 제품",
+    "recTitle": "회수 및 재생",
+    "recBlurb": "회수 실린더와 수명 종료 냉매 회수 프로그램.",
+    "recCta": "프로그램 보기",
+    "recCount": "9개 서비스",
+    "compTitle": "규정 준수 도구",
+    "compBlurb": "SDS 패킷, F-Gas 기록, EU 보고용 내보내기.",
+    "compCta": "라이브러리 열기",
+    "compCount": "문서",
+    "aiTitle": "어떤 냉매가 맞는지 모르시겠나요?",
+    "aiBody": "AI 계산기에 모델 번호를 입력하면 정확한 충전량과 실린더 수를 알려드립니다."
   }
 }

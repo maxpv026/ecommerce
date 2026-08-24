@@ -16,7 +16,8 @@
     "menuDashboard": "Dashboard",
     "menuOrders": "Bestellingen",
     "menuSettings": "Instellingen",
-    "menuSignOut": "Uitloggen"
+    "menuSignOut": "Uitloggen",
+    "productList": "Productlijst"
   },
   "Auth": {
     "welcomeTitle": "Welkom bij My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Wachtwoord bijgewerkt.",
     "pwErrorComplexity": "Minimaal 8 tekens, met een letter en een cijfer.",
     "pwLastChanged": "Laatst gewijzigd op {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUCTLIJST",
+    "title": "Alles wat we leveren, per categorie.",
+    "subtitle": "Fabrieksverzegelde koudemiddelen, maatwerkmengsels, en de apparatuur en documentatie die een F-gassen-gecertificeerde vloot in de hele EU compliant houden.",
+    "productCount": "{count} producten",
+    "cylTitle": "Koudemiddelcilinders",
+    "cylBlurb": "Fabrieksverzegelde R-410A, R-32, R-134a en R-454B van 25 lb tot ISO-tank. AHRI-700-gecertificeerd, traceerbaar per batch.",
+    "cylCta": "Bekijk cilinders",
+    "blendTitle": "Maatwerk gasmengsels",
+    "blendBlurb": "Mengsels op specificatie met analysecertificaat per partij.",
+    "blendCta": "Mengsel aanvragen",
+    "blendCount": "12 producten",
+    "eqTitle": "HVAC-apparatuur",
+    "eqBlurb": "Manifolds, vacuümpompen, weegschalen en lekdetectoren.",
+    "eqCta": "Bekijk apparatuur",
+    "eqCount": "48 producten",
+    "recTitle": "Terugwinning & recycling",
+    "recBlurb": "Terugwincilinders en inname van koudemiddel aan het einde van de levensduur.",
+    "recCta": "Bekijk programma",
+    "recCount": "9 diensten",
+    "compTitle": "Compliance-tools",
+    "compBlurb": "SDS-pakketten, F-gassenlogboeken en EU-rapportage-exports.",
+    "compCta": "Open bibliotheek",
+    "compCount": "Documentatie",
+    "aiTitle": "Niet zeker welk koudemiddel past?",
+    "aiBody": "Geef de AI-calculator een modelnummer en je krijgt de exacte vulling en het aantal cilinders terug."
   }
 }

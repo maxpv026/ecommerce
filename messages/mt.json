@@ -16,7 +16,8 @@
     "menuDashboard": "Dashboard",
     "menuOrders": "Ordnijiet",
     "menuSettings": "Settings",
-    "menuSignOut": "Oħroġ"
+    "menuSignOut": "Oħroġ",
+    "productList": "Lista tal-prodotti"
   },
   "Auth": {
     "welcomeTitle": "Merħba f'My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Il-password ġiet aġġornata.",
     "pwErrorComplexity": "Mill-inqas 8 karattri, b'ittra u numru.",
     "pwLastChanged": "L-aħħar bidla: {date}"
+  },
+  "Categories": {
+    "eyebrow": "LISTA TAL-PRODOTTI",
+    "title": "Dak kollu li nibagħtu, skont il-kategorija.",
+    "subtitle": "Refriġeranti ssiġillati mill-fabbrika, taħlitiet apposta, u t-tagħmir u d-dokumentazzjoni li jżommu flotta ċċertifikata F-Gas konformi madwar l-UE.",
+    "productCount": "{count} prodotti",
+    "cylTitle": "Ċilindri tar-refriġerant",
+    "cylBlurb": "R-410A, R-32, R-134a u R-454B issiġillati mill-fabbrika minn 25 lb sa tank ISO. Iċċertifikati AHRI-700, traċċabbli skont il-lott.",
+    "cylCta": "Ara ċ-ċilindri",
+    "blendTitle": "Taħlitiet tal-gass apposta",
+    "blendBlurb": "Taħlitiet skont l-ispeċifikazzjoni b'ċertifikat tal-analiżi għal kull lott.",
+    "blendCta": "Itlob taħlita",
+    "blendCount": "12-il prodott",
+    "eqTitle": "Tagħmir HVAC",
+    "eqBlurb": "Manifolds, pompi tal-vakwu, mwieżen u ditekters tat-tnixxija.",
+    "eqCta": "Ara t-tagħmir",
+    "eqCount": "48 prodott",
+    "recTitle": "Irkupru u riċiklaġġ",
+    "recBlurb": "Ċilindri tal-irkupru u teħid lura tar-refriġerant fi tmiem ħajtu.",
+    "recCta": "Ara l-programm",
+    "recCount": "9 servizzi",
+    "compTitle": "Għodod tal-konformità",
+    "compBlurb": "Pakketti SDS, reġistri F-Gas u esportazzjonijiet għar-rappurtar tal-UE.",
+    "compCta": "Iftaħ il-librerija",
+    "compCount": "Dokumentazzjoni",
+    "aiTitle": "M'intix ċert liema refriġerant jgħodd?",
+    "aiBody": "Agħti n-numru tal-mudell lill-kalkulatur AI u jirritorna l-piż eżatt u l-għadd ta' ċilindri."
   }
 }

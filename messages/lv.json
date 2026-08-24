@@ -16,7 +16,8 @@
     "menuDashboard": "Panelis",
     "menuOrders": "Pasūtījumi",
     "menuSettings": "Iestatījumi",
-    "menuSignOut": "Iziet"
+    "menuSignOut": "Iziet",
+    "productList": "Produktu saraksts"
   },
   "Auth": {
     "welcomeTitle": "Laipni lūdzam My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Parole atjaunināta.",
     "pwErrorComplexity": "Vismaz 8 rakstzīmes, ar burtu un ciparu.",
     "pwLastChanged": "Pēdējoreiz mainīts {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUKTU SARAKSTS",
+    "title": "Viss, ko piegādājam — pa kategorijām.",
+    "subtitle": "Rūpnīcā noslēgti aukstumaģenti, pēc pasūtījuma maisījumi, kā arī aprīkojums un dokumentācija, kas F-gāzu sertificētu parku uztur atbilstīgu visā ES.",
+    "productCount": "{count} produkti",
+    "cylTitle": "Aukstumaģenta baloni",
+    "cylBlurb": "Rūpnīcā noslēgti R-410A, R-32, R-134a un R-454B no 25 lb līdz ISO tvertnei. AHRI-700 sertificēti, izsekojami pa partijām.",
+    "cylCta": "Pārlūkot balonus",
+    "blendTitle": "Gāzu maisījumi pēc pasūtījuma",
+    "blendBlurb": "Maisījumi pēc specifikācijas ar analīzes sertifikātu katrai partijai.",
+    "blendCta": "Pieprasīt maisījumu",
+    "blendCount": "12 produkti",
+    "eqTitle": "HVAC aprīkojums",
+    "eqBlurb": "Manometru bloki, vakuumsūkņi, svari un noplūžu detektori.",
+    "eqCta": "Pārlūkot aprīkojumu",
+    "eqCount": "48 produkti",
+    "recTitle": "Atgūšana un pārstrāde",
+    "recBlurb": "Atgūšanas baloni un nolietotā aukstumaģenta pieņemšana.",
+    "recCta": "Skatīt programmu",
+    "recCount": "9 pakalpojumi",
+    "compTitle": "Atbilstības rīki",
+    "compBlurb": "SDS paketes, F-gāzu žurnāli un ES ziņošanas eksporti.",
+    "compCta": "Atvērt bibliotēku",
+    "compCount": "Dokumentācija",
+    "aiTitle": "Nezināt, kurš aukstumaģents der?",
+    "aiBody": "Iedodiet AI kalkulatoram modeļa numuru — tas atgriezīs precīzu uzpildi un balonu skaitu."
   }
 }

@@ -16,7 +16,8 @@
     "menuDashboard": "Panel",
     "menuOrders": "Zamówienia",
     "menuSettings": "Ustawienia",
-    "menuSignOut": "Wyloguj się"
+    "menuSignOut": "Wyloguj się",
+    "productList": "Lista produktów"
   },
   "Auth": {
     "welcomeTitle": "Witamy w My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Hasło zaktualizowane.",
     "pwErrorComplexity": "Co najmniej 8 znaków, w tym litera i cyfra.",
     "pwLastChanged": "Ostatnia zmiana: {date}"
+  },
+  "Categories": {
+    "eyebrow": "LISTA PRODUKTÓW",
+    "title": "Wszystko, co wysyłamy — według kategorii.",
+    "subtitle": "Fabrycznie zaplombowane czynniki chłodnicze, mieszanki na zamówienie oraz sprzęt i dokumentacja, dzięki którym flota z certyfikatem F-Gas pozostaje zgodna w całej UE.",
+    "productCount": "{count} produktów",
+    "cylTitle": "Butle z czynnikiem",
+    "cylBlurb": "Fabrycznie zaplombowane R-410A, R-32, R-134a i R-454B od 25 lb po zbiornik ISO. Certyfikat AHRI-700, identyfikowalność partii.",
+    "cylCta": "Przeglądaj butle",
+    "blendTitle": "Mieszanki gazów na zamówienie",
+    "blendBlurb": "Mieszanki wg specyfikacji z certyfikatem analizy dla każdej partii.",
+    "blendCta": "Zamów mieszankę",
+    "blendCount": "12 produktów",
+    "eqTitle": "Sprzęt HVAC",
+    "eqBlurb": "Zestawy manometrów, pompy próżniowe, wagi i wykrywacze nieszczelności.",
+    "eqCta": "Przeglądaj sprzęt",
+    "eqCount": "48 produktów",
+    "recTitle": "Odzysk i regeneracja",
+    "recBlurb": "Butle do odzysku i odbiór czynnika po zakończeniu eksploatacji.",
+    "recCta": "Zobacz program",
+    "recCount": "9 usług",
+    "compTitle": "Narzędzia zgodności",
+    "compBlurb": "Pakiety SDS, rejestry F-Gas i eksporty raportów UE.",
+    "compCta": "Otwórz bibliotekę",
+    "compCount": "Dokumentacja",
+    "aiTitle": "Nie wiesz, który czynnik pasuje?",
+    "aiBody": "Podaj kalkulatorowi AI numer modelu, a otrzymasz dokładny ładunek i liczbę butli."
   }
 }

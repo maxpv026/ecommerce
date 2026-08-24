@@ -16,7 +16,8 @@
     "menuDashboard": "Skydelis",
     "menuOrders": "Užsakymai",
     "menuSettings": "Nustatymai",
-    "menuSignOut": "Atsijungti"
+    "menuSignOut": "Atsijungti",
+    "productList": "Produktų sąrašas"
   },
   "Auth": {
     "welcomeTitle": "Sveiki atvykę į My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Slaptažodis atnaujintas.",
     "pwErrorComplexity": "Bent 8 simboliai, su raide ir skaitmeniu.",
     "pwLastChanged": "Paskutinį kartą keista {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUKTŲ SĄRAŠAS",
+    "title": "Viskas, ką tiekiame — pagal kategorijas.",
+    "subtitle": "Gamykloje užplombuoti šaltnešiai, pagal užsakymą ruošiami mišiniai ir įranga bei dokumentacija, padedanti F-dujų sertifikuotam parkui likti atitinkančiam reikalavimus visoje ES.",
+    "productCount": "{count} produktai",
+    "cylTitle": "Šaltnešio balionai",
+    "cylBlurb": "Gamykloje užplombuoti R-410A, R-32, R-134a ir R-454B nuo 25 lb iki ISO talpyklos. AHRI-700 sertifikuoti, atsekami pagal partiją.",
+    "cylCta": "Peržiūrėti balionus",
+    "blendTitle": "Dujų mišiniai pagal užsakymą",
+    "blendBlurb": "Mišiniai pagal specifikaciją su analizės sertifikatu kiekvienai partijai.",
+    "blendCta": "Užsakyti mišinį",
+    "blendCount": "12 produktų",
+    "eqTitle": "HVAC įranga",
+    "eqBlurb": "Manometrų blokai, vakuuminiai siurbliai, svarstyklės ir nuotėkio ieškikliai.",
+    "eqCta": "Peržiūrėti įrangą",
+    "eqCount": "48 produktai",
+    "recTitle": "Surinkimas ir regeneracija",
+    "recBlurb": "Surinkimo balionai ir eksploatuoti nebetinkamo šaltnešio priėmimas.",
+    "recCta": "Žiūrėti programą",
+    "recCount": "9 paslaugos",
+    "compTitle": "Atitikties įrankiai",
+    "compBlurb": "SDS paketai, F-dujų žurnalai ir ES ataskaitų eksportai.",
+    "compCta": "Atidaryti biblioteką",
+    "compCount": "Dokumentacija",
+    "aiTitle": "Nežinote, kuris šaltnešis tinka?",
+    "aiBody": "Duokite AI skaičiuoklei modelio numerį — ji grąžins tikslų užpildą ir balionų skaičių."
   }
 }

@@ -16,7 +16,8 @@
     "menuDashboard": "Panel",
     "menuOrders": "Siparişler",
     "menuSettings": "Ayarlar",
-    "menuSignOut": "Çıkış yap"
+    "menuSignOut": "Çıkış yap",
+    "productList": "Ürün Listesi"
   },
   "Auth": {
     "welcomeTitle": "My Energy'ye hoş geldiniz",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Şifre güncellendi.",
     "pwErrorComplexity": "Harf ve rakam içeren en az 8 karakter.",
     "pwLastChanged": "Son değişiklik: {date}"
+  },
+  "Categories": {
+    "eyebrow": "ÜRÜN LİSTESİ",
+    "title": "Gönderdiğimiz her şey, kategorilere göre.",
+    "subtitle": "Fabrika mühürlü soğutucu akışkanlar, özel karışımlar ve F-Gas sertifikalı bir filoyu tüm AB'de uyumlu tutan ekipman ile dokümantasyon.",
+    "productCount": "{count} ürün",
+    "cylTitle": "Soğutucu Akışkan Tüpleri",
+    "cylBlurb": "25 lb'den ISO tanka kadar fabrika mühürlü R-410A, R-32, R-134a ve R-454B. AHRI-700 sertifikalı, parti bazında izlenebilir.",
+    "cylCta": "Tüplere göz at",
+    "blendTitle": "Özel Gaz Karışımları",
+    "blendBlurb": "Her lot için analiz sertifikalı, spesifikasyona göre karışımlar.",
+    "blendCta": "Karışım talep et",
+    "blendCount": "12 ürün",
+    "eqTitle": "HVAC Ekipmanı",
+    "eqBlurb": "Manifoldlar, vakum pompaları, teraziler ve kaçak dedektörleri.",
+    "eqCta": "Ekipmana göz at",
+    "eqCount": "48 ürün",
+    "recTitle": "Geri Kazanım & Islah",
+    "recBlurb": "Geri kazanım tüpleri ve ömrünü tamamlamış akışkan iadesi.",
+    "recCta": "Programı gör",
+    "recCount": "9 hizmet",
+    "compTitle": "Uyumluluk Araçları",
+    "compBlurb": "SDS paketleri, F-Gas kayıtları ve AB raporlama dışa aktarımları.",
+    "compCta": "Kitaplığı aç",
+    "compCount": "Dokümantasyon",
+    "aiTitle": "Hangi soğutucu akışkanın uyduğundan emin değil misiniz?",
+    "aiBody": "AI hesaplayıcıya bir model numarası verin; tam şarjı ve tüp sayısını döndürsün."
   }
 }

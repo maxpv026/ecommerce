@@ -16,7 +16,8 @@
     "menuDashboard": "Nadzorna ploča",
     "menuOrders": "Narudžbe",
     "menuSettings": "Postavke",
-    "menuSignOut": "Odjava"
+    "menuSignOut": "Odjava",
+    "productList": "Popis proizvoda"
   },
   "Auth": {
     "welcomeTitle": "Dobrodošli u My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Lozinka ažurirana.",
     "pwErrorComplexity": "Najmanje 8 znakova, sa slovom i brojkom.",
     "pwLastChanged": "Zadnja promjena: {date}"
+  },
+  "Categories": {
+    "eyebrow": "POPIS PROIZVODA",
+    "title": "Sve što isporučujemo — po kategorijama.",
+    "subtitle": "Tvornički zapečaćena rashladna sredstva, mješavine po mjeri te oprema i dokumentacija koje flotu s F-Gas certifikatom drže usklađenom u cijeloj EU.",
+    "productCount": "{count} proizvoda",
+    "cylTitle": "Boce s rashladnim sredstvom",
+    "cylBlurb": "Tvornički zapečaćeni R-410A, R-32, R-134a i R-454B od 25 lb do ISO spremnika. AHRI-700 certificirani, sljedivi po seriji.",
+    "cylCta": "Pregledaj boce",
+    "blendTitle": "Plinske mješavine po mjeri",
+    "blendBlurb": "Mješavine prema specifikaciji s certifikatom analize po seriji.",
+    "blendCta": "Zatraži mješavinu",
+    "blendCount": "12 proizvoda",
+    "eqTitle": "HVAC oprema",
+    "eqBlurb": "Manometarski setovi, vakuumske pumpe, vage i detektori curenja.",
+    "eqCta": "Pregledaj opremu",
+    "eqCount": "48 proizvoda",
+    "recTitle": "Oporaba i obnova",
+    "recBlurb": "Boce za oporabu i preuzimanje rashladnog sredstva na kraju vijeka.",
+    "recCta": "Pogledaj program",
+    "recCount": "9 usluga",
+    "compTitle": "Alati za usklađenost",
+    "compBlurb": "SDS paketi, F-Gas evidencije i izvozi za EU izvještavanje.",
+    "compCta": "Otvori knjižnicu",
+    "compCount": "Dokumentacija",
+    "aiTitle": "Niste sigurni koje rashladno sredstvo odgovara?",
+    "aiBody": "Dajte AI kalkulatoru broj modela i vratit će točno punjenje i broj boca."
   }
 }

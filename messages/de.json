@@ -16,7 +16,8 @@
     "menuDashboard": "Dashboard",
     "menuOrders": "Bestellungen",
     "menuSettings": "Einstellungen",
-    "menuSignOut": "Abmelden"
+    "menuSignOut": "Abmelden",
+    "productList": "Produktliste"
   },
   "Auth": {
     "welcomeTitle": "Willkommen bei My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Passwort aktualisiert.",
     "pwErrorComplexity": "Mindestens 8 Zeichen, mit Buchstabe und Zahl.",
     "pwLastChanged": "Zuletzt geändert am {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUKTLISTE",
+    "title": "Alles, was wir liefern — nach Kategorie.",
+    "subtitle": "Werksversiegelte Kältemittel, individuelle Gemische sowie Ausrüstung und Dokumentation, die eine F-Gas-zertifizierte Flotte EU-weit konform halten.",
+    "productCount": "{count} Produkte",
+    "cylTitle": "Kältemittel-Zylinder",
+    "cylBlurb": "Werksversiegelte R-410A, R-32, R-134a und R-454B von 25 lb bis ISO-Tank. AHRI-700-zertifiziert, chargenverfolgbar.",
+    "cylCta": "Zylinder ansehen",
+    "blendTitle": "Individuelle Gasgemische",
+    "blendBlurb": "Nach Spezifikation gefertigte Gemische mit Analysezertifikat pro Los.",
+    "blendCta": "Gemisch anfragen",
+    "blendCount": "12 Produkte",
+    "eqTitle": "HVAC-Ausrüstung",
+    "eqBlurb": "Monteurhilfen, Vakuumpumpen, Waagen und Lecksucher.",
+    "eqCta": "Ausrüstung ansehen",
+    "eqCount": "48 Produkte",
+    "recTitle": "Rückgewinnung & Recycling",
+    "recBlurb": "Recycling-Zylinder und Rücknahme für Altkältemittel.",
+    "recCta": "Programm ansehen",
+    "recCount": "9 Services",
+    "compTitle": "Compliance-Tools",
+    "compBlurb": "SDS-Pakete, F-Gas-Protokolle und EU-Reporting-Exporte.",
+    "compCta": "Bibliothek öffnen",
+    "compCount": "Dokumentation",
+    "aiTitle": "Unsicher, welches Kältemittel passt?",
+    "aiBody": "Geben Sie dem KI-Rechner eine Modellnummer — er liefert die exakte Füllmenge und Zylinderanzahl."
   }
 }

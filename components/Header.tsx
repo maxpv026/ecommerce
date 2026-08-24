@@ -20,7 +20,7 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { key: "cylinders", href: "/cylinders" },
+  { key: "productList", href: "/categories" },
   { key: "blends", href: "/#grid" },
   { key: "equipment", href: "/#grid" },
   { key: "compliance", href: "/compliance/sds", matchPrefix: "/compliance" },

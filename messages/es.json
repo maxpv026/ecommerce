@@ -16,7 +16,8 @@
     "menuDashboard": "Panel",
     "menuOrders": "Pedidos",
     "menuSettings": "Ajustes",
-    "menuSignOut": "Cerrar sesión"
+    "menuSignOut": "Cerrar sesión",
+    "productList": "Lista de productos"
   },
   "Auth": {
     "welcomeTitle": "Bienvenido a My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Contraseña actualizada.",
     "pwErrorComplexity": "Al menos 8 caracteres, con una letra y un número.",
     "pwLastChanged": "Último cambio: {date}"
+  },
+  "Categories": {
+    "eyebrow": "LISTA DE PRODUCTOS",
+    "title": "Todo lo que enviamos, por categoría.",
+    "subtitle": "Refrigerantes sellados de fábrica, mezclas a medida, y el equipo y la documentación que mantienen una flota certificada F-Gas conforme en toda la UE.",
+    "productCount": "{count} productos",
+    "cylTitle": "Botellas de refrigerante",
+    "cylBlurb": "R-410A, R-32, R-134a y R-454B sellados de fábrica, de 25 lb a tanque ISO. Certificados AHRI-700, trazables por lote.",
+    "cylCta": "Ver botellas",
+    "blendTitle": "Mezclas de gas a medida",
+    "blendBlurb": "Mezclas según especificación con certificado de análisis por lote.",
+    "blendCta": "Solicitar una mezcla",
+    "blendCount": "12 productos",
+    "eqTitle": "Equipos HVAC",
+    "eqBlurb": "Manómetros, bombas de vacío, básculas y detectores de fugas.",
+    "eqCta": "Ver equipos",
+    "eqCount": "48 productos",
+    "recTitle": "Recuperación y reciclaje",
+    "recBlurb": "Botellas de recuperación y retirada de refrigerante al final de su vida.",
+    "recCta": "Ver programa",
+    "recCount": "9 servicios",
+    "compTitle": "Herramientas de cumplimiento",
+    "compBlurb": "Paquetes SDS, registros F-Gas y exportaciones para informes UE.",
+    "compCta": "Abrir biblioteca",
+    "compCount": "Documentación",
+    "aiTitle": "¿No sabes qué refrigerante encaja?",
+    "aiBody": "Dale al calculador de IA un número de modelo y te devuelve la carga exacta y el número de botellas."
   }
 }

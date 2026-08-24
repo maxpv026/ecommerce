@@ -16,7 +16,8 @@
     "menuDashboard": "Översikt",
     "menuOrders": "Beställningar",
     "menuSettings": "Inställningar",
-    "menuSignOut": "Logga ut"
+    "menuSignOut": "Logga ut",
+    "productList": "Produktlista"
   },
   "Auth": {
     "welcomeTitle": "Välkommen till My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Lösenordet uppdaterades.",
     "pwErrorComplexity": "Minst 8 tecken, med en bokstav och en siffra.",
     "pwLastChanged": "Senast ändrat {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUKTLISTA",
+    "title": "Allt vi levererar, per kategori.",
+    "subtitle": "Fabriksförseglade köldmedier, specialblandningar samt utrustning och dokumentation som håller en F-gascertifierad flotta compliant i hela EU.",
+    "productCount": "{count} produkter",
+    "cylTitle": "Köldmediecylindrar",
+    "cylBlurb": "Fabriksförseglade R-410A, R-32, R-134a och R-454B från 25 lb till ISO-tank. AHRI-700-certifierade, spårbara per batch.",
+    "cylCta": "Bläddra bland cylindrar",
+    "blendTitle": "Specialgasblandningar",
+    "blendBlurb": "Blandningar enligt specifikation med analyscertifikat per parti.",
+    "blendCta": "Begär en blandning",
+    "blendCount": "12 produkter",
+    "eqTitle": "HVAC-utrustning",
+    "eqBlurb": "Manometerställ, vakuumpumpar, vågar och läcksökare.",
+    "eqCta": "Bläddra bland utrustning",
+    "eqCount": "48 produkter",
+    "recTitle": "Återvinning & regenerering",
+    "recBlurb": "Återvinningscylindrar och återtag av uttjänta köldmedier.",
+    "recCta": "Se programmet",
+    "recCount": "9 tjänster",
+    "compTitle": "Compliance-verktyg",
+    "compBlurb": "SDS-paket, F-gasloggar och EU-rapportexporter.",
+    "compCta": "Öppna biblioteket",
+    "compCount": "Dokumentation",
+    "aiTitle": "Osäker på vilket köldmedium som passar?",
+    "aiBody": "Ge AI-kalkylatorn ett modellnummer så får du exakt fyllning och antal cylindrar."
   }
 }

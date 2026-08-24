@@ -16,7 +16,8 @@
     "menuDashboard": "Painel",
     "menuOrders": "Encomendas",
     "menuSettings": "Definições",
-    "menuSignOut": "Terminar sessão"
+    "menuSignOut": "Terminar sessão",
+    "productList": "Lista de produtos"
   },
   "Auth": {
     "welcomeTitle": "Bem-vindo ao My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Palavra-passe atualizada.",
     "pwErrorComplexity": "Pelo menos 8 caracteres, com uma letra e um número.",
     "pwLastChanged": "Última alteração: {date}"
+  },
+  "Categories": {
+    "eyebrow": "LISTA DE PRODUTOS",
+    "title": "Tudo o que enviamos, por categoria.",
+    "subtitle": "Refrigerantes selados de fábrica, misturas à medida, e o equipamento e a documentação que mantêm uma frota certificada F-Gas em conformidade em toda a UE.",
+    "productCount": "{count} produtos",
+    "cylTitle": "Garrafas de refrigerante",
+    "cylBlurb": "R-410A, R-32, R-134a e R-454B selados de fábrica, de 25 lb a tanque ISO. Certificados AHRI-700, rastreáveis por lote.",
+    "cylCta": "Ver garrafas",
+    "blendTitle": "Misturas de gás à medida",
+    "blendBlurb": "Misturas conforme especificação com certificado de análise por lote.",
+    "blendCta": "Pedir uma mistura",
+    "blendCount": "12 produtos",
+    "eqTitle": "Equipamento AVAC",
+    "eqBlurb": "Manifolds, bombas de vácuo, balanças e detetores de fugas.",
+    "eqCta": "Ver equipamento",
+    "eqCount": "48 produtos",
+    "recTitle": "Recuperação e regeneração",
+    "recBlurb": "Garrafas de recuperação e recolha de refrigerante em fim de vida.",
+    "recCta": "Ver programa",
+    "recCount": "9 serviços",
+    "compTitle": "Ferramentas de conformidade",
+    "compBlurb": "Pacotes SDS, registos F-Gas e exportações para relatórios UE.",
+    "compCta": "Abrir biblioteca",
+    "compCount": "Documentação",
+    "aiTitle": "Não sabe qual refrigerante serve?",
+    "aiBody": "Dê um número de modelo ao calculador de IA e ele devolve a carga exata e o número de garrafas."
   }
 }

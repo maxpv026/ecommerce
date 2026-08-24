@@ -16,7 +16,8 @@
     "menuDashboard": "Tableau de bord",
     "menuOrders": "Commandes",
     "menuSettings": "Paramètres",
-    "menuSignOut": "Se déconnecter"
+    "menuSignOut": "Se déconnecter",
+    "productList": "Liste des produits"
   },
   "Auth": {
     "welcomeTitle": "Bienvenue sur My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Mot de passe mis à jour.",
     "pwErrorComplexity": "Au moins 8 caractères, avec une lettre et un chiffre.",
     "pwLastChanged": "Dernière modification le {date}"
+  },
+  "Categories": {
+    "eyebrow": "LISTE DES PRODUITS",
+    "title": "Tout ce que nous expédions, par catégorie.",
+    "subtitle": "Fluides frigorigènes scellés en usine, mélanges sur mesure, et l'équipement et la documentation qui gardent une flotte certifiée F-Gas conforme dans toute l'UE.",
+    "productCount": "{count} produits",
+    "cylTitle": "Bouteilles de fluide frigorigène",
+    "cylBlurb": "R-410A, R-32, R-134a et R-454B scellés en usine, de 25 lb au conteneur ISO. Certifiés AHRI-700, traçables par lot.",
+    "cylCta": "Voir les bouteilles",
+    "blendTitle": "Mélanges de gaz sur mesure",
+    "blendBlurb": "Mélanges selon spécification avec certificat d'analyse par lot.",
+    "blendCta": "Demander un mélange",
+    "blendCount": "12 produits",
+    "eqTitle": "Équipement CVC",
+    "eqBlurb": "Manifolds, pompes à vide, balances et détecteurs de fuite.",
+    "eqCta": "Voir l'équipement",
+    "eqCount": "48 produits",
+    "recTitle": "Récupération & Recyclage",
+    "recBlurb": "Bouteilles de récupération et reprise des fluides en fin de vie.",
+    "recCta": "Voir le programme",
+    "recCount": "9 services",
+    "compTitle": "Outils de conformité",
+    "compBlurb": "Dossiers SDS, registres F-Gas et exports de reporting UE.",
+    "compCta": "Ouvrir la bibliothèque",
+    "compCount": "Documentation",
+    "aiTitle": "Pas sûr du fluide qui convient ?",
+    "aiBody": "Donnez un numéro de modèle au calculateur IA : il renvoie la charge exacte et le nombre de bouteilles."
   }
 }

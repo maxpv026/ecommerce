@@ -16,7 +16,8 @@
     "menuDashboard": "Panou",
     "menuOrders": "Comenzi",
     "menuSettings": "Setări",
-    "menuSignOut": "Deconectare"
+    "menuSignOut": "Deconectare",
+    "productList": "Lista de produse"
   },
   "Auth": {
     "welcomeTitle": "Bine ați venit la My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Parolă actualizată.",
     "pwErrorComplexity": "Cel puțin 8 caractere, cu o literă și o cifră.",
     "pwLastChanged": "Ultima modificare: {date}"
+  },
+  "Categories": {
+    "eyebrow": "LISTA DE PRODUSE",
+    "title": "Tot ce livrăm, pe categorii.",
+    "subtitle": "Agenți frigorifici sigilați din fabrică, amestecuri la comandă, și echipamentul și documentația care mențin o flotă certificată F-Gas conformă în toată UE.",
+    "productCount": "{count} produse",
+    "cylTitle": "Butelii de agent frigorific",
+    "cylBlurb": "R-410A, R-32, R-134a și R-454B sigilate din fabrică, de la 25 lb la rezervor ISO. Certificate AHRI-700, trasabile pe lot.",
+    "cylCta": "Vezi buteliile",
+    "blendTitle": "Amestecuri de gaz la comandă",
+    "blendBlurb": "Amestecuri conform specificației, cu certificat de analiză pe lot.",
+    "blendCta": "Solicită un amestec",
+    "blendCount": "12 produse",
+    "eqTitle": "Echipamente HVAC",
+    "eqBlurb": "Baterii de manometre, pompe de vid, cântare și detectoare de scurgeri.",
+    "eqCta": "Vezi echipamentele",
+    "eqCount": "48 de produse",
+    "recTitle": "Recuperare și regenerare",
+    "recBlurb": "Butelii de recuperare și preluarea agentului la sfârșitul vieții.",
+    "recCta": "Vezi programul",
+    "recCount": "9 servicii",
+    "compTitle": "Instrumente de conformitate",
+    "compBlurb": "Pachete SDS, registre F-Gas și exporturi pentru raportarea UE.",
+    "compCta": "Deschide biblioteca",
+    "compCount": "Documentație",
+    "aiTitle": "Nu știi ce agent frigorific se potrivește?",
+    "aiBody": "Dă calculatorului AI un număr de model și primești încărcătura exactă și numărul de butelii."
   }
 }

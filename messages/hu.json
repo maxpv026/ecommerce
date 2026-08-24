@@ -16,7 +16,8 @@
     "menuDashboard": "Irányítópult",
     "menuOrders": "Rendelések",
     "menuSettings": "Beállítások",
-    "menuSignOut": "Kijelentkezés"
+    "menuSignOut": "Kijelentkezés",
+    "productList": "Terméklista"
   },
   "Auth": {
     "welcomeTitle": "Üdvözlünk a My Energy-nál",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Jelszó frissítve.",
     "pwErrorComplexity": "Legalább 8 karakter, betűvel és számmal.",
     "pwLastChanged": "Utolsó módosítás: {date}"
+  },
+  "Categories": {
+    "eyebrow": "TERMÉKLISTA",
+    "title": "Minden, amit szállítunk — kategóriák szerint.",
+    "subtitle": "Gyárilag zárt hűtőközegek, egyedi keverékek, valamint a felszerelés és dokumentáció, amely az F-Gas tanúsítású flottát EU-szerte megfelelővé teszi.",
+    "productCount": "{count} termék",
+    "cylTitle": "Hűtőközeg-palackok",
+    "cylBlurb": "Gyárilag zárt R-410A, R-32, R-134a és R-454B 25 lb-tól ISO-tartályig. AHRI-700 tanúsítvánnyal, tételenként nyomon követhető.",
+    "cylCta": "Palackok böngészése",
+    "blendTitle": "Egyedi gázkeverékek",
+    "blendBlurb": "Specifikáció szerinti keverékek, tételenkénti analízis-tanúsítvánnyal.",
+    "blendCta": "Keverék igénylése",
+    "blendCount": "12 termék",
+    "eqTitle": "HVAC felszerelés",
+    "eqBlurb": "Csaptelepek, vákuumszivattyúk, mérlegek és szivárgáskeresők.",
+    "eqCta": "Felszerelés böngészése",
+    "eqCount": "48 termék",
+    "recTitle": "Visszanyerés és újrahasznosítás",
+    "recBlurb": "Visszanyerő palackok és elhasznált hűtőközeg visszavétele.",
+    "recCta": "Program megtekintése",
+    "recCount": "9 szolgáltatás",
+    "compTitle": "Megfelelőségi eszközök",
+    "compBlurb": "SDS-csomagok, F-Gas naplók és EU jelentés-exportok.",
+    "compCta": "Könyvtár megnyitása",
+    "compCount": "Dokumentáció",
+    "aiTitle": "Nem biztos, melyik hűtőközeg való?",
+    "aiBody": "Adjon az AI-kalkulátornak egy típusszámot, és visszaadja a pontos töltetet és a palackok számát."
   }
 }

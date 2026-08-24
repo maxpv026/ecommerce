@@ -16,7 +16,8 @@
     "menuDashboard": "Dashboard",
     "menuOrders": "Ordini",
     "menuSettings": "Impostazioni",
-    "menuSignOut": "Esci"
+    "menuSignOut": "Esci",
+    "productList": "Elenco prodotti"
   },
   "Auth": {
     "welcomeTitle": "Benvenuto su My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Password aggiornata.",
     "pwErrorComplexity": "Almeno 8 caratteri, con una lettera e un numero.",
     "pwLastChanged": "Ultima modifica: {date}"
+  },
+  "Categories": {
+    "eyebrow": "ELENCO PRODOTTI",
+    "title": "Tutto ciò che spediamo, per categoria.",
+    "subtitle": "Refrigeranti sigillati in fabbrica, miscele su misura, e l'attrezzatura e la documentazione che mantengono conforme una flotta certificata F-Gas in tutta l'UE.",
+    "productCount": "{count} prodotti",
+    "cylTitle": "Bombole di refrigerante",
+    "cylBlurb": "R-410A, R-32, R-134a e R-454B sigillati in fabbrica, da 25 lb al serbatoio ISO. Certificati AHRI-700, tracciabili per lotto.",
+    "cylCta": "Sfoglia le bombole",
+    "blendTitle": "Miscele di gas su misura",
+    "blendBlurb": "Miscele a specifica con certificato di analisi per lotto.",
+    "blendCta": "Richiedi una miscela",
+    "blendCount": "12 prodotti",
+    "eqTitle": "Attrezzatura HVAC",
+    "eqBlurb": "Gruppi manometrici, pompe per vuoto, bilance e cercafughe.",
+    "eqCta": "Sfoglia l'attrezzatura",
+    "eqCount": "48 prodotti",
+    "recTitle": "Recupero e rigenerazione",
+    "recBlurb": "Bombole di recupero e ritiro del refrigerante a fine vita.",
+    "recCta": "Vedi il programma",
+    "recCount": "9 servizi",
+    "compTitle": "Strumenti di conformità",
+    "compBlurb": "Pacchetti SDS, registri F-Gas ed export per il reporting UE.",
+    "compCta": "Apri la libreria",
+    "compCount": "Documentazione",
+    "aiTitle": "Non sai quale refrigerante serve?",
+    "aiBody": "Dai al calcolatore AI un numero di modello: restituisce la carica esatta e il numero di bombole."
   }
 }

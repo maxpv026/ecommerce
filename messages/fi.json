@@ -16,7 +16,8 @@
     "menuDashboard": "Kojelauta",
     "menuOrders": "Tilaukset",
     "menuSettings": "Asetukset",
-    "menuSignOut": "Kirjaudu ulos"
+    "menuSignOut": "Kirjaudu ulos",
+    "productList": "Tuoteluettelo"
   },
   "Auth": {
     "welcomeTitle": "Tervetuloa My Energyen",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Salasana päivitetty.",
     "pwErrorComplexity": "Vähintään 8 merkkiä, mukana kirjain ja numero.",
     "pwLastChanged": "Viimeksi vaihdettu {date}"
+  },
+  "Categories": {
+    "eyebrow": "TUOTELUETTELO",
+    "title": "Kaikki mitä toimitamme, kategorioittain.",
+    "subtitle": "Tehdassinetöidyt kylmäaineet, mittatilausseokset sekä laitteet ja dokumentaatio, jotka pitävät F-kaasusertifioidun kaluston vaatimusten mukaisena koko EU:ssa.",
+    "productCount": "{count} tuotetta",
+    "cylTitle": "Kylmäainepullot",
+    "cylBlurb": "Tehdassinetöidyt R-410A, R-32, R-134a ja R-454B 25 lb:stä ISO-säiliöön. AHRI-700-sertifioidut, eräkohtaisesti jäljitettävät.",
+    "cylCta": "Selaa pulloja",
+    "blendTitle": "Mittatilauskaasuseokset",
+    "blendBlurb": "Spesifikaation mukaiset seokset, analyysitodistus erittäin.",
+    "blendCta": "Pyydä seos",
+    "blendCount": "12 tuotetta",
+    "eqTitle": "HVAC-laitteet",
+    "eqBlurb": "Mittarisarjat, tyhjiöpumput, vaa'at ja vuodonilmaisimet.",
+    "eqCta": "Selaa laitteita",
+    "eqCount": "48 tuotetta",
+    "recTitle": "Talteenotto ja kierrätys",
+    "recBlurb": "Talteenottopullot ja käytöstä poistetun kylmäaineen vastaanotto.",
+    "recCta": "Katso ohjelma",
+    "recCount": "9 palvelua",
+    "compTitle": "Vaatimustenmukaisuustyökalut",
+    "compBlurb": "SDS-paketit, F-kaasulokit ja EU-raportointiviennit.",
+    "compCta": "Avaa kirjasto",
+    "compCount": "Dokumentaatio",
+    "aiTitle": "Etkö ole varma sopivasta kylmäaineesta?",
+    "aiBody": "Anna AI-laskurille mallinumero, niin saat tarkan täytöksen ja pullomäärän."
   }
 }

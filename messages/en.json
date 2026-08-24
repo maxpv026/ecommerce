@@ -16,7 +16,8 @@
     "menuDashboard": "Dashboard",
     "menuOrders": "Orders",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "productList": "Product List"
   },
   "Auth": {
     "welcomeTitle": "Welcome to My Energy",
@@ -436,5 +437,32 @@
     "pwToastChanged": "Password updated.",
     "pwErrorComplexity": "At least 8 characters, with a letter and a number.",
     "pwLastChanged": "Last changed {date}"
+  },
+  "Categories": {
+    "eyebrow": "PRODUCT LIST",
+    "title": "Everything we ship, by category.",
+    "subtitle": "Factory-sealed refrigerants, custom blends, and the equipment and documentation that keep an F-Gas certified fleet compliant across the EU.",
+    "productCount": "{count} products",
+    "cylTitle": "Refrigerant Cylinders",
+    "cylBlurb": "Factory-sealed R-410A, R-32, R-134a and R-454B in 25 lb through ISO tank. AHRI-700 certified, batch-traceable.",
+    "cylCta": "Browse cylinders",
+    "blendTitle": "Custom Gas Blends",
+    "blendBlurb": "Made-to-spec mixtures with a certificate of analysis per lot.",
+    "blendCta": "Request a blend",
+    "blendCount": "12 products",
+    "eqTitle": "HVAC Equipment",
+    "eqBlurb": "Manifolds, vacuum pumps, scales and leak detectors.",
+    "eqCta": "Browse equipment",
+    "eqCount": "48 products",
+    "recTitle": "Recovery & Reclaim",
+    "recBlurb": "Recovery cylinders and take-back for end-of-life refrigerant.",
+    "recCta": "See programme",
+    "recCount": "9 services",
+    "compTitle": "Compliance Tools",
+    "compBlurb": "SDS packets, F-Gas logs and EU reporting exports.",
+    "compCta": "Open library",
+    "compCount": "Documentation",
+    "aiTitle": "Not sure which refrigerant fits?",
+    "aiBody": "Give the AI calculator a model number and it returns the exact charge and cylinder count."
   }
 }

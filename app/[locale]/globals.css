@@ -10,6 +10,8 @@
      variant can't reach into a style attribute. */
   --hc-border-idle: rgba(15, 23, 42, 0.13);
   --hc-label-idle: #94a3b8;
+  --hc-cat-border: rgba(15, 23, 42, 0.07);
+  --hc-cat-tile: rgba(15, 23, 42, 0.04);
 
   /* Semantic surface tokens extracted from the Home Desktop design (Claude
      Design project 4c445d50-cb47-4747-9dd4-c56d3d34ee39) — flip with the
@@ -35,6 +37,8 @@
   --foreground: #f8f9fa;
   --hc-border-idle: rgba(255, 255, 255, 0.16);
   --hc-label-idle: #64748b;
+  --hc-cat-border: rgba(255, 255, 255, 0.08);
+  --hc-cat-tile: #1b1c20;
 
   --canvas: #090a0c;
   --surface: #141518;
