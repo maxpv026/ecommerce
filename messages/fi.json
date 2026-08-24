@@ -419,6 +419,22 @@
     "adrToastDeleted": "Osoite poistettu.",
     "adrToastError": "Osoitetta ei voitu tallentaa. Yritä uudelleen.",
     "adrEditAria": "Muokkaa osoitetta",
-    "adrDeleteAria": "Poista osoite"
+    "adrDeleteAria": "Poista osoite",
+    "epEyebrow": "MUOKKAA PROFIILIA",
+    "epTitle": "Päivitä tietosi",
+    "epName": "Koko nimi",
+    "epCompany": "Yrityksen nimi",
+    "epRole": "Rooli / tehtävä",
+    "epNameError": "Nimessä on oltava vähintään 2 merkkiä.",
+    "epToastSaved": "Profiili päivitetty.",
+    "epToastError": "Profiilia ei voitu tallentaa. Yritä uudelleen.",
+    "pwCodeSentNote": "Lähetimme 6-numeroisen koodin osoitteeseen {email}.",
+    "pwCodeLabel": "Vahvistuskoodi",
+    "pwVerify": "Vahvista koodi",
+    "pwNewLabel": "Uusi salasana",
+    "pwSave": "Tallenna salasana",
+    "pwToastChanged": "Salasana päivitetty.",
+    "pwErrorComplexity": "Vähintään 8 merkkiä, mukana kirjain ja numero.",
+    "pwLastChanged": "Viimeksi vaihdettu {date}"
   }
 }

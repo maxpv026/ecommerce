@@ -419,6 +419,22 @@
     "adrToastDeleted": "Dirección eliminada.",
     "adrToastError": "No se pudo guardar la dirección. Inténtalo de nuevo.",
     "adrEditAria": "Editar dirección",
-    "adrDeleteAria": "Eliminar dirección"
+    "adrDeleteAria": "Eliminar dirección",
+    "epEyebrow": "EDITAR PERFIL",
+    "epTitle": "Actualiza tus datos",
+    "epName": "Nombre completo",
+    "epCompany": "Nombre de la empresa",
+    "epRole": "Rol / puesto",
+    "epNameError": "Introduce al menos 2 caracteres para el nombre.",
+    "epToastSaved": "Perfil actualizado.",
+    "epToastError": "No se pudo guardar el perfil. Inténtalo de nuevo.",
+    "pwCodeSentNote": "Hemos enviado un código de 6 dígitos a {email}.",
+    "pwCodeLabel": "Código de verificación",
+    "pwVerify": "Verificar código",
+    "pwNewLabel": "Nueva contraseña",
+    "pwSave": "Guardar contraseña",
+    "pwToastChanged": "Contraseña actualizada.",
+    "pwErrorComplexity": "Al menos 8 caracteres, con una letra y un número.",
+    "pwLastChanged": "Último cambio: {date}"
   }
 }

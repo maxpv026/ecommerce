@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adresa odstránená.",
     "adrToastError": "Adresu sa nepodarilo uložiť. Skúste to znova.",
     "adrEditAria": "Upraviť adresu",
-    "adrDeleteAria": "Odstrániť adresu"
+    "adrDeleteAria": "Odstrániť adresu",
+    "epEyebrow": "UPRAVIŤ PROFIL",
+    "epTitle": "Aktualizujte svoje údaje",
+    "epName": "Celé meno",
+    "epCompany": "Názov firmy",
+    "epRole": "Rola / pozícia",
+    "epNameError": "Meno musí mať aspoň 2 znaky.",
+    "epToastSaved": "Profil aktualizovaný.",
+    "epToastError": "Profil sa nepodarilo uložiť. Skúste to znova.",
+    "pwCodeSentNote": "Poslali sme 6-miestny kód na {email}.",
+    "pwCodeLabel": "Overovací kód",
+    "pwVerify": "Overiť kód",
+    "pwNewLabel": "Nové heslo",
+    "pwSave": "Uložiť heslo",
+    "pwToastChanged": "Heslo aktualizované.",
+    "pwErrorComplexity": "Aspoň 8 znakov, s písmenom a číslicou.",
+    "pwLastChanged": "Naposledy zmenené {date}"
   }
 }

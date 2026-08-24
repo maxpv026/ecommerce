@@ -419,6 +419,22 @@
     "adrToastDeleted": "Morada eliminada.",
     "adrToastError": "Não foi possível guardar a morada. Tente novamente.",
     "adrEditAria": "Editar morada",
-    "adrDeleteAria": "Eliminar morada"
+    "adrDeleteAria": "Eliminar morada",
+    "epEyebrow": "EDITAR PERFIL",
+    "epTitle": "Atualize os seus dados",
+    "epName": "Nome completo",
+    "epCompany": "Nome da empresa",
+    "epRole": "Função / cargo",
+    "epNameError": "Introduza pelo menos 2 caracteres no nome.",
+    "epToastSaved": "Perfil atualizado.",
+    "epToastError": "Não foi possível guardar o perfil. Tente novamente.",
+    "pwCodeSentNote": "Enviámos um código de 6 dígitos para {email}.",
+    "pwCodeLabel": "Código de verificação",
+    "pwVerify": "Verificar código",
+    "pwNewLabel": "Nova palavra-passe",
+    "pwSave": "Guardar palavra-passe",
+    "pwToastChanged": "Palavra-passe atualizada.",
+    "pwErrorComplexity": "Pelo menos 8 caracteres, com uma letra e um número.",
+    "pwLastChanged": "Última alteração: {date}"
   }
 }

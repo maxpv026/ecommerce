@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adresa izbrisana.",
     "adrToastError": "Adresu nije bilo moguće spremiti. Pokušajte ponovno.",
     "adrEditAria": "Uredi adresu",
-    "adrDeleteAria": "Izbriši adresu"
+    "adrDeleteAria": "Izbriši adresu",
+    "epEyebrow": "UREDI PROFIL",
+    "epTitle": "Ažurirajte svoje podatke",
+    "epName": "Puno ime",
+    "epCompany": "Naziv tvrtke",
+    "epRole": "Uloga / pozicija",
+    "epNameError": "Ime mora imati barem 2 znaka.",
+    "epToastSaved": "Profil ažuriran.",
+    "epToastError": "Profil nije bilo moguće spremiti. Pokušajte ponovno.",
+    "pwCodeSentNote": "Poslali smo 6-znamenkasti kod na {email}.",
+    "pwCodeLabel": "Kod za potvrdu",
+    "pwVerify": "Potvrdi kod",
+    "pwNewLabel": "Nova lozinka",
+    "pwSave": "Spremi lozinku",
+    "pwToastChanged": "Lozinka ažurirana.",
+    "pwErrorComplexity": "Najmanje 8 znakova, sa slovom i brojkom.",
+    "pwLastChanged": "Zadnja promjena: {date}"
   }
 }

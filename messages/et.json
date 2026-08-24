@@ -419,6 +419,22 @@
     "adrToastDeleted": "Aadress kustutatud.",
     "adrToastError": "Aadressi ei õnnestunud salvestada. Proovige uuesti.",
     "adrEditAria": "Muuda aadressi",
-    "adrDeleteAria": "Kustuta aadress"
+    "adrDeleteAria": "Kustuta aadress",
+    "epEyebrow": "MUUDA PROFIILI",
+    "epTitle": "Uuenda oma andmeid",
+    "epName": "Täisnimi",
+    "epCompany": "Ettevõtte nimi",
+    "epRole": "Roll / ametikoht",
+    "epNameError": "Nimes peab olema vähemalt 2 tähemärki.",
+    "epToastSaved": "Profiil uuendatud.",
+    "epToastError": "Profiili ei õnnestunud salvestada. Proovige uuesti.",
+    "pwCodeSentNote": "Saatsime 6-kohalise koodi aadressile {email}.",
+    "pwCodeLabel": "Kinnituskood",
+    "pwVerify": "Kinnita kood",
+    "pwNewLabel": "Uus parool",
+    "pwSave": "Salvesta parool",
+    "pwToastChanged": "Parool uuendatud.",
+    "pwErrorComplexity": "Vähemalt 8 tähemärki, sh täht ja number.",
+    "pwLastChanged": "Viimati muudetud {date}"
   }
 }

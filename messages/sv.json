@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adressen togs bort.",
     "adrToastError": "Adressen kunde inte sparas. Försök igen.",
     "adrEditAria": "Redigera adress",
-    "adrDeleteAria": "Ta bort adress"
+    "adrDeleteAria": "Ta bort adress",
+    "epEyebrow": "REDIGERA PROFIL",
+    "epTitle": "Uppdatera dina uppgifter",
+    "epName": "Fullständigt namn",
+    "epCompany": "Företagsnamn",
+    "epRole": "Roll / befattning",
+    "epNameError": "Ange minst 2 tecken för namnet.",
+    "epToastSaved": "Profilen uppdaterades.",
+    "epToastError": "Profilen kunde inte sparas. Försök igen.",
+    "pwCodeSentNote": "Vi har skickat en 6-siffrig kod till {email}.",
+    "pwCodeLabel": "Verifieringskod",
+    "pwVerify": "Verifiera kod",
+    "pwNewLabel": "Nytt lösenord",
+    "pwSave": "Spara lösenord",
+    "pwToastChanged": "Lösenordet uppdaterades.",
+    "pwErrorComplexity": "Minst 8 tecken, med en bokstav och en siffra.",
+    "pwLastChanged": "Senast ändrat {date}"
   }
 }

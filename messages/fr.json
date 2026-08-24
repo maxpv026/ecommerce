@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adresse supprimée.",
     "adrToastError": "Impossible d'enregistrer l'adresse. Réessayez.",
     "adrEditAria": "Modifier l'adresse",
-    "adrDeleteAria": "Supprimer l'adresse"
+    "adrDeleteAria": "Supprimer l'adresse",
+    "epEyebrow": "MODIFIER LE PROFIL",
+    "epTitle": "Mettre à jour vos informations",
+    "epName": "Nom complet",
+    "epCompany": "Nom de l'entreprise",
+    "epRole": "Rôle / fonction",
+    "epNameError": "Saisissez au moins 2 caractères pour le nom.",
+    "epToastSaved": "Profil mis à jour.",
+    "epToastError": "Impossible d'enregistrer le profil. Réessayez.",
+    "pwCodeSentNote": "Nous avons envoyé un code à 6 chiffres à {email}.",
+    "pwCodeLabel": "Code de vérification",
+    "pwVerify": "Vérifier le code",
+    "pwNewLabel": "Nouveau mot de passe",
+    "pwSave": "Enregistrer le mot de passe",
+    "pwToastChanged": "Mot de passe mis à jour.",
+    "pwErrorComplexity": "Au moins 8 caractères, avec une lettre et un chiffre.",
+    "pwLastChanged": "Dernière modification le {date}"
   }
 }

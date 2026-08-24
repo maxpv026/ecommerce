@@ -419,6 +419,22 @@
     "adrToastDeleted": "Seoladh scriosta.",
     "adrToastError": "Níorbh fhéidir an seoladh a shábháil. Bain triail eile as.",
     "adrEditAria": "Cuir seoladh in eagar",
-    "adrDeleteAria": "Scrios seoladh"
+    "adrDeleteAria": "Scrios seoladh",
+    "epEyebrow": "CUIR AN PHRÓIFÍL IN EAGAR",
+    "epTitle": "Nuashonraigh do chuid sonraí",
+    "epName": "Ainm iomlán",
+    "epCompany": "Ainm na cuideachta",
+    "epRole": "Ról / post",
+    "epNameError": "Teastaíonn ar a laghad 2 charachtar san ainm.",
+    "epToastSaved": "Próifíl nuashonraithe.",
+    "epToastError": "Níorbh fhéidir an phróifíl a shábháil. Bain triail eile as.",
+    "pwCodeSentNote": "Sheolamar cód 6 dhigit chuig {email}.",
+    "pwCodeLabel": "Cód fíoraithe",
+    "pwVerify": "Fíoraigh an cód",
+    "pwNewLabel": "Pasfhocal nua",
+    "pwSave": "Sábháil an pasfhocal",
+    "pwToastChanged": "Pasfhocal nuashonraithe.",
+    "pwErrorComplexity": "Ar a laghad 8 gcarachtar, le litir agus uimhir.",
+    "pwLastChanged": "Athraithe go deireanach {date}"
   }
 }

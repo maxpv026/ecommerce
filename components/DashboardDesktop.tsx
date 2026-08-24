@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 import AddressModal from "./AddressModal";
+import EditProfileModal from "./EditProfileModal";
+import ChangePasswordFlow from "./ChangePasswordFlow";
 import { deleteAddress, setDefaultAddress } from "@/lib/actions/address";
 import { nativeLanguageName } from "@/lib/languageNames";
 import { ACCOUNT_PROFILE } from "@/lib/account";
@@ -150,6 +152,7 @@ export default function DashboardDesktop({
   const [openOrder, setOpenOrder] = useState<string | null>(() => orders?.[0]?.id ?? null);
   const [signingOut, setSigningOut] = useState(false);
   const [addressModal, setAddressModal] = useState<{ address: UserAddress | null } | null>(null);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
@@ -229,7 +232,8 @@ export default function DashboardDesktop({
     { label: tAccount("fieldLanguage"), value: profile ? nativeLanguageName(profile.locale) : nativeLanguageName("en") },
     {
       label: t("fieldRole"),
-      value: session?.user?.role === "ADMIN" ? t("roleFounder") : t("rolePurchasing"),
+      value:
+        profile?.jobTitle || (session?.user?.role === "ADMIN" ? t("roleFounder") : t("rolePurchasing")),
     },
     { label: t("fieldMemberSince"), value: memberSinceYear ? String(memberSinceYear) : tAccount("fieldEmpty") },
   ];
@@ -350,12 +354,14 @@ export default function DashboardDesktop({
             >
               {tHome("browseCylinders")}
             </Link>
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.98 }}
+              onClick={() => !preview && setEditProfileOpen(true)}
               className="flex h-11 items-center justify-center rounded-[14px] bg-blue-700 px-[22px] text-[13.5px] font-semibold tracking-[-.015em] text-white shadow-[0_18px_36px_-18px_rgba(29,78,216,.8)] transition-colors hover:bg-blue-800"
             >
               {t("editProfile")}
-            </button>
+            </motion.button>
           </div>
         </motion.div>
 
@@ -861,22 +867,11 @@ export default function DashboardDesktop({
                   {tAccount("accountSecurityTitle")}
                 </h2>
                 <TwoFaRow label={tAccount("twoFaTitle")} body={t("twoFaBody")} />
-                <div className="flex items-center justify-between gap-5 pt-[18px]">
-                  <span className="min-w-0">
-                    <span className="block text-[15px] font-semibold tracking-[-.025em]">
-                      {tAccount("passwordTitle")}
-                    </span>
-                    <span className="mt-[5px] block text-[12.5px] text-slate-600 dark:text-ink-muted">
-                      {tAccount("lastChanged")}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    className="flex h-11 items-center justify-center rounded-[14px] border border-slate-900/[.14] px-5 text-[13.5px] font-semibold tracking-[-.015em] transition-colors hover:bg-slate-900/[.05] dark:border-hairline-strong dark:hover:bg-white/10"
-                  >
-                    {tAccount("changePassword")}
-                  </button>
-                </div>
+                <ChangePasswordFlow
+                  email={email}
+                  passwordChangedAt={profile?.passwordChangedAt ?? null}
+                  disabled={preview}
+                />
               </motion.div>
 
               <motion.div
@@ -1064,6 +1059,22 @@ export default function DashboardDesktop({
           </div>
         </div>
       </main>
+
+      <EditProfileModal
+        key={editProfileOpen ? `edit-${profile?.name ?? ""}-${profile?.companyName ?? ""}-${profile?.jobTitle ?? ""}` : "ep-closed"}
+        open={editProfileOpen}
+        initial={{
+          name: profile?.name ?? displayName,
+          companyName: profile?.companyName ?? "",
+          jobTitle: profile?.jobTitle ?? "",
+        }}
+        onClose={() => setEditProfileOpen(false)}
+        onSaved={() => {
+          setEditProfileOpen(false);
+          toast.success(t("epToastSaved"));
+          router.refresh();
+        }}
+      />
 
       <AddressModal
         key={addressModal ? (addressModal.address?.id ?? "new") : "closed"}

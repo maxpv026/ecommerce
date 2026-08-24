@@ -124,6 +124,8 @@ export interface UserProfileData {
   name: string | null;
   email: string | null;
   companyName: string | null;
+  jobTitle: string | null;
+  passwordChangedAt: string | null;
   locale: string;
   /** F-Gas verification flag (Prisma column keeps its legacy `epaVerified` name). */
   fgasVerified: boolean;
@@ -149,6 +151,8 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     name: user.name,
     email: user.email,
     companyName: user.companyName,
+    jobTitle: user.jobTitle,
+    passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
     locale: user.locale,
     fgasVerified: user.epaVerified,
     memberSinceYear: user.createdAt.getFullYear(),

@@ -419,6 +419,22 @@
     "adrToastDeleted": "Naslov izbrisan.",
     "adrToastError": "Naslova ni bilo mogoče shraniti. Poskusite znova.",
     "adrEditAria": "Uredi naslov",
-    "adrDeleteAria": "Izbriši naslov"
+    "adrDeleteAria": "Izbriši naslov",
+    "epEyebrow": "UREDI PROFIL",
+    "epTitle": "Posodobite svoje podatke",
+    "epName": "Polno ime",
+    "epCompany": "Ime podjetja",
+    "epRole": "Vloga / položaj",
+    "epNameError": "Ime mora imeti vsaj 2 znaka.",
+    "epToastSaved": "Profil posodobljen.",
+    "epToastError": "Profila ni bilo mogoče shraniti. Poskusite znova.",
+    "pwCodeSentNote": "Poslali smo 6-mestno kodo na {email}.",
+    "pwCodeLabel": "Potrditvena koda",
+    "pwVerify": "Preveri kodo",
+    "pwNewLabel": "Novo geslo",
+    "pwSave": "Shrani geslo",
+    "pwToastChanged": "Geslo posodobljeno.",
+    "pwErrorComplexity": "Vsaj 8 znakov, s črko in številko.",
+    "pwLastChanged": "Nazadnje spremenjeno {date}"
   }
 }

@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adresas ištrintas.",
     "adrToastError": "Adreso išsaugoti nepavyko. Bandykite dar kartą.",
     "adrEditAria": "Redaguoti adresą",
-    "adrDeleteAria": "Ištrinti adresą"
+    "adrDeleteAria": "Ištrinti adresą",
+    "epEyebrow": "REDAGUOTI PROFILĮ",
+    "epTitle": "Atnaujinkite savo duomenis",
+    "epName": "Visas vardas",
+    "epCompany": "Įmonės pavadinimas",
+    "epRole": "Vaidmuo / pareigos",
+    "epNameError": "Vardą turi sudaryti bent 2 simboliai.",
+    "epToastSaved": "Profilis atnaujintas.",
+    "epToastError": "Profilio išsaugoti nepavyko. Bandykite dar kartą.",
+    "pwCodeSentNote": "Išsiuntėme 6 skaitmenų kodą į {email}.",
+    "pwCodeLabel": "Patvirtinimo kodas",
+    "pwVerify": "Patikrinti kodą",
+    "pwNewLabel": "Naujas slaptažodis",
+    "pwSave": "Išsaugoti slaptažodį",
+    "pwToastChanged": "Slaptažodis atnaujintas.",
+    "pwErrorComplexity": "Bent 8 simboliai, su raide ir skaitmeniu.",
+    "pwLastChanged": "Paskutinį kartą keista {date}"
   }
 }

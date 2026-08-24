@@ -419,6 +419,22 @@
     "adrToastDeleted": "Cím törölve.",
     "adrToastError": "A címet nem sikerült menteni. Próbáld újra.",
     "adrEditAria": "Cím szerkesztése",
-    "adrDeleteAria": "Cím törlése"
+    "adrDeleteAria": "Cím törlése",
+    "epEyebrow": "PROFIL SZERKESZTÉSE",
+    "epTitle": "Frissítsd az adataidat",
+    "epName": "Teljes név",
+    "epCompany": "Cégnév",
+    "epRole": "Szerepkör / beosztás",
+    "epNameError": "A névnek legalább 2 karakterből kell állnia.",
+    "epToastSaved": "Profil frissítve.",
+    "epToastError": "A profilt nem sikerült menteni. Próbáld újra.",
+    "pwCodeSentNote": "6 számjegyű kódot küldtünk ide: {email}.",
+    "pwCodeLabel": "Ellenőrző kód",
+    "pwVerify": "Kód ellenőrzése",
+    "pwNewLabel": "Új jelszó",
+    "pwSave": "Jelszó mentése",
+    "pwToastChanged": "Jelszó frissítve.",
+    "pwErrorComplexity": "Legalább 8 karakter, betűvel és számmal.",
+    "pwLastChanged": "Utolsó módosítás: {date}"
   }
 }

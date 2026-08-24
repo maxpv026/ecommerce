@@ -419,6 +419,22 @@
     "adrToastDeleted": "L-indirizz tħassar.",
     "adrToastError": "L-indirizz ma setax jiġi salvat. Erga' pprova.",
     "adrEditAria": "Editja l-indirizz",
-    "adrDeleteAria": "Ħassar l-indirizz"
+    "adrDeleteAria": "Ħassar l-indirizz",
+    "epEyebrow": "EDITJA L-PROFIL",
+    "epTitle": "Aġġorna d-dettalji tiegħek",
+    "epName": "Isem sħiħ",
+    "epCompany": "Isem il-kumpanija",
+    "epRole": "Rwol / kariga",
+    "epNameError": "L-isem irid ikollu mill-inqas 2 karattri.",
+    "epToastSaved": "Il-profil ġie aġġornat.",
+    "epToastError": "Il-profil ma setax jiġi salvat. Erga' pprova.",
+    "pwCodeSentNote": "Bgħatna kodiċi ta' 6 ċifri lil {email}.",
+    "pwCodeLabel": "Kodiċi ta' verifika",
+    "pwVerify": "Ivverifika l-kodiċi",
+    "pwNewLabel": "Password ġdida",
+    "pwSave": "Issejvja l-password",
+    "pwToastChanged": "Il-password ġiet aġġornata.",
+    "pwErrorComplexity": "Mill-inqas 8 karattri, b'ittra u numru.",
+    "pwLastChanged": "L-aħħar bidla: {date}"
   }
 }

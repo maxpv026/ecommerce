@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adrese dzēsta.",
     "adrToastError": "Adresi neizdevās saglabāt. Mēģiniet vēlreiz.",
     "adrEditAria": "Rediģēt adresi",
-    "adrDeleteAria": "Dzēst adresi"
+    "adrDeleteAria": "Dzēst adresi",
+    "epEyebrow": "REDIĢĒT PROFILU",
+    "epTitle": "Atjauniniet savus datus",
+    "epName": "Pilns vārds",
+    "epCompany": "Uzņēmuma nosaukums",
+    "epRole": "Loma / amats",
+    "epNameError": "Vārdam jābūt vismaz 2 rakstzīmēm.",
+    "epToastSaved": "Profils atjaunināts.",
+    "epToastError": "Profilu neizdevās saglabāt. Mēģiniet vēlreiz.",
+    "pwCodeSentNote": "Nosūtījām 6 ciparu kodu uz {email}.",
+    "pwCodeLabel": "Verifikācijas kods",
+    "pwVerify": "Pārbaudīt kodu",
+    "pwNewLabel": "Jauna parole",
+    "pwSave": "Saglabāt paroli",
+    "pwToastChanged": "Parole atjaunināta.",
+    "pwErrorComplexity": "Vismaz 8 rakstzīmes, ar burtu un ciparu.",
+    "pwLastChanged": "Pēdējoreiz mainīts {date}"
   }
 }

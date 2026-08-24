@@ -41,6 +41,12 @@ model User {
   password String?
 
   companyName  String?
+  // Editable job title shown on the dashboard identity card. Deliberately
+  // separate from `role` (RBAC) — users may describe their job, never
+  // grant themselves permissions.
+  jobTitle     String?
+  // Set whenever the password is changed through the verified flow.
+  passwordChangedAt DateTime?
   epaVerified  Boolean @default(false)
   discountTier String  @default("standard")
   rewardPoints Int     @default(0)
@@ -102,6 +108,9 @@ model OtpCode {
   id        String   @id @default(cuid())
   email     String
   code      String
+  // Scopes what a code may be used for ("signin" | "password-change") —
+  // a password-change code can never complete a sign-in and vice versa.
+  purpose   String   @default("signin")
   expiresAt DateTime
   createdAt DateTime @default(now())
 

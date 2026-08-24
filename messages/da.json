@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adressen er slettet.",
     "adrToastError": "Adressen kunne ikke gemmes. Prøv igen.",
     "adrEditAria": "Redigér adresse",
-    "adrDeleteAria": "Slet adresse"
+    "adrDeleteAria": "Slet adresse",
+    "epEyebrow": "REDIGÉR PROFIL",
+    "epTitle": "Opdatér dine oplysninger",
+    "epName": "Fulde navn",
+    "epCompany": "Firmanavn",
+    "epRole": "Rolle / stilling",
+    "epNameError": "Navnet skal have mindst 2 tegn.",
+    "epToastSaved": "Profil opdateret.",
+    "epToastError": "Profilen kunne ikke gemmes. Prøv igen.",
+    "pwCodeSentNote": "Vi har sendt en 6-cifret kode til {email}.",
+    "pwCodeLabel": "Bekræftelseskode",
+    "pwVerify": "Bekræft kode",
+    "pwNewLabel": "Ny adgangskode",
+    "pwSave": "Gem adgangskode",
+    "pwToastChanged": "Adgangskoden er opdateret.",
+    "pwErrorComplexity": "Mindst 8 tegn, med et bogstav og et tal.",
+    "pwLastChanged": "Senest ændret {date}"
   }
 }

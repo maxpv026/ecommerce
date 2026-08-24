@@ -419,6 +419,22 @@
     "adrToastDeleted": "地址已删除。",
     "adrToastError": "地址保存失败,请重试。",
     "adrEditAria": "编辑地址",
-    "adrDeleteAria": "删除地址"
+    "adrDeleteAria": "删除地址",
+    "epEyebrow": "编辑资料",
+    "epTitle": "更新您的信息",
+    "epName": "姓名",
+    "epCompany": "公司名称",
+    "epRole": "角色 / 职位",
+    "epNameError": "姓名至少需要 2 个字符。",
+    "epToastSaved": "资料已更新。",
+    "epToastError": "资料保存失败,请重试。",
+    "pwCodeSentNote": "我们已向 {email} 发送 6 位验证码。",
+    "pwCodeLabel": "验证码",
+    "pwVerify": "验证代码",
+    "pwNewLabel": "新密码",
+    "pwSave": "保存密码",
+    "pwToastChanged": "密码已更新。",
+    "pwErrorComplexity": "至少 8 个字符,须包含字母和数字。",
+    "pwLastChanged": "上次修改:{date}"
   }
 }

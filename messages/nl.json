@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adres verwijderd.",
     "adrToastError": "Adres kon niet worden opgeslagen. Probeer opnieuw.",
     "adrEditAria": "Adres bewerken",
-    "adrDeleteAria": "Adres verwijderen"
+    "adrDeleteAria": "Adres verwijderen",
+    "epEyebrow": "PROFIEL BEWERKEN",
+    "epTitle": "Werk je gegevens bij",
+    "epName": "Volledige naam",
+    "epCompany": "Bedrijfsnaam",
+    "epRole": "Rol / functie",
+    "epNameError": "Vul minimaal 2 tekens in voor de naam.",
+    "epToastSaved": "Profiel bijgewerkt.",
+    "epToastError": "Profiel kon niet worden opgeslagen. Probeer opnieuw.",
+    "pwCodeSentNote": "We hebben een 6-cijferige code gestuurd naar {email}.",
+    "pwCodeLabel": "Verificatiecode",
+    "pwVerify": "Code verifiëren",
+    "pwNewLabel": "Nieuw wachtwoord",
+    "pwSave": "Wachtwoord opslaan",
+    "pwToastChanged": "Wachtwoord bijgewerkt.",
+    "pwErrorComplexity": "Minimaal 8 tekens, met een letter en een cijfer.",
+    "pwLastChanged": "Laatst gewijzigd op {date}"
   }
 }

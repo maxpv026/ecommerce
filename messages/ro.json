@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adresă ștearsă.",
     "adrToastError": "Adresa nu a putut fi salvată. Încearcă din nou.",
     "adrEditAria": "Editează adresa",
-    "adrDeleteAria": "Șterge adresa"
+    "adrDeleteAria": "Șterge adresa",
+    "epEyebrow": "EDITEAZĂ PROFILUL",
+    "epTitle": "Actualizează-ți datele",
+    "epName": "Nume complet",
+    "epCompany": "Numele companiei",
+    "epRole": "Rol / funcție",
+    "epNameError": "Numele trebuie să aibă cel puțin 2 caractere.",
+    "epToastSaved": "Profil actualizat.",
+    "epToastError": "Profilul nu a putut fi salvat. Încearcă din nou.",
+    "pwCodeSentNote": "Am trimis un cod din 6 cifre la {email}.",
+    "pwCodeLabel": "Cod de verificare",
+    "pwVerify": "Verifică codul",
+    "pwNewLabel": "Parolă nouă",
+    "pwSave": "Salvează parola",
+    "pwToastChanged": "Parolă actualizată.",
+    "pwErrorComplexity": "Cel puțin 8 caractere, cu o literă și o cifră.",
+    "pwLastChanged": "Ultima modificare: {date}"
   }
 }

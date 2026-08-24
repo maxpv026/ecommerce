@@ -419,6 +419,22 @@
     "adrToastDeleted": "주소가 삭제되었습니다.",
     "adrToastError": "주소를 저장하지 못했습니다. 다시 시도해 주세요.",
     "adrEditAria": "주소 편집",
-    "adrDeleteAria": "주소 삭제"
+    "adrDeleteAria": "주소 삭제",
+    "epEyebrow": "프로필 편집",
+    "epTitle": "정보를 업데이트하세요",
+    "epName": "성명",
+    "epCompany": "회사명",
+    "epRole": "역할 / 직함",
+    "epNameError": "이름은 2자 이상이어야 합니다.",
+    "epToastSaved": "프로필이 업데이트되었습니다.",
+    "epToastError": "프로필을 저장하지 못했습니다. 다시 시도해 주세요.",
+    "pwCodeSentNote": "{email}(으)로 6자리 코드를 보냈습니다.",
+    "pwCodeLabel": "인증 코드",
+    "pwVerify": "코드 확인",
+    "pwNewLabel": "새 비밀번호",
+    "pwSave": "비밀번호 저장",
+    "pwToastChanged": "비밀번호가 변경되었습니다.",
+    "pwErrorComplexity": "문자와 숫자를 포함해 8자 이상이어야 합니다.",
+    "pwLastChanged": "마지막 변경: {date}"
   }
 }

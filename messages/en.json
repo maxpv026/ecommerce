@@ -419,6 +419,22 @@
     "adrToastDeleted": "Address deleted.",
     "adrToastError": "Couldn't save the address. Try again.",
     "adrEditAria": "Edit address",
-    "adrDeleteAria": "Delete address"
+    "adrDeleteAria": "Delete address",
+    "epEyebrow": "EDIT PROFILE",
+    "epTitle": "Update your details",
+    "epName": "Full name",
+    "epCompany": "Company name",
+    "epRole": "Role / job title",
+    "epNameError": "Enter at least 2 characters for your name.",
+    "epToastSaved": "Profile updated.",
+    "epToastError": "Couldn't save your profile. Try again.",
+    "pwCodeSentNote": "We emailed a 6-digit code to {email}.",
+    "pwCodeLabel": "Verification code",
+    "pwVerify": "Verify code",
+    "pwNewLabel": "New password",
+    "pwSave": "Set new password",
+    "pwToastChanged": "Password updated.",
+    "pwErrorComplexity": "At least 8 characters, with a letter and a number.",
+    "pwLastChanged": "Last changed {date}"
   }
 }

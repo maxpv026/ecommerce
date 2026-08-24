@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adres silindi.",
     "adrToastError": "Adres kaydedilemedi. Tekrar deneyin.",
     "adrEditAria": "Adresi düzenle",
-    "adrDeleteAria": "Adresi sil"
+    "adrDeleteAria": "Adresi sil",
+    "epEyebrow": "PROFİLİ DÜZENLE",
+    "epTitle": "Bilgilerinizi güncelleyin",
+    "epName": "Ad soyad",
+    "epCompany": "Şirket adı",
+    "epRole": "Rol / unvan",
+    "epNameError": "Ad en az 2 karakter olmalıdır.",
+    "epToastSaved": "Profil güncellendi.",
+    "epToastError": "Profil kaydedilemedi. Tekrar deneyin.",
+    "pwCodeSentNote": "{email} adresine 6 haneli bir kod gönderdik.",
+    "pwCodeLabel": "Doğrulama kodu",
+    "pwVerify": "Kodu doğrula",
+    "pwNewLabel": "Yeni şifre",
+    "pwSave": "Şifreyi kaydet",
+    "pwToastChanged": "Şifre güncellendi.",
+    "pwErrorComplexity": "Harf ve rakam içeren en az 8 karakter.",
+    "pwLastChanged": "Son değişiklik: {date}"
   }
 }

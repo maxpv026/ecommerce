@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adresse gelöscht.",
     "adrToastError": "Adresse konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "adrEditAria": "Adresse bearbeiten",
-    "adrDeleteAria": "Adresse löschen"
+    "adrDeleteAria": "Adresse löschen",
+    "epEyebrow": "PROFIL BEARBEITEN",
+    "epTitle": "Daten aktualisieren",
+    "epName": "Vollständiger Name",
+    "epCompany": "Firmenname",
+    "epRole": "Rolle / Position",
+    "epNameError": "Der Name braucht mindestens 2 Zeichen.",
+    "epToastSaved": "Profil aktualisiert.",
+    "epToastError": "Profil konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "pwCodeSentNote": "Wir haben einen 6-stelligen Code an {email} gesendet.",
+    "pwCodeLabel": "Bestätigungscode",
+    "pwVerify": "Code prüfen",
+    "pwNewLabel": "Neues Passwort",
+    "pwSave": "Neues Passwort speichern",
+    "pwToastChanged": "Passwort aktualisiert.",
+    "pwErrorComplexity": "Mindestens 8 Zeichen, mit Buchstabe und Zahl.",
+    "pwLastChanged": "Zuletzt geändert am {date}"
   }
 }

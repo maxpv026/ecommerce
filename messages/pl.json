@@ -419,6 +419,22 @@
     "adrToastDeleted": "Adres usunięty.",
     "adrToastError": "Nie udało się zapisać adresu. Spróbuj ponownie.",
     "adrEditAria": "Edytuj adres",
-    "adrDeleteAria": "Usuń adres"
+    "adrDeleteAria": "Usuń adres",
+    "epEyebrow": "EDYTUJ PROFIL",
+    "epTitle": "Zaktualizuj swoje dane",
+    "epName": "Imię i nazwisko",
+    "epCompany": "Nazwa firmy",
+    "epRole": "Rola / stanowisko",
+    "epNameError": "Nazwa musi mieć co najmniej 2 znaki.",
+    "epToastSaved": "Profil zaktualizowany.",
+    "epToastError": "Nie udało się zapisać profilu. Spróbuj ponownie.",
+    "pwCodeSentNote": "Wysłaliśmy 6-cyfrowy kod na {email}.",
+    "pwCodeLabel": "Kod weryfikacyjny",
+    "pwVerify": "Zweryfikuj kod",
+    "pwNewLabel": "Nowe hasło",
+    "pwSave": "Zapisz hasło",
+    "pwToastChanged": "Hasło zaktualizowane.",
+    "pwErrorComplexity": "Co najmniej 8 znaków, w tym litera i cyfra.",
+    "pwLastChanged": "Ostatnia zmiana: {date}"
   }
 }
