@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import AccountLayoutClient from "@/components/AccountLayoutClient";
-import { getProfileDashboardData, getUserOrders, getUserProfile } from "@/lib/data";
+import { getProfileDashboardData, getUserAddresses, getUserOrders, getUserProfile } from "@/lib/data";
 import { getTrackingStatus } from "@/lib/actions/tracking";
 import { buildOrderTracking, type OrderTrackingView } from "@/lib/tracking";
 
@@ -15,13 +15,14 @@ export default async function ProfilePage() {
   const isAuthenticated = Boolean(session?.user);
   const userId = session?.user?.id;
 
-  const [dashboardData, profile, orders] = userId
+  const [dashboardData, profile, orders, addresses] = userId
     ? await Promise.all([
         getProfileDashboardData(userId),
         getUserProfile(userId),
         getUserOrders(userId),
+        getUserAddresses(userId),
       ])
-    : [null, null, null];
+    : [null, null, null, null];
 
   // Per-order shipment timelines for the accordion rows: live DHL data
   // where a tracking number exists (cached 5 min upstream), status-derived
@@ -44,6 +45,7 @@ export default async function ProfilePage() {
       profile={profile}
       orders={orders}
       orderTracking={orderTracking}
+      addresses={addresses}
     />
   );
 }

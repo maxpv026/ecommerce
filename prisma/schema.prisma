@@ -139,8 +139,18 @@ model Address {
   userId        String
   title         String
   recipientName String
+  // Composed display string ("street, postal city, country") — kept as the
+  // single source consumed by checkout/mobile; regenerated whenever the
+  // structured fields below are saved. Legacy rows may have only this.
   fullAddress   String
   isDefault     Boolean @default(false)
+
+  // Structured fields backing the dashboard address manager.
+  street     String?
+  city       String?
+  postalCode String?
+  country    String?
+  kind       String  @default("SHIPPING") // "SHIPPING" | "BILLING"
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]

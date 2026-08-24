@@ -90,6 +90,11 @@ export interface UserAddress {
   recipientName: string;
   fullAddress: string;
   isDefault: boolean;
+  street: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  kind: "SHIPPING" | "BILLING";
 }
 
 export async function getUserAddresses(userId: string): Promise<UserAddress[]> {
@@ -103,6 +108,11 @@ export async function getUserAddresses(userId: string): Promise<UserAddress[]> {
     recipientName: a.recipientName,
     fullAddress: a.fullAddress,
     isDefault: a.isDefault,
+    street: a.street,
+    city: a.city,
+    postalCode: a.postalCode,
+    country: a.country,
+    kind: a.kind === "BILLING" ? "BILLING" : "SHIPPING",
   }));
 }
 

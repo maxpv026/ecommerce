@@ -6,7 +6,7 @@ import AuthModal from "./AuthModal";
 import DashboardDesktop from "./DashboardDesktop";
 import MobileProfileLayout from "./MobileProfileLayout";
 import MobileProfileSignedOutLayout from "./MobileProfileSignedOutLayout";
-import type { ProfileDashboardData, UserOrder, UserProfileData } from "@/lib/data";
+import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderTrackingView } from "@/lib/tracking";
 
 interface AccountLayoutClientProps {
@@ -15,6 +15,7 @@ interface AccountLayoutClientProps {
   profile?: UserProfileData | null;
   orders?: UserOrder[] | null;
   orderTracking?: Record<string, OrderTrackingView>;
+  addresses?: UserAddress[] | null;
 }
 
 export default function AccountLayoutClient({
@@ -23,6 +24,7 @@ export default function AccountLayoutClient({
   profile,
   orders,
   orderTracking,
+  addresses,
 }: AccountLayoutClientProps) {
   const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -41,6 +43,7 @@ export default function AccountLayoutClient({
           profile={profile ?? null}
           orders={orders ?? null}
           orderTracking={orderTracking ?? {}}
+          addresses={addresses ?? null}
           dashboard={dashboardData}
         />
       </div>

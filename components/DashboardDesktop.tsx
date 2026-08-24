@@ -7,8 +7,14 @@ import { useSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
+  Building2,
   ChevronDown,
   Droplets,
+  Home,
+  Pencil,
+  Plus,
+  Receipt,
+  Trash2,
   FileText,
   Lock,
   LogOut,
@@ -19,9 +25,11 @@ import {
   User,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
+import AddressModal from "./AddressModal";
+import { deleteAddress, setDefaultAddress } from "@/lib/actions/address";
 import { nativeLanguageName } from "@/lib/languageNames";
 import { ACCOUNT_PROFILE } from "@/lib/account";
-import type { ProfileDashboardData, UserOrder, UserProfileData } from "@/lib/data";
+import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderTrackingView, TimelineStepKey } from "@/lib/tracking";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 
@@ -113,6 +121,7 @@ interface DashboardDesktopProps {
   profile: UserProfileData | null;
   orders: UserOrder[] | null;
   orderTracking: Record<string, OrderTrackingView>;
+  addresses: UserAddress[] | null;
   dashboard: ProfileDashboardData | null;
 }
 
@@ -121,6 +130,7 @@ export default function DashboardDesktop({
   profile,
   orders,
   orderTracking,
+  addresses,
   dashboard,
 }: DashboardDesktopProps) {
   const t = useTranslations("ProfileDashboard");
@@ -139,6 +149,7 @@ export default function DashboardDesktop({
   const [reordered, setReordered] = useState<string[]>([]);
   const [openOrder, setOpenOrder] = useState<string | null>(() => orders?.[0]?.id ?? null);
   const [signingOut, setSigningOut] = useState(false);
+  const [addressModal, setAddressModal] = useState<{ address: UserAddress | null } | null>(null);
 
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
@@ -172,6 +183,46 @@ export default function DashboardDesktop({
   const totalOrders = dashboard?.totalOrders ?? (preview ? ACCOUNT_PROFILE.orderCount : 0);
   const activeShipments = dashboard?.activeShipments ?? (preview ? 1 : 0);
   const shownOrders = orders ?? [];
+
+  // Signed-out preview shows one representative card; every mutation is a
+  // no-op until there is a session.
+  const shownAddresses: UserAddress[] = preview
+    ? [
+        {
+          id: "preview",
+          title: "Office / Workspace",
+          recipientName: ACCOUNT_PROFILE.name,
+          fullAddress: ACCOUNT_PROFILE.fields[3].value,
+          isDefault: true,
+          street: "4820 Sylvan Ave, Suite 210",
+          city: "Dallas",
+          postalCode: "TX 75247",
+          country: "United States",
+          kind: "SHIPPING",
+        },
+      ]
+    : (addresses ?? []);
+
+  const handleDeleteAddress = async (id: string) => {
+    if (preview) return;
+    const result = await deleteAddress(id);
+    if (!result.ok) {
+      toast.error(t("adrToastError"));
+      return;
+    }
+    toast.success(t("adrToastDeleted"));
+    router.refresh();
+  };
+
+  const handleSetDefault = async (id: string) => {
+    if (preview) return;
+    const result = await setDefaultAddress(id);
+    if (!result.ok) {
+      toast.error(t("adrToastError"));
+      return;
+    }
+    router.refresh();
+  };
 
   const identityFields = [
     { label: tAccount("fieldCompany"), value: company ?? tAccount("fieldEmpty") },
@@ -218,7 +269,7 @@ export default function DashboardDesktop({
     { id: "overview", label: t("tabOverview"), icon: User, target: "identity" },
     { id: "certificate", label: t("tabCertificate"), icon: ShieldCheck, target: "certificate", badge: fgasVerified ? t("badgeValid") : tAccount("pendingVerification") },
     { id: "orders", label: tAccount("navOrderHistory"), icon: Package, target: "orders", badge: shownOrders.length > 0 ? String(shownOrders.length) : undefined },
-    { id: "addresses", label: t("tabAddresses"), icon: Truck, target: "shipping" },
+    { id: "addresses", label: t("tabAddresses"), icon: Truck, target: "addresses" },
     { id: "documents", label: t("tabDocuments"), icon: FileText, href: "/compliance/sds" as const },
     { id: "security", label: tAccount("navSecurity"), icon: Lock, target: "security" },
   ];
@@ -866,9 +917,165 @@ export default function DashboardDesktop({
                 </span>
               </motion.div>
             </motion.div>
+
+            {/* Saved addresses — glass card grid + Add New (design section) */}
+            <motion.div custom={7} initial="hidden" animate="show" variants={rise} className="col-span-9" id="addresses">
+              <div className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white p-[26px] shadow-[0_26px_60px_-46px_rgba(2,4,10,.5)] dark:border-hairline dark:bg-surface">
+                <div className="mb-5 flex items-baseline justify-between gap-5">
+                  <h2 className="m-0 text-[13px] uppercase tracking-[.09em] text-slate-400 dark:text-ink-muted">
+                    {t("adrHeading")}
+                  </h2>
+                  <span className="text-[11.5px] text-slate-400 dark:text-ink-muted">
+                    {t("adrCount", { count: shownAddresses.length })}
+                  </span>
+                </div>
+
+                <motion.div
+                  variants={{ hidden: {}, show: { transition: { staggerChildren: 0.075, delayChildren: 0.05 } } }}
+                  className="grid grid-cols-[repeat(auto-fill,minmax(268px,1fr))] gap-3.5"
+                >
+                  {shownAddresses.map((address) => {
+                    const isDefault = address.isDefault;
+                    const AddressIcon = isDefault ? Building2 : address.kind === "BILLING" ? Receipt : Home;
+                    const cityLine = [address.postalCode, address.city].filter(Boolean).join(" ");
+                    return (
+                      <motion.div
+                        key={address.id}
+                        variants={rowRise}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={hoverSpring}
+                        className={`group relative overflow-hidden rounded-[22px] border bg-white/60 p-5 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,box-shadow] duration-300 dark:bg-surface/60 ${
+                          isDefault
+                            ? "border-[rgba(37,99,235,.34)] shadow-[0_20px_48px_-40px_rgba(2,4,10,.5),0_0_20px_-10px_rgba(59,130,246,.5)]"
+                            : "border-slate-900/[.07] hover:border-slate-900/[.14] dark:border-white/5 dark:hover:border-white/[.16]"
+                        } hover:shadow-[0_32px_66px_-40px_rgba(2,4,10,.6),0_0_24px_-8px_rgba(59,130,246,.4)]`}
+                      >
+                        <div
+                          className={`pointer-events-none absolute left-[-14%] top-[-96%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] blur-[64px] transition-all duration-500 group-hover:scale-[1.14] ${
+                            isDefault ? "opacity-[.24] group-hover:opacity-[.34]" : "opacity-0 group-hover:opacity-20"
+                          }`}
+                        />
+
+                        <div className="relative flex items-start justify-between gap-3">
+                          <span className="flex min-w-0 items-center gap-2.5">
+                            <span
+                              className={`flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] border ${
+                                isDefault
+                                  ? "border-[rgba(37,99,235,.28)] bg-blue-700/[.08] dark:bg-blue-600/[.18]"
+                                  : "border-slate-900/[.07] bg-slate-100 dark:border-hairline dark:bg-surface-3"
+                              }`}
+                            >
+                              <AddressIcon
+                                size={17}
+                                strokeWidth={1.9}
+                                className={isDefault ? "text-blue-700 dark:text-blue-400" : "text-slate-600 dark:text-ink-muted"}
+                              />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-[13.5px] font-semibold tracking-[-.02em]">
+                                {address.title}
+                              </span>
+                              <span className="mt-0.5 block text-[11px] tracking-[.05em] text-slate-400 dark:text-ink-muted">
+                                {address.kind === "BILLING" ? t("adrBadgeBilling") : t("adrBadgeShipping")}
+                              </span>
+                            </span>
+                          </span>
+                          <span className="pointer-events-none flex flex-none translate-x-1.5 items-center gap-1 opacity-0 transition-[opacity,transform] duration-300 ease-[cubic-bezier(.16,1,.3,1)] group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100">
+                            <button
+                              type="button"
+                              onClick={() => !preview && setAddressModal({ address })}
+                              aria-label={t("adrEditAria")}
+                              className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:text-ink-muted dark:hover:bg-white/10"
+                            >
+                              <Pencil size={15} strokeWidth={1.9} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAddress(address.id)}
+                              aria-label={t("adrDeleteAria")}
+                              className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] text-red-500 transition-colors hover:bg-red-500/[.12] dark:text-red-400"
+                            >
+                              <Trash2 size={15} strokeWidth={1.9} />
+                            </button>
+                          </span>
+                        </div>
+
+                        <p className="relative m-0 mt-4 text-[13px] leading-[1.72] text-slate-600 dark:text-ink-muted">
+                          {address.recipientName}
+                          <br />
+                          {address.street ? (
+                            <>
+                              {address.street}
+                              <br />
+                              {cityLine}
+                              <br />
+                              {address.country}
+                            </>
+                          ) : (
+                            address.fullAddress
+                          )}
+                        </p>
+
+                        <div className="relative mt-4 flex flex-wrap items-center gap-2">
+                          {isDefault ? (
+                            <span className="inline-flex items-center rounded-full border border-[rgba(37,99,235,.28)] bg-blue-700/[.08] px-[11px] py-[5px] text-[11px] font-semibold text-blue-700 dark:bg-blue-600/[.18] dark:text-blue-400">
+                              {tCheckout("defaultBadge")}
+                            </span>
+                          ) : (
+                            <>
+                              <span className="inline-flex items-center rounded-full border border-slate-900/[.07] bg-slate-100 px-[11px] py-[5px] text-[11px] font-semibold text-slate-600 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted">
+                                {address.kind === "BILLING" ? t("adrBadgeBilling") : t("adrBadgeShipping")}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleSetDefault(address.id)}
+                                className="text-[11.5px] font-semibold text-slate-400 transition-colors hover:text-blue-700 dark:text-ink-muted dark:hover:text-blue-400"
+                              >
+                                {t("adrSetDefault")}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+
+                  {/* Add New Address — glowing dashed invitation card */}
+                  <motion.button
+                    type="button"
+                    variants={rowRise}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={hoverSpring}
+                    onClick={() => !preview && setAddressModal({ address: null })}
+                    className="group relative flex min-h-[196px] flex-col items-center justify-center gap-[7px] overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-slate-900/[.2] p-5 transition-[border-color,background,box-shadow] duration-300 hover:border-blue-500/[.55] hover:bg-white/60 hover:shadow-[0_0_30px_-10px_rgba(59,130,246,.5)] dark:border-white/20 dark:hover:border-blue-500/[.55] dark:hover:bg-surface/60"
+                  >
+                    <span className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-0 blur-[60px] transition-opacity duration-500 group-hover:opacity-[.26]" />
+                    <span className="relative mb-1 flex h-11 w-11 items-center justify-center rounded-[15px] border border-slate-900/[.07] bg-slate-100 transition-colors duration-300 group-hover:border-blue-700 group-hover:bg-blue-700 dark:border-hairline dark:bg-surface-3">
+                      <Plus size={19} strokeWidth={1.9} className="text-slate-600 transition-colors duration-300 group-hover:text-white dark:text-ink-muted" />
+                    </span>
+                    <span className="relative text-[13.5px] font-semibold tracking-[-.02em]">{t("adrAddNew")}</span>
+                    <span className="relative text-[11.5px] text-slate-400 dark:text-ink-muted">{t("adrAddNewSub")}</span>
+                  </motion.button>
+                </motion.div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </main>
+
+      <AddressModal
+        key={addressModal ? (addressModal.address?.id ?? "new") : "closed"}
+        open={addressModal !== null}
+        address={addressModal?.address ?? null}
+        onClose={() => setAddressModal(null)}
+        onSaved={() => {
+          setAddressModal(null);
+          toast.success(t("adrToastSaved"));
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

@@ -26,12 +26,22 @@ async function main() {
       recipientName: "Пивоваров Максим Романович",
       fullAddress: "Appexoft, Lviv, Ukraine",
       isDefault: true,
+      street: "Appexoft office",
+      city: "Lviv",
+      postalCode: "79000",
+      country: "Ukraine",
+      kind: "SHIPPING",
     },
     {
       title: "University Dormitory",
       recipientName: "Пивоваров Максим Романович",
       fullAddress: "Room 322, Lviv, Ukraine",
       isDefault: false,
+      street: "Room 322",
+      city: "Lviv",
+      postalCode: "79020",
+      country: "Ukraine",
+      kind: "SHIPPING",
     },
   ];
   for (const seed of addressSeeds) {
@@ -40,6 +50,12 @@ async function main() {
     });
     if (!existing) {
       await prisma.address.create({ data: { userId: user.id, ...seed } });
+    } else if (!existing.street) {
+      // Backfill structured fields onto legacy seeded rows once.
+      await prisma.address.update({
+        where: { id: existing.id },
+        data: { street: seed.street, city: seed.city, postalCode: seed.postalCode, country: seed.country, kind: seed.kind },
+      });
     }
   }
 
