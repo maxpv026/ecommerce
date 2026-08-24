@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import AccountLayoutClient from "@/components/AccountLayoutClient";
-import UserInfoCard from "@/components/UserInfoCard";
-import OrderHistoryCard from "@/components/OrderHistoryCard";
-import SecurityCard from "@/components/SecurityCard";
 import { getProfileDashboardData, getUserOrders, getUserProfile } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -25,10 +22,11 @@ export default async function ProfilePage() {
     : [null, null, null];
 
   return (
-    <AccountLayoutClient isAuthenticated={isAuthenticated} dashboardData={dashboardData} profile={profile}>
-      <UserInfoCard profile={profile} />
-      <OrderHistoryCard orders={orders} />
-      <SecurityCard />
-    </AccountLayoutClient>
+    <AccountLayoutClient
+      isAuthenticated={isAuthenticated}
+      dashboardData={dashboardData}
+      profile={profile}
+      orders={orders}
+    />
   );
 }

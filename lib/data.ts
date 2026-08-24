@@ -119,6 +119,8 @@ export interface UserProfileData {
   fgasVerified: boolean;
   memberSinceYear: number;
   defaultAddress: string | null;
+  defaultAddressTitle: string | null;
+  defaultAddressRecipient: string | null;
   certificate: { certType: string; certId: string; issuedYear: number } | null;
 }
 
@@ -141,6 +143,8 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     fgasVerified: user.epaVerified,
     memberSinceYear: user.createdAt.getFullYear(),
     defaultAddress: user.addresses[0]?.fullAddress ?? null,
+    defaultAddressTitle: user.addresses[0]?.title ?? null,
+    defaultAddressRecipient: user.addresses[0]?.recipientName ?? null,
     certificate: cert
       ? { certType: cert.certType, certId: cert.certId, issuedYear: cert.issuedAt.getFullYear() }
       : null,
