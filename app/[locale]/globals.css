@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  /* Idle-state colors for JS-driven controls (focus rings, selection
+     borders) that read these via inline style, since Tailwind's `dark:`
+     variant can't reach into a style attribute. */
+  --hc-border-idle: rgba(15, 23, 42, 0.13);
+  --hc-label-idle: #94a3b8;
+
+  /* Semantic surface tokens extracted from the Home Desktop design (Claude
+     Design project 4c445d50-cb47-4747-9dd4-c56d3d34ee39) — flip with the
+     `.dark` class below, no `dark:` prefix needed at the call site. Light
+     values match the slate-based palette already used everywhere else. */
+  --canvas: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+  --glass: rgba(255, 255, 255, 0.7);
+  --hairline: rgba(15, 23, 42, 0.07);
+  --hairline-strong: rgba(15, 23, 42, 0.14);
+  --ink: #0f172a;
+  --ink-muted: #94a3b8;
+  --invert: #0f172a;
+  --invert-ink: #ffffff;
+}
+
+.dark {
+  /* "Rich obsidian" — the design's dark palette, overriding the previous
+     generic slate-950 background/foreground. */
+  --background: #090a0c;
+  --foreground: #f8f9fa;
+  --hc-border-idle: rgba(255, 255, 255, 0.16);
+  --hc-label-idle: #64748b;
+
+  --canvas: #090a0c;
+  --surface: #141518;
+  --surface-2: #101114;
+  --surface-3: #1b1c20;
+  --glass: rgba(20, 21, 24, 0.8);
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.16);
+  --ink: #f8f9fa;
+  --ink-muted: #a1a1aa;
+  --invert: #f8f9fa;
+  --invert-ink: #0b0c0e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-glass: var(--glass);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-invert: var(--invert);
+  --color-invert-ink: var(--invert-ink);
+  --font-sans: "Helvetica Neue", Helvetica, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background: #dbe6fe;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.dark ::selection {
+  background: rgba(37, 99, 235, 0.5);
+}
+
+@keyframes hc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hc-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -4%, 0) scale(1.1);
+  }
+}
+
+@keyframes hc-panel {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hc-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes hc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes hc-hub {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.45;
+  }
+}

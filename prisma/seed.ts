@@ -1,0 +1,179 @@
+import "dotenv/config";
+import bcrypt from "bcryptjs";
+import prisma from "../lib/prisma";
+
+async function main() {
+  const passwordHash = await bcrypt.hash("SecurePass123!", 12);
+
+  const user = await prisma.user.upsert({
+    where: { email: "m.pivovarov@appexoft.com" },
+    update: {},
+    create: {
+      name: "Пивоваров Максим Романович",
+      email: "m.pivovarov@appexoft.com",
+      password: passwordHash,
+      companyName: "Appexoft",
+      epaVerified: true,
+    },
+  });
+
+  // Address has no unique constraint, so createMany+skipDuplicates can't
+  // make this idempotent — find-or-create per title instead, or re-running
+  // the seed duplicates every address.
+  const addressSeeds = [
+    {
+      title: "Office / Workspace",
+      recipientName: "Пивоваров Максим Романович",
+      fullAddress: "Appexoft, Lviv, Ukraine",
+      isDefault: true,
+    },
+    {
+      title: "University Dormitory",
+      recipientName: "Пивоваров Максим Романович",
+      fullAddress: "Room 322, Lviv, Ukraine",
+      isDefault: false,
+    },
+  ];
+  for (const seed of addressSeeds) {
+    const existing = await prisma.address.findFirst({
+      where: { userId: user.id, title: seed.title },
+    });
+    if (!existing) {
+      await prisma.address.create({ data: { userId: user.id, ...seed } });
+    }
+  }
+
+  // R-32 and R-134a round out the catalog but aren't referenced by either
+  // seeded order below — that's realistic (not every product appears in
+  // every order history) and the exact math for order totals only works
+  // out with an all-R-410A composition (see comment below).
+  const [r410a] = await Promise.all([
+    prisma.product.upsert({
+      where: { sku: "HC-R410A-25" },
+      update: {},
+      create: {
+        name: "R-410A Premium",
+        sku: "HC-R410A-25",
+        price: 189,
+        weight: "25 lb cylinder",
+        gwpClass: "A1",
+        inStock: true,
+      },
+    }),
+    prisma.product.upsert({
+      where: { sku: "HC-R32-25" },
+      update: {},
+      create: {
+        name: "R-32 Low GWP",
+        sku: "HC-R32-25",
+        price: 212,
+        weight: "25 lb cylinder",
+        gwpClass: "A2L",
+        inStock: true,
+      },
+    }),
+    prisma.product.upsert({
+      where: { sku: "HC-R134A-30" },
+      update: {},
+      create: {
+        name: "R-134a Standard",
+        sku: "HC-R134A-30",
+        price: 164,
+        weight: "30 lb cylinder",
+        gwpClass: "A1",
+        inStock: true,
+      },
+    }),
+  ]);
+
+  // F-Gas certificate backing the profile's "Verified" status (same
+  // document lib/mobileDocs.ts shows: Category I, FGAS-849201).
+  const existingCert = await prisma.certificate.findFirst({
+    where: { userId: user.id, certId: "FGAS-849201" },
+  });
+  if (!existingCert) {
+    await prisma.certificate.create({
+      data: {
+        userId: user.id,
+        certType: "Category I",
+        certId: "FGAS-849201",
+        issuedAt: new Date("2024-03-12"),
+      },
+    });
+  }
+
+  // Remaining catalog-listing SKUs (weight tiers + R-404A/R-407C lines) so
+  // every "Add to Cart" on the listing page resolves to a real product row.
+  // Skus follow lib/catalog.ts's `dbSku` column: "HC-" + listing sku.
+  const catalogTiers: Array<{
+    sku: string;
+    name: string;
+    price: number;
+    weight: string;
+    gwpClass: string;
+  }> = [
+    { sku: "HC-410A-100", name: "R-410A Bulk", price: 618, weight: "100 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-410A-50", name: "R-410A Service Pack", price: 342, weight: "50 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-404A-24", name: "R-404A Reclaimed", price: 298, weight: "24 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-404A-50", name: "R-404A Virgin", price: 512, weight: "50 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-407C-25", name: "R-407C Service", price: 236, weight: "25 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-407C-100", name: "R-407C Bulk", price: 742, weight: "100 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-134A-50", name: "R-134a Bulk", price: 268, weight: "50 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-134A-25", name: "R-134a Compact", price: 148, weight: "25 lb cylinder", gwpClass: "A1" },
+    { sku: "HC-R32-50", name: "R-32 Bulk", price: 398, weight: "50 lb cylinder", gwpClass: "A2L" },
+  ];
+  await Promise.all(
+    catalogTiers.map((p) =>
+      prisma.product.upsert({
+        where: { sku: p.sku },
+        update: {},
+        create: { ...p, inStock: true },
+      })
+    )
+  );
+
+  await prisma.order.upsert({
+    where: { orderNumber: "ORD-8472-EU" },
+    // DHL's documented sandbox parcel number — resolves against
+    // api-test.dhl.com with a developer key.
+    update: { trackingNumber: "00340434292135100186" },
+    create: {
+      orderNumber: "ORD-8472-EU",
+      userId: user.id,
+      trackingNumber: "00340434292135100186",
+      status: "IN_TRANSIT",
+      totalAmount: 378,
+      estimatedDelivery: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      items: {
+        create: [{ productId: r410a.id, quantity: 2, priceAtPurchase: 189 }],
+      },
+    },
+  });
+
+  await prisma.order.upsert({
+    where: { orderNumber: "ORD-8341-EU" },
+    update: {},
+    create: {
+      orderNumber: "ORD-8341-EU",
+      userId: user.id,
+      status: "DELIVERED",
+      totalAmount: 756,
+      estimatedDelivery: new Date("2026-08-15"),
+      items: {
+        // 4x R-410A @ €189 = €756, matching the mock order total exactly.
+        create: [{ productId: r410a.id, quantity: 4, priceAtPurchase: 189 }],
+      },
+    },
+  });
+
+  console.log("Seed complete:", { user: user.email });
+}
+
+main()
+  .catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

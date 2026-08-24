@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Connection URLs live in prisma.config.ts (Prisma 7) and are passed
+  // directly to the PrismaClient constructor via the pg adapter at runtime.
+}
+
+// ---------------------------------------------------------------------------
+// NextAuth (Auth.js) standard models, extended with Halocore account fields.
+// Shape follows @auth/prisma-adapter's documented schema; Account/Session/
+// VerificationToken are left at the standard adapter contract (no extra
+// fields/timestamps) since the adapter reads/writes them directly.
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // RBAC: ADMIN is granted exclusively to the account whose email matches
+  // the ADMIN_EMAIL environment variable — assigned at creation and
+  // re-enforced on every sign-in (see lib/rbac.ts + auth.ts). Everyone
+  // else is strictly USER.
+  role Role @default(USER)
+
+  // Password is optional: Google-only users never set one.
+  password String?
+
+  companyName  String?
+  epaVerified  Boolean @default(false)
+  discountTier String  @default("standard")
+  rewardPoints Int     @default(0)
+  locale       String  @default("en")
+
+  // For future CRM sync (e.g. HubSpot/Salesforce contact id).
+  externalId String? @unique
+
+  accounts     Account[]
+  sessions     Session[]
+  addresses    Address[]
+  orders       Order[]
+  certificates Certificate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Email/password sign-in requires verifying the email via a 6-digit code
+// before authorize() returns a user — see auth.ts's Credentials provider
+// and lib/otp.ts.
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+// ---------------------------------------------------------------------------
+// Halocore business models
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+}
+
+model Product {
+  id         String  @id @default(cuid())
+  externalId String? @unique
+  name       String
+  sku        String  @unique
+  price      Decimal @db.Decimal(10, 2)
+  weight     String
+  gwpClass   String
+  inStock    Boolean @default(true)
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id            String  @id @default(cuid())
+  userId        String
+  title         String
+  recipientName String
+  fullAddress   String
+  isDefault     Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  externalId        String?     @unique
+  orderNumber       String      @unique
+  userId            String
+  status            OrderStatus @default(PENDING)
+  totalAmount       Decimal     @db.Decimal(10, 2)
+  estimatedDelivery DateTime
+  // Carrier tracking id (DHL). Set once the shipment is handed to the
+  // carrier; orders without one show a status-derived timeline instead.
+  trackingNumber    String?
+
+  // Shipping address chosen at checkout. Nullable: pre-checkout seed orders
+  // have none, and deleting an address must not delete its order history.
+  addressId String?
+  address   Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id              String  @id @default(cuid())
+  orderId         String
+  productId       String
+  quantity        Int
+  priceAtPurchase Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Certificate {
+  id       String   @id @default(cuid())
+  userId   String
+  certType String
+  certId   String
+  issuedAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
