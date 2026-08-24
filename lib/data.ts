@@ -171,6 +171,7 @@ export interface UserOrder {
   totalAmount: number;
   estimatedDelivery: string;
   createdAt: string;
+  trackingNumber: string | null;
   items: UserOrderItem[];
 }
 
@@ -187,6 +188,7 @@ export async function getUserOrders(userId: string): Promise<UserOrder[]> {
     totalAmount: Number(order.totalAmount),
     estimatedDelivery: order.estimatedDelivery.toISOString(),
     createdAt: order.createdAt.toISOString(),
+    trackingNumber: order.trackingNumber,
     items: order.items.map((item) => ({
       id: item.id,
       sku: item.product.sku,

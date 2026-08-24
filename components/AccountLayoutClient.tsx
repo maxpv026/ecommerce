@@ -7,12 +7,14 @@ import DashboardDesktop from "./DashboardDesktop";
 import MobileProfileLayout from "./MobileProfileLayout";
 import MobileProfileSignedOutLayout from "./MobileProfileSignedOutLayout";
 import type { ProfileDashboardData, UserOrder, UserProfileData } from "@/lib/data";
+import type { OrderTrackingView } from "@/lib/tracking";
 
 interface AccountLayoutClientProps {
   isAuthenticated: boolean;
   dashboardData: ProfileDashboardData | null;
   profile?: UserProfileData | null;
   orders?: UserOrder[] | null;
+  orderTracking?: Record<string, OrderTrackingView>;
 }
 
 export default function AccountLayoutClient({
@@ -20,6 +22,7 @@ export default function AccountLayoutClient({
   dashboardData,
   profile,
   orders,
+  orderTracking,
 }: AccountLayoutClientProps) {
   const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -37,6 +40,7 @@ export default function AccountLayoutClient({
           isAuthenticated={isAuthenticated}
           profile={profile ?? null}
           orders={orders ?? null}
+          orderTracking={orderTracking ?? {}}
           dashboard={dashboardData}
         />
       </div>
