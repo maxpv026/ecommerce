@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Globe } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
-import { nativeLanguageName } from "@/lib/languageNames";
+import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import { updateUserLocale } from "@/lib/actions/locale";
 
 export default function HeaderLanguageSwitcher() {
@@ -19,13 +18,9 @@ export default function HeaderLanguageSwitcher() {
   const [isPending, startTransition] = useTransition();
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const languages = useMemo(
-    () =>
-      routing.locales
-        .map((locale) => ({ locale, name: nativeLanguageName(locale) }))
-        .sort((a, b) => a.name.localeCompare(b.name, activeLocale)),
-    [activeLocale]
-  );
+  // Pre-sorted static list of autonyms — identical on server and client,
+  // in every locale, so the listbox never re-orders or hydration-mismatches.
+  const languages = LANGUAGE_OPTIONS;
 
   useEffect(() => {
     if (!open) return;
@@ -105,7 +100,7 @@ export default function HeaderLanguageSwitcher() {
       {open && (
         <div
           role="listbox"
-          className="scrollbar-hide absolute right-0 top-[calc(100%+8px)] z-50 hidden max-h-[360px] w-[240px] overflow-y-auto rounded-2xl border border-slate-900/[.08] bg-white/85 p-1.5 shadow-[0_24px_56px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl backdrop-saturate-150 md:block dark:border-white/[.1] dark:bg-slate-900/85"
+          className="scrollbar-slim absolute right-0 top-[calc(100%+8px)] z-50 hidden max-h-[360px] w-[240px] overflow-y-auto rounded-2xl border border-slate-900/[.08] bg-white/85 p-1.5 shadow-[0_24px_56px_-24px_rgba(15,23,42,0.35)] backdrop-blur-xl backdrop-saturate-150 md:block dark:border-white/[.1] dark:bg-[#141518]/90"
         >
           {languages.map(({ locale, name }) => optionRow(locale, name, true))}
         </div>

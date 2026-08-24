@@ -87,6 +87,44 @@ body {
   display: none;
 }
 
+/* Slim, rounded scrollbar for long dropdown lists (language switcher):
+   near-invisible track, soft thumb that stays legible on the glass panels
+   in both themes. */
+.scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar {
+  width: 5px;
+}
+
+.scrollbar-slim::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.22);
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.dark .scrollbar-slim {
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.dark .scrollbar-slim::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.dark .scrollbar-slim::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
 .dark ::selection {
   background: rgba(37, 99, 235, 0.5);
 }

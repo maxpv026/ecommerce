@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
-import { nativeLanguageName } from "@/lib/languageNames";
+import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import { updateUserLocale } from "@/lib/actions/locale";
 import MobileSubPageHeader from "./MobileSubPageHeader";
 
@@ -18,13 +17,9 @@ export default function MobileLanguageSwitcherLayout() {
   const { status } = useSession();
   const [isPending, startTransition] = useTransition();
 
-  const languages = useMemo(
-    () =>
-      routing.locales
-        .map((locale) => ({ locale, name: nativeLanguageName(locale) }))
-        .sort((a, b) => a.name.localeCompare(b.name, activeLocale)),
-    [activeLocale]
-  );
+  // Shared pre-sorted autonym list — identical on server and client (see
+  // lib/languageNames.ts), so the sheet never re-orders or mismatches.
+  const languages = LANGUAGE_OPTIONS;
 
   const selectLocale = (locale: string) => {
     if (locale === activeLocale) return;
