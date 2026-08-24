@@ -34,6 +34,9 @@ const AUTONYMS: Record<AppLocale, string> = {
   sv: "Svenska",
   uk: "Українська",
   ru: "Русский",
+  ko: "한국어",
+  zh: "中文",
+  tr: "Türkçe",
 };
 
 /** Native display name of a locale (e.g. "de" -> "Deutsch"). */
@@ -42,12 +45,12 @@ export function nativeLanguageName(locale: string): string {
 }
 
 // Fixed display order for language pickers: alphabetical by autonym, Latin
-// scripts first, then Greek and Cyrillic. Precomputed (not sorted at
+// scripts first, then Greek, Cyrillic, and CJK. Precomputed (not sorted at
 // runtime) so the server and every client render the exact same list —
 // runtime `localeCompare` collation differs between Node's ICU and the
 // browser's, which used to flip entries and trip React hydration.
 export const LANGUAGE_OPTIONS: Array<{ locale: AppLocale; name: string }> = ([
   "cs", "da", "de", "et", "en", "es", "fr", "ga", "hr", "it", "lv", "lt",
-  "hu", "mt", "nl", "pl", "pt", "ro", "sk", "sl", "fi", "sv", "el", "bg",
-  "ru", "uk",
+  "hu", "mt", "nl", "pl", "pt", "ro", "sk", "sl", "fi", "sv", "tr", "el",
+  "bg", "ru", "uk", "ko", "zh",
 ] as AppLocale[]).map((locale) => ({ locale, name: AUTONYMS[locale] }));
