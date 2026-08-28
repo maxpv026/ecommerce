@@ -480,7 +480,7 @@
     "eyebrow": "LIOSTA TÁIRGÍ",
     "title": "Gach a seolaimid, de réir catagóire.",
     "subtitle": "Cuisneáin séalaithe ón monarcha, meascáin saincheaptha, agus an trealamh agus an doiciméadúchán a choinníonn flít deimhnithe F-Gás comhlíontach ar fud an AE.",
-    "productCount": "{count} táirge",
+    "productCount": "{count, plural, one {# táirge} two {# tháirge} few {# tháirge} many {# dtáirge} other {# táirge}}",
     "cylTitle": "Sorcóirí cuisneáin",
     "cylBlurb": "R-410A, R-32, R-134a agus R-454B séalaithe ón monarcha ó 25 lb go humar ISO. Deimhnithe AHRI-700, inrianaithe de réir baisce.",
     "cylCta": "Brabhsáil sorcóirí",
@@ -501,7 +501,9 @@
     "compCta": "Oscail an leabharlann",
     "compCount": "Doiciméadúchán",
     "aiTitle": "Níl tú cinnte cén cuisneán a oireann?",
-    "aiBody": "Tabhair uimhir mhúnla don áireamhán AI agus tabharfaidh sé an lucht cruinn agus líon na sorcóirí ar ais."
+    "aiBody": "Tabhair uimhir mhúnla don áireamhán AI agus tabharfaidh sé an lucht cruinn agus líon na sorcóirí ar ais.",
+    "backAria": "Ar ais",
+    "layoutToggleAria": "Athraigh an leagan amach"
   },
   "Products": {
     "eyebrow": "LIOSTA TÁIRGÍ",

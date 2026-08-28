@@ -480,7 +480,7 @@
     "eyebrow": "PRODUKTLISTE",
     "title": "Alt, vi leverer — efter kategori.",
     "subtitle": "Fabriksforseglede kølemidler, specialblandinger samt udstyr og dokumentation, der holder en F-gascertificeret flåde compliant i hele EU.",
-    "productCount": "{count} produkter",
+    "productCount": "{count, plural, one {# produkt} other {# produkter}}",
     "cylTitle": "Kølemiddelcylindre",
     "cylBlurb": "Fabriksforseglede R-410A, R-32, R-134a og R-454B fra 25 lb til ISO-tank. AHRI-700-certificerede, sporbare pr. batch.",
     "cylCta": "Se cylindre",
@@ -501,7 +501,9 @@
     "compCta": "Åbn biblioteket",
     "compCount": "Dokumentation",
     "aiTitle": "I tvivl om hvilket kølemiddel der passer?",
-    "aiBody": "Giv AI-beregneren et modelnummer, og få den præcise fyldning og antal cylindre."
+    "aiBody": "Giv AI-beregneren et modelnummer, og få den præcise fyldning og antal cylindre.",
+    "backAria": "Tilbage",
+    "layoutToggleAria": "Skift layout"
   },
   "Products": {
     "eyebrow": "PRODUKTLISTE",

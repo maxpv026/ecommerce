@@ -480,7 +480,7 @@
     "eyebrow": "PRODUCTLIJST",
     "title": "Alles wat we leveren, per categorie.",
     "subtitle": "Fabrieksverzegelde koudemiddelen, maatwerkmengsels, en de apparatuur en documentatie die een F-gassen-gecertificeerde vloot in de hele EU compliant houden.",
-    "productCount": "{count} producten",
+    "productCount": "{count, plural, one {# product} other {# producten}}",
     "cylTitle": "Koudemiddelcilinders",
     "cylBlurb": "Fabrieksverzegelde R-410A, R-32, R-134a en R-454B van 25 lb tot ISO-tank. AHRI-700-gecertificeerd, traceerbaar per batch.",
     "cylCta": "Bekijk cilinders",
@@ -501,7 +501,9 @@
     "compCta": "Open bibliotheek",
     "compCount": "Documentatie",
     "aiTitle": "Niet zeker welk koudemiddel past?",
-    "aiBody": "Geef de AI-calculator een modelnummer en je krijgt de exacte vulling en het aantal cilinders terug."
+    "aiBody": "Geef de AI-calculator een modelnummer en je krijgt de exacte vulling en het aantal cilinders terug.",
+    "backAria": "Terug",
+    "layoutToggleAria": "Weergave wisselen"
   },
   "Products": {
     "eyebrow": "PRODUCTLIJST",

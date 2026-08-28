@@ -480,7 +480,7 @@
     "eyebrow": "TOOTENIMEKIRI",
     "title": "Kõik, mida tarnime — kategooriate kaupa.",
     "subtitle": "Tehases pitseeritud külmaained, eritellimusel segud ning seadmed ja dokumentatsioon, mis hoiavad F-gaasi sertifikaadiga pargi kogu EL-is nõuetele vastavana.",
-    "productCount": "{count} toodet",
+    "productCount": "{count, plural, one {# toode} other {# toodet}}",
     "cylTitle": "Külmaaine balloonid",
     "cylBlurb": "Tehases pitseeritud R-410A, R-32, R-134a ja R-454B alates 25 lb kuni ISO-mahutini. AHRI-700 sertifikaadiga, partii kaupa jälgitavad.",
     "cylCta": "Sirvi balloone",
@@ -501,7 +501,9 @@
     "compCta": "Ava raamatukogu",
     "compCount": "Dokumentatsioon",
     "aiTitle": "Pole kindel, milline külmaaine sobib?",
-    "aiBody": "Andke AI-kalkulaatorile mudelinumber ja see tagastab täpse täite ning balloonide arvu."
+    "aiBody": "Andke AI-kalkulaatorile mudelinumber ja see tagastab täpse täite ning balloonide arvu.",
+    "backAria": "Tagasi",
+    "layoutToggleAria": "Vaheta paigutust"
   },
   "Products": {
     "eyebrow": "TOOTENIMEKIRI",

@@ -480,7 +480,7 @@
     "eyebrow": "PRODUKTU SARAKSTS",
     "title": "Viss, ko piegādājam — pa kategorijām.",
     "subtitle": "Rūpnīcā noslēgti aukstumaģenti, pēc pasūtījuma maisījumi, kā arī aprīkojums un dokumentācija, kas F-gāzu sertificētu parku uztur atbilstīgu visā ES.",
-    "productCount": "{count} produkti",
+    "productCount": "{count, plural, zero {# produktu} one {# produkts} other {# produkti}}",
     "cylTitle": "Aukstumaģenta baloni",
     "cylBlurb": "Rūpnīcā noslēgti R-410A, R-32, R-134a un R-454B no 25 lb līdz ISO tvertnei. AHRI-700 sertificēti, izsekojami pa partijām.",
     "cylCta": "Pārlūkot balonus",
@@ -501,7 +501,9 @@
     "compCta": "Atvērt bibliotēku",
     "compCount": "Dokumentācija",
     "aiTitle": "Nezināt, kurš aukstumaģents der?",
-    "aiBody": "Iedodiet AI kalkulatoram modeļa numuru — tas atgriezīs precīzu uzpildi un balonu skaitu."
+    "aiBody": "Iedodiet AI kalkulatoram modeļa numuru — tas atgriezīs precīzu uzpildi un balonu skaitu.",
+    "backAria": "Atpakaļ",
+    "layoutToggleAria": "Mainīt izkārtojumu"
   },
   "Products": {
     "eyebrow": "PRODUKTU SARAKSTS",

@@ -480,7 +480,7 @@
     "eyebrow": "LISTE DES PRODUITS",
     "title": "Tout ce que nous expédions, par catégorie.",
     "subtitle": "Fluides frigorigènes scellés en usine, mélanges sur mesure, et l'équipement et la documentation qui gardent une flotte certifiée F-Gas conforme dans toute l'UE.",
-    "productCount": "{count} produits",
+    "productCount": "{count, plural, one {# produit} other {# produits}}",
     "cylTitle": "Bouteilles de fluide frigorigène",
     "cylBlurb": "R-410A, R-32, R-134a et R-454B scellés en usine, de 25 lb au conteneur ISO. Certifiés AHRI-700, traçables par lot.",
     "cylCta": "Voir les bouteilles",
@@ -501,7 +501,9 @@
     "compCta": "Ouvrir la bibliothèque",
     "compCount": "Documentation",
     "aiTitle": "Pas sûr du fluide qui convient ?",
-    "aiBody": "Donnez un numéro de modèle au calculateur IA : il renvoie la charge exacte et le nombre de bouteilles."
+    "aiBody": "Donnez un numéro de modèle au calculateur IA : il renvoie la charge exacte et le nombre de bouteilles.",
+    "backAria": "Retour",
+    "layoutToggleAria": "Changer la disposition"
   },
   "Products": {
     "eyebrow": "LISTE DES PRODUITS",

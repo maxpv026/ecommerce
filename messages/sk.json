@@ -480,7 +480,7 @@
     "eyebrow": "ZOZNAM PRODUKTOV",
     "title": "Všetko, čo dodávame — podľa kategórií.",
     "subtitle": "Továrensky zaplombované chladivá, zmesi na mieru a vybavenie s dokumentáciou, vďaka ktorým zostáva flotila s certifikáciou F-Gas v súlade v celej EÚ.",
-    "productCount": "{count} produktov",
+    "productCount": "{count, plural, one {# produkt} few {# produkty} many {# produktu} other {# produktov}}",
     "cylTitle": "Fľaše s chladivom",
     "cylBlurb": "Továrensky zaplombované R-410A, R-32, R-134a a R-454B od 25 lb po ISO nádrž. Certifikácia AHRI-700, sledovateľnosť šarží.",
     "cylCta": "Prezerať fľaše",
@@ -501,7 +501,9 @@
     "compCta": "Otvoriť knižnicu",
     "compCount": "Dokumentácia",
     "aiTitle": "Neviete, ktoré chladivo sa hodí?",
-    "aiBody": "Zadajte AI kalkulačke číslo modelu a vráti presnú náplň aj počet fliaš."
+    "aiBody": "Zadajte AI kalkulačke číslo modelu a vráti presnú náplň aj počet fliaš.",
+    "backAria": "Späť",
+    "layoutToggleAria": "Prepnúť rozloženie"
   },
   "Products": {
     "eyebrow": "ZOZNAM PRODUKTOV",

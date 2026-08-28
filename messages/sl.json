@@ -480,7 +480,7 @@
     "eyebrow": "SEZNAM IZDELKOV",
     "title": "Vse, kar pošiljamo — po kategorijah.",
     "subtitle": "Tovarniško zapečatena hladiva, mešanice po meri ter oprema in dokumentacija, ki flote s certifikatom F-Gas ohranjajo skladne po vsej EU.",
-    "productCount": "{count} izdelkov",
+    "productCount": "{count, plural, one {# izdelek} two {# izdelka} few {# izdelki} other {# izdelkov}}",
     "cylTitle": "Jeklenke s hladivom",
     "cylBlurb": "Tovarniško zapečatene R-410A, R-32, R-134a in R-454B od 25 lb do ISO cisterne. Certifikat AHRI-700, sledljivost serij.",
     "cylCta": "Prebrskaj jeklenke",
@@ -501,7 +501,9 @@
     "compCta": "Odpri knjižnico",
     "compCount": "Dokumentacija",
     "aiTitle": "Ne veste, katero hladivo ustreza?",
-    "aiBody": "AI kalkulatorju podajte številko modela in vrne točno polnitev ter število jeklenk."
+    "aiBody": "AI kalkulatorju podajte številko modela in vrne točno polnitev ter število jeklenk.",
+    "backAria": "Nazaj",
+    "layoutToggleAria": "Preklopi postavitev"
   },
   "Products": {
     "eyebrow": "SEZNAM IZDELKOV",

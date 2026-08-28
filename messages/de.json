@@ -480,7 +480,7 @@
     "eyebrow": "PRODUKTLISTE",
     "title": "Alles, was wir liefern — nach Kategorie.",
     "subtitle": "Werksversiegelte Kältemittel, individuelle Gemische sowie Ausrüstung und Dokumentation, die eine F-Gas-zertifizierte Flotte EU-weit konform halten.",
-    "productCount": "{count} Produkte",
+    "productCount": "{count, plural, one {# Produkt} other {# Produkte}}",
     "cylTitle": "Kältemittel-Zylinder",
     "cylBlurb": "Werksversiegelte R-410A, R-32, R-134a und R-454B von 25 lb bis ISO-Tank. AHRI-700-zertifiziert, chargenverfolgbar.",
     "cylCta": "Zylinder ansehen",
@@ -501,7 +501,9 @@
     "compCta": "Bibliothek öffnen",
     "compCount": "Dokumentation",
     "aiTitle": "Unsicher, welches Kältemittel passt?",
-    "aiBody": "Geben Sie dem KI-Rechner eine Modellnummer — er liefert die exakte Füllmenge und Zylinderanzahl."
+    "aiBody": "Geben Sie dem KI-Rechner eine Modellnummer — er liefert die exakte Füllmenge und Zylinderanzahl.",
+    "backAria": "Zurück",
+    "layoutToggleAria": "Ansicht wechseln"
   },
   "Products": {
     "eyebrow": "PRODUKTLISTE",

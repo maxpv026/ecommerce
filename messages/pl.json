@@ -480,7 +480,7 @@
     "eyebrow": "LISTA PRODUKTÓW",
     "title": "Wszystko, co wysyłamy — według kategorii.",
     "subtitle": "Fabrycznie zaplombowane czynniki chłodnicze, mieszanki na zamówienie oraz sprzęt i dokumentacja, dzięki którym flota z certyfikatem F-Gas pozostaje zgodna w całej UE.",
-    "productCount": "{count} produktów",
+    "productCount": "{count, plural, one {# produkt} few {# produkty} many {# produktów} other {# produktu}}",
     "cylTitle": "Butle z czynnikiem",
     "cylBlurb": "Fabrycznie zaplombowane R-410A, R-32, R-134a i R-454B od 25 lb po zbiornik ISO. Certyfikat AHRI-700, identyfikowalność partii.",
     "cylCta": "Przeglądaj butle",
@@ -501,7 +501,9 @@
     "compCta": "Otwórz bibliotekę",
     "compCount": "Dokumentacja",
     "aiTitle": "Nie wiesz, który czynnik pasuje?",
-    "aiBody": "Podaj kalkulatorowi AI numer modelu, a otrzymasz dokładny ładunek i liczbę butli."
+    "aiBody": "Podaj kalkulatorowi AI numer modelu, a otrzymasz dokładny ładunek i liczbę butli.",
+    "backAria": "Wstecz",
+    "layoutToggleAria": "Przełącz układ"
   },
   "Products": {
     "eyebrow": "LISTA PRODUKTÓW",

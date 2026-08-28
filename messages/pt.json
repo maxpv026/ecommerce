@@ -480,7 +480,7 @@
     "eyebrow": "LISTA DE PRODUTOS",
     "title": "Tudo o que enviamos, por categoria.",
     "subtitle": "Refrigerantes selados de fábrica, misturas à medida, e o equipamento e a documentação que mantêm uma frota certificada F-Gas em conformidade em toda a UE.",
-    "productCount": "{count} produtos",
+    "productCount": "{count, plural, one {# produto} other {# produtos}}",
     "cylTitle": "Garrafas de refrigerante",
     "cylBlurb": "R-410A, R-32, R-134a e R-454B selados de fábrica, de 25 lb a tanque ISO. Certificados AHRI-700, rastreáveis por lote.",
     "cylCta": "Ver garrafas",
@@ -501,7 +501,9 @@
     "compCta": "Abrir biblioteca",
     "compCount": "Documentação",
     "aiTitle": "Não sabe qual refrigerante serve?",
-    "aiBody": "Dê um número de modelo ao calculador de IA e ele devolve a carga exata e o número de garrafas."
+    "aiBody": "Dê um número de modelo ao calculador de IA e ele devolve a carga exata e o número de garrafas.",
+    "backAria": "Voltar",
+    "layoutToggleAria": "Mudar disposição"
   },
   "Products": {
     "eyebrow": "LISTA DE PRODUTOS",

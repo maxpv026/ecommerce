@@ -480,7 +480,7 @@
     "eyebrow": "PRODUKTLISTA",
     "title": "Allt vi levererar, per kategori.",
     "subtitle": "Fabriksförseglade köldmedier, specialblandningar samt utrustning och dokumentation som håller en F-gascertifierad flotta compliant i hela EU.",
-    "productCount": "{count} produkter",
+    "productCount": "{count, plural, one {# produkt} other {# produkter}}",
     "cylTitle": "Köldmediecylindrar",
     "cylBlurb": "Fabriksförseglade R-410A, R-32, R-134a och R-454B från 25 lb till ISO-tank. AHRI-700-certifierade, spårbara per batch.",
     "cylCta": "Bläddra bland cylindrar",
@@ -501,7 +501,9 @@
     "compCta": "Öppna biblioteket",
     "compCount": "Dokumentation",
     "aiTitle": "Osäker på vilket köldmedium som passar?",
-    "aiBody": "Ge AI-kalkylatorn ett modellnummer så får du exakt fyllning och antal cylindrar."
+    "aiBody": "Ge AI-kalkylatorn ett modellnummer så får du exakt fyllning och antal cylindrar.",
+    "backAria": "Tillbaka",
+    "layoutToggleAria": "Byt layout"
   },
   "Products": {
     "eyebrow": "PRODUKTLISTA",

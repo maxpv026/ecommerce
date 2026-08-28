@@ -7,6 +7,14 @@ import { Link } from "@/i18n/navigation";
 import { ArrowRight, Cylinder, Droplets, FileText, Gauge, RefreshCcw, Sparkles } from "lucide-react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
+import MobileCategoriesLayout from "./MobileCategoriesLayout";
+
+export interface CategoryCounts {
+  cylinders: number;
+  blends: number;
+  equipment: number;
+  recovery: number;
+}
 
 /* ── entrance cascade: design's hcRise (fade-up + settle), 80ms apart ── */
 const gridStagger = {
@@ -28,8 +36,8 @@ interface CategorySpec {
   titleKey: string;
   blurbKey: string;
   ctaKey: string;
-  /** null → the live product count is used instead. */
-  countKey: string | null;
+  /** null → the compliance "Documentation" label is used instead. */
+  countOf: keyof CategoryCounts | null;
   icon: typeof Cylinder;
   span: string;
   tall: boolean;
@@ -44,7 +52,7 @@ const CATEGORIES: CategorySpec[] = [
     titleKey: "cylTitle",
     blurbKey: "cylBlurb",
     ctaKey: "cylCta",
-    countKey: null,
+    countOf: "cylinders",
     icon: Cylinder,
     span: "md:col-span-4",
     tall: true,
@@ -56,7 +64,7 @@ const CATEGORIES: CategorySpec[] = [
     titleKey: "blendTitle",
     blurbKey: "blendBlurb",
     ctaKey: "blendCta",
-    countKey: "blendCount",
+    countOf: "blends",
     icon: Droplets,
     span: "md:col-span-2",
     tall: true,
@@ -68,7 +76,7 @@ const CATEGORIES: CategorySpec[] = [
     titleKey: "eqTitle",
     blurbKey: "eqBlurb",
     ctaKey: "eqCta",
-    countKey: "eqCount",
+    countOf: "equipment",
     icon: Gauge,
     span: "md:col-span-2",
     tall: false,
@@ -80,7 +88,7 @@ const CATEGORIES: CategorySpec[] = [
     titleKey: "recTitle",
     blurbKey: "recBlurb",
     ctaKey: "recCta",
-    countKey: "recCount",
+    countOf: "recovery",
     icon: RefreshCcw,
     span: "md:col-span-2",
     tall: false,
@@ -92,7 +100,7 @@ const CATEGORIES: CategorySpec[] = [
     titleKey: "compTitle",
     blurbKey: "compBlurb",
     ctaKey: "compCta",
-    countKey: "compCount",
+    countOf: null,
     icon: FileText,
     span: "md:col-span-2",
     tall: false,
@@ -102,10 +110,10 @@ const CATEGORIES: CategorySpec[] = [
 ];
 
 interface CategoriesPageProps {
-  cylinderCount: number;
+  counts: CategoryCounts;
 }
 
-export default function CategoriesPage({ cylinderCount }: CategoriesPageProps) {
+export default function CategoriesPage({ counts }: CategoriesPageProps) {
   const t = useTranslations("Categories");
   const tHome = useTranslations("HomeDesktop");
   const [query, setQuery] = useState("");
@@ -114,6 +122,7 @@ export default function CategoriesPage({ cylinderCount }: CategoriesPageProps) {
 
   return (
     <div className="flex-1 bg-white dark:bg-canvas">
+      <div className="hidden md:block">
       <Header
         query={query}
         onQueryChange={setQuery}
@@ -153,7 +162,8 @@ export default function CategoriesPage({ cylinderCount }: CategoriesPageProps) {
             {CATEGORIES.map((category) => {
               const on = hovered === category.slug;
               const Icon = category.icon;
-              const count = category.countKey === null ? t("productCount", { count: cylinderCount }) : t(category.countKey);
+              const count =
+                category.countOf === null ? t("compCount") : t("productCount", { count: counts[category.countOf] });
               return (
                 <motion.div
                   key={category.slug}
@@ -261,6 +271,11 @@ export default function CategoriesPage({ cylinderCount }: CategoriesPageProps) {
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      </div>
+
+      <div className="block md:hidden">
+        <MobileCategoriesLayout counts={counts} />
+      </div>
     </div>
   );
 }

@@ -480,7 +480,7 @@
     "eyebrow": "LISTA DE PRODUSE",
     "title": "Tot ce livrăm, pe categorii.",
     "subtitle": "Agenți frigorifici sigilați din fabrică, amestecuri la comandă, și echipamentul și documentația care mențin o flotă certificată F-Gas conformă în toată UE.",
-    "productCount": "{count} produse",
+    "productCount": "{count, plural, one {# produs} few {# produse} other {# de produse}}",
     "cylTitle": "Butelii de agent frigorific",
     "cylBlurb": "R-410A, R-32, R-134a și R-454B sigilate din fabrică, de la 25 lb la rezervor ISO. Certificate AHRI-700, trasabile pe lot.",
     "cylCta": "Vezi buteliile",
@@ -501,7 +501,9 @@
     "compCta": "Deschide biblioteca",
     "compCount": "Documentație",
     "aiTitle": "Nu știi ce agent frigorific se potrivește?",
-    "aiBody": "Dă calculatorului AI un număr de model și primești încărcătura exactă și numărul de butelii."
+    "aiBody": "Dă calculatorului AI un număr de model și primești încărcătura exactă și numărul de butelii.",
+    "backAria": "Înapoi",
+    "layoutToggleAria": "Schimbă aspectul"
   },
   "Products": {
     "eyebrow": "LISTA DE PRODUSE",

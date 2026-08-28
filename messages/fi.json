@@ -480,7 +480,7 @@
     "eyebrow": "TUOTELUETTELO",
     "title": "Kaikki mitä toimitamme, kategorioittain.",
     "subtitle": "Tehdassinetöidyt kylmäaineet, mittatilausseokset sekä laitteet ja dokumentaatio, jotka pitävät F-kaasusertifioidun kaluston vaatimusten mukaisena koko EU:ssa.",
-    "productCount": "{count} tuotetta",
+    "productCount": "{count, plural, one {# tuote} other {# tuotetta}}",
     "cylTitle": "Kylmäainepullot",
     "cylBlurb": "Tehdassinetöidyt R-410A, R-32, R-134a ja R-454B 25 lb:stä ISO-säiliöön. AHRI-700-sertifioidut, eräkohtaisesti jäljitettävät.",
     "cylCta": "Selaa pulloja",
@@ -501,7 +501,9 @@
     "compCta": "Avaa kirjasto",
     "compCount": "Dokumentaatio",
     "aiTitle": "Etkö ole varma sopivasta kylmäaineesta?",
-    "aiBody": "Anna AI-laskurille mallinumero, niin saat tarkan täytöksen ja pullomäärän."
+    "aiBody": "Anna AI-laskurille mallinumero, niin saat tarkan täytöksen ja pullomäärän.",
+    "backAria": "Takaisin",
+    "layoutToggleAria": "Vaihda asettelua"
   },
   "Products": {
     "eyebrow": "TUOTELUETTELO",

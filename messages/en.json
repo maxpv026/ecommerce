@@ -480,7 +480,7 @@
     "eyebrow": "PRODUCT LIST",
     "title": "Everything we ship, by category.",
     "subtitle": "Factory-sealed refrigerants, custom blends, and the equipment and documentation that keep an F-Gas certified fleet compliant across the EU.",
-    "productCount": "{count} products",
+    "productCount": "{count, plural, one {# product} other {# products}}",
     "cylTitle": "Refrigerant Cylinders",
     "cylBlurb": "Factory-sealed R-410A, R-32, R-134a and R-454B in 25 lb through ISO tank. AHRI-700 certified, batch-traceable.",
     "cylCta": "Browse cylinders",
@@ -501,7 +501,9 @@
     "compCta": "Open library",
     "compCount": "Documentation",
     "aiTitle": "Not sure which refrigerant fits?",
-    "aiBody": "Give the AI calculator a model number and it returns the exact charge and cylinder count."
+    "aiBody": "Give the AI calculator a model number and it returns the exact charge and cylinder count.",
+    "backAria": "Back",
+    "layoutToggleAria": "Switch layout"
   },
   "Products": {
     "eyebrow": "PRODUCT LIST",

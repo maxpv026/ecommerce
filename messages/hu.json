@@ -480,7 +480,7 @@
     "eyebrow": "TERMÉKLISTA",
     "title": "Minden, amit szállítunk — kategóriák szerint.",
     "subtitle": "Gyárilag zárt hűtőközegek, egyedi keverékek, valamint a felszerelés és dokumentáció, amely az F-Gas tanúsítású flottát EU-szerte megfelelővé teszi.",
-    "productCount": "{count} termék",
+    "productCount": "{count, plural, one {# termék} other {# termék}}",
     "cylTitle": "Hűtőközeg-palackok",
     "cylBlurb": "Gyárilag zárt R-410A, R-32, R-134a és R-454B 25 lb-tól ISO-tartályig. AHRI-700 tanúsítvánnyal, tételenként nyomon követhető.",
     "cylCta": "Palackok böngészése",
@@ -501,7 +501,9 @@
     "compCta": "Könyvtár megnyitása",
     "compCount": "Dokumentáció",
     "aiTitle": "Nem biztos, melyik hűtőközeg való?",
-    "aiBody": "Adjon az AI-kalkulátornak egy típusszámot, és visszaadja a pontos töltetet és a palackok számát."
+    "aiBody": "Adjon az AI-kalkulátornak egy típusszámot, és visszaadja a pontos töltetet és a palackok számát.",
+    "backAria": "Vissza",
+    "layoutToggleAria": "Elrendezés váltása"
   },
   "Products": {
     "eyebrow": "TERMÉKLISTA",

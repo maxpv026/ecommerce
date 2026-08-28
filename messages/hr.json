@@ -480,7 +480,7 @@
     "eyebrow": "POPIS PROIZVODA",
     "title": "Sve što isporučujemo — po kategorijama.",
     "subtitle": "Tvornički zapečaćena rashladna sredstva, mješavine po mjeri te oprema i dokumentacija koje flotu s F-Gas certifikatom drže usklađenom u cijeloj EU.",
-    "productCount": "{count} proizvoda",
+    "productCount": "{count, plural, one {# proizvod} few {# proizvoda} other {# proizvoda}}",
     "cylTitle": "Boce s rashladnim sredstvom",
     "cylBlurb": "Tvornički zapečaćeni R-410A, R-32, R-134a i R-454B od 25 lb do ISO spremnika. AHRI-700 certificirani, sljedivi po seriji.",
     "cylCta": "Pregledaj boce",
@@ -501,7 +501,9 @@
     "compCta": "Otvori knjižnicu",
     "compCount": "Dokumentacija",
     "aiTitle": "Niste sigurni koje rashladno sredstvo odgovara?",
-    "aiBody": "Dajte AI kalkulatoru broj modela i vratit će točno punjenje i broj boca."
+    "aiBody": "Dajte AI kalkulatoru broj modela i vratit će točno punjenje i broj boca.",
+    "backAria": "Natrag",
+    "layoutToggleAria": "Promijeni raspored"
   },
   "Products": {
     "eyebrow": "POPIS PROIZVODA",

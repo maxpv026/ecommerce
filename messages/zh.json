@@ -480,7 +480,7 @@
     "eyebrow": "产品目录",
     "title": "我们供应的一切,按类别分列。",
     "subtitle": "工厂密封的制冷剂、定制混合气,以及让 F-Gas 认证车队在全欧盟保持合规的设备与文档。",
-    "productCount": "{count} 个产品",
+    "productCount": "{count, plural, other {# 款产品}}",
     "cylTitle": "制冷剂钢瓶",
     "cylBlurb": "工厂密封的 R-410A、R-32、R-134a 和 R-454B,规格从 25 lb 到 ISO 罐。AHRI-700 认证,可按批次追溯。",
     "cylCta": "浏览钢瓶",
@@ -501,7 +501,9 @@
     "compCta": "打开资料库",
     "compCount": "文档",
     "aiTitle": "不确定哪种制冷剂合适?",
-    "aiBody": "把型号告诉 AI 计算器,即可得到精确充注量和钢瓶数量。"
+    "aiBody": "把型号告诉 AI 计算器,即可得到精确充注量和钢瓶数量。",
+    "backAria": "返回",
+    "layoutToggleAria": "切换布局"
   },
   "Products": {
     "eyebrow": "产品目录",

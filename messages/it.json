@@ -480,7 +480,7 @@
     "eyebrow": "ELENCO PRODOTTI",
     "title": "Tutto ciò che spediamo, per categoria.",
     "subtitle": "Refrigeranti sigillati in fabbrica, miscele su misura, e l'attrezzatura e la documentazione che mantengono conforme una flotta certificata F-Gas in tutta l'UE.",
-    "productCount": "{count} prodotti",
+    "productCount": "{count, plural, one {# prodotto} other {# prodotti}}",
     "cylTitle": "Bombole di refrigerante",
     "cylBlurb": "R-410A, R-32, R-134a e R-454B sigillati in fabbrica, da 25 lb al serbatoio ISO. Certificati AHRI-700, tracciabili per lotto.",
     "cylCta": "Sfoglia le bombole",
@@ -501,7 +501,9 @@
     "compCta": "Apri la libreria",
     "compCount": "Documentazione",
     "aiTitle": "Non sai quale refrigerante serve?",
-    "aiBody": "Dai al calcolatore AI un numero di modello: restituisce la carica esatta e il numero di bombole."
+    "aiBody": "Dai al calcolatore AI un numero di modello: restituisce la carica esatta e il numero di bombole.",
+    "backAria": "Indietro",
+    "layoutToggleAria": "Cambia layout"
   },
   "Products": {
     "eyebrow": "ELENCO PRODOTTI",

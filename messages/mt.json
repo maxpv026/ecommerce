@@ -480,7 +480,7 @@
     "eyebrow": "LISTA TAL-PRODOTTI",
     "title": "Dak kollu li nibagħtu, skont il-kategorija.",
     "subtitle": "Refriġeranti ssiġillati mill-fabbrika, taħlitiet apposta, u t-tagħmir u d-dokumentazzjoni li jżommu flotta ċċertifikata F-Gas konformi madwar l-UE.",
-    "productCount": "{count} prodotti",
+    "productCount": "{count, plural, one {# prodott} other {# prodotti}}",
     "cylTitle": "Ċilindri tar-refriġerant",
     "cylBlurb": "R-410A, R-32, R-134a u R-454B issiġillati mill-fabbrika minn 25 lb sa tank ISO. Iċċertifikati AHRI-700, traċċabbli skont il-lott.",
     "cylCta": "Ara ċ-ċilindri",
@@ -501,7 +501,9 @@
     "compCta": "Iftaħ il-librerija",
     "compCount": "Dokumentazzjoni",
     "aiTitle": "M'intix ċert liema refriġerant jgħodd?",
-    "aiBody": "Agħti n-numru tal-mudell lill-kalkulatur AI u jirritorna l-piż eżatt u l-għadd ta' ċilindri."
+    "aiBody": "Agħti n-numru tal-mudell lill-kalkulatur AI u jirritorna l-piż eżatt u l-għadd ta' ċilindri.",
+    "backAria": "Lura",
+    "layoutToggleAria": "Ibdel it-tqassim"
   },
   "Products": {
     "eyebrow": "LISTA TAL-PRODOTTI",

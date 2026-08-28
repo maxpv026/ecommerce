@@ -480,7 +480,7 @@
     "eyebrow": "SEZNAM PRODUKTŮ",
     "title": "Vše, co dodáváme — podle kategorií.",
     "subtitle": "Továrně zaplombovaná chladiva, směsi na míru a vybavení s dokumentací, díky nimž zůstává flotila s certifikací F-Gas v souladu v celé EU.",
-    "productCount": "{count} produktů",
+    "productCount": "{count, plural, one {# produkt} few {# produkty} many {# produktu} other {# produktů}}",
     "cylTitle": "Lahve s chladivem",
     "cylBlurb": "Továrně zaplombované R-410A, R-32, R-134a a R-454B od 25 lb po ISO nádrž. Certifikace AHRI-700, dohledatelnost šarží.",
     "cylCta": "Procházet lahve",
@@ -501,7 +501,9 @@
     "compCta": "Otevřít knihovnu",
     "compCount": "Dokumentace",
     "aiTitle": "Nevíte, které chladivo se hodí?",
-    "aiBody": "Zadejte AI kalkulačce číslo modelu a vrátí přesnou náplň i počet lahví."
+    "aiBody": "Zadejte AI kalkulačce číslo modelu a vrátí přesnou náplň i počet lahví.",
+    "backAria": "Zpět",
+    "layoutToggleAria": "Přepnout rozložení"
   },
   "Products": {
     "eyebrow": "SEZNAM PRODUKTŮ",

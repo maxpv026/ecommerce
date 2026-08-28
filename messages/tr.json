@@ -480,7 +480,7 @@
     "eyebrow": "ÜRÜN LİSTESİ",
     "title": "Gönderdiğimiz her şey, kategorilere göre.",
     "subtitle": "Fabrika mühürlü soğutucu akışkanlar, özel karışımlar ve F-Gas sertifikalı bir filoyu tüm AB'de uyumlu tutan ekipman ile dokümantasyon.",
-    "productCount": "{count} ürün",
+    "productCount": "{count, plural, one {# ürün} other {# ürün}}",
     "cylTitle": "Soğutucu Akışkan Tüpleri",
     "cylBlurb": "25 lb'den ISO tanka kadar fabrika mühürlü R-410A, R-32, R-134a ve R-454B. AHRI-700 sertifikalı, parti bazında izlenebilir.",
     "cylCta": "Tüplere göz at",
@@ -501,7 +501,9 @@
     "compCta": "Kitaplığı aç",
     "compCount": "Dokümantasyon",
     "aiTitle": "Hangi soğutucu akışkanın uyduğundan emin değil misiniz?",
-    "aiBody": "AI hesaplayıcıya bir model numarası verin; tam şarjı ve tüp sayısını döndürsün."
+    "aiBody": "AI hesaplayıcıya bir model numarası verin; tam şarjı ve tüp sayısını döndürsün.",
+    "backAria": "Geri",
+    "layoutToggleAria": "Düzeni değiştir"
   },
   "Products": {
     "eyebrow": "ÜRÜN LİSTESİ",

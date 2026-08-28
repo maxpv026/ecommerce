@@ -480,7 +480,7 @@
     "eyebrow": "LISTA DE PRODUCTOS",
     "title": "Todo lo que enviamos, por categoría.",
     "subtitle": "Refrigerantes sellados de fábrica, mezclas a medida, y el equipo y la documentación que mantienen una flota certificada F-Gas conforme en toda la UE.",
-    "productCount": "{count} productos",
+    "productCount": "{count, plural, one {# producto} other {# productos}}",
     "cylTitle": "Botellas de refrigerante",
     "cylBlurb": "R-410A, R-32, R-134a y R-454B sellados de fábrica, de 25 lb a tanque ISO. Certificados AHRI-700, trazables por lote.",
     "cylCta": "Ver botellas",
@@ -501,7 +501,9 @@
     "compCta": "Abrir biblioteca",
     "compCount": "Documentación",
     "aiTitle": "¿No sabes qué refrigerante encaja?",
-    "aiBody": "Dale al calculador de IA un número de modelo y te devuelve la carga exacta y el número de botellas."
+    "aiBody": "Dale al calculador de IA un número de modelo y te devuelve la carga exacta y el número de botellas.",
+    "backAria": "Atrás",
+    "layoutToggleAria": "Cambiar disposición"
   },
   "Products": {
     "eyebrow": "LISTA DE PRODUCTOS",

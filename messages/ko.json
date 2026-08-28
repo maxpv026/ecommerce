@@ -480,7 +480,7 @@
     "eyebrow": "제품 목록",
     "title": "카테고리별 전체 제품 안내",
     "subtitle": "공장 봉인 냉매, 맞춤 혼합 가스, 그리고 F-Gas 인증 차량을 EU 전역에서 규정에 맞게 유지하는 장비와 문서.",
-    "productCount": "{count}개 제품",
+    "productCount": "{count, plural, other {제품 #개}}",
     "cylTitle": "냉매 실린더",
     "cylBlurb": "25 lb부터 ISO 탱크까지 공장 봉인 R-410A, R-32, R-134a, R-454B. AHRI-700 인증, 배치 추적 가능.",
     "cylCta": "실린더 둘러보기",
@@ -501,7 +501,9 @@
     "compCta": "라이브러리 열기",
     "compCount": "문서",
     "aiTitle": "어떤 냉매가 맞는지 모르시겠나요?",
-    "aiBody": "AI 계산기에 모델 번호를 입력하면 정확한 충전량과 실린더 수를 알려드립니다."
+    "aiBody": "AI 계산기에 모델 번호를 입력하면 정확한 충전량과 실린더 수를 알려드립니다.",
+    "backAria": "뒤로",
+    "layoutToggleAria": "레이아웃 전환"
   },
   "Products": {
     "eyebrow": "제품 목록",
