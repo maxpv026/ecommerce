@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Globe } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import { updateUserLocale } from "@/lib/actions/locale";
+import { useHydrated } from "@/lib/hooks/useHydrated";
 
 export default function HeaderLanguageSwitcher() {
   const t = useTranslations("LanguageSwitcher");
@@ -15,6 +17,7 @@ export default function HeaderLanguageSwitcher() {
   const pathname = usePathname();
   const { status } = useSession();
   const [open, setOpen] = useState(false);
+  const mounted = useHydrated();
   const [isPending, startTransition] = useTransition();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -90,7 +93,7 @@ export default function HeaderLanguageSwitcher() {
         aria-expanded={open}
         aria-label="Change language"
         disabled={isPending}
-        className="flex h-[38px] items-center gap-[7px] rounded-full border border-slate-900/[.12] bg-white px-3.5 text-[13px] font-medium text-slate-900 transition-colors hover:border-slate-900/30 disabled:opacity-60 dark:border-white/[.12] dark:bg-white/5 dark:text-slate-50 dark:hover:border-white/30"
+        className="flex h-[38px] items-center gap-[7px] rounded-full border border-slate-900/[.12] bg-white px-3.5 text-[13px] font-medium text-slate-900 transition-[color,border-color,transform] active:scale-95 hover:border-slate-900/30 disabled:opacity-60 dark:border-white/[.12] dark:bg-white/5 dark:text-slate-50 dark:hover:border-white/30"
       >
         <Globe size={15} strokeWidth={2} />
         <span className="uppercase tracking-[.02em]">{activeLocale}</span>
@@ -106,31 +109,38 @@ export default function HeaderLanguageSwitcher() {
         </div>
       )}
 
-      {/* Mobile: bottom sheet */}
-      <div className="md:hidden">
-        <div
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-          className={`fixed inset-0 z-[100] bg-slate-950/40 transition-opacity duration-300 ${
-            open ? "opacity-100" : "pointer-events-none opacity-0"
-          }`}
-        />
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={t("title")}
-          className="fixed inset-x-0 bottom-0 z-[100] max-h-[75vh] rounded-t-[28px] border-t border-white/60 bg-white/95 px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-26px_60px_-22px_rgba(15,23,42,0.42)] backdrop-blur-xl backdrop-saturate-150 transition-transform duration-[380ms] ease-[cubic-bezier(.2,.8,.2,1)] dark:border-white/10 dark:bg-slate-900/97"
-          style={{ transform: open ? "translateY(0)" : "translateY(102%)" }}
-        >
-          <div className="mx-auto mb-3 h-1 w-11 flex-none rounded-full bg-slate-900/[.16] dark:bg-white/20" />
-          <div className="mb-2 flex items-center justify-between gap-3.5">
-            <span className="text-[15px] font-semibold tracking-[-.02em]">{t("title")}</span>
-          </div>
-          <div role="listbox" className="scrollbar-hide max-h-[calc(75vh-72px)] overflow-y-auto pb-1">
-            {languages.map(({ locale, name }) => optionRow(locale, name, false))}
-          </div>
-        </div>
-      </div>
+      {/* Mobile: bottom sheet — portalled to <body> so no ancestor transform,
+          filter, or backdrop-blur (e.g. a glass sticky header) re-anchors the
+          fixed backdrop/panel away from the viewport. z-[110] clears the
+          global bottom nav (z-[100]). */}
+      {mounted &&
+        createPortal(
+          <div className="md:hidden">
+            <div
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+              className={`fixed inset-0 z-[110] bg-slate-950/40 transition-opacity duration-300 ${
+                open ? "opacity-100" : "pointer-events-none opacity-0"
+              }`}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("title")}
+              className="fixed inset-x-0 bottom-0 z-[111] max-h-[75vh] rounded-t-[28px] border-t border-white/60 bg-white/95 px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-26px_60px_-22px_rgba(15,23,42,0.42)] backdrop-blur-xl backdrop-saturate-150 transition-transform duration-[380ms] ease-[cubic-bezier(.2,.8,.2,1)] dark:border-white/10 dark:bg-slate-900/97"
+              style={{ transform: open ? "translateY(0)" : "translateY(102%)" }}
+            >
+              <div className="mx-auto mb-3 h-1 w-11 flex-none rounded-full bg-slate-900/[.16] dark:bg-white/20" />
+              <div className="mb-2 flex items-center justify-between gap-3.5">
+                <span className="text-[15px] font-semibold tracking-[-.02em]">{t("title")}</span>
+              </div>
+              <div role="listbox" className="scrollbar-hide max-h-[calc(75vh-72px)] overflow-y-auto pb-1">
+                {languages.map(({ locale, name }) => optionRow(locale, name, false))}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

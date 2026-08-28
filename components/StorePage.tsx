@@ -5,16 +5,19 @@ import Header from "./Header";
 import DesktopHome from "./DesktopHome";
 import MobileAppLayout from "./MobileAppLayout";
 import AuthModal from "./AuthModal";
-import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
+import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, UserProfileData } from "@/lib/data";
 
 interface StorePageProps {
   recommendedProducts: StoreProduct[];
   marketAlerts: MarketAlertData[];
   dashboard: ProfileDashboardData | null;
   latestOrder: UserOrder | null;
+  orders: UserOrder[];
+  certificate: UserProfileData["certificate"];
+  jobTitle: string | null;
 }
 
-export default function StorePage({ recommendedProducts, marketAlerts, dashboard, latestOrder }: StorePageProps) {
+export default function StorePage({ recommendedProducts, marketAlerts, dashboard, latestOrder, orders, certificate, jobTitle }: StorePageProps) {
   const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -37,7 +40,14 @@ export default function StorePage({ recommendedProducts, marketAlerts, dashboard
 
       {/* Native-app-style mobile home */}
       <div className="block md:hidden">
-        <MobileAppLayout featuredProducts={recommendedProducts} marketAlerts={marketAlerts} />
+        <MobileAppLayout
+          featuredProducts={recommendedProducts}
+          marketAlerts={marketAlerts}
+          dashboard={dashboard}
+          orders={orders}
+          certificate={certificate}
+          jobTitle={jobTitle}
+        />
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

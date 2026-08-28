@@ -274,3 +274,15 @@ body {
   0%, 80%, 100% { opacity: 0.25; }
   40% { opacity: 1; }
 }
+
+/* Mobile home: live-market marquee (track duplicated → seamless at -50%) */
+@keyframes hc-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Soft opacity pulse for live dots and thinking icons */
+@keyframes hc-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
