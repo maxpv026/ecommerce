@@ -50,7 +50,12 @@ export default function AccountLayoutClient({
 
       <div className="block md:hidden">
         {isAuthenticated ? (
-          <MobileProfileLayout dashboardData={dashboardData} />
+          <MobileProfileLayout
+            dashboardData={dashboardData}
+            profile={profile}
+            orders={orders}
+            addresses={addresses}
+          />
         ) : (
           <MobileProfileSignedOutLayout />
         )}
