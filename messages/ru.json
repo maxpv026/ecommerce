@@ -542,7 +542,18 @@
     "resetFilters": "Сбросить фильтры",
     "chip1": "Коммерческая установка Daikin 50 кВт",
     "chip2": "Low-GWP модернизация, A2L разрешён",
-    "chip3": "Опт R-410A на 12 крыш"
+    "chip3": "Опт R-410A на 12 крыш",
+    "mobileTitle": "Товары",
+    "backAria": "Назад",
+    "layoutToggleAria": "Сменить раскладку",
+    "aiPlaceholderShort": "Попросите AI подобрать под установку…",
+    "resetAll": "Сбросить всё",
+    "applyShow": "{count, plural, one {Показать # товар} few {Показать # товара} many {Показать # товаров} other {Показать # товара}}",
+    "exVatShort": "без НДС",
+    "catCylinders": "Баллоны",
+    "catBlends": "Смеси",
+    "catEquipment": "Оборудование",
+    "catRecovery": "Рекуперация"
   },
   "ProductDetail": {
     "crumbRoot": "Список товаров",

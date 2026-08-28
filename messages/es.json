@@ -542,7 +542,18 @@
     "resetFilters": "Restablecer filtros",
     "chip1": "Unidad Daikin comercial de 50 kW",
     "chip2": "Retrofit bajo GWP, A2L permitido",
-    "chip3": "R-410A a granel para 12 azoteas"
+    "chip3": "R-410A a granel para 12 azoteas",
+    "mobileTitle": "Productos",
+    "backAria": "Atrás",
+    "layoutToggleAria": "Cambiar disposición",
+    "aiPlaceholderShort": "Pide a la IA que asocie una unidad…",
+    "resetAll": "Restablecer todo",
+    "applyShow": "{count, plural, one {Mostrar # producto} other {Mostrar # productos}}",
+    "exVatShort": "sin IVA",
+    "catCylinders": "Botellas",
+    "catBlends": "Mezclas",
+    "catEquipment": "Equipos",
+    "catRecovery": "Recuperación"
   },
   "ProductDetail": {
     "crumbRoot": "Lista de productos",

@@ -542,7 +542,18 @@
     "resetFilters": "Скинути фільтри",
     "chip1": "Комерційна установка Daikin 50 кВт",
     "chip2": "Low-GWP модернізація, A2L дозволено",
-    "chip3": "Гурт R-410A на 12 дахів"
+    "chip3": "Гурт R-410A на 12 дахів",
+    "mobileTitle": "Товари",
+    "backAria": "Назад",
+    "layoutToggleAria": "Змінити розкладку",
+    "aiPlaceholderShort": "Попросіть AI підібрати під установку…",
+    "resetAll": "Скинути все",
+    "applyShow": "{count, plural, one {Показати # товар} few {Показати # товари} many {Показати # товарів} other {Показати # товару}}",
+    "exVatShort": "без ПДВ",
+    "catCylinders": "Балони",
+    "catBlends": "Суміші",
+    "catEquipment": "Обладнання",
+    "catRecovery": "Рекуперація"
   },
   "ProductDetail": {
     "crumbRoot": "Список товарів",

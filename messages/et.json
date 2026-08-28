@@ -542,7 +542,18 @@
     "resetFilters": "Lähtesta filtrid",
     "chip1": "50 kW kommertsüksus Daikin",
     "chip2": "Madala GWP retrofit, A2L lubatud",
-    "chip3": "Hulgi R-410A 12 katuseüksusele"
+    "chip3": "Hulgi R-410A 12 katuseüksusele",
+    "mobileTitle": "Tooted",
+    "backAria": "Tagasi",
+    "layoutToggleAria": "Vaheta paigutust",
+    "aiPlaceholderShort": "Palu AI-l seade sobitada…",
+    "resetAll": "Lähtesta kõik",
+    "applyShow": "{count, plural, one {Näita # toodet} other {Näita # toodet}}",
+    "exVatShort": "km-ta",
+    "catCylinders": "Balloonid",
+    "catBlends": "Segud",
+    "catEquipment": "Seadmed",
+    "catRecovery": "Kogumine"
   },
   "ProductDetail": {
     "crumbRoot": "Tootenimekiri",

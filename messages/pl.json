@@ -542,7 +542,18 @@
     "resetFilters": "Resetuj filtry",
     "chip1": "Komercyjna jednostka Daikin 50 kW",
     "chip2": "Retrofit low-GWP, dozwolone A2L",
-    "chip3": "Hurt R-410A na 12 dachów"
+    "chip3": "Hurt R-410A na 12 dachów",
+    "mobileTitle": "Produkty",
+    "backAria": "Wstecz",
+    "layoutToggleAria": "Przełącz układ",
+    "aiPlaceholderShort": "Poproś AI o dopasowanie jednostki…",
+    "resetAll": "Resetuj wszystko",
+    "applyShow": "{count, plural, one {Pokaż # produkt} few {Pokaż # produkty} many {Pokaż # produktów} other {Pokaż # produktu}}",
+    "exVatShort": "netto",
+    "catCylinders": "Butle",
+    "catBlends": "Mieszanki",
+    "catEquipment": "Sprzęt",
+    "catRecovery": "Odzysk"
   },
   "ProductDetail": {
     "crumbRoot": "Lista produktów",

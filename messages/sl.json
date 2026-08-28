@@ -542,7 +542,18 @@
     "resetFilters": "Ponastavi filtre",
     "chip1": "Komercialna enota Daikin 50 kW",
     "chip2": "Retrofit z nizkim GWP, A2L dovoljen",
-    "chip3": "Večje količine R-410A za 12 streh"
+    "chip3": "Večje količine R-410A za 12 streh",
+    "mobileTitle": "Izdelki",
+    "backAria": "Nazaj",
+    "layoutToggleAria": "Preklopi postavitev",
+    "aiPlaceholderShort": "Prosite AI za ujemanje enote…",
+    "resetAll": "Ponastavi vse",
+    "applyShow": "{count, plural, one {Pokaži # izdelek} two {Pokaži # izdelka} few {Pokaži # izdelke} other {Pokaži # izdelkov}}",
+    "exVatShort": "brez DDV",
+    "catCylinders": "Jeklenke",
+    "catBlends": "Mešanice",
+    "catEquipment": "Oprema",
+    "catRecovery": "Zajem"
   },
   "ProductDetail": {
     "crumbRoot": "Seznam izdelkov",

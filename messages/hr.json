@@ -542,7 +542,18 @@
     "resetFilters": "Poništi filtre",
     "chip1": "Komercijalna Daikin jedinica 50 kW",
     "chip2": "Retrofit niskog GWP-a, A2L dopušten",
-    "chip3": "Veće količine R-410A za 12 krovova"
+    "chip3": "Veće količine R-410A za 12 krovova",
+    "mobileTitle": "Proizvodi",
+    "backAria": "Natrag",
+    "layoutToggleAria": "Promijeni raspored",
+    "aiPlaceholderShort": "Zamolite AI da upari uređaj…",
+    "resetAll": "Poništi sve",
+    "applyShow": "{count, plural, one {Prikaži # proizvod} few {Prikaži # proizvoda} other {Prikaži # proizvoda}}",
+    "exVatShort": "bez PDV-a",
+    "catCylinders": "Boce",
+    "catBlends": "Mješavine",
+    "catEquipment": "Oprema",
+    "catRecovery": "Oporaba"
   },
   "ProductDetail": {
     "crumbRoot": "Popis proizvoda",

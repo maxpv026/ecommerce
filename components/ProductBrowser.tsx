@@ -8,6 +8,7 @@ import { Check, Loader2, Sparkles } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
+import MobileProductsLayout from "./MobileProductsLayout";
 import { useCartStore } from "@/lib/store/cart";
 import { smartMatch } from "@/lib/actions/smartMatch";
 import type { StoreProduct } from "@/lib/data";
@@ -166,6 +167,7 @@ export default function ProductBrowser({ products, initialCategory }: ProductBro
 
   return (
     <div className="flex-1 bg-white dark:bg-canvas">
+      <div className="hidden md:block">
       <Header query={query} onQueryChange={setQuery} onSignInClick={() => setIsAuthModalOpen(true)} />
 
       <div className="relative overflow-x-clip">
@@ -588,6 +590,11 @@ export default function ProductBrowser({ products, initialCategory }: ProductBro
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      </div>
+
+      <div className="block md:hidden">
+        <MobileProductsLayout products={products} initialCategory={initialCategory} />
+      </div>
     </div>
   );
 }

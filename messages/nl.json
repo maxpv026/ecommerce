@@ -542,7 +542,18 @@
     "resetFilters": "Filters resetten",
     "chip1": "Commerciële Daikin-unit 50 kW",
     "chip2": "Low-GWP-retrofit, A2L toegestaan",
-    "chip3": "Bulk R-410A voor 12 daken"
+    "chip3": "Bulk R-410A voor 12 daken",
+    "mobileTitle": "Producten",
+    "backAria": "Terug",
+    "layoutToggleAria": "Weergave wisselen",
+    "aiPlaceholderShort": "Vraag AI een unit te matchen…",
+    "resetAll": "Alles resetten",
+    "applyShow": "{count, plural, one {Toon # product} other {Toon # producten}}",
+    "exVatShort": "excl. btw",
+    "catCylinders": "Cilinders",
+    "catBlends": "Mengsels",
+    "catEquipment": "Apparatuur",
+    "catRecovery": "Terugwinning"
   },
   "ProductDetail": {
     "crumbRoot": "Productlijst",

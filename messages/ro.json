@@ -542,7 +542,18 @@
     "resetFilters": "Resetează filtrele",
     "chip1": "Unitate Daikin comercială de 50 kW",
     "chip2": "Retrofit low-GWP, A2L permis",
-    "chip3": "R-410A în volum pentru 12 acoperișuri"
+    "chip3": "R-410A în volum pentru 12 acoperișuri",
+    "mobileTitle": "Produse",
+    "backAria": "Înapoi",
+    "layoutToggleAria": "Schimbă aspectul",
+    "aiPlaceholderShort": "Cereți AI-ului să potrivească o unitate…",
+    "resetAll": "Resetează tot",
+    "applyShow": "{count, plural, one {Arată # produs} few {Arată # produse} other {Arată # de produse}}",
+    "exVatShort": "fără TVA",
+    "catCylinders": "Butelii",
+    "catBlends": "Amestecuri",
+    "catEquipment": "Echipament",
+    "catRecovery": "Recuperare"
   },
   "ProductDetail": {
     "crumbRoot": "Lista de produse",

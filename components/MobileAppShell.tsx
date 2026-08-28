@@ -10,7 +10,10 @@ import { useCartCount } from "./CartCountProvider";
 // bottom element — set by explicit "no global nav" requirements when each
 // was built.
 const NAV_HIDDEN_PREFIXES = [
-  "/product",
+  // Trailing slashes: hide on detail pages (/product/x, /products/x) while
+  // the /products browser itself keeps the tab bar.
+  "/product/",
+  "/products/",
   "/profile/orders",
   "/profile/addresses",
   "/profile/docs",

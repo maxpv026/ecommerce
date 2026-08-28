@@ -542,7 +542,18 @@
     "resetFilters": "Reset filters",
     "chip1": "50kW commercial Daikin unit",
     "chip2": "Low-GWP retrofit, A2L allowed",
-    "chip3": "Bulk R-410A for 12 rooftops"
+    "chip3": "Bulk R-410A for 12 rooftops",
+    "mobileTitle": "Products",
+    "backAria": "Back",
+    "layoutToggleAria": "Switch layout",
+    "aiPlaceholderShort": "Ask AI to match a unit…",
+    "resetAll": "Reset all",
+    "applyShow": "Show {count, plural, one {# product} other {# products}}",
+    "exVatShort": "ex. VAT",
+    "catCylinders": "Cylinders",
+    "catBlends": "Blends",
+    "catEquipment": "Equipment",
+    "catRecovery": "Recovery"
   },
   "ProductDetail": {
     "crumbRoot": "Product List",

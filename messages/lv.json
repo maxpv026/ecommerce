@@ -542,7 +542,18 @@
     "resetFilters": "Atiestatīt filtrus",
     "chip1": "50 kW komerciāla Daikin iekārta",
     "chip2": "Zema GWP modernizācija, A2L atļauts",
-    "chip3": "Vairumā R-410A 12 jumtiem"
+    "chip3": "Vairumā R-410A 12 jumtiem",
+    "mobileTitle": "Produkti",
+    "backAria": "Atpakaļ",
+    "layoutToggleAria": "Mainīt izkārtojumu",
+    "aiPlaceholderShort": "Lūdziet AI pieskaņot iekārtu…",
+    "resetAll": "Atiestatīt visu",
+    "applyShow": "{count, plural, one {Rādīt # produktu} other {Rādīt # produktus}}",
+    "exVatShort": "bez PVN",
+    "catCylinders": "Baloni",
+    "catBlends": "Maisījumi",
+    "catEquipment": "Aprīkojums",
+    "catRecovery": "Atgūšana"
   },
   "ProductDetail": {
     "crumbRoot": "Produktu saraksts",

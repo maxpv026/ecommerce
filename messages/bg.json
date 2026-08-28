@@ -542,7 +542,18 @@
     "resetFilters": "Нулирай филтрите",
     "chip1": "Търговски агрегат Daikin 50 kW",
     "chip2": "Ретрофит с нисък GWP, A2L разрешен",
-    "chip3": "Едро R-410A за 12 покрива"
+    "chip3": "Едро R-410A за 12 покрива",
+    "mobileTitle": "Продукти",
+    "backAria": "Назад",
+    "layoutToggleAria": "Смяна на изгледа",
+    "aiPlaceholderShort": "Помолете AI да напасне агрегат…",
+    "resetAll": "Нулирай всичко",
+    "applyShow": "{count, plural, one {Покажи # продукт} other {Покажи # продукта}}",
+    "exVatShort": "без ДДС",
+    "catCylinders": "Бутилки",
+    "catBlends": "Смеси",
+    "catEquipment": "Оборудване",
+    "catRecovery": "Възстановяване"
   },
   "ProductDetail": {
     "crumbRoot": "Списък с продукти",

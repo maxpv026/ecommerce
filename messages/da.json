@@ -542,7 +542,18 @@
     "resetFilters": "Nulstil filtre",
     "chip1": "Kommerciel Daikin-enhed 50 kW",
     "chip2": "Low-GWP-retrofit, A2L tilladt",
-    "chip3": "Bulk R-410A til 12 tage"
+    "chip3": "Bulk R-410A til 12 tage",
+    "mobileTitle": "Produkter",
+    "backAria": "Tilbage",
+    "layoutToggleAria": "Skift layout",
+    "aiPlaceholderShort": "Bed AI om at matche en enhed…",
+    "resetAll": "Nulstil alt",
+    "applyShow": "{count, plural, one {Vis # produkt} other {Vis # produkter}}",
+    "exVatShort": "ekskl. moms",
+    "catCylinders": "Cylindre",
+    "catBlends": "Blandinger",
+    "catEquipment": "Udstyr",
+    "catRecovery": "Genvinding"
   },
   "ProductDetail": {
     "crumbRoot": "Produktliste",

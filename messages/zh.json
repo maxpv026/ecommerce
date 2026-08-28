@@ -542,7 +542,18 @@
     "resetFilters": "重置筛选",
     "chip1": "50kW 商用大金机组",
     "chip2": "低 GWP 改造,允许 A2L",
-    "chip3": "12 台屋顶机的批量 R-410A"
+    "chip3": "12 台屋顶机的批量 R-410A",
+    "mobileTitle": "产品",
+    "backAria": "返回",
+    "layoutToggleAria": "切换布局",
+    "aiPlaceholderShort": "让 AI 匹配机组…",
+    "resetAll": "全部重置",
+    "applyShow": "{count, plural, other {显示 # 款产品}}",
+    "exVatShort": "不含增值税",
+    "catCylinders": "钢瓶",
+    "catBlends": "混合气",
+    "catEquipment": "设备",
+    "catRecovery": "回收"
   },
   "ProductDetail": {
     "crumbRoot": "产品目录",

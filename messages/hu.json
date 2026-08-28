@@ -542,7 +542,18 @@
     "resetFilters": "Szűrők alaphelyzetbe",
     "chip1": "50 kW-os kereskedelmi Daikin egység",
     "chip2": "Low-GWP retrofit, A2L engedélyezett",
-    "chip3": "Nagytételű R-410A 12 tetőegységhez"
+    "chip3": "Nagytételű R-410A 12 tetőegységhez",
+    "mobileTitle": "Termékek",
+    "backAria": "Vissza",
+    "layoutToggleAria": "Elrendezés váltása",
+    "aiPlaceholderShort": "Kérje az AI-t egy egység párosítására…",
+    "resetAll": "Összes törlése",
+    "applyShow": "{count, plural, one {# termék megjelenítése} other {# termék megjelenítése}}",
+    "exVatShort": "ÁFA nélkül",
+    "catCylinders": "Palackok",
+    "catBlends": "Keverékek",
+    "catEquipment": "Felszerelés",
+    "catRecovery": "Visszanyerés"
   },
   "ProductDetail": {
     "crumbRoot": "Terméklista",

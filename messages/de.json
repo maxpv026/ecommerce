@@ -542,7 +542,18 @@
     "resetFilters": "Filter zurücksetzen",
     "chip1": "50-kW-Daikin-Gewerbeanlage",
     "chip2": "Low-GWP-Retrofit, A2L erlaubt",
-    "chip3": "R-410A in Menge für 12 Dachanlagen"
+    "chip3": "R-410A in Menge für 12 Dachanlagen",
+    "mobileTitle": "Produkte",
+    "backAria": "Zurück",
+    "layoutToggleAria": "Ansicht wechseln",
+    "aiPlaceholderShort": "KI nach einer Anlage fragen…",
+    "resetAll": "Alles zurücksetzen",
+    "applyShow": "{count, plural, one {# Produkt anzeigen} other {# Produkte anzeigen}}",
+    "exVatShort": "zzgl. MwSt.",
+    "catCylinders": "Flaschen",
+    "catBlends": "Gemische",
+    "catEquipment": "Ausrüstung",
+    "catRecovery": "Rückgewinnung"
   },
   "ProductDetail": {
     "crumbRoot": "Produktliste",

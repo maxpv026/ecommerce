@@ -542,7 +542,18 @@
     "resetFilters": "Återställ filter",
     "chip1": "Kommersiell Daikin-enhet 50 kW",
     "chip2": "Low-GWP-retrofit, A2L tillåtet",
-    "chip3": "Bulk R-410A till 12 tak"
+    "chip3": "Bulk R-410A till 12 tak",
+    "mobileTitle": "Produkter",
+    "backAria": "Tillbaka",
+    "layoutToggleAria": "Byt layout",
+    "aiPlaceholderShort": "Be AI matcha en enhet…",
+    "resetAll": "Återställ allt",
+    "applyShow": "{count, plural, one {Visa # produkt} other {Visa # produkter}}",
+    "exVatShort": "exkl. moms",
+    "catCylinders": "Cylindrar",
+    "catBlends": "Blandningar",
+    "catEquipment": "Utrustning",
+    "catRecovery": "Återvinning"
   },
   "ProductDetail": {
     "crumbRoot": "Produktlista",

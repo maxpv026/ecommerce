@@ -542,7 +542,18 @@
     "resetFilters": "Επαναφορά φίλτρων",
     "chip1": "Εμπορική μονάδα Daikin 50 kW",
     "chip2": "Retrofit χαμηλού GWP, επιτρέπεται A2L",
-    "chip3": "Χύδην R-410A για 12 ταράτσες"
+    "chip3": "Χύδην R-410A για 12 ταράτσες",
+    "mobileTitle": "Προϊόντα",
+    "backAria": "Πίσω",
+    "layoutToggleAria": "Αλλαγή διάταξης",
+    "aiPlaceholderShort": "Ζητήστε από το AI να ταιριάξει μονάδα…",
+    "resetAll": "Επαναφορά όλων",
+    "applyShow": "{count, plural, one {Εμφάνιση # προϊόντος} other {Εμφάνιση # προϊόντων}}",
+    "exVatShort": "χωρίς ΦΠΑ",
+    "catCylinders": "Φιάλες",
+    "catBlends": "Μείγματα",
+    "catEquipment": "Εξοπλισμός",
+    "catRecovery": "Ανάκτηση"
   },
   "ProductDetail": {
     "crumbRoot": "Λίστα προϊόντων",

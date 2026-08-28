@@ -542,7 +542,18 @@
     "resetFilters": "Filtreleri sıfırla",
     "chip1": "50 kW ticari Daikin ünitesi",
     "chip2": "Düşük GWP retrofit, A2L uygun",
-    "chip3": "12 çatı ünitesi için toplu R-410A"
+    "chip3": "12 çatı ünitesi için toplu R-410A",
+    "mobileTitle": "Ürünler",
+    "backAria": "Geri",
+    "layoutToggleAria": "Düzeni değiştir",
+    "aiPlaceholderShort": "AI'dan bir ünite eşleştirmesini isteyin…",
+    "resetAll": "Tümünü sıfırla",
+    "applyShow": "{count, plural, one {# ürünü göster} other {# ürünü göster}}",
+    "exVatShort": "KDV hariç",
+    "catCylinders": "Tüpler",
+    "catBlends": "Karışımlar",
+    "catEquipment": "Ekipman",
+    "catRecovery": "Geri kazanım"
   },
   "ProductDetail": {
     "crumbRoot": "Ürün Listesi",

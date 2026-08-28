@@ -542,7 +542,18 @@
     "resetFilters": "Athshocraigh scagairí",
     "chip1": "Aonad tráchtála Daikin 50 kW",
     "chip2": "Iarfheistiú GWP íseal, A2L ceadaithe",
-    "chip3": "R-410A ar an mórchóir do 12 dhíon"
+    "chip3": "R-410A ar an mórchóir do 12 dhíon",
+    "mobileTitle": "Táirgí",
+    "backAria": "Ar ais",
+    "layoutToggleAria": "Athraigh an leagan amach",
+    "aiPlaceholderShort": "Iarr ar AI aonad a mheaitseáil…",
+    "resetAll": "Athshocraigh gach rud",
+    "applyShow": "{count, plural, one {Taispeáin # táirge} two {Taispeáin # tháirge} few {Taispeáin # tháirge} many {Taispeáin # dtáirge} other {Taispeáin # táirge}}",
+    "exVatShort": "gan CBL",
+    "catCylinders": "Sorcóirí",
+    "catBlends": "Meascáin",
+    "catEquipment": "Trealamh",
+    "catRecovery": "Aisghabháil"
   },
   "ProductDetail": {
     "crumbRoot": "Liosta táirgí",

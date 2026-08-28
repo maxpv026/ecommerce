@@ -542,7 +542,18 @@
     "resetFilters": "Atstatyti filtrus",
     "chip1": "50 kW komercinis Daikin įrenginys",
     "chip2": "Mažo GWP modernizacija, A2L leidžiama",
-    "chip3": "Urmu R-410A 12 stogų"
+    "chip3": "Urmu R-410A 12 stogų",
+    "mobileTitle": "Produktai",
+    "backAria": "Atgal",
+    "layoutToggleAria": "Perjungti išdėstymą",
+    "aiPlaceholderShort": "Paprašykite AI priderinti įrenginį…",
+    "resetAll": "Atstatyti viską",
+    "applyShow": "{count, plural, one {Rodyti # produktą} few {Rodyti # produktus} other {Rodyti # produktų}}",
+    "exVatShort": "be PVM",
+    "catCylinders": "Balionai",
+    "catBlends": "Mišiniai",
+    "catEquipment": "Įranga",
+    "catRecovery": "Surinkimas"
   },
   "ProductDetail": {
     "crumbRoot": "Produktų sąrašas",

@@ -542,7 +542,18 @@
     "resetFilters": "Nollaa suodattimet",
     "chip1": "50 kW:n kaupallinen Daikin-yksikkö",
     "chip2": "Low-GWP-retrofit, A2L sallittu",
-    "chip3": "Bulk R-410A 12 kattoyksikköön"
+    "chip3": "Bulk R-410A 12 kattoyksikköön",
+    "mobileTitle": "Tuotteet",
+    "backAria": "Takaisin",
+    "layoutToggleAria": "Vaihda asettelua",
+    "aiPlaceholderShort": "Pyydä AI:ta sovittamaan yksikkö…",
+    "resetAll": "Nollaa kaikki",
+    "applyShow": "{count, plural, one {Näytä # tuote} other {Näytä # tuotetta}}",
+    "exVatShort": "alv 0 %",
+    "catCylinders": "Pullot",
+    "catBlends": "Seokset",
+    "catEquipment": "Laitteet",
+    "catRecovery": "Talteenotto"
   },
   "ProductDetail": {
     "crumbRoot": "Tuoteluettelo",

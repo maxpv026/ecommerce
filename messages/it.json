@@ -542,7 +542,18 @@
     "resetFilters": "Reimposta filtri",
     "chip1": "Unità Daikin commerciale da 50 kW",
     "chip2": "Retrofit basso GWP, A2L ammesso",
-    "chip3": "R-410A in volume per 12 tetti"
+    "chip3": "R-410A in volume per 12 tetti",
+    "mobileTitle": "Prodotti",
+    "backAria": "Indietro",
+    "layoutToggleAria": "Cambia layout",
+    "aiPlaceholderShort": "Chiedi all'IA di abbinare un'unità…",
+    "resetAll": "Reimposta tutto",
+    "applyShow": "{count, plural, one {Mostra # prodotto} other {Mostra # prodotti}}",
+    "exVatShort": "IVA escl.",
+    "catCylinders": "Bombole",
+    "catBlends": "Miscele",
+    "catEquipment": "Attrezzatura",
+    "catRecovery": "Recupero"
   },
   "ProductDetail": {
     "crumbRoot": "Elenco prodotti",

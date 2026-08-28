@@ -542,7 +542,18 @@
     "resetFilters": "필터 초기화",
     "chip1": "50kW 상업용 다이킨 유닛",
     "chip2": "Low-GWP 개조, A2L 허용",
-    "chip3": "옥상 12개용 R-410A 대량"
+    "chip3": "옥상 12개용 R-410A 대량",
+    "mobileTitle": "제품",
+    "backAria": "뒤로",
+    "layoutToggleAria": "레이아웃 전환",
+    "aiPlaceholderShort": "AI에게 장비 매칭 요청…",
+    "resetAll": "모두 초기화",
+    "applyShow": "{count, plural, other {제품 #개 보기}}",
+    "exVatShort": "VAT 별도",
+    "catCylinders": "실린더",
+    "catBlends": "혼합 가스",
+    "catEquipment": "장비",
+    "catRecovery": "회수"
   },
   "ProductDetail": {
     "crumbRoot": "제품 목록",

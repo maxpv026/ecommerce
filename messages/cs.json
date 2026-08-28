@@ -542,7 +542,18 @@
     "resetFilters": "Resetovat filtry",
     "chip1": "Komerční jednotka Daikin 50 kW",
     "chip2": "Retrofit s nízkým GWP, A2L povoleno",
-    "chip3": "Velkoobjemové R-410A pro 12 střech"
+    "chip3": "Velkoobjemové R-410A pro 12 střech",
+    "mobileTitle": "Produkty",
+    "backAria": "Zpět",
+    "layoutToggleAria": "Přepnout rozložení",
+    "aiPlaceholderShort": "Požádejte AI o párování jednotky…",
+    "resetAll": "Resetovat vše",
+    "applyShow": "{count, plural, one {Zobrazit # produkt} few {Zobrazit # produkty} many {Zobrazit # produktu} other {Zobrazit # produktů}}",
+    "exVatShort": "bez DPH",
+    "catCylinders": "Láhve",
+    "catBlends": "Směsi",
+    "catEquipment": "Vybavení",
+    "catRecovery": "Recyklace"
   },
   "ProductDetail": {
     "crumbRoot": "Seznam produktů",
