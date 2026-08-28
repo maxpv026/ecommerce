@@ -283,7 +283,14 @@
     "freightIncluded": "Inclus",
     "assuranceCoa": "Certificat de analiză trasabil pe lot",
     "assuranceFreight": "Transport asigurat conform ADR",
-    "assuranceFgas": "Certificat F-Gas verificat la plată"
+    "assuranceFgas": "Certificat F-Gas verificat la plată",
+    "itemCountShort": "{count, plural, one {# articol} few {# articole} other {# de articole}}",
+    "emptyBodyShort": "Fiecare comandă pleacă cu certificatul de analiză al lotului său.",
+    "swipeHint": "Glisați un card la stânga pentru a-l elimina",
+    "recKicker": "EXTRA RECOMANDATE DE AI",
+    "auditKickerShort": "AUDIT AI DE CONFORMITATE",
+    "laneRemove": "ELIMINĂ",
+    "laneRelease": "ELIBERAȚI"
   },
   "AccountProfile": {
     "navPersonalInfo": "Informații personale",

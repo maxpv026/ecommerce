@@ -283,7 +283,14 @@
     "freightIncluded": "Включено",
     "assuranceCoa": "Сертификат анализа с прослеживаемостью партии",
     "assuranceFreight": "Застрахованная перевозка по ADR",
-    "assuranceFgas": "Сертификат F-Gas проверяется при оплате"
+    "assuranceFgas": "Сертификат F-Gas проверяется при оплате",
+    "itemCountShort": "{count, plural, one {# товар} few {# товара} many {# товаров} other {# товара}}",
+    "emptyBodyShort": "Каждый заказ едет с сертификатом анализа своей партии.",
+    "swipeHint": "Смахните карточку влево, чтобы удалить",
+    "recKicker": "ДОПОЛНЕНИЯ, РЕКОМЕНДОВАННЫЕ AI",
+    "auditKickerShort": "AI-АУДИТ СООТВЕТСТВИЯ",
+    "laneRemove": "УДАЛИТЬ",
+    "laneRelease": "ОТПУСТИТЕ"
   },
   "AccountProfile": {
     "navPersonalInfo": "Личные данные",

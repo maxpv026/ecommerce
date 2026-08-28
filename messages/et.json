@@ -283,7 +283,14 @@
     "freightIncluded": "Hinnas",
     "assuranceCoa": "Partii kaupa jälgitav analüüsisertifikaat",
     "assuranceFreight": "ADR-nõuetele vastav kindlustatud vedu",
-    "assuranceFgas": "F-gaasi sertifikaat kontrollitakse maksmisel"
+    "assuranceFgas": "F-gaasi sertifikaat kontrollitakse maksmisel",
+    "itemCountShort": "{count, plural, one {# toode} other {# toodet}}",
+    "emptyBodyShort": "Iga tellimus saadetakse oma partii analüüsisertifikaadiga.",
+    "swipeHint": "Eemaldamiseks libistage kaarti vasakule",
+    "recKicker": "AI SOOVITATUD LISAD",
+    "auditKickerShort": "AI VASTAVUSAUDIT",
+    "laneRemove": "EEMALDA",
+    "laneRelease": "VABASTA"
   },
   "AccountProfile": {
     "navPersonalInfo": "Isikuandmed",

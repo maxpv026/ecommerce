@@ -283,7 +283,14 @@
     "freightIncluded": "Inkluderet",
     "assuranceCoa": "Batchsporbart analysecertifikat",
     "assuranceFreight": "ADR-konform forsikret fragt",
-    "assuranceFgas": "F-gascertifikat verificeres ved checkout"
+    "assuranceFgas": "F-gascertifikat verificeres ved checkout",
+    "itemCountShort": "{count, plural, one {# vare} other {# varer}}",
+    "emptyBodyShort": "Hver ordre sendes med partiets analysecertifikat.",
+    "swipeHint": "Stryg et kort til venstre for at fjerne det",
+    "recKicker": "AI-ANBEFALEDE TILFØJELSER",
+    "auditKickerShort": "AI-COMPLIANCE-AUDIT",
+    "laneRemove": "FJERN",
+    "laneRelease": "SLIP"
   },
   "AccountProfile": {
     "navPersonalInfo": "Personlige oplysninger",

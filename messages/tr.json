@@ -283,7 +283,14 @@
     "freightIncluded": "Dahil",
     "assuranceCoa": "Lot bazında izlenebilir analiz sertifikası",
     "assuranceFreight": "ADR uyumlu sigortalı taşıma",
-    "assuranceFgas": "F-Gas sertifikası ödeme sırasında doğrulanır"
+    "assuranceFgas": "F-Gas sertifikası ödeme sırasında doğrulanır",
+    "itemCountShort": "{count, plural, one {# ürün} other {# ürün}}",
+    "emptyBodyShort": "Her sipariş, lotunun analiz sertifikasıyla gönderilir.",
+    "swipeHint": "Kaldırmak için kartı sola kaydırın",
+    "recKicker": "AI ÖNERİLEN EKLER",
+    "auditKickerShort": "AI UYGUNLUK DENETİMİ",
+    "laneRemove": "KALDIR",
+    "laneRelease": "BIRAK"
   },
   "AccountProfile": {
     "navPersonalInfo": "Kişisel Bilgiler",

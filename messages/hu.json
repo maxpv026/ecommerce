@@ -283,7 +283,14 @@
     "freightIncluded": "Tartalmazza",
     "assuranceCoa": "Tételszinten követhető analízis-tanúsítvány",
     "assuranceFreight": "ADR-konform biztosított fuvar",
-    "assuranceFgas": "F-gáz tanúsítvány ellenőrzése fizetéskor"
+    "assuranceFgas": "F-gáz tanúsítvány ellenőrzése fizetéskor",
+    "itemCountShort": "{count, plural, one {# tétel} other {# tétel}}",
+    "emptyBodyShort": "Minden rendelés a tétele analízis-tanúsítványával érkezik.",
+    "swipeHint": "Húzza a kártyát balra az eltávolításhoz",
+    "recKicker": "AI ÁLTAL AJÁNLOTT KIEGÉSZÍTŐK",
+    "auditKickerShort": "AI MEGFELELŐSÉGI AUDIT",
+    "laneRemove": "TÖRLÉS",
+    "laneRelease": "ENGEDJE EL"
   },
   "AccountProfile": {
     "navPersonalInfo": "Személyes adatok",

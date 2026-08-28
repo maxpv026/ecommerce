@@ -283,7 +283,14 @@
     "freightIncluded": "Ingår",
     "assuranceCoa": "Batchspårbart analyscertifikat",
     "assuranceFreight": "ADR-förenlig försäkrad frakt",
-    "assuranceFgas": "F-gascertifikat verifieras i kassan"
+    "assuranceFgas": "F-gascertifikat verifieras i kassan",
+    "itemCountShort": "{count, plural, one {# artikel} other {# artiklar}}",
+    "emptyBodyShort": "Varje order skickas med partiets analyscertifikat.",
+    "swipeHint": "Svep ett kort åt vänster för att ta bort det",
+    "recKicker": "AI-REKOMMENDERADE TILLÄGG",
+    "auditKickerShort": "AI-EFTERLEVNADSGRANSKNING",
+    "laneRemove": "TA BORT",
+    "laneRelease": "SLÄPP"
   },
   "AccountProfile": {
     "navPersonalInfo": "Personlig information",

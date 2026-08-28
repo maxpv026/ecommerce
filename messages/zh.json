@@ -283,7 +283,14 @@
     "freightIncluded": "已包含",
     "assuranceCoa": "批次可追溯分析证书",
     "assuranceFreight": "符合 ADR 的投保运输",
-    "assuranceFgas": "结账时验证 F-Gas 证书"
+    "assuranceFgas": "结账时验证 F-Gas 证书",
+    "itemCountShort": "{count, plural, other {# 件商品}}",
+    "emptyBodyShort": "每份订单都随附其批次的分析证书。",
+    "swipeHint": "向左滑动卡片即可移除",
+    "recKicker": "AI 推荐加购",
+    "auditKickerShort": "AI 合规审核",
+    "laneRemove": "移除",
+    "laneRelease": "松开"
   },
   "AccountProfile": {
     "navPersonalInfo": "个人信息",

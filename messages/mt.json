@@ -283,7 +283,14 @@
     "freightIncluded": "Inkluż",
     "assuranceCoa": "Ċertifikat tal-analiżi traċċabbli skont il-lott",
     "assuranceFreight": "Trasport assigurat konformi mal-ADR",
-    "assuranceFgas": "Ċertifikat F-Gas ivverifikat mal-ħlas"
+    "assuranceFgas": "Ċertifikat F-Gas ivverifikat mal-ħlas",
+    "itemCountShort": "{count, plural, one {# oġġett} other {# oġġetti}}",
+    "emptyBodyShort": "Kull ordni tivvjaġġa biċ-ċertifikat tal-analiżi tal-lott tagħha.",
+    "swipeHint": "Imsaħ karta lejn ix-xellug biex tneħħiha",
+    "recKicker": "ŻIDIET RAKKOMANDATI MILL-AI",
+    "auditKickerShort": "AWDITU TAL-KONFORMITÀ AI",
+    "laneRemove": "NEĦĦI",
+    "laneRelease": "ITLAQ"
   },
   "AccountProfile": {
     "navPersonalInfo": "Informazzjoni Personali",

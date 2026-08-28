@@ -283,7 +283,14 @@
     "freightIncluded": "Included",
     "assuranceCoa": "Lot-traceable certificate of analysis",
     "assuranceFreight": "ADR-compliant insured freight",
-    "assuranceFgas": "F-Gas certificate verified at checkout"
+    "assuranceFgas": "F-Gas certificate verified at checkout",
+    "itemCountShort": "{count, plural, one {# item} other {# items}}",
+    "emptyBodyShort": "Every order ships with its lot certificate of analysis.",
+    "swipeHint": "Swipe a card left to remove it",
+    "recKicker": "AI RECOMMENDED ADD-ONS",
+    "auditKickerShort": "AI COMPLIANCE AUDIT",
+    "laneRemove": "REMOVE",
+    "laneRelease": "RELEASE"
   },
   "AccountProfile": {
     "navPersonalInfo": "Personal Info",

@@ -283,7 +283,14 @@
     "freightIncluded": "Uključeno",
     "assuranceCoa": "Certifikat analize sljediv po seriji",
     "assuranceFreight": "Osigurani prijevoz sukladan ADR-u",
-    "assuranceFgas": "F-Gas certifikat provjeren pri plaćanju"
+    "assuranceFgas": "F-Gas certifikat provjeren pri plaćanju",
+    "itemCountShort": "{count, plural, one {# artikl} few {# artikla} other {# artikala}}",
+    "emptyBodyShort": "Svaka narudžba putuje s certifikatom analize svoje serije.",
+    "swipeHint": "Povucite karticu ulijevo da je uklonite",
+    "recKicker": "DODACI KOJE PREPORUČUJE AI",
+    "auditKickerShort": "AI REVIZIJA USKLAĐENOSTI",
+    "laneRemove": "UKLONI",
+    "laneRelease": "PUSTI"
   },
   "AccountProfile": {
     "navPersonalInfo": "Osobni podaci",

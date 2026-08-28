@@ -283,7 +283,14 @@
     "freightIncluded": "Включено",
     "assuranceCoa": "Сертифікат аналізу з простежуваністю партії",
     "assuranceFreight": "Застраховане перевезення згідно з ADR",
-    "assuranceFgas": "Сертифікат F-Gas перевіряється під час оплати"
+    "assuranceFgas": "Сертифікат F-Gas перевіряється під час оплати",
+    "itemCountShort": "{count, plural, one {# товар} few {# товари} many {# товарів} other {# товару}}",
+    "emptyBodyShort": "Кожне замовлення їде із сертифікатом аналізу своєї партії.",
+    "swipeHint": "Проведіть карткою вліво, щоб видалити",
+    "recKicker": "ДОПОВНЕННЯ, РЕКОМЕНДОВАНІ AI",
+    "auditKickerShort": "AI-АУДИТ ВІДПОВІДНОСТІ",
+    "laneRemove": "ВИДАЛИТИ",
+    "laneRelease": "ВІДПУСТІТЬ"
   },
   "AccountProfile": {
     "navPersonalInfo": "Особисті дані",

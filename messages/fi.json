@@ -283,7 +283,14 @@
     "freightIncluded": "Sisältyy",
     "assuranceCoa": "Eräkohtaisesti jäljitettävä analyysitodistus",
     "assuranceFreight": "ADR-yhteensopiva vakuutettu rahti",
-    "assuranceFgas": "F-kaasutodistus varmennetaan kassalla"
+    "assuranceFgas": "F-kaasutodistus varmennetaan kassalla",
+    "itemCountShort": "{count, plural, one {# tuote} other {# tuotetta}}",
+    "emptyBodyShort": "Jokainen tilaus toimitetaan erän analyysitodistuksen kera.",
+    "swipeHint": "Poista kortti pyyhkäisemällä vasemmalle",
+    "recKicker": "AI:N SUOSITTELEMAT LISÄT",
+    "auditKickerShort": "AI-VAATIMUSTENMUKAISUUSTARKASTUS",
+    "laneRemove": "POISTA",
+    "laneRelease": "VAPAUTA"
   },
   "AccountProfile": {
     "navPersonalInfo": "Henkilötiedot",

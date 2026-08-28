@@ -283,7 +283,14 @@
     "freightIncluded": "Incluído",
     "assuranceCoa": "Certificado de análise rastreável por lote",
     "assuranceFreight": "Frete segurado conforme ADR",
-    "assuranceFgas": "Certificado F-Gas verificado no checkout"
+    "assuranceFgas": "Certificado F-Gas verificado no checkout",
+    "itemCountShort": "{count, plural, one {# artigo} other {# artigos}}",
+    "emptyBodyShort": "Cada encomenda segue com o certificado de análise do seu lote.",
+    "swipeHint": "Deslize um cartão para a esquerda para o remover",
+    "recKicker": "EXTRAS RECOMENDADOS PELA IA",
+    "auditKickerShort": "AUDITORIA IA DE CONFORMIDADE",
+    "laneRemove": "REMOVER",
+    "laneRelease": "SOLTAR"
   },
   "AccountProfile": {
     "navPersonalInfo": "Informação pessoal",

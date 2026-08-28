@@ -283,7 +283,14 @@
     "freightIncluded": "Включено",
     "assuranceCoa": "Сертификат за анализ, проследим по партида",
     "assuranceFreight": "Застрахован превоз по ADR",
-    "assuranceFgas": "F-Gas сертификатът се проверява при плащане"
+    "assuranceFgas": "F-Gas сертификатът се проверява при плащане",
+    "itemCountShort": "{count, plural, one {# артикул} other {# артикула}}",
+    "emptyBodyShort": "Всяка поръчка пътува със сертификата за анализ на своята партида.",
+    "swipeHint": "Плъзнете карта наляво, за да я премахнете",
+    "recKicker": "ДОБАВКИ, ПРЕПОРЪЧАНИ ОТ AI",
+    "auditKickerShort": "AI ОДИТ ЗА СЪОТВЕТСТВИЕ",
+    "laneRemove": "ПРЕМАХНИ",
+    "laneRelease": "ПУСНИ"
   },
   "AccountProfile": {
     "navPersonalInfo": "Лична информация",

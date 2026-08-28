@@ -283,7 +283,14 @@
     "freightIncluded": "Inbegrepen",
     "assuranceCoa": "Batch-traceerbaar analysecertificaat",
     "assuranceFreight": "ADR-conforme verzekerde vracht",
-    "assuranceFgas": "F-gassencertificaat geverifieerd bij afrekenen"
+    "assuranceFgas": "F-gassencertificaat geverifieerd bij afrekenen",
+    "itemCountShort": "{count, plural, one {# artikel} other {# artikelen}}",
+    "emptyBodyShort": "Elke bestelling wordt geleverd met het analysecertificaat van de batch.",
+    "swipeHint": "Veeg een kaart naar links om te verwijderen",
+    "recKicker": "AI-AANBEVOLEN EXTRA'S",
+    "auditKickerShort": "AI-COMPLIANCE-AUDIT",
+    "laneRemove": "VERWIJDER",
+    "laneRelease": "LOSLATEN"
   },
   "AccountProfile": {
     "navPersonalInfo": "Persoonlijke gegevens",

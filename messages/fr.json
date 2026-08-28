@@ -283,7 +283,14 @@
     "freightIncluded": "Inclus",
     "assuranceCoa": "Certificat d'analyse traçable par lot",
     "assuranceFreight": "Fret assuré conforme ADR",
-    "assuranceFgas": "Certificat F-Gas vérifié au paiement"
+    "assuranceFgas": "Certificat F-Gas vérifié au paiement",
+    "itemCountShort": "{count, plural, one {# article} other {# articles}}",
+    "emptyBodyShort": "Chaque commande part avec le certificat d'analyse de son lot.",
+    "swipeHint": "Glissez une carte vers la gauche pour la retirer",
+    "recKicker": "AJOUTS RECOMMANDÉS PAR L'IA",
+    "auditKickerShort": "AUDIT IA DE CONFORMITÉ",
+    "laneRemove": "RETIRER",
+    "laneRelease": "RELÂCHER"
   },
   "AccountProfile": {
     "navPersonalInfo": "Infos personnelles",

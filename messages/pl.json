@@ -283,7 +283,14 @@
     "freightIncluded": "W cenie",
     "assuranceCoa": "Certyfikat analizy identyfikowalny partią",
     "assuranceFreight": "Ubezpieczony fracht zgodny z ADR",
-    "assuranceFgas": "Certyfikat F-gazowy weryfikowany przy płatności"
+    "assuranceFgas": "Certyfikat F-gazowy weryfikowany przy płatności",
+    "itemCountShort": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
+    "emptyBodyShort": "Każde zamówienie jedzie z certyfikatem analizy swojej partii.",
+    "swipeHint": "Przesuń kartę w lewo, aby ją usunąć",
+    "recKicker": "DODATKI POLECANE PRZEZ AI",
+    "auditKickerShort": "AUDYT ZGODNOŚCI AI",
+    "laneRemove": "USUŃ",
+    "laneRelease": "PUŚĆ"
   },
   "AccountProfile": {
     "navPersonalInfo": "Dane osobowe",

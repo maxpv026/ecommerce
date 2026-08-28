@@ -283,7 +283,14 @@
     "freightIncluded": "Įskaičiuota",
     "assuranceCoa": "Pagal partiją atsekamas analizės sertifikatas",
     "assuranceFreight": "Apdraustas ADR atitinkantis gabenimas",
-    "assuranceFgas": "F-dujų sertifikatas tikrinamas atsiskaitant"
+    "assuranceFgas": "F-dujų sertifikatas tikrinamas atsiskaitant",
+    "itemCountShort": "{count, plural, one {# prekė} few {# prekės} other {# prekių}}",
+    "emptyBodyShort": "Kiekvienas užsakymas keliauja su savo partijos analizės sertifikatu.",
+    "swipeHint": "Braukite kortelę kairėn, kad pašalintumėte",
+    "recKicker": "AI REKOMENDUOJAMI PRIEDAI",
+    "auditKickerShort": "AI ATITIKTIES AUDITAS",
+    "laneRemove": "PAŠALINTI",
+    "laneRelease": "PALEISKITE"
   },
   "AccountProfile": {
     "navPersonalInfo": "Asmeninė informacija",

@@ -283,7 +283,14 @@
     "freightIncluded": "Inklusive",
     "assuranceCoa": "Chargenverfolgbares Analysezertifikat",
     "assuranceFreight": "ADR-konforme versicherte Fracht",
-    "assuranceFgas": "F-Gas-Zertifikat wird beim Checkout geprüft"
+    "assuranceFgas": "F-Gas-Zertifikat wird beim Checkout geprüft",
+    "itemCountShort": "{count, plural, one {# Artikel} other {# Artikel}}",
+    "emptyBodyShort": "Jede Bestellung wird mit dem Analysezertifikat ihrer Charge versandt.",
+    "swipeHint": "Karte nach links wischen zum Entfernen",
+    "recKicker": "KI-EMPFOHLENE ERGÄNZUNGEN",
+    "auditKickerShort": "KI-COMPLIANCE-PRÜFUNG",
+    "laneRemove": "ENTFERNEN",
+    "laneRelease": "LOSLASSEN"
   },
   "AccountProfile": {
     "navPersonalInfo": "Persönliche Daten",

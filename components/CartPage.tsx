@@ -610,7 +610,7 @@ export default function CartPage({ products }: CartPageProps) {
       </div>
 
       <div className="block md:hidden">
-        <MobileCartLayout />
+        <MobileCartLayout products={products} onCheckout={goToCheckout} />
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} callbackUrl="/checkout" />

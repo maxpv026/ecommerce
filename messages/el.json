@@ -283,7 +283,14 @@
     "freightIncluded": "Περιλαμβάνεται",
     "assuranceCoa": "Πιστοποιητικό ανάλυσης ιχνηλάσιμο ανά παρτίδα",
     "assuranceFreight": "Ασφαλισμένη μεταφορά κατά ADR",
-    "assuranceFgas": "Το πιστοποιητικό F-Gas επαληθεύεται στο ταμείο"
+    "assuranceFgas": "Το πιστοποιητικό F-Gas επαληθεύεται στο ταμείο",
+    "itemCountShort": "{count, plural, one {# προϊόν} other {# προϊόντα}}",
+    "emptyBodyShort": "Κάθε παραγγελία ταξιδεύει με το πιστοποιητικό ανάλυσης της παρτίδας της.",
+    "swipeHint": "Σύρετε μια κάρτα αριστερά για αφαίρεση",
+    "recKicker": "ΠΡΟΣΘΗΚΕΣ ΠΟΥ ΣΥΝΙΣΤΑ ΤΟ AI",
+    "auditKickerShort": "ΕΛΕΓΧΟΣ ΣΥΜΜΟΡΦΩΣΗΣ AI",
+    "laneRemove": "ΑΦΑΙΡΕΣΗ",
+    "laneRelease": "ΑΦΗΣΤΕ"
   },
   "AccountProfile": {
     "navPersonalInfo": "Προσωπικά στοιχεία",

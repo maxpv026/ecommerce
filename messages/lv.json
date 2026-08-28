@@ -283,7 +283,14 @@
     "freightIncluded": "Iekļauts",
     "assuranceCoa": "Pa partijām izsekojams analīzes sertifikāts",
     "assuranceFreight": "Apdrošināts ADR atbilstošs pārvadājums",
-    "assuranceFgas": "F-gāzu sertifikāts tiek pārbaudīts pie kases"
+    "assuranceFgas": "F-gāzu sertifikāts tiek pārbaudīts pie kases",
+    "itemCountShort": "{count, plural, one {# prece} other {# preces}}",
+    "emptyBodyShort": "Katrs pasūtījums ceļo ar savas partijas analīzes sertifikātu.",
+    "swipeHint": "Pavelciet karti pa kreisi, lai to noņemtu",
+    "recKicker": "AI IETEIKTIE PAPILDINĀJUMI",
+    "auditKickerShort": "AI ATBILSTĪBAS AUDITS",
+    "laneRemove": "NOŅEMT",
+    "laneRelease": "ATLAIST"
   },
   "AccountProfile": {
     "navPersonalInfo": "Personas dati",

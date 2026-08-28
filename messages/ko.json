@@ -283,7 +283,14 @@
     "freightIncluded": "포함",
     "assuranceCoa": "로트 추적 가능 분석 증명서",
     "assuranceFreight": "ADR 준수 보험 운송",
-    "assuranceFgas": "결제 시 F-Gas 인증서 확인"
+    "assuranceFgas": "결제 시 F-Gas 인증서 확인",
+    "itemCountShort": "{count, plural, other {#개 품목}}",
+    "emptyBodyShort": "모든 주문은 해당 로트의 분석 증명서와 함께 배송됩니다.",
+    "swipeHint": "카드를 왼쪽으로 밀어 삭제하세요",
+    "recKicker": "AI 추천 추가 품목",
+    "auditKickerShort": "AI 규정 준수 감사",
+    "laneRemove": "삭제",
+    "laneRelease": "놓기"
   },
   "AccountProfile": {
     "navPersonalInfo": "개인 정보",

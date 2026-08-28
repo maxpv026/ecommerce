@@ -283,7 +283,14 @@
     "freightIncluded": "Vključeno",
     "assuranceCoa": "Certifikat analize sledljiv po serijah",
     "assuranceFreight": "Zavarovan prevoz skladen z ADR",
-    "assuranceFgas": "Certifikat F-plinov preverjen ob plačilu"
+    "assuranceFgas": "Certifikat F-plinov preverjen ob plačilu",
+    "itemCountShort": "{count, plural, one {# izdelek} two {# izdelka} few {# izdelki} other {# izdelkov}}",
+    "emptyBodyShort": "Vsako naročilo potuje s certifikatom analize svoje serije.",
+    "swipeHint": "Povlecite kartico levo, da jo odstranite",
+    "recKicker": "DODATKI, KI JIH PRIPOROČA AI",
+    "auditKickerShort": "AI REVIZIJA SKLADNOSTI",
+    "laneRemove": "ODSTRANI",
+    "laneRelease": "SPUSTI"
   },
   "AccountProfile": {
     "navPersonalInfo": "Osebni podatki",

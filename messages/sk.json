@@ -283,7 +283,14 @@
     "freightIncluded": "V cene",
     "assuranceCoa": "Certifikát analýzy sledovateľný po šaržiach",
     "assuranceFreight": "Poistená preprava podľa ADR",
-    "assuranceFgas": "F-plynový certifikát overený pri platbe"
+    "assuranceFgas": "F-plynový certifikát overený pri platbe",
+    "itemCountShort": "{count, plural, one {# položka} few {# položky} many {# položky} other {# položiek}}",
+    "emptyBodyShort": "Každá objednávka ide s certifikátom analýzy svojej šarže.",
+    "swipeHint": "Potiahnite kartu doľava na odstránenie",
+    "recKicker": "DOPLNKY ODPORÚČANÉ AI",
+    "auditKickerShort": "AI AUDIT ZHODY",
+    "laneRemove": "ODSTRÁNIŤ",
+    "laneRelease": "PUSTITE"
   },
   "AccountProfile": {
     "navPersonalInfo": "Osobné údaje",

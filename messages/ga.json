@@ -283,7 +283,14 @@
     "freightIncluded": "San áireamh",
     "assuranceCoa": "Teastas anailíse inrianaithe de réir baisce",
     "assuranceFreight": "Lastas árachaithe comhlíontach le ADR",
-    "assuranceFgas": "Teastas F-Gás fíoraithe ag an seiceáil amach"
+    "assuranceFgas": "Teastas F-Gás fíoraithe ag an seiceáil amach",
+    "itemCountShort": "{count, plural, one {# mhír} two {# mhír} few {# mhír} many {# mír} other {# mír}}",
+    "emptyBodyShort": "Seoltar gach ordú le teastas anailíse a bhaisc.",
+    "swipeHint": "Svaidhpeáil cárta ar chlé chun é a bhaint",
+    "recKicker": "BREISEANNA MOLTA AG AI",
+    "auditKickerShort": "INIÚCHADH COMHLÍONTA AI",
+    "laneRemove": "BAIN",
+    "laneRelease": "SCAOIL"
   },
   "AccountProfile": {
     "navPersonalInfo": "Eolas Pearsanta",
