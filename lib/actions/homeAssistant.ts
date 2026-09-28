@@ -36,7 +36,7 @@ export async function askHomeAssistant(rawQuery: string): Promise<HomeAssistantR
       .map(
         (p) =>
           `- ${p.sku}: ${p.name} · ${p.category} · ${p.weight} · ${p.gwpClass}` +
-          (p.gwp ? ` · GWP ${p.gwp}` : "") + ` · €${p.price} · stock ${p.stock}`
+          (p.gwp ? ` · GWP ${p.gwp}` : "") + ` · €${p.pricePerKg}/kg (${p.weightKg} kg cylinder) · stock ${p.stock}`
       )
       .join("\n");
     const orderList = orders

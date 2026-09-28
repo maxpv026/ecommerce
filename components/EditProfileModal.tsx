@@ -16,13 +16,15 @@ const ProfileSchema = z.object({
   name: z.string().trim().min(2).max(120),
   companyName: z.string().trim().max(120),
   jobTitle: z.string().trim().max(80),
+  // Loose here; lib/actions/profile normalises and validates the real shape.
+  vatNumber: z.string().trim().max(20),
 });
 
 type ProfileForm = z.infer<typeof ProfileSchema>;
 
 interface EditProfileModalProps {
   open: boolean;
-  initial: { name: string; companyName: string; jobTitle: string };
+  initial: { name: string; companyName: string; jobTitle: string; vatNumber: string };
   onClose: () => void;
   /** Fires after a successful save (parent toasts + refreshes). */
   onSaved: () => void;
@@ -70,6 +72,7 @@ export default function EditProfileModal({ open, initial, onClose, onSaved }: Ed
     { key: "name" as const, label: t("epName") },
     { key: "companyName" as const, label: t("epCompany") },
     { key: "jobTitle" as const, label: t("epRole") },
+    { key: "vatNumber" as const, label: t("epVatNumber") },
   ];
 
   return (

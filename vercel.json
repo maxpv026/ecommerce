@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/smart-restock",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}

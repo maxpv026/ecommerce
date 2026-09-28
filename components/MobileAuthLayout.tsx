@@ -25,8 +25,15 @@ export default function MobileAuthLayout() {
     setPassword,
     confirmPassword,
     setConfirmPassword,
+    factor,
     digits,
     boxRefs,
+    codeMode,
+    canUseRecoveryCode,
+    toggleCodeMode,
+    recoveryCode,
+    setRecoveryCode,
+    recoveryRef,
     error,
     submitting,
     verifying,
@@ -60,15 +67,27 @@ export default function MobileAuthLayout() {
             </>
           ) : (
             <>
-              <h1 className="m-0 text-[24px] font-semibold tracking-[-.035em]">{t("checkEmailTitle")}</h1>
+              <h1 className="m-0 text-[24px] font-semibold tracking-[-.035em]">
+              {codeMode === "recovery"
+                ? t("recoveryTitle")
+                : factor === "totp"
+                  ? t("authenticatorTitle")
+                  : t("checkEmailTitle")}
+            </h1>
               <p className="mt-2 max-w-[280px] text-[13.5px] leading-[1.5] text-slate-500 dark:text-slate-400">
-                {t.rich("checkEmailSubtitle", {
+              {codeMode === "recovery" ? (
+                t("recoverySubtitle")
+              ) : factor === "totp" ? (
+                t("authenticatorSubtitle")
+              ) : (
+                t.rich("checkEmailSubtitle", {
                   email,
                   strong: (chunks) => (
                     <span className="font-semibold text-slate-700 dark:text-slate-300">{chunks}</span>
                   ),
-                })}
-              </p>
+                })
+              )}
+            </p>
             </>
           )}
         </div>
@@ -206,25 +225,51 @@ export default function MobileAuthLayout() {
           </>
         ) : (
           <form onSubmit={handleVerify} className="flex flex-col gap-5">
-            <div className="flex justify-center gap-2.5" onPaste={handlePaste}>
-              {digits.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => {
-                    boxRefs.current[idx] = el;
-                  }}
-                  value={digit}
-                  onChange={(e) => handleDigitChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleDigitKeyDown(idx, e)}
-                  inputMode="numeric"
-                  maxLength={1}
-                  aria-label={t("digitAriaLabel", { position: idx + 1 })}
-                  className="h-[58px] w-[46px] rounded-2xl border-[1.5px] border-slate-900/[.14] bg-white text-center text-[22px] font-semibold text-slate-900 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
-                />
-              ))}
-            </div>
+            {codeMode === "totp" ? (
+              <div className="flex justify-center gap-2.5" onPaste={handlePaste}>
+                {digits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => {
+                      boxRefs.current[idx] = el;
+                    }}
+                    value={digit}
+                    onChange={(e) => handleDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleDigitKeyDown(idx, e)}
+                    inputMode="numeric"
+                    maxLength={1}
+                    aria-label={t("digitAriaLabel", { position: idx + 1 })}
+                    className="h-[58px] w-[46px] rounded-2xl border-[1.5px] border-slate-900/[.14] bg-white text-center text-[22px] font-semibold text-slate-900 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
+                  />
+                ))}
+              </div>
+            ) : (
+            <input
+                ref={recoveryRef}
+                value={recoveryCode}
+                onChange={(e) => setRecoveryCode(e.target.value)}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoComplete="one-time-code"
+                aria-label={t("recoveryCodeLabel")}
+                placeholder={t("recoveryCodePlaceholder")}
+                className="h-[58px] w-full rounded-2xl border-[1.5px] border-slate-900/[.14] bg-white text-center font-mono text-[21px] font-semibold tracking-[.3em] text-slate-900 placeholder:font-sans placeholder:text-[15px] placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
+              />
+            )}
 
             {error && <p className="text-center text-[12.5px] font-medium text-red-600 dark:text-red-400">{error}</p>}
+
+            {canUseRecoveryCode && (
+              <button
+                type="button"
+                onClick={toggleCodeMode}
+                data-recovery-toggle
+                className="mx-auto -mt-1 text-[12.5px] font-semibold text-blue-700 underline-offset-4 transition-colors hover:underline dark:text-blue-400"
+              >
+                {codeMode === "totp" ? t("useRecoveryCode") : t("useAuthenticatorApp")}
+              </button>
+            )}
 
             <button
               type="submit"
@@ -244,14 +289,19 @@ export default function MobileAuthLayout() {
                 <ArrowLeft size={14} strokeWidth={2.2} />
                 {t("changeEmail")}
               </button>
-              <button
-                type="button"
-                onClick={resendCode}
-                disabled={submitting}
-                className="text-[12.5px] font-semibold text-blue-700 disabled:opacity-60 dark:text-blue-400"
-              >
-                {t("resendCode")}
-              </button>
+              {/* Nothing to resend for an authenticator account: lib/actions/otp
+                  returns factor:"totp" without sending any mail, so this button
+                  would silently do nothing. */}
+                            {factor !== "totp" && (
+                <button
+                  type="button"
+                  onClick={resendCode}
+                  disabled={submitting}
+                  className="text-[12.5px] font-semibold text-blue-700 disabled:opacity-60 dark:text-blue-400"
+                >
+                  {t("resendCode")}
+                </button>
+              )}
             </div>
           </form>
         )}

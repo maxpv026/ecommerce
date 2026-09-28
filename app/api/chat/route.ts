@@ -2,6 +2,7 @@ import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage }
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { cylinderGasPrice } from "@/lib/pricing";
 
 // This Next.js version has deprecated the Edge runtime (`runtime = "edge"`
 // is now a build error) — every route runs on Node.js, so no runtime/Node
@@ -17,7 +18,7 @@ You also have these capabilities:
 
 const checkInventoryAndPrices = tool({
   description:
-    "Look up real-time price, stock status, GWP class, and cylinder weight for a refrigerant product in the My Energy catalog by product name, refrigerant type, or exact SKU. Always call this before answering any question about stock, price, or availability — never guess or use outside knowledge for these figures.",
+    "Look up real-time pricing (EUR per kg, net cylinder weight in kg, the resulting per-cylinder gas price and the separate refundable cylinder deposit), stock status, GWP class, and pack size for a refrigerant product in the My Energy catalog by product name, refrigerant type, or exact SKU. Always call this before answering any question about stock, price, or availability — never guess or use outside knowledge for these figures.",
   inputSchema: z.object({
     query: z
       .string()
@@ -49,7 +50,12 @@ const checkInventoryAndPrices = tool({
       products: products.map((p) => ({
         sku: p.sku,
         name: p.name,
-        price: Number(p.price),
+        // Gas is priced per kilogram; one cylinder = pricePerKg × weightKg,
+        // plus a refundable per-cylinder deposit that is never in the gas price.
+        pricePerKg: p.pricePerKg,
+        weightKg: p.weightKg,
+        cylinderPrice: cylinderGasPrice(p.pricePerKg, p.weightKg),
+        cylinderDeposit: Number(p.cylinderDeposit),
         currency: "EUR",
         weight: p.weight,
         gwpClass: p.gwpClass,

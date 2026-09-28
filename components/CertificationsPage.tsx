@@ -26,14 +26,11 @@ const MOCK_DOC_ROWS = [
 ];
 
 export default function CertificationsPage() {
-  const [headerQuery, setHeaderQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <div className="flex-1 bg-white dark:bg-canvas">
       <Header
-        query={headerQuery}
-        onQueryChange={setHeaderQuery}
         onSignInClick={() => setIsAuthModalOpen(true)}
       />
 

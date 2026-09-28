@@ -16,14 +16,11 @@ interface AdminVaultProps {
 
 export default function AdminVault({ adminName, adminEmail, userCount, orderCount }: AdminVaultProps) {
   const t = useTranslations("Admin");
-  const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <div className="flex-1 bg-white dark:bg-canvas">
       <Header
-        query={query}
-        onQueryChange={setQuery}
         onSignInClick={() => setIsAuthModalOpen(true)}
       />
 

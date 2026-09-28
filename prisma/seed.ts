@@ -1,19 +1,35 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma";
+import { gasPricingFromLegacy } from "../lib/pricing";
+import { seedInventory } from "./inventory";
+
+// Legacy mock tiers were authored with a per-cylinder price and an lb pack
+// size; gasPricingFromLegacy() splits that into the per-kg rate + net kg the
+// schema now stores (the cylinder price they reproduce is unchanged).
+
+/** Per-kg breakdown snapshot for a seeded order line priced per cylinder. */
+function legacyOrderLine(cylinderPrice: number, lb: number) {
+  const { pricePerKg, weightKg } = gasPricingFromLegacy(cylinderPrice, lb);
+  return { pricePerKgAtPurchase: pricePerKg, weightKgAtPurchase: weightKg };
+}
 
 async function main() {
   const passwordHash = await bcrypt.hash("SecurePass123!", 12);
 
   const user = await prisma.user.upsert({
     where: { email: "m.pivovarov@appexoft.com" },
-    update: {},
+    // Re-running the seed must also repair a row created before fGasStatus
+    // existed, or the seeded account is silently blocked from checkout.
+    update: { epaVerified: true, fGasStatus: "VERIFIED" },
     create: {
       name: "Пивоваров Максим Романович",
       email: "m.pivovarov@appexoft.com",
       password: passwordHash,
       companyName: "Appexoft",
       epaVerified: true,
+      // Source of truth for every purchase gate; epaVerified is its mirror.
+      fGasStatus: "VERIFIED",
     },
   });
 
@@ -70,7 +86,7 @@ async function main() {
       create: {
         name: "R-410A Premium",
         sku: "HC-R410A-25",
-        price: 189,
+        ...gasPricingFromLegacy(189, 25),
         weight: "25 lb cylinder",
         gwpClass: "A1",
         inStock: true,
@@ -82,7 +98,7 @@ async function main() {
       create: {
         name: "R-32 Low GWP",
         sku: "HC-R32-25",
-        price: 212,
+        ...gasPricingFromLegacy(212, 25),
         weight: "25 lb cylinder",
         gwpClass: "A2L",
         inStock: true,
@@ -94,7 +110,7 @@ async function main() {
       create: {
         name: "R-134a Standard",
         sku: "HC-R134A-30",
-        price: 164,
+        ...gasPricingFromLegacy(164, 30),
         weight: "30 lb cylinder",
         gwpClass: "A1",
         inStock: true,
@@ -124,26 +140,26 @@ async function main() {
   const catalogTiers: Array<{
     sku: string;
     name: string;
-    price: number;
-    weight: string;
+    cylinderPrice: number;
+    lb: number;
     gwpClass: string;
   }> = [
-    { sku: "HC-410A-100", name: "R-410A Bulk", price: 618, weight: "100 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-410A-50", name: "R-410A Service Pack", price: 342, weight: "50 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-404A-24", name: "R-404A Reclaimed", price: 298, weight: "24 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-404A-50", name: "R-404A Virgin", price: 512, weight: "50 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-407C-25", name: "R-407C Service", price: 236, weight: "25 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-407C-100", name: "R-407C Bulk", price: 742, weight: "100 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-134A-50", name: "R-134a Bulk", price: 268, weight: "50 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-134A-25", name: "R-134a Compact", price: 148, weight: "25 lb cylinder", gwpClass: "A1" },
-    { sku: "HC-R32-50", name: "R-32 Bulk", price: 398, weight: "50 lb cylinder", gwpClass: "A2L" },
+    { sku: "HC-410A-100", name: "R-410A Bulk", cylinderPrice: 618, lb: 100, gwpClass: "A1" },
+    { sku: "HC-410A-50", name: "R-410A Service Pack", cylinderPrice: 342, lb: 50, gwpClass: "A1" },
+    { sku: "HC-404A-24", name: "R-404A Reclaimed", cylinderPrice: 298, lb: 24, gwpClass: "A1" },
+    { sku: "HC-404A-50", name: "R-404A Virgin", cylinderPrice: 512, lb: 50, gwpClass: "A1" },
+    { sku: "HC-407C-25", name: "R-407C Service", cylinderPrice: 236, lb: 25, gwpClass: "A1" },
+    { sku: "HC-407C-100", name: "R-407C Bulk", cylinderPrice: 742, lb: 100, gwpClass: "A1" },
+    { sku: "HC-134A-50", name: "R-134a Bulk", cylinderPrice: 268, lb: 50, gwpClass: "A1" },
+    { sku: "HC-134A-25", name: "R-134a Compact", cylinderPrice: 148, lb: 25, gwpClass: "A1" },
+    { sku: "HC-R32-50", name: "R-32 Bulk", cylinderPrice: 398, lb: 50, gwpClass: "A2L" },
   ];
   await Promise.all(
-    catalogTiers.map((p) =>
+    catalogTiers.map(({ cylinderPrice, lb, ...p }) =>
       prisma.product.upsert({
         where: { sku: p.sku },
         update: {},
-        create: { ...p, inStock: true },
+        create: { ...p, weight: `${lb} lb cylinder`, ...gasPricingFromLegacy(cylinderPrice, lb), inStock: true },
       })
     )
   );
@@ -172,15 +188,25 @@ async function main() {
     });
   }
 
+  // Equipment is sold outright per unit (weightKg 1, pricePerKg = the unit
+  // price; no returnable cylinder → no deposit) and isn't in the CRM's
+  // refrigerant feed, so it gets a working quantity here.
   const extraCategories = [
-    { sku: "HC-BLEND-C1", name: "Custom Blend C1", price: 342, weight: "25 lb cylinder", gwpClass: "A2L", purity: 99.99, gwp: 890, stock: "order", category: "blends" },
-    { sku: "HC-MAN-4V", name: "4-Valve Manifold", price: 148, weight: "Set", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "equipment" },
-    { sku: "HC-REC-50", name: "Recovery Cylinder 50 lb", price: 132, weight: "50 lb cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "recovery" },
+    { sku: "HC-BLEND-C1", name: "Custom Blend C1", ...gasPricingFromLegacy(342, 25), weight: "25 lb cylinder", gwpClass: "A2L", purity: 99.99, gwp: 890, stock: "order", category: "blends", cylinderDeposit: 15, stockQuantity: 0 },
+    { sku: "HC-MAN-4V", name: "4-Valve Manifold", pricePerKg: 148, weightKg: 1, weight: "Set", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "equipment", cylinderDeposit: 0, stockQuantity: 100 },
+    { sku: "HC-REC-50", name: "Recovery Cylinder 50 lb", pricePerKg: 132, weightKg: 1, weight: "50 lb cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "recovery", cylinderDeposit: 0, stockQuantity: 100 },
   ];
   for (const p of extraCategories) {
     await prisma.product.upsert({
       where: { sku: p.sku },
-      update: { stock: p.stock, category: p.category },
+      update: {
+        stock: p.stock,
+        category: p.category,
+        cylinderDeposit: p.cylinderDeposit,
+        stockQuantity: p.stockQuantity,
+        pricePerKg: p.pricePerKg,
+        weightKg: p.weightKg,
+      },
       create: { ...p, inStock: true },
     });
   }
@@ -198,7 +224,7 @@ async function main() {
       totalAmount: 378,
       estimatedDelivery: new Date(Date.now() + 24 * 60 * 60 * 1000),
       items: {
-        create: [{ productId: r410a.id, quantity: 2, priceAtPurchase: 189 }],
+        create: [{ productId: r410a.id, quantity: 2, priceAtPurchase: 189, ...legacyOrderLine(189, 25) }],
       },
     },
   });
@@ -214,12 +240,17 @@ async function main() {
       estimatedDelivery: new Date("2026-08-15"),
       items: {
         // 4x R-410A @ €189 = €756, matching the mock order total exactly.
-        create: [{ productId: r410a.id, quantity: 4, priceAtPurchase: 189 }],
+        create: [{ productId: r410a.id, quantity: 4, priceAtPurchase: 189, ...legacyOrderLine(189, 25) }],
       },
     },
   });
 
-  console.log("Seed complete:", { user: user.email });
+  // CRM-listed refrigerants, base retail prices and initial availability.
+  // Runs last so it can retire the legacy mock cylinder tiers seeded above
+  // (they stay in the table for order history, but become unavailable).
+  const inventory = await seedInventory(prisma);
+
+  console.log("Seed complete:", { user: user.email, inventory });
 }
 
 main()

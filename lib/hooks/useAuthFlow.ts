@@ -11,6 +11,31 @@ import { requestEmailOtp, type RequestOtpErrorCode } from "@/lib/actions/otp";
 
 export type AuthMode = "signin" | "register";
 export type AuthStep = "credentials" | "code";
+/**
+ * Which second factor the user is typing.
+ *
+ * Only offered to accounts whose factor is "totp": an emailed one-time code
+ * has no recovery codes behind it, so showing the switch there would promise
+ * something that cannot work.
+ */
+export type CodeMode = "totp" | "recovery";
+
+/** Recovery codes are eight hex characters — see RECOVERY_CODE_* in lib/twoFactor. */
+const RECOVERY_CODE_LENGTH = 8;
+
+/**
+ * Keeps only the characters a recovery code can contain, lowercased.
+ *
+ * The TOTP boxes strip everything non-numeric, which is correct for them and
+ * is exactly why recovery codes were unreachable before this: a code like
+ * "a3f0b91c" lost six of its eight characters on the way in, and the form
+ * refused to submit anything that was not six digits. Separate input, separate
+ * filter. Spaces and dashes are dropped so a code copied out of the printed
+ * list still works.
+ */
+export function normalizeRecoveryInput(raw: string): string {
+  return raw.toLowerCase().replace(/[^0-9a-f]/g, "").slice(0, RECOVERY_CODE_LENGTH);
+}
 
 const CredentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -51,15 +76,46 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
 
   const [mode, setModeState] = useState<AuthMode>(options.initialMode ?? "signin");
   const [step, setStep] = useState<AuthStep>("credentials");
+  // Which second factor this account uses, so the code screen can say where
+  // to look. Accounts with an authenticator are never emailed a code.
+  const [factor, setFactor] = useState<"email" | "totp">("email");
   const [email, setEmail] = useState(options.initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
+  const [codeMode, setCodeMode] = useState<CodeMode>("totp");
+  const [recoveryCode, setRecoveryCodeState] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const boxRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const recoveryRef = useRef<HTMLInputElement | null>(null);
+
+  /** Only authenticator accounts have recovery codes to fall back to. */
+  const canUseRecoveryCode = factor === "totp";
+
+  const setRecoveryCode = (raw: string) => setRecoveryCodeState(normalizeRecoveryInput(raw));
+
+  /**
+   * Switches between the six digit boxes and the recovery field, clearing
+   * whichever input is being left behind — a half-typed TOTP must not be
+   * submitted as a recovery code, and vice versa.
+   */
+  const toggleCodeMode = () => {
+    setError(null);
+    setCodeMode((prev) => {
+      const next = prev === "totp" ? "recovery" : "totp";
+      if (next === "recovery") {
+        setDigits(["", "", "", "", "", ""]);
+        setTimeout(() => recoveryRef.current?.focus(), 50);
+      } else {
+        setRecoveryCodeState("");
+        setTimeout(() => boxRefs.current[0]?.focus(), 50);
+      }
+      return next;
+    });
+  };
 
   const setMode = (next: AuthMode) => {
     setModeState(next);
@@ -90,6 +146,9 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     }
 
     setDigits(["", "", "", "", "", ""]);
+    setRecoveryCodeState("");
+    setCodeMode("totp");
+    setFactor(result.factor);
     setStep("code");
     setTimeout(() => boxRefs.current[0]?.focus(), 50);
   };
@@ -131,8 +190,19 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
 
   const handleVerify = async (e: FormEvent) => {
     e.preventDefault();
-    const code = digits.join("");
-    if (code.length !== 6) {
+
+    // One field is live at a time, and each has its own completeness rule.
+    // auth.ts tells the two apart by shape (six digits vs eight hex), so the
+    // server needs no flag from us — but sending a half-finished value would
+    // spend one of the account's five attempts before the lockout, which is
+    // why both lengths are enforced here first.
+    const code = codeMode === "recovery" ? recoveryCode : digits.join("");
+    if (codeMode === "recovery") {
+      if (code.length !== RECOVERY_CODE_LENGTH) {
+        setError(t("errorIncompleteRecoveryCode"));
+        return;
+      }
+    } else if (code.length !== 6) {
       setError(t("errorIncompleteCode"));
       return;
     }
@@ -142,8 +212,9 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     const result = await signIn("credentials", { email, password, code, redirect: false });
     if (result?.error) {
       setVerifying(false);
-      setError(t("errorInvalidCode"));
-      toast.error(t("errorInvalidCode"));
+      const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : "errorInvalidCode";
+      setError(t(key));
+      toast.error(t(key));
       return;
     }
 
@@ -180,9 +251,12 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
   const goBackToCredentials = () => {
     setStep("credentials");
     setError(null);
+    setCodeMode("totp");
+    setRecoveryCodeState("");
   };
 
   return {
+    factor,
     t,
     mode,
     setMode,
@@ -195,6 +269,12 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     setConfirmPassword,
     digits,
     boxRefs,
+    codeMode,
+    canUseRecoveryCode,
+    toggleCodeMode,
+    recoveryCode,
+    setRecoveryCode,
+    recoveryRef,
     error,
     submitting,
     verifying,

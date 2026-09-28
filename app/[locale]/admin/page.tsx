@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { auth } from "@/auth";
-import { redirect } from "@/i18n/navigation";
 import prisma from "@/lib/prisma";
+import { guardAdmin } from "@/lib/admin/guardAdmin";
 import AdminVault from "@/components/AdminVault";
 
 export const metadata: Metadata = {
@@ -14,21 +13,16 @@ interface AdminPageProps {
 }
 
 export default async function AdminPage({ params }: AdminPageProps) {
-  const { locale } = await params;
-
-  // Second wall behind the proxy.ts gate: even if the Edge layer were ever
-  // misconfigured, a non-ADMIN session never renders this page.
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") {
-    redirect({ href: "/", locale });
-  }
+  // One shared gate for every admin route — role, ADMIN_EMAIL and an enrolled
+  // second factor, all re-read from the database. See lib/admin/guardAdmin.
+  const admin = await guardAdmin(params);
 
   const [userCount, orderCount] = await Promise.all([prisma.user.count(), prisma.order.count()]);
 
   return (
     <AdminVault
-      adminName={session!.user!.name ?? session!.user!.email ?? ""}
-      adminEmail={session!.user!.email ?? ""}
+      adminName={admin.name}
+      adminEmail={admin.email}
       userCount={userCount}
       orderCount={orderCount}
     />

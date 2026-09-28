@@ -4,30 +4,63 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import dynamic from "next/dynamic";
-import { Award, ChevronLeft, Droplet, Gauge, Minus, Plus, ShieldCheck, ShoppingCart } from "lucide-react";
-import type { ProductDetail } from "@/lib/types";
+import { Award, ChevronLeft, Gauge, Minus, Package, Plus, ShieldCheck, ShoppingCart } from "lucide-react";
+import { isPurchasable } from "@/lib/waitlist";
+import { useHydrated } from "@/lib/hooks/useHydrated";
+import { selectCartCount, useCartStore } from "@/lib/store/cart";
+import type { StoreProduct } from "@/lib/data";
 
-const ThreeCylinder = dynamic(() => import("./ThreeCylinder"), { ssr: false });
+const ProductModelViewer = dynamic(() => import("./3d/ProductModelViewer"), { ssr: false });
 
-const CLASS_LABELS: Record<string, string> = {
-  A1: "A1 Non-Flammable",
-  A2L: "A2L Mildly Flammable",
+/** Shown for anything without a model of its own. Hoisted for memo stability. */
+const CYLINDER_OUTLINE = (
+  <span className="absolute inset-0 grid place-items-center">
+    <span className="block h-[190px] w-[98px] rounded-t-[70px] rounded-b-xl border border-dashed border-slate-900/20 bg-white/80 dark:border-white/20 dark:bg-white/10" />
+  </span>
+);
+
+const CATEGORY_KEY: Record<string, string> = {
+  cylinders: "cylTitle",
+  blends: "blendTitle",
+  equipment: "eqTitle",
+  recovery: "recTitle",
 };
 
+const STOCK_KEY = { in: "stockIn", low: "stockLow", order: "stockOrder", out: "stockOut" } as const;
+
 interface MobilePdpLayoutProps {
-  product: ProductDetail;
-  initialWeightId?: string;
+  product: StoreProduct;
+  /**
+   * Sibling SKUs of the same refrigerant, which is what the size selector
+   * offers. In the real catalogue a "weight tier" is not a field on a
+   * product — it is a separate Product row (R-410A 10 kg, 25 lb, 50 lb …),
+   * so the tiers have to be passed in rather than read off `product`.
+   */
+  variants: StoreProduct[];
 }
 
-export default function MobilePdpLayout({ product, initialWeightId }: MobilePdpLayoutProps) {
+export default function MobilePdpLayout({ product, variants }: MobilePdpLayoutProps) {
   const t = useTranslations("Pdp");
+  // The orbit hint is authored once, under ProductDetail, in all 29 locales.
+  const tStage = useTranslations("ProductDetail");
+  const tProducts = useTranslations("Products");
+  const tCat = useTranslations("Categories");
   const format = useFormatter();
   const formatEur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
-  const [weightId, setWeightId] = useState(initialWeightId ?? product.defaultWeightId);
+
+  const [selectedId, setSelectedId] = useState(product.id);
   const [qty, setQty] = useState(1);
-  const [cartCount, setCartCount] = useState(2);
   const [added, setAdded] = useState(false);
   const addedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const addItem = useCartStore((s) => s.addItem);
+  // Same pattern as the global nav badge: the persisted cart is the single
+  // source of truth, and the count is withheld until hydration so the first
+  // client render matches the server HTML. This used to be `useState(2)` —
+  // a design-mock literal that showed "2" to a visitor with an empty cart.
+  const hydrated = useHydrated();
+  const realCartCount = useCartStore(selectCartCount);
+  const cartCount = hydrated ? realCartCount : 0;
 
   useEffect(() => {
     return () => {
@@ -35,27 +68,61 @@ export default function MobilePdpLayout({ product, initialWeightId }: MobilePdpL
     };
   }, []);
 
-  const selectedWeight = product.weights.find((w) => w.id === weightId) ?? product.weights[0];
-  const total = selectedWeight.price * qty;
+  const selected = variants.find((v) => v.id === selectedId) ?? product;
 
-  const specs = useMemo(() => {
-    const valueFor = (label: string) => product.keySpecs.find((s) => s.label === label)?.value ?? "—";
-    const safety = valueFor("Safety");
-    return [
-      { label: "GWP", value: valueFor("GWP"), Icon: Gauge },
-      { label: "OIL", value: "POE", Icon: Droplet },
-      { label: "CLASS", value: CLASS_LABELS[safety] ?? safety, Icon: ShieldCheck },
-      { label: "PURITY", value: valueFor("Purity"), Icon: Award },
-    ];
-  }, [product.keySpecs]);
+  // Availability is derived once and every branch reads it, so the badge can
+  // never say "In stock" next to a disabled button (the same rule the
+  // desktop PDP follows).
+  const isAvailable = isPurchasable(selected);
+  const priced = selected.pricePerKg > 0;
+  const canBuy = isAvailable && priced;
+  const stockKey = !isAvailable ? "out" : selected.stockLevel === "out" ? "in" : selected.stockLevel;
 
-  const selectWeight = (id: string) => {
-    setWeightId(id);
+  const total = selected.cylinderPrice * qty;
+
+  const specs = useMemo(
+    () => [
+      // Every value here is a real column. The previous version hardcoded
+      // OIL: "POE" for every product — an invented compatibility claim, in
+      // the one domain where guessing a spec is genuinely unsafe.
+      {
+        label: "GWP",
+        value: selected.gwp !== null ? String(selected.gwp) : tProducts("na"),
+        Icon: Gauge,
+      },
+      { label: "CLASS", value: selected.gwpClass, Icon: ShieldCheck },
+      {
+        label: "PURITY",
+        value: selected.purity !== null ? `${selected.purity}%` : tProducts("na"),
+        Icon: Award,
+      },
+      { label: t("netWeight").toUpperCase(), value: selected.weightLabel, Icon: Package },
+    ],
+    [selected, t, tProducts]
+  );
+
+  const selectVariant = (id: string) => {
+    setSelectedId(id);
     setAdded(false);
   };
 
   const addToCart = () => {
-    setCartCount((c) => c + qty);
+    if (!canBuy) return;
+    // The real write, with the full line shape the cart is keyed on —
+    // deposit included, straight off the selected row.
+    addItem(
+      {
+        sku: selected.sku,
+        name: selected.name,
+        variant: selected.weightLabel,
+        pricePerKg: selected.pricePerKg,
+        weightKg: selected.weightKg,
+        deposit: selected.cylinderDeposit,
+      },
+      qty
+    );
+    // Confirmation follows the write, so it can never report a success that
+    // did not happen.
     setAdded(true);
     if (addedTimeout.current) clearTimeout(addedTimeout.current);
     addedTimeout.current = setTimeout(() => setAdded(false), 1400);
@@ -70,48 +137,79 @@ export default function MobilePdpLayout({ product, initialWeightId }: MobilePdpL
           <div className="absolute -right-[110px] -top-[100px] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-40 blur-[90px] [animation:hc-float_28s_ease-in-out_infinite_reverse] dark:opacity-[.5]" />
           <div className="absolute -top-[90px] left-[28%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#e0e7ff,rgba(224,231,255,0)_70%)] opacity-50 blur-[70px] [animation:hc-float_32s_ease-in-out_infinite] dark:opacity-[.18]" />
         </div>
-        <ThreeCylinder modelPath={product.modelPath} />
+        {/* The real SKU is the viewer's primary resolution signal; the name
+            covers the few SKUs that drop the "R" and are only identifiable
+            from it. Follows the selected size. */}
+        <ProductModelViewer
+          sku={selected.sku}
+          name={selected.name}
+          className="absolute inset-0"
+          badgeLabel={tStage("stageTag")}
+          poster={CYLINDER_OUTLINE}
+        />
       </div>
 
       {/* Overlapping info card: slides up over the hero as the user scrolls */}
       <div className="relative -mt-6.5 rounded-t-[26px] bg-white shadow-[0_-14px_34px_-22px_rgba(15,23,42,0.28)] dark:bg-slate-950">
         <div className="px-5 pt-5.5">
           <div className="mb-2.5 text-[11px] tracking-[.09em] text-slate-400 dark:text-slate-500">
-            {product.category}
+            {tCat(CATEGORY_KEY[selected.category] ?? "cylTitle")}
           </div>
           <h1 className="m-0 text-[25px] font-semibold leading-[1.15] tracking-[-.035em] text-balance">
-            {product.name}
+            {selected.name}
           </h1>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-[11px]">
-            <span className="text-[26px] font-semibold tracking-[-.04em] tabular-nums">{formatEur(total)}</span>
-            <span className="flex items-center gap-1.5 rounded-full border border-emerald-600/20 bg-emerald-50 px-2.5 py-[5px] text-[11px] font-semibold text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-950 dark:text-emerald-400">
-              <span className="h-[5px] w-[5px] rounded-full bg-emerald-600 dark:bg-emerald-400" />
-              {t("inStockShipsToday")}
+            <span className="text-[26px] font-semibold tracking-[-.04em] tabular-nums">
+              {priced ? formatEur(total) : tProducts("priceOnRequest")}
+            </span>
+            {/* Reflects the row, rather than asserting "In stock · ships
+                today" for everything the way the mock did. */}
+            <span
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-[5px] text-[11px] font-semibold ${
+                isAvailable
+                  ? "border-emerald-600/20 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-950 dark:text-emerald-400"
+                  : "border-slate-900/[.08] bg-slate-100 text-slate-500 dark:border-white/10 dark:bg-white/[.06] dark:text-slate-400"
+              }`}
+            >
+              <span
+                className={`h-[5px] w-[5px] rounded-full ${
+                  isAvailable ? "bg-emerald-600 dark:bg-emerald-400" : "bg-slate-400"
+                }`}
+              />
+              {tProducts(STOCK_KEY[stockKey])}
             </span>
           </div>
-          <p className="mt-3.5 text-[13.5px] leading-[1.6] text-slate-600 text-pretty dark:text-slate-400">
-            {product.description}
-          </p>
+          {/* The mock carried a marketing paragraph per product. There is no
+              description column behind it, so rather than invent copy this
+              slot now shows the per-kg rate the cylinder figure is derived
+              from — which is what a trade buyer actually compares on. */}
+          {priced && selected.pricedPerKg ? (
+            <p className="mt-3.5 text-[13.5px] leading-[1.6] text-slate-600 text-pretty dark:text-slate-400">
+              {tProducts("perKgAmountExVat", { amount: formatEur(selected.pricePerKg) })}
+            </p>
+          ) : null}
         </div>
 
         <div className="px-5 pt-6">
           <div className="mb-2.5 text-[12.5px] font-semibold tracking-[-.015em]">{t("selectSize")}</div>
           <div className="flex flex-wrap gap-2">
-            {product.weights.map((w) => {
-              const selected = w.id === weightId;
+            {variants.map((v) => {
+              const active = v.id === selected.id;
+              const sellable = isPurchasable(v) && v.pricePerKg > 0;
               return (
                 <button
-                  key={w.id}
+                  key={v.id}
                   type="button"
-                  onClick={() => selectWeight(w.id)}
+                  onClick={() => selectVariant(v.id)}
+                  aria-pressed={active}
                   className={`h-[42px] rounded-full px-[18px] text-[13px] font-semibold tracking-[-.01em] transition-colors ${
-                    selected
+                    active
                       ? "bg-blue-700 text-white shadow-[0_10px_22px_-12px_rgba(29,78,216,0.8)]"
                       : "bg-slate-100 text-slate-600 dark:bg-white/[.07] dark:text-slate-400"
-                  }`}
+                  } ${!active && !sellable ? "opacity-45" : ""}`}
                 >
-                  {w.label}
+                  {v.weightLabel}
                 </button>
               );
             })}
@@ -153,7 +251,7 @@ export default function MobilePdpLayout({ product, initialWeightId }: MobilePdpL
       {/* Transparent overlay header — scrolls away with the hero, not fixed */}
       <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4.5 pt-14">
         <Link
-          href="/cylinders"
+          href="/products"
           aria-label={t("backAria")}
           className="flex h-11 w-11 items-center justify-center rounded-full border border-white/75 bg-white/66 text-slate-900 shadow-[0_10px_24px_-14px_rgba(15,23,42,0.4)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-50"
         >
@@ -198,12 +296,18 @@ export default function MobilePdpLayout({ product, initialWeightId }: MobilePdpL
           <button
             type="button"
             onClick={addToCart}
-            className={`flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold tracking-[-.01em] text-white shadow-[0_16px_34px_-12px_rgba(29,78,216,0.85)] transition-colors ${
+            disabled={!canBuy}
+            aria-label={t("addToCart")}
+            className={`flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold tracking-[-.01em] text-white shadow-[0_16px_34px_-12px_rgba(29,78,216,0.85)] transition-colors disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none dark:disabled:bg-white/10 ${
               added ? "bg-emerald-600" : "bg-blue-700"
             }`}
           >
             <Plus size={17} strokeWidth={2.4} />
-            {added ? t("addedToCart") : t("addToCart")}
+            {!canBuy
+              ? tProducts(priced ? STOCK_KEY.out : "priceOnRequest")
+              : added
+                ? t("addedToCart")
+                : t("addToCart")}
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import type { MobileCatalogEntry, MobileFilterOption } from "./types";
+import type { MobileCatalogEntry } from "./types";
 
 // EU-priced mobile catalog. First four entries mirror lib/mobileHome.ts's
 // FEATURED_PRODUCTS (same underlying products, same source of truth for the
@@ -13,34 +13,3 @@ export const MOBILE_CATALOG: MobileCatalogEntry[] = [
   { id: 5, name: "R-410A Bulk", type: "R-410A", weight: 100, price: 618, productId: 1, weightId: "100" },
   { id: 6, name: "R-32 Bulk", type: "R-32", weight: 100, price: 742, productId: 3, weightId: "100" },
 ];
-
-export const MOBILE_CATALOG_FILTERS: MobileFilterOption[] = [
-  { id: "all", label: "All" },
-  { id: "R-410A", label: "R-410A" },
-  { id: "R-32", label: "R-32" },
-  { id: "25", label: "25 lb" },
-  { id: "100", label: "100 lb" },
-];
-
-export const REFRIGERANT_FILTER_OPTIONS: MobileFilterOption[] = [
-  { id: "all", label: "All" },
-  { id: "R-410A", label: "R-410A" },
-  { id: "R-32", label: "R-32" },
-  { id: "R-134a", label: "R-134a" },
-  { id: "R-404A", label: "R-404A" },
-];
-
-export const WEIGHT_FILTER_OPTIONS: MobileFilterOption[] = [
-  { id: "all", label: "Any weight" },
-  { id: "25", label: "25 lb" },
-  { id: "100", label: "100 lb" },
-];
-
-export function matchesMobileCatalogFilter(
-  entry: { type: string; weightLb: number | null },
-  filter: string
-): boolean {
-  if (filter === "all") return true;
-  if (filter === "25" || filter === "100") return String(entry.weightLb) === filter;
-  return entry.type === filter;
-}

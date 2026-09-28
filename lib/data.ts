@@ -3,7 +3,13 @@ import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import type { OrderStatus } from "@/lib/generated/prisma/enums";
+import type { FGasStatus, OrderStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
+import { KG_PER_LB, cylinderGasPrice, isPricedPerKg } from "@/lib/pricing";
+import { GAS_MARKS, gasMarkWhere, productHasGasMark } from "@/lib/gasMarks";
+import { NEWS_ITEM_LIMIT, fetchIndustryNews, type MarketAlertData as MarketAlert } from "@/lib/services/newsFetcher";
+import { SEARCH_SUGGESTION_LIMIT, combineWhere, productSearchWhere } from "@/lib/search";
+import { isPurchasable } from "@/lib/waitlist";
+import type { FgasExtraction } from "@/lib/fgas";
 
 // ---------------------------------------------------------------------------
 // Products
@@ -15,84 +21,175 @@ export interface StoreProduct {
   name: string;
   /** Refrigerant code derived from the leading token of the name, e.g. "R-410A". */
   type: string;
-  /** Numeric lb figure parsed out of the free-text `weight` field, when present. */
+  /** Net weight in lb (rounded), for the legacy lb-based filters; null for per-unit equipment. */
   weightLb: number | null;
+  /** Pack label used as the cart line variant, e.g. "10 kg cylinder" or "Set". */
   weightLabel: string;
-  price: number;
+  /** Gas price per kilogram (EUR). For per-unit equipment this is the unit price (weightKg = 1). */
+  pricePerKg: number;
+  /** Net gas weight of one cylinder in kg; 1 for per-unit equipment. */
+  weightKg: number;
+  /** Price of one full cylinder: pricePerKg × weightKg, rounded to cents. */
+  cylinderPrice: number;
+  /** True for gas (cylinders/blends): UI shows "€/kg" prominently plus the cylinder figure. */
+  pricedPerKg: boolean;
   inStock: boolean;
+  /** Absolute on-hand count, as last pushed by the CRM (and decremented by orders). */
+  stockQuantity: number;
+  /** Mandatory refundable deposit per cylinder, charged as its own cart line. 0 for equipment. */
+  cylinderDeposit: number;
   gwpClass: string;
   /** Batch purity % (null for equipment/services). */
   purity: number | null;
   /** GWP figure (null where not applicable). */
   gwp: number | null;
-  /** Stock level facet: "in" | "low" | "order". */
-  stockLevel: "in" | "low" | "order";
+  /** Stock badge: "out" whenever the product isn't purchasable, else the facet column. */
+  stockLevel: "in" | "low" | "order" | "out";
   /** Catalog category slug: cylinders | blends | equipment | recovery. */
   category: string;
-  /** Best-effort link into the existing (pre-Prisma) PDP mock catalog, keyed by refrigerant type. */
+  /** Link to this product's detail page: `/products/<db id>`. */
   pdpHref: string;
 }
 
-// The PDP route (`/product/[id]`) still reads from lib/productDetails.ts, a
-// richer mock catalog (descriptions, 3D models, per-weight pricing tiers)
-// that wasn't part of this data-binding pass. This lookup keeps "View
-// product" links working by routing to the matching mock entry via
-// refrigerant type, exactly as the old hardcoded mobile catalog did.
-const PDP_LOOKUP: Record<string, { id: number; weightId: string }> = {
-  "R-410A": { id: 1, weightId: "25" },
-  "R-134a": { id: 2, weightId: "30" },
-  "R-32": { id: 3, weightId: "25" },
-  "R-404A": { id: 4, weightId: "24" },
-};
-
 function deriveRefrigerantType(name: string): string {
   return name.split(" ")[0] ?? name;
+}
+
+/** "10 kg cylinder" / "11.34 kg cylinder" — trims float noise, keeps up to 2 decimals. */
+function kgLabel(weightKg: number): string {
+  return `${Number(weightKg.toFixed(2))} kg cylinder`;
 }
 
 function toStoreProduct(product: {
   id: string;
   sku: string;
   name: string;
-  price: unknown;
+  pricePerKg: number;
+  weightKg: number;
   weight: string;
   gwpClass: string;
   inStock: boolean;
+  stockQuantity?: number;
+  cylinderDeposit?: unknown;
   purity?: unknown;
   gwp?: number | null;
   stock?: string;
   category?: string;
 }): StoreProduct {
   const type = deriveRefrigerantType(product.name);
-  const weightMatch = product.weight.match(/\d+/);
-  const pdp = PDP_LOOKUP[type];
+  const category = product.category ?? "cylinders";
+  const pricedPerKg = isPricedPerKg(category);
   return {
     id: product.id,
     sku: product.sku,
     name: product.name,
     type,
-    weightLb: weightMatch ? Number(weightMatch[0]) : null,
-    weightLabel: product.weight,
-    price: Number(product.price),
+    weightLb: pricedPerKg ? Math.round(product.weightKg / KG_PER_LB) : null,
+    weightLabel: pricedPerKg ? kgLabel(product.weightKg) : product.weight,
+    pricePerKg: product.pricePerKg,
+    weightKg: product.weightKg,
+    cylinderPrice: cylinderGasPrice(product.pricePerKg, product.weightKg),
+    pricedPerKg,
     inStock: product.inStock,
+    stockQuantity: product.stockQuantity ?? 0,
+    cylinderDeposit: product.cylinderDeposit == null ? 0 : Number(product.cylinderDeposit),
     gwpClass: product.gwpClass,
     purity: product.purity == null ? null : Number(product.purity),
     gwp: product.gwp ?? null,
-    stockLevel: product.stock === "low" ? "low" : product.stock === "order" ? "order" : "in",
-    category: product.category ?? "cylinders",
-    pdpHref: pdp ? `/product/${pdp.id}?weight=${pdp.weightId}` : "/cylinders",
+    // Reconciled with purchasability, not just the inStock flag: a row can
+    // sit at inStock:true with stockQuantity:0 (a CRM push that only moved
+    // the price, a hand edit, a legacy row), and the badge must not then
+    // claim "In Stock" while the buy button refuses. isPurchasable is the
+    // one rule; the facet column only adds nuance on top of it.
+    stockLevel: !isPurchasable({ inStock: product.inStock, stockQuantity: product.stockQuantity ?? 0 })
+      ? "out"
+      : product.stock === "low"
+        ? "low"
+        : product.stock === "order"
+          ? "order"
+          : "in",
+    category,
+    // The database id straight through: /products/[id] looks this row up by
+    // it. This once pointed at /product/[id], a second PDP built over the
+    // hardcoded lib/productDetails.ts catalog whose ids were small integers
+    // — so the link only resolved for the four refrigerant types that
+    // catalog covered. That route and its mock data are gone; /products/[id]
+    // is the only PDP, and every product has a db id, so every card has one.
+    pdpHref: `/products/${product.id}`,
   };
 }
 
-export async function getProducts(): Promise<StoreProduct[]> {
-  const products = await prisma.product.findMany({ orderBy: { createdAt: "asc" } });
+/**
+ * In-stock first, then oldest-listed first. Every listing shares this order
+ * so an out-of-stock product can never sit above a purchasable one — the
+ * client-side sorts in the browsers re-apply the same rule as their primary
+ * key (see sortProducts in lib/productSort.ts).
+ */
+const IN_STOCK_FIRST = [{ inStock: "desc" as const }, { createdAt: "asc" as const }];
+
+export interface ProductQuery {
+  /** Refrigerant marks from `?gasType=`; empty or omitted means no constraint. */
+  gasMarks?: readonly string[];
+  /** Free-text term from `?search=`; shorter than SEARCH_MIN_LENGTH is ignored. */
+  search?: string;
+}
+
+export async function getProducts(query: ProductQuery = {}): Promise<StoreProduct[]> {
+  const products = await prisma.product.findMany({
+    // Marks and free text are ANDed: searching inside a mark selection
+    // narrows, it never widens back to the whole catalog.
+    where: combineWhere(gasMarkWhere(query.gasMarks ?? []), productSearchWhere(query.search ?? "")),
+    orderBy: IN_STOCK_FIRST,
+  });
   return products.map(toStoreProduct);
 }
 
-export async function getFeaturedProducts(limit = 4): Promise<StoreProduct[]> {
+/**
+ * The header dropdown's suggestions: the same filter the product list uses,
+ * capped and in the same in-stock-first order, so the five shown are the
+ * five the buyer would see at the top of `/products?search=…`.
+ */
+export async function searchProducts(
+  term: string,
+  limit = SEARCH_SUGGESTION_LIMIT
+): Promise<StoreProduct[]> {
+  const where = productSearchWhere(term);
+  // Too short to filter on: return nothing rather than the whole catalog.
+  if (!where) return [];
   const products = await prisma.product.findMany({
-    orderBy: { createdAt: "asc" },
-    take: limit,
+    where,
+    orderBy: IN_STOCK_FIRST,
+    take: Math.min(Math.max(1, limit), 25),
   });
+  return products.map(toStoreProduct);
+}
+
+/** Total matches for a term — powers the dropdown's "see all N results" row. */
+export async function countSearchProducts(term: string): Promise<number> {
+  const where = productSearchWhere(term);
+  if (!where) return 0;
+  return prisma.product.count({ where });
+}
+
+/**
+ * How many products carry each refrigerant mark, counted over the WHOLE
+ * catalog. The sidebar needs these unfiltered: if they were counted against
+ * an already gas-filtered list, every unselected mark would read 0 and the
+ * filter could never be widened.
+ */
+export async function getGasMarkCounts(): Promise<Record<string, number>> {
+  const products = await prisma.product.findMany({ select: { name: true, sku: true } });
+  const counts: Record<string, number> = {};
+  for (const mark of GAS_MARKS) {
+    counts[mark] = products.filter((product) => productHasGasMark(product, mark)).length;
+  }
+  return counts;
+}
+
+export async function getFeaturedProducts(limit = 4): Promise<StoreProduct[]> {
+  // Purchasable products first, so a retired legacy tier never headlines
+  // the home page while the CRM-listed cylinders are in stock.
+  const products = await prisma.product.findMany({ orderBy: IN_STOCK_FIRST, take: limit });
   return products.map(toStoreProduct);
 }
 
@@ -110,6 +207,8 @@ export interface UserAddress {
   city: string | null;
   postalCode: string | null;
   country: string | null;
+  /** Delivery contact for the ADR carrier; null on rows saved before checkout asked. */
+  phone: string | null;
   kind: "SHIPPING" | "BILLING";
 }
 
@@ -128,6 +227,7 @@ export async function getUserAddresses(userId: string): Promise<UserAddress[]> {
     city: a.city,
     postalCode: a.postalCode,
     country: a.country,
+    phone: a.phone,
     kind: a.kind === "BILLING" ? "BILLING" : "SHIPPING",
   }));
 }
@@ -140,11 +240,34 @@ export interface UserProfileData {
   name: string | null;
   email: string | null;
   companyName: string | null;
+  /** EU VAT id, printed on invoices for cross-border B2B. */
+  vatNumber: string | null;
   jobTitle: string | null;
+  phone: string | null;
   passwordChangedAt: string | null;
   locale: string;
-  /** F-Gas verification flag (Prisma column keeps its legacy `epaVerified` name). */
+  /** F-Gas verification flag — true only when fGasStatus is VERIFIED. */
   fgasVerified: boolean;
+  /** Where the certificate stands: NONE | PENDING_REVIEW | VERIFIED | REJECTED. */
+  fGasStatus: FGasStatus;
+  /** Why a reviewer refused it, shown to the buyer when REJECTED. */
+  fGasRejectionReason: string | null;
+  /** Whether an authenticator app is enrolled. The secret never leaves the server. */
+  isTwoFactorEnabled: boolean;
+  /**
+   * What was actually read off the uploaded certificate. This — not the
+   * Certificate table row — is what the compliance card shows: the row
+   * carries our own approval timestamp, whereas these are the document's own
+   * holder, number and dates.
+   */
+  fGasExtracted: FgasExtraction | null;
+  /**
+   * Where the document lives: an app-relative path into the authenticated
+   * retrieval route (local storage), or an unguessable blob URL. Null until
+   * something has been uploaded. Only ever handed to its owner — see
+   * app/api/fgas/document/[key].
+   */
+  fGasDocumentUrl: string | null;
   memberSinceYear: number;
   defaultAddress: string | null;
   defaultAddressTitle: string | null;
@@ -155,9 +278,38 @@ export interface UserProfileData {
 export async function getUserProfile(userId: string): Promise<UserProfileData | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      addresses: { orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }], take: 1 },
-      certificates: { orderBy: { issuedAt: "desc" }, take: 1 },
+    // Explicit, and deliberately so. A bare `include` selects every scalar on
+    // User — 38 columns, among them `password`, `twoFactorSecret` and
+    // `recoveryCodes`. Those were being read into a page render that has no
+    // use for them, which is a needless row width on every profile view and a
+    // needless copy of three credentials in server memory. Listing the 13
+    // fields this shape actually returns keeps both problems away, and means
+    // a future secret added to User is not silently pulled in here.
+    select: {
+      name: true,
+      email: true,
+      companyName: true,
+      vatNumber: true,
+      jobTitle: true,
+      phone: true,
+      passwordChangedAt: true,
+      locale: true,
+      fGasStatus: true,
+      fGasRejectionReason: true,
+      fGasExtractedData: true,
+      isTwoFactorEnabled: true,
+      fGasDocumentUrl: true,
+      createdAt: true,
+      addresses: {
+        orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+        take: 1,
+        select: { fullAddress: true, title: true, recipientName: true },
+      },
+      certificates: {
+        orderBy: { issuedAt: "desc" },
+        take: 1,
+        select: { certType: true, certId: true, issuedAt: true },
+      },
     },
   });
   if (!user) return null;
@@ -167,10 +319,17 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     name: user.name,
     email: user.email,
     companyName: user.companyName,
+    vatNumber: user.vatNumber,
     jobTitle: user.jobTitle,
+    phone: user.phone,
     passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
     locale: user.locale,
-    fgasVerified: user.epaVerified,
+    fgasVerified: user.fGasStatus === "VERIFIED",
+    fGasStatus: user.fGasStatus,
+    fGasRejectionReason: user.fGasRejectionReason,
+    fGasExtracted: (user.fGasExtractedData as FgasExtraction | null) ?? null,
+    isTwoFactorEnabled: user.isTwoFactorEnabled,
+    fGasDocumentUrl: user.fGasDocumentUrl,
     memberSinceYear: user.createdAt.getFullYear(),
     defaultAddress: user.addresses[0]?.fullAddress ?? null,
     defaultAddressTitle: user.addresses[0]?.title ?? null,
@@ -191,34 +350,82 @@ export interface UserOrderItem {
   productName: string;
   variant: string;
   quantity: number;
+  /** Gas price of one cylinder at purchase time (pricePerKg × weightKg then). */
   priceAtPurchase: number;
+  /** Per-kg rate behind priceAtPurchase; 0 on lines placed before weight-based pricing. */
+  pricePerKgAtPurchase: number;
+  /** Net kg behind priceAtPurchase; 1 on legacy lines. */
+  weightKgAtPurchase: number;
+  /** Per-cylinder deposit charged on this line at purchase time. */
+  depositAtPurchase: number;
 }
 
 export interface UserOrder {
   id: string;
   orderNumber: string;
   status: OrderStatus;
+  /** Settlement, separate from fulfilment — a SEPA transfer clears days later. */
+  paymentStatus: PaymentStatus;
   totalAmount: number;
   estimatedDelivery: string;
   createdAt: string;
   trackingNumber: string | null;
+  /**
+   * Invoice id, when one has been issued for this order — the argument the
+   * PDF route takes. Null until issueInvoiceForOrder() has run, which is what
+   * makes "finalized" a fact rather than a guess from the status: no invoice
+   * row, no download button, instead of a button that 404s.
+   */
+  invoiceId: string | null;
   items: UserOrderItem[];
 }
+
+/**
+ * The order shape the profile and home screens render. Nested `include` was
+ * pulling every column of every Order, OrderItem and Product — and a Product
+ * row per line item, when three of its fields are used. Prisma batches the
+ * nested reads (this was never an N+1), so the cost was row width, not round
+ * trips; on an order history with many lines that is most of the payload.
+ */
+const USER_ORDER_SELECT = {
+  id: true,
+  orderNumber: true,
+  status: true,
+  paymentStatus: true,
+  totalAmount: true,
+  estimatedDelivery: true,
+  createdAt: true,
+  trackingNumber: true,
+  invoice: { select: { id: true } },
+  items: {
+    select: {
+      id: true,
+      quantity: true,
+      priceAtPurchase: true,
+      pricePerKgAtPurchase: true,
+      weightKgAtPurchase: true,
+      depositAtPurchase: true,
+      product: { select: { sku: true, name: true, weight: true } },
+    },
+  },
+} as const;
 
 export async function getUserOrders(userId: string): Promise<UserOrder[]> {
   const orders = await prisma.order.findMany({
     where: { userId },
-    include: { items: { include: { product: true } } },
+    select: USER_ORDER_SELECT,
     orderBy: { createdAt: "desc" },
   });
   return orders.map((order) => ({
     id: order.id,
     orderNumber: order.orderNumber,
     status: order.status,
+    paymentStatus: order.paymentStatus,
     totalAmount: Number(order.totalAmount),
     estimatedDelivery: order.estimatedDelivery.toISOString(),
     createdAt: order.createdAt.toISOString(),
     trackingNumber: order.trackingNumber,
+    invoiceId: order.invoice?.id ?? null,
     items: order.items.map((item) => ({
       id: item.id,
       sku: item.product.sku,
@@ -226,6 +433,9 @@ export async function getUserOrders(userId: string): Promise<UserOrder[]> {
       variant: item.product.weight,
       quantity: item.quantity,
       priceAtPurchase: Number(item.priceAtPurchase),
+      pricePerKgAtPurchase: item.pricePerKgAtPurchase,
+      weightKgAtPurchase: item.weightKgAtPurchase,
+      depositAtPurchase: Number(item.depositAtPurchase),
     })),
   }));
 }
@@ -267,28 +477,51 @@ const RecommendationSchema = z.object({
  * on empty history or on any AI/parsing failure (e.g. missing API key) so a
  * broken or unconfigured OpenAI integration never breaks the Home page.
  */
-export async function getRecommendedProducts(userId: string, limit = 3): Promise<StoreProduct[]> {
-  try {
-    const orders = await prisma.order.findMany({
-      where: { userId },
-      include: { items: { include: { product: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    });
-    if (orders.length === 0) return getFeaturedProducts(limit);
+/**
+ * How long a model round-trip may hold up the page before we give up on it.
+ *
+ * Without this the home page's time-to-first-byte is however long OpenAI
+ * takes, with no ceiling — a hung request would hang the render. Recommended
+ * products are a nicety; the page is fine with featured ones.
+ */
+const RECOMMENDATION_TIMEOUT_MS = 2_500;
 
-    const catalog = await prisma.product.findMany();
-    if (catalog.length === 0) return [];
+/** How long a user's recommendations stay good for. Order history moves in days. */
+const RECOMMENDATION_TTL_SECONDS = 60 * 60;
 
-    const catalogList = catalog.map((p) => `- ${p.sku}: ${p.name} (${p.gwpClass}, ${p.weight})`).join("\n");
-    const historyList = orders
-      .flatMap((o) => o.items.map((i) => `${i.quantity}x ${i.product.sku} (${i.product.name})`))
-      .join("\n");
+/** Cache tag for one user's recommendations, so placing an order can drop them. */
+export function recommendationsTag(userId: string): string {
+  return `recommendations:${userId}`;
+}
 
-    const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
-      schema: RecommendationSchema,
-      prompt: `You are recommending HVAC refrigerant products to a B2B customer based on their order history.
+/** The SKU list the model picks. Cached; deliberately not the hydrated rows,
+ *  so a cached entry can never serve a stale price or stock flag. */
+async function computeRecommendedSkus(userId: string, limit: number): Promise<string[]> {
+  const orders = await prisma.order.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    // Only what the prompt prints.
+    select: { items: { select: { quantity: true, product: { select: { sku: true, name: true } } } } },
+  });
+  if (orders.length === 0) return [];
+
+  const catalog = await prisma.product.findMany({
+    select: { sku: true, name: true, gwpClass: true, weight: true, pricePerKg: true },
+  });
+  if (catalog.length === 0) return [];
+
+  const catalogList = catalog
+    .map((p) => `- ${p.sku}: ${p.name} (${p.gwpClass}, ${p.weight}, €${p.pricePerKg}/kg)`)
+    .join("\n");
+  const historyList = orders
+    .flatMap((o) => o.items.map((i) => `${i.quantity}x ${i.product.sku} (${i.product.name})`))
+    .join("\n");
+
+  const { object } = await generateObject({
+    model: openai("gpt-4o-mini"),
+    schema: RecommendationSchema,
+    prompt: `You are recommending HVAC refrigerant products to a B2B customer based on their order history.
 
 Order history (most recent orders):
 ${historyList}
@@ -297,10 +530,42 @@ Full product catalog (SKU: name, GWP class, weight):
 ${catalogList}
 
 Recommend up to ${limit} SKUs from the catalog above that this customer is most likely to need next — e.g. complementary refrigerants, restocks of what they buy often, or logical next purchases for their apparent buying pattern. Only use SKUs that appear in the catalog list.`,
-    });
+  });
 
-    const recommended = await prisma.product.findMany({ where: { sku: { in: object.skus } } });
-    const ordered = object.skus
+  return object.skus;
+}
+
+/**
+ * Analyzes a user's order history with an LLM and returns up to `limit` catalog
+ * products it predicts they'll need next. Falls back to `getFeaturedProducts`
+ * on empty history, on timeout, or on any AI/parsing failure (e.g. missing API
+ * key) so a broken or unconfigured OpenAI integration never breaks the Home
+ * page.
+ *
+ * The model call is cached per user for an hour and raced against a timeout,
+ * because this sits in the Home page's critical path: it used to mean every
+ * signed-in page load waited on OpenAI before a single byte was sent.
+ */
+export async function getRecommendedProducts(userId: string, limit = 3): Promise<StoreProduct[]> {
+  try {
+    const cachedSkus = unstable_cache(
+      (id: string, n: number) => computeRecommendedSkus(id, n),
+      ["recommended-skus"],
+      { revalidate: RECOMMENDATION_TTL_SECONDS, tags: [recommendationsTag(userId)] }
+    );
+
+    // Whichever finishes first. The loser is not cancelled — an in-flight
+    // model call still populates the cache for the next visitor — but it can
+    // no longer delay this response.
+    const skus = await Promise.race([
+      cachedSkus(userId, limit),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), RECOMMENDATION_TIMEOUT_MS)),
+    ]);
+    if (!skus || skus.length === 0) return getFeaturedProducts(limit);
+
+    // Hydrated fresh every time, so price and stock are never served stale.
+    const recommended = await prisma.product.findMany({ where: { sku: { in: skus } } });
+    const ordered = skus
       .map((sku) => recommended.find((p) => p.sku === sku))
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
       .slice(0, limit);
@@ -313,52 +578,27 @@ Recommend up to ${limit} SKUs from the catalog above that this customer is most 
 }
 
 // ---------------------------------------------------------------------------
-// AI-generated market news & alerts
+// Market news & alerts — live industry RSS
 // ---------------------------------------------------------------------------
 
-export interface MarketAlertData {
-  id: string;
-  tone: "warning" | "success";
-  eyebrow: string;
-  title: string;
-  body: string;
-}
+// The model that used to write these blurbs is gone: it produced convincing
+// trade-press prose that was entirely invented. The widget now carries real
+// articles, each linking back to its publisher (lib/services/newsFetcher.ts).
+export type { MarketAlertData, MarketAlertTag } from "@/lib/services/newsFetcher";
 
-const MarketAlertsSchema = z.object({
-  alerts: z
-    .array(
-      z.object({
-        tone: z.enum(["warning", "success"]),
-        eyebrow: z.string().describe("Short all-caps category label, e.g. \"F-GAS QUOTA\" or \"PRICE TREND\"."),
-        title: z.string().describe("Short, specific headline, e.g. a refrigerant name or regulation."),
-        body: z.string().describe("One or two sentences of concrete, plausible detail — include a number where natural."),
-      })
-    )
-    .min(2)
-    .max(3),
+// One hour, shared by the /api/market-news route and the dashboard widget's
+// own server-side call — so a page load never costs the publisher a request
+// and both surfaces show the same batch.
+const getCachedMarketAlerts = unstable_cache(() => fetchIndustryNews(NEWS_ITEM_LIMIT), ["market-news"], {
+  revalidate: 60 * 60,
+  tags: ["market-news"],
 });
 
-async function generateMarketAlerts(): Promise<MarketAlertData[]> {
-  const { object } = await generateObject({
-    model: openai("gpt-4o-mini"),
-    schema: MarketAlertsSchema,
-    prompt:
-      "Generate 2-3 realistic, plausible market alerts for European HVAC/refrigeration professionals, dated as of today. Cover things like EU F-Gas regulation quota phasedowns, price trends for common refrigerants (R-32, R-410A, R-454B), or supply/compliance deadlines. Each alert should read like a real trade-press blurb: specific, technical, with a concrete number or date where natural. Mark alerts as tone \"warning\" for price increases/supply risk/compliance deadlines, or \"success\" for price drops/favorable regulatory news.",
-  });
-  return object.alerts.map((alert, i) => ({ id: `ai-alert-${i}`, ...alert }));
-}
-
-// Shared across the /api/market-news route and the Home page's direct
-// server-side call, so both hit the same 12-hour cache instead of double-
-// spending LLM calls.
-const getCachedMarketAlerts = unstable_cache(generateMarketAlerts, ["market-news"], {
-  revalidate: 60 * 60 * 12,
-});
-
-export async function getMarketAlerts(): Promise<MarketAlertData[]> {
+export async function getMarketAlerts(): Promise<MarketAlert[]> {
   try {
     return await getCachedMarketAlerts();
   } catch (error) {
+    // A dead feed is not a dead dashboard: the widget renders its empty state.
     console.error("getMarketAlerts failed:", error);
     return [];
   }

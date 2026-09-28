@@ -105,8 +105,15 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
     setPassword,
     confirmPassword,
     setConfirmPassword,
+    factor,
     digits,
     boxRefs,
+    codeMode,
+    canUseRecoveryCode,
+    toggleCodeMode,
+    recoveryCode,
+    setRecoveryCode,
+    recoveryRef,
     error,
     submitting,
     verifying,
@@ -171,39 +178,83 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
         {onCodeStep ? (
           /* ---- Step 2: enter the emailed verification code, in place ---- */
           <>
-            <h2 className="m-0 text-[25px] font-semibold tracking-[-.035em]">{tAuth("checkEmailTitle")}</h2>
+            <h2 className="m-0 text-[25px] font-semibold tracking-[-.035em]">
+              {codeMode === "recovery"
+                ? tAuth("recoveryTitle")
+                : factor === "totp"
+                  ? tAuth("authenticatorTitle")
+                  : tAuth("checkEmailTitle")}
+            </h2>
             <p className="mb-[26px] mt-[7px] text-[13.5px] leading-[1.5] text-slate-500 dark:text-slate-400">
-              {tAuth.rich("checkEmailSubtitle", {
-                email,
-                strong: (chunks) => <span className="font-semibold text-slate-700 dark:text-slate-300">{chunks}</span>,
-              })}
+              {codeMode === "recovery" ? (
+                tAuth("recoverySubtitle")
+              ) : factor === "totp" ? (
+                tAuth("authenticatorSubtitle")
+              ) : (
+                tAuth.rich("checkEmailSubtitle", {
+                  email,
+                  strong: (chunks) => (
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{chunks}</span>
+                  ),
+                })
+              )}
             </p>
 
             <form onSubmit={handleVerify} className="flex flex-col gap-5">
-              <div className="flex justify-center gap-2.5" onPaste={handlePaste}>
-                {digits.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={(el) => {
-                      boxRefs.current[idx] = el;
-                    }}
-                    value={digit}
-                    onChange={(e) => handleDigitChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleDigitKeyDown(idx, e)}
-                    inputMode="numeric"
-                    maxLength={1}
-                    aria-label={tAuth("digitAriaLabel", { position: idx + 1 })}
-                    className={`h-[58px] w-[46px] rounded-[15px] border-[1.5px] bg-white/70 text-center text-[22px] font-semibold text-slate-900 transition-[border-color,box-shadow] duration-200 focus:outline-none dark:bg-white/[.05] dark:text-slate-50 ${
-                      error
-                        ? "border-red-500/70 focus:border-red-500 focus:ring-[3.5px] focus:ring-red-500/[.14]"
-                        : "border-slate-900/[.14] focus:border-blue-700 focus:ring-[3.5px] focus:ring-blue-700/[.14] focus:shadow-[0_0_18px_-4px_rgba(29,78,216,0.45)] dark:border-white/[.14]"
-                    }`}
-                  />
-                ))}
-              </div>
+              {codeMode === "totp" ? (
+                <div className="flex justify-center gap-2.5" onPaste={handlePaste}>
+                  {digits.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={(el) => {
+                        boxRefs.current[idx] = el;
+                      }}
+                      value={digit}
+                      onChange={(e) => handleDigitChange(idx, e.target.value)}
+                      onKeyDown={(e) => handleDigitKeyDown(idx, e)}
+                      inputMode="numeric"
+                      maxLength={1}
+                      aria-label={tAuth("digitAriaLabel", { position: idx + 1 })}
+                      className={`h-[58px] w-[46px] rounded-[15px] border-[1.5px] bg-white/70 text-center text-[22px] font-semibold text-slate-900 transition-[border-color,box-shadow] duration-200 focus:outline-none dark:bg-white/[.05] dark:text-slate-50 ${
+                        error
+                          ? "border-red-500/70 focus:border-red-500 focus:ring-[3.5px] focus:ring-red-500/[.14]"
+                          : "border-slate-900/[.14] focus:border-blue-700 focus:ring-[3.5px] focus:ring-blue-700/[.14] focus:shadow-[0_0_18px_-4px_rgba(29,78,216,0.45)] dark:border-white/[.14]"
+                      }`}
+                    />
+                  ))}
+                </div>
+              ) : (
+              <input
+                  ref={recoveryRef}
+                  value={recoveryCode}
+                  onChange={(e) => setRecoveryCode(e.target.value)}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="one-time-code"
+                  aria-label={tAuth("recoveryCodeLabel")}
+                  placeholder={tAuth("recoveryCodePlaceholder")}
+                  className={`h-[58px] w-full rounded-[15px] border-[1.5px] bg-white/70 text-center font-mono text-[21px] font-semibold tracking-[.3em] text-slate-900 transition-[border-color,box-shadow] duration-200 placeholder:font-sans placeholder:text-[15px] placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 focus:outline-none dark:bg-white/[.05] dark:text-slate-50 ${
+                    error
+                      ? "border-red-500/70 focus:border-red-500 focus:ring-[3.5px] focus:ring-red-500/[.14]"
+                      : "border-slate-900/[.14] focus:border-blue-700 focus:ring-[3.5px] focus:ring-blue-700/[.14] dark:border-white/[.14]"
+                  }`}
+                />
+              )}
 
               {error && (
                 <p className="m-0 text-center text-[12.5px] font-medium text-red-600 dark:text-red-400">{error}</p>
+              )}
+
+              {canUseRecoveryCode && (
+                <button
+                  type="button"
+                  onClick={toggleCodeMode}
+                  data-recovery-toggle
+                  className="mx-auto -mt-1 text-[12.5px] font-semibold text-blue-700 underline-offset-4 transition-colors hover:underline dark:text-blue-400"
+                >
+                  {codeMode === "totp" ? tAuth("useRecoveryCode") : tAuth("useAuthenticatorApp")}
+                </button>
               )}
 
               <button
@@ -225,15 +276,20 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                   <ArrowLeft size={14} strokeWidth={2.2} />
                   {tAuth("changeEmail")}
                 </button>
-                <button
-                  type="button"
-                  onClick={resendCode}
-                  disabled={submitting}
-                  className="flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 disabled:opacity-60 dark:text-blue-400"
-                >
-                  {submitting && <Loader2 size={12} strokeWidth={2.2} className="animate-spin" />}
-                  {tAuth("resendCode")}
-                </button>
+                {/* Nothing to resend for an authenticator account: lib/actions/otp
+                    returns factor:"totp" without sending any mail, so this button
+                    would silently do nothing. */}
+                                {factor !== "totp" && (
+                  <button
+                    type="button"
+                    onClick={resendCode}
+                    disabled={submitting}
+                    className="flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 disabled:opacity-60 dark:text-blue-400"
+                  >
+                    {submitting && <Loader2 size={12} strokeWidth={2.2} className="animate-spin" />}
+                    {tAuth("resendCode")}
+                  </button>
+                )}
               </div>
             </form>
           </>

@@ -3,12 +3,16 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { redirect } from "@/i18n/navigation";
 import prisma from "@/lib/prisma";
-import OrderConfirmation, { type OrderConfirmationData } from "@/components/OrderConfirmation";
+import OrderDetailView, { type OrderDetailData } from "@/components/OrderDetailView";
+import AppChrome from "@/components/AppChrome";
 import { getTrackingStatus } from "@/lib/actions/tracking";
 import { buildOrderTracking } from "@/lib/tracking";
+import { bankTransferDetails } from "@/lib/bankTransfer";
+import { imagePathForProduct } from "@/lib/productMedia";
+import { isPurchasable } from "@/lib/waitlist";
 
 export const metadata: Metadata = {
-  title: "Order Confirmation — My Energy",
+  title: "Order Details — My Energy",
   description: "Your My Energy order details and delivery status.",
 };
 
@@ -28,7 +32,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
   // Scoped by userId — one customer can never open another's order.
   const order = await prisma.order.findFirst({
     where: { id, userId },
-    include: { items: { include: { product: true } }, address: true },
+    include: { items: { include: { product: true } }, address: true, invoice: { select: { id: true } } },
   });
   if (!order) notFound();
 
@@ -43,29 +47,50 @@ export default async function OrderPage({ params }: OrderPageProps) {
     dhl: dhlResult?.ok ? dhlResult.tracking : null,
   });
 
-  const data: OrderConfirmationData = {
+  const data: OrderDetailData = {
     orderNumber: order.orderNumber,
     status: order.status,
+    paymentStatus: order.paymentStatus,
+    paymentMethod: order.paymentMethod,
     createdAt: order.createdAt.toISOString(),
     estimatedDelivery: tracking.estimatedDelivery ?? order.estimatedDelivery.toISOString(),
     totalAmount: Number(order.totalAmount),
     trackingNumber: order.trackingNumber,
+    invoiceId: order.invoice?.id ?? null,
     tracking,
-    address: order.address
-      ? {
-          title: order.address.title,
-          recipientName: order.address.recipientName,
-          fullAddress: order.address.fullAddress,
-        }
-      : null,
+    // The frozen snapshot first. `order.address` is the customer's *current*
+    // address-book entry, which they may have edited since — or deleted, in
+    // which case the relation is null (onDelete: SetNull) and the old view
+    // showed a dash for an order that definitely went somewhere. The
+    // relation is only a fallback for rows placed before the snapshot.
+    shippingAddress:
+      order.shippingAddress ??
+      (order.address ? [order.address.recipientName, order.address.fullAddress].join("\n") : null),
     items: order.items.map((item) => ({
       id: item.id,
+      sku: item.product.sku,
       name: item.product.name,
       variant: item.product.weight,
       quantity: item.quantity,
       priceAtPurchase: Number(item.priceAtPurchase),
+      pricePerKgAtPurchase: item.pricePerKgAtPurchase,
+      weightKgAtPurchase: item.weightKgAtPurchase,
+      depositAtPurchase: Number(item.depositAtPurchase),
+      imageSrc: imagePathForProduct(item.product),
+      // Re-read now, not taken from the order: "order again" must not put a
+      // line in the cart that checkout would refuse. The cart and
+      // prepareOrder re-check this too — this only avoids the dead end.
+      purchasable: isPurchasable(item.product),
     })),
   };
 
-  return <OrderConfirmation order={data} />;
+  // The bank details stay on the page for as long as the transfer is
+  // outstanding — this is where a buyer comes back to find them.
+  const bank = bankTransferDetails();
+
+  return (
+    <AppChrome>
+      <OrderDetailView order={data} bank={bank} />
+    </AppChrome>
+  );
 }

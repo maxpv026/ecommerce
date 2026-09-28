@@ -74,7 +74,7 @@ export async function auditCart(rawLines: Array<{ sku: string; qty: number }>): 
     const describe = (sku: string) => {
       const p = bySku.get(sku)!;
       return `${p.sku}: ${p.name} · category ${p.category} · ${p.weight} · safety ${p.gwpClass}` +
-        (p.gwp ? ` · GWP ${p.gwp}` : "") + ` · €${p.price}`;
+        (p.gwp ? ` · GWP ${p.gwp}` : "") + ` · €${p.pricePerKg}/kg (${p.weightKg} kg cylinder)`;
     };
 
     const { object } = await generateObject({

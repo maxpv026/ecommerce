@@ -4,9 +4,11 @@ import { useState } from "react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
 import DashboardDesktop from "./DashboardDesktop";
+import SmartRestockStrip from "./profile/SmartRestockStrip";
 import MobileProfileLayout from "./MobileProfileLayout";
 import MobileProfileSignedOutLayout from "./MobileProfileSignedOutLayout";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
+import type { ActiveRestockAlert } from "@/lib/smartRestock";
 import type { OrderTrackingView } from "@/lib/tracking";
 
 interface AccountLayoutClientProps {
@@ -16,6 +18,8 @@ interface AccountLayoutClientProps {
   orders?: UserOrder[] | null;
   orderTracking?: Record<string, OrderTrackingView>;
   addresses?: UserAddress[] | null;
+  /** Predictive restock suggestions; empty renders nothing. */
+  restockAlerts?: ActiveRestockAlert[];
 }
 
 export default function AccountLayoutClient({
@@ -25,8 +29,8 @@ export default function AccountLayoutClient({
   orders,
   orderTracking,
   addresses,
+  restockAlerts = [],
 }: AccountLayoutClientProps) {
-  const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
@@ -34,10 +38,9 @@ export default function AccountLayoutClient({
       {/* Desktop: the bento dashboard (My Energy Dashboard Desktop design) */}
       <div className="hidden md:block">
         <Header
-          query={query}
-          onQueryChange={setQuery}
           onSignInClick={() => setIsAuthModalOpen(true)}
         />
+        <SmartRestockStrip alerts={restockAlerts} className="mx-auto max-w-[1240px] px-8 pt-7" />
         <DashboardDesktop
           isAuthenticated={isAuthenticated}
           profile={profile ?? null}
@@ -50,12 +53,15 @@ export default function AccountLayoutClient({
 
       <div className="block md:hidden">
         {isAuthenticated ? (
-          <MobileProfileLayout
+          <>
+            <SmartRestockStrip alerts={restockAlerts} className="px-4 pt-4" />
+            <MobileProfileLayout
             dashboardData={dashboardData}
             profile={profile}
             orders={orders}
-            addresses={addresses}
-          />
+              addresses={addresses}
+            />
+          </>
         ) : (
           <MobileProfileSignedOutLayout />
         )}

@@ -1,0 +1,66 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 860 >>
+stream
+BT
+/F1 20 Tf
+1 0 0 1 56 760 Tm
+(R-1234yf) Tj
+/F1 13 Tf
+1 0 0 1 56 730 Tm
+(Safety Data Sheet \(placeholder\)) Tj
+/F1 11 Tf
+1 0 0 1 56 696 Tm
+(CAS: 754-12-1) Tj
+/F1 11 Tf
+1 0 0 1 56 678 Tm
+(Revision: SDS v1.6 · Nov 2025) Tj
+/F1 11 Tf
+1 0 0 1 56 660 Tm
+(Classification: A2L  mildly flammable. Keep away from ignition sources.) Tj
+/F1 11 Tf
+1 0 0 1 56 618 Tm
+(THIS IS NOT A CONTROLLED SAFETY DOCUMENT.) Tj
+/F1 11 Tf
+1 0 0 1 56 600 Tm
+(It is a placeholder shipped with the My Energy storefront so that) Tj
+/F1 11 Tf
+1 0 0 1 56 582 Tm
+(the download flow can be exercised end to end. Do not rely on it) Tj
+/F1 11 Tf
+1 0 0 1 56 564 Tm
+(for handling, transport, first aid or disposal decisions.) Tj
+/F1 11 Tf
+1 0 0 1 56 522 Tm
+(For a real emergency in Europe call NCEC on +44 1865 407 333,) Tj
+/F1 11 Tf
+1 0 0 1 56 504 Tm
+(or 112 for anything life-threatening.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001151 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1248
+%%EOF

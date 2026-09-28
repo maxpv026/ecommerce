@@ -1,9 +1,14 @@
 "use client";
 
+import { cylinderGasPrice, roundMoney } from "@/lib/pricing";
+import { isPurchasable } from "@/lib/waitlist";
+import MobilePdpLayout from "./MobilePdpLayout";
+import StockNotifyBlock from "./StockNotifyBlock";
+import AdminRestockTest from "./AdminRestockTest";
 import { useMemo, useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Check,
@@ -27,9 +32,12 @@ import AuthModal from "./AuthModal";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/lib/store/cart";
 import { checkCompatibility, type CompatibilityResult } from "@/lib/actions/compatibility";
+import { modelPathForProduct } from "@/lib/productMedia";
 import type { StoreProduct } from "@/lib/data";
 
-const ThreeCylinder = dynamic(() => import("./ThreeCylinder"), { ssr: false });
+// WebGL has no business in the server bundle, and the viewer pulls in
+// three + drei — keep it out of the page's initial JS.
+const ProductModelViewer = dynamic(() => import("./3d/ProductModelViewer"), { ssr: false });
 
 /* Volume-discount policy applied to the live base price. */
 const TIERS = [
@@ -50,6 +58,7 @@ const STOCK_BADGE = {
   in: { key: "stockIn", dot: "#34d399", cls: "border-[rgba(16,185,129,.3)] bg-[rgba(16,185,129,.14)] text-[#047857] dark:text-[#34d399] shadow-[0_0_18px_-6px_#34d399]" },
   low: { key: "stockLow", dot: "#fbbf24", cls: "border-[rgba(245,158,11,.32)] bg-[rgba(245,158,11,.15)] text-[#b45309] dark:text-[#fbbf24] shadow-[0_0_18px_-6px_#fbbf24]" },
   order: { key: "stockOrder", dot: "#22d3ee", cls: "border-[rgba(56,189,248,.3)] bg-[rgba(56,189,248,.14)] text-[#0369a1] dark:text-[#38bdf8] shadow-[0_0_18px_-6px_#22d3ee]" },
+  out: { key: "stockOut", dot: "#f87171", cls: "border-[rgba(248,113,113,.32)] bg-[rgba(239,68,68,.12)] text-[#b91c1c] dark:text-[#fca5a5] shadow-[0_0_18px_-6px_#f87171]" },
 } as const;
 
 const RELATED_TINTS = ["#22d3ee", "#34d399", "#60a5fa", "#a78bfa", "#34d399", "#22d3ee"];
@@ -64,9 +73,12 @@ const DOCS = [
 interface ProductDetailProps {
   product: StoreProduct;
   related: StoreProduct[];
+  /** Sibling SKUs of the same refrigerant — the mobile size selector. */
+  variants: StoreProduct[];
 }
 
-export default function ProductDetail({ product, related }: ProductDetailProps) {
+export default function ProductDetail({ product, related, variants }: ProductDetailProps) {
+  const locale = useLocale();
   const t = useTranslations("ProductDetail");
   const tProducts = useTranslations("Products");
   const tCat = useTranslations("Categories");
@@ -74,7 +86,6 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
   const format = useFormatter();
   const addItem = useCartStore((s) => s.addItem);
 
-  const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [tierIdx, setTierIdx] = useState(0);
   const [qty, setQty] = useState(1);
@@ -88,16 +99,34 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
   const railRef = useRef<HTMLDivElement>(null);
 
   const brand = brandFor(product);
-  const stock = STOCK_BADGE[product.stockLevel];
+
+  // ─── Single source of truth for availability ───
+  // Every availability-dependent branch in this render — the badge, the
+  // spec sheet's Availability row and the action area — reads this one
+  // boolean, so they cannot contradict each other. `stockLevel` already
+  // honours it (lib/data.ts), but deriving the badge here too means a
+  // regression upstream can never put "In Stock" next to a waitlist form.
+  const isAvailable = isPurchasable(product);
+  // While available, keep the in / low / order nuance; anything not
+  // purchasable is "out", whatever the facet column says.
+  const stockKey = !isAvailable ? "out" : product.stockLevel === "out" ? "in" : product.stockLevel;
+  const stock = STOCK_BADGE[stockKey];
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
   const tier = TIERS[tierIdx];
-  const tierUnit = (discount: number) => Math.round(product.price * (1 - discount / 100) * 100) / 100;
-  const unitPrice = tierUnit(tier.discount);
+  // Volume tiers discount the per-kg rate; the cylinder figure follows from
+  // it (pricePerKg × weightKg). Equipment has weightKg 1, so both coincide.
+  const tierPerKg = (discount: number) => roundMoney(product.pricePerKg * (1 - discount / 100));
+  const unitPerKg = tierPerKg(tier.discount);
+  const unitPrice = cylinderGasPrice(unitPerKg, product.weightKg);
 
-  // The real 3D viewer for actual cylinders; the design's stylized parallax
-  // cylinder stands in for equipment/services with no GLB model.
-  const has3dModel = product.category === "cylinders" || product.category === "blends";
+  // Which .glb this product gets, resolved from its refrigerant mark. Null
+  // for equipment/services, which fall back to the design's stylized
+  // parallax cylinder. Resolved here rather than inside the viewer because
+  // the stage's mouse-tilt has to know whether OrbitControls owns the
+  // pointer — see onStageMove.
+  const modelPath = useMemo(() => modelPathForProduct(product), [product]);
+  const has3dModel = modelPath !== null;
 
   const categoryKey =
     { cylinders: "cylTitle", blends: "blendTitle", equipment: "eqTitle", recovery: "recTitle" }[product.category] ?? "cylTitle";
@@ -123,7 +152,20 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
   };
 
   const addToCart = () => {
-    addItem({ sku: product.sku, name: product.name, variant: product.weightLabel, price: unitPrice }, qty);
+    // The control is replaced by the waitlist when unavailable; this guard
+    // covers a stale render between a restock push and the next fetch.
+    if (!isAvailable) return;
+    addItem(
+      {
+        sku: product.sku,
+        name: product.name,
+        variant: product.weightLabel,
+        pricePerKg: unitPerKg,
+        weightKg: product.weightKg,
+        deposit: product.cylinderDeposit,
+      },
+      qty
+    );
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -133,7 +175,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
     if (!system || aiPending) return;
     setAiResult(null);
     startAi(async () => {
-      const result = await checkCompatibility({ sku: product.sku, system });
+      const result = await checkCompatibility({ sku: product.sku, system, locale });
       if (!result.ok) {
         toast.error(tProducts("aiError"));
         return;
@@ -151,7 +193,12 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
 
   return (
     <div className="flex-1 bg-white dark:bg-canvas">
-      <Header query={query} onQueryChange={setQuery} onSignInClick={() => setIsAuthModalOpen(true)} />
+      {/* Two layouts, one route and one set of real data. The mobile
+          tree is its own design (My Energy PDP Mobile) rather than a
+          reflow of the desktop one, which is why it is a separate
+          component and not a stack of responsive classes. */}
+      <div className="hidden md:block">
+      <Header onSignInClick={() => setIsAuthModalOpen(true)} />
 
       <div className="relative overflow-x-clip">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1000px] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)]">
@@ -200,37 +247,43 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
               />
               <div className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] [background-size:46px_46px] [mask-image:radial-gradient(circle_at_50%_50%,#000_30%,transparent_72%)] [-webkit-mask-image:radial-gradient(circle_at_50%_50%,#000_30%,transparent_72%)]" />
 
-              {has3dModel ? (
-                <div className="absolute inset-0" data-r3f-stage>
-                  <ThreeCylinder variant="full" />
-                </div>
-              ) : (
-                <div
-                  className="relative [transform-style:preserve-3d]"
-                  style={{ transform: `rotateY(${tilt.x * 22}deg) rotateX(${tilt.y * -14}deg)` }}
-                >
-                  <div className="relative flex flex-col items-center [animation:hc-bob_7s_ease-in-out_infinite] [transform-style:preserve-3d]">
-                    <div className="relative h-[280px] w-[150px] rounded-t-[120px] rounded-b-[26px] border border-white/[.22] bg-[linear-gradient(112deg,rgba(255,255,255,.2),rgba(255,255,255,.05)_42%,rgba(255,255,255,.14))] shadow-[inset_0_0_44px_rgba(255,255,255,.14)] [animation:hc-sway_14s_ease-in-out_infinite] [transform-style:preserve-3d] lg:h-[350px] lg:w-[190px]"
-                      style={{ boxShadow: `inset 0 0 44px rgba(255,255,255,.14), 0 0 70px -14px ${brand.glow}88` }}
-                    >
-                      <div className="pointer-events-none absolute left-[14%] top-[8%] h-[78%] w-[16%] rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.05))] blur-[7px] [animation:hc-sheen_9s_ease-in-out_infinite]" />
-                      <div className="absolute -top-4 left-1/2 h-[26px] w-[62px] -translate-x-1/2 rounded-[10px] border border-white/[.24] bg-[linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.12))]" />
-                      <div className="absolute -top-[34px] left-1/2 h-[22px] w-[22px] -translate-x-1/2 rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.2))]" />
-                      <div className="absolute left-1/2 top-[44%] w-[122px] -translate-x-1/2 rounded-xl border border-white/[.18] bg-[rgba(10,12,18,.5)] px-3 py-[11px] text-center text-white backdrop-blur-[6px]">
-                        <span className="block text-[9px] tracking-[.14em] opacity-70">MY ENERGY</span>
-                        <span className="mt-[3px] block text-[15px] font-semibold tracking-[-.02em]">{product.type}</span>
+              {/* The real cylinder, orbiting under studio light. Products
+                  with no model of their own (equipment, services) — and any
+                  model that fails to load — get the stylized poster instead,
+                  which is what `poster` carries. */}
+              <ProductModelViewer
+                name={product.name}
+                sku={product.sku}
+                modelPath={modelPath}
+                badgeLabel={t("stageTag")}
+                className="absolute inset-0"
+                poster={
+                  <div
+                    className="absolute inset-0 grid place-items-center [transform-style:preserve-3d]"
+                    style={{ transform: `rotateY(${tilt.x * 22}deg) rotateX(${tilt.y * -14}deg)` }}
+                  >
+                    <div className="relative flex flex-col items-center [animation:hc-bob_7s_ease-in-out_infinite] [transform-style:preserve-3d]">
+                      <div className="relative h-[280px] w-[150px] rounded-t-[120px] rounded-b-[26px] border border-white/[.22] bg-[linear-gradient(112deg,rgba(255,255,255,.2),rgba(255,255,255,.05)_42%,rgba(255,255,255,.14))] shadow-[inset_0_0_44px_rgba(255,255,255,.14)] [animation:hc-sway_14s_ease-in-out_infinite] [transform-style:preserve-3d] lg:h-[350px] lg:w-[190px]"
+                        style={{ boxShadow: `inset 0 0 44px rgba(255,255,255,.14), 0 0 70px -14px ${brand.glow}88` }}
+                      >
+                        <div className="pointer-events-none absolute left-[14%] top-[8%] h-[78%] w-[16%] rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.05))] blur-[7px] [animation:hc-sheen_9s_ease-in-out_infinite]" />
+                        <div className="absolute -top-4 left-1/2 h-[26px] w-[62px] -translate-x-1/2 rounded-[10px] border border-white/[.24] bg-[linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.12))]" />
+                        <div className="absolute -top-[34px] left-1/2 h-[22px] w-[22px] -translate-x-1/2 rounded-md bg-[linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.2))]" />
+                        <div className="absolute left-1/2 top-[44%] w-[122px] -translate-x-1/2 rounded-xl border border-white/[.18] bg-[rgba(10,12,18,.5)] px-3 py-[11px] text-center text-white backdrop-blur-[6px]">
+                          <span className="block text-[9px] tracking-[.14em] opacity-70">MY ENERGY</span>
+                          <span className="mt-[3px] block text-[15px] font-semibold tracking-[-.02em]">{product.type}</span>
+                        </div>
                       </div>
+                      <div className="mt-[30px] h-[26px] w-[170px] rounded-full bg-[rgba(2,4,10,.6)] blur-[18px] lg:w-[220px]" />
                     </div>
-                    <div className="mt-[30px] h-[26px] w-[170px] rounded-full bg-[rgba(2,4,10,.6)] blur-[18px] lg:w-[220px]" />
                   </div>
-                </div>
-              )}
+                }
+              />
 
-              <div className="pointer-events-none absolute bottom-[18px] left-5 right-5 flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-[7px] rounded-full border border-white/[.16] bg-white/[.08] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-white/[.86]">
-                  <span className="h-[5px] w-[5px] rounded-full" style={{ background: brand.glow, boxShadow: `0 0 8px 1px ${brand.glow}` }} />
-                  {t("stageTag")}
-                </span>
+              {/* The "3D · drag to orbit" badge that used to sit on the left
+                  of this row now belongs to the viewer, which only shows it
+                  once a model is actually orbiting. */}
+              <div className="pointer-events-none absolute bottom-[18px] left-5 right-5 flex items-center justify-end gap-3">
                 <span className="text-[10.5px] uppercase tracking-[.06em] text-white/50">
                   {product.gwpClass}{product.gwp !== null ? ` · GWP ${product.gwp}` : ""}
                 </span>
@@ -262,11 +315,28 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                   </p>
 
                   <div className="mt-6 flex flex-wrap items-end gap-3.5">
-                    <span>
-                      <span className="block text-[38px] font-semibold leading-none tracking-[-.05em]">{eur(unitPrice)}</span>
-                      <span className="mt-1.5 block text-[11.5px] text-slate-400 dark:text-ink-muted">
-                        {t("perUnit", { volume: product.weightLabel })}
+                    <span className="min-w-0">
+                      {/* B2B buyers order whole cylinders, so the cylinder is
+                          the headline figure; the €/kg rate that produced it
+                          sits underneath as supporting detail. */}
+                      <span className="flex items-baseline gap-1.5">
+                        <span
+                          data-cylinder-price
+                          className={`block font-semibold leading-none tracking-[-.05em] ${product.pricePerKg > 0 ? "text-[38px]" : "text-[24px]"}`}
+                        >
+                          {product.pricePerKg > 0 ? eur(unitPrice) : tProducts("priceOnRequest")}
+                        </span>
                       </span>
+                      <span data-per-kg className="mt-1.5 block text-[11.5px] text-slate-400 dark:text-ink-muted">
+                        {product.pricedPerKg && product.pricePerKg > 0
+                          ? tProducts("perKgAmountExVat", { amount: eur(unitPerKg) })
+                          : t("perUnit", { volume: product.weightLabel })}
+                      </span>
+                      {product.pricedPerKg && product.pricePerKg > 0 && (
+                        <span className="mt-1.5 block text-[13.5px] font-semibold tracking-[-.02em] text-slate-700 dark:text-slate-200" data-pack-label>
+                          {product.weightLabel}
+                        </span>
+                      )}
                     </span>
                     <span
                       className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold ${
@@ -279,6 +349,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                     </span>
                   </div>
 
+                  {product.pricePerKg > 0 && (
                   <div className="mt-[22px]">
                     <div className="mb-2.5 text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("volumeTier")}</div>
                     <div className="grid grid-cols-3 gap-2">
@@ -297,39 +368,60 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                             }`}
                           >
                             <span className="block text-[12.5px] font-semibold tracking-[-.015em]">{t(tr.labelKey)}</span>
-                            <span className="mt-[3px] block text-[11px] opacity-75">{eur(tierUnit(tr.discount))}</span>
+                            {/* Per cylinder first, matching the headline;
+                                the discounted €/kg follows for reference. */}
+                            <span className="mt-[3px] block text-[11px] opacity-75" data-tier-cylinder>
+                              {eur(cylinderGasPrice(tierPerKg(tr.discount), product.weightKg))}
+                            </span>
+                            {product.pricedPerKg && (
+                              <span className="mt-px block text-[9.5px] opacity-60" data-tier-perkg>
+                                {tProducts("perKgAmount", { amount: eur(tierPerKg(tr.discount)) })}
+                              </span>
+                            )}
                           </motion.button>
                         );
                       })}
                     </div>
                   </div>
+                  )}
 
-                  <div className="mt-[22px] flex items-center gap-3">
-                    <div className="flex h-[52px] items-center gap-0.5 rounded-2xl border border-slate-900/[.07] bg-slate-100 px-1 dark:border-hairline dark:bg-surface-3">
-                      <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label={t("qtyDec")} className="flex h-11 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:text-ink-muted dark:hover:bg-white/10">
-                        <Minus size={15} strokeWidth={2} />
-                      </button>
-                      <span className="min-w-[34px] text-center text-[15px] font-semibold">{qty}</span>
-                      <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))} aria-label={t("qtyInc")} className="flex h-11 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:text-ink-muted dark:hover:bg-white/10">
-                        <Plus size={15} strokeWidth={2} />
-                      </button>
+                  {isAvailable ? (
+                    <div className="mt-[22px] flex items-center gap-3">
+                      <div className="flex h-[52px] items-center gap-0.5 rounded-2xl border border-slate-900/[.07] bg-slate-100 px-1 dark:border-hairline dark:bg-surface-3">
+                        <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label={t("qtyDec")} className="flex h-11 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:text-ink-muted dark:hover:bg-white/10">
+                          <Minus size={15} strokeWidth={2} />
+                        </button>
+                        <span className="min-w-[34px] text-center text-[15px] font-semibold">{qty}</span>
+                        <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))} aria-label={t("qtyInc")} className="flex h-11 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:text-ink-muted dark:hover:bg-white/10">
+                          <Plus size={15} strokeWidth={2} />
+                        </button>
+                      </div>
+                      <motion.button
+                        type="button"
+                        whileTap={{ scale: 0.97 }}
+                        whileHover={{ y: -1 }}
+                        onClick={addToCart}
+                        data-add-to-cart
+                        className={`flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2.5 rounded-2xl px-[22px] text-[15px] font-semibold tracking-[-.02em] text-white transition-[background-color,box-shadow] duration-300 ${
+                          added
+                            ? "bg-green-600 shadow-[0_26px_52px_-18px_#16a34a,0_0_34px_-8px_#16a34a]"
+                            : "bg-blue-700 shadow-[0_18px_38px_-18px_#1d4ed8] hover:bg-blue-800 hover:shadow-[0_26px_52px_-18px_#1d4ed8,0_0_34px_-8px_#1d4ed8]"
+                        }`}
+                      >
+                        {added ? t("addedToCart") : tHome("addToCart")}
+                        {added ? <Check size={17} strokeWidth={2.4} /> : <ShoppingCart size={17} strokeWidth={2} />}
+                      </motion.button>
                     </div>
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.97 }}
-                      whileHover={{ y: -1 }}
-                      onClick={addToCart}
-                      data-add-to-cart
-                      className={`flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2.5 rounded-2xl px-[22px] text-[15px] font-semibold tracking-[-.02em] text-white transition-[background-color,box-shadow] duration-300 ${
-                        added
-                          ? "bg-green-600 shadow-[0_26px_52px_-18px_#16a34a,0_0_34px_-8px_#16a34a]"
-                          : "bg-blue-700 shadow-[0_18px_38px_-18px_#1d4ed8] hover:bg-blue-800 hover:shadow-[0_26px_52px_-18px_#1d4ed8,0_0_34px_-8px_#1d4ed8]"
-                      }`}
-                    >
-                      {added ? t("addedToCart") : tHome("addToCart")}
-                      {added ? <Check size={17} strokeWidth={2.4} /> : <ShoppingCart size={17} strokeWidth={2} />}
-                    </motion.button>
-                  </div>
+                  ) : (
+                    /* Unavailable: the quantity stepper and buy button give way to the waitlist */
+                    <StockNotifyBlock productId={product.id} className="mt-[22px]" />
+                  )}
+
+                  {/* Outside the in-stock ternary on purpose: the products
+                      that misbehave are the ones already in stock, so an
+                      admin must be able to reach this on any product.
+                      Renders for an ADMIN session only; the action re-checks. */}
+                  <AdminRestockTest productId={product.id} />
 
                   {/* AI compatibility checker */}
                   <div
@@ -581,7 +673,16 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                           {rel.gwp !== null ? ` · GWP ${rel.gwp}` : ""}
                         </span>
                         <span className="mt-[13px] flex items-center justify-between gap-2.5">
-                          <span className="text-[15px] font-semibold tracking-[-.03em]">{eur(rel.price)}</span>
+                          <span className="min-w-0">
+                            <span className="block text-[15px] font-semibold tracking-[-.03em]" data-rel-cylinder>
+                              {eur(rel.cylinderPrice)}
+                            </span>
+                            {rel.pricedPerKg && (
+                              <span className="block text-[10.5px] text-slate-400 dark:text-ink-muted">
+                                {tProducts("perKgAmount", { amount: eur(rel.pricePerKg) })}
+                              </span>
+                            )}
+                          </span>
                           <motion.span
                             whileTap={{ scale: 0.9 }}
                             role="button"
@@ -589,7 +690,15 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              addItem({ sku: rel.sku, name: rel.name, variant: rel.weightLabel, price: rel.price });
+                              if (!isPurchasable(rel)) return;
+                              addItem({
+                                sku: rel.sku,
+                                name: rel.name,
+                                variant: rel.weightLabel,
+                                pricePerKg: rel.pricePerKg,
+                                weightKg: rel.weightKg,
+                                deposit: rel.cylinderDeposit,
+                              });
                               setRelAdded((a) => [...a, rel.sku]);
                             }}
                             className={`flex h-8 w-8 flex-none items-center justify-center rounded-[11px] border transition-colors ${
@@ -609,6 +718,12 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
             </div>
           </div>
         </motion.main>
+      </div>
+
+      </div>
+
+      <div className="block md:hidden">
+        <MobilePdpLayout product={product} variants={variants} />
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

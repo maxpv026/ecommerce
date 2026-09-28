@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import MobileAddressesLayout from "@/components/MobileAddressesLayout";
 import { auth } from "@/auth";
 import { getUserAddresses } from "@/lib/data";
+import AppChrome from "@/components/AppChrome";
 
 export const metadata: Metadata = {
   title: "Saved Addresses — My Energy",
@@ -13,8 +14,10 @@ export default async function AddressesPage() {
   const addresses = session?.user?.id ? await getUserAddresses(session.user.id) : [];
 
   return (
-    <div className="block md:hidden">
+    <AppChrome>
+      <div className="mx-auto w-full md:max-w-[620px] md:py-10">
       <MobileAddressesLayout addresses={addresses} />
-    </div>
+      </div>
+    </AppChrome>
   );
 }

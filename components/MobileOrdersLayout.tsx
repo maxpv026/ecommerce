@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useFormatter } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Check, ChevronLeft, MapPin, RefreshCw, Search } from "lucide-react";
+import { Check, ChevronLeft, Search } from "lucide-react";
+import InvoiceDownloadButton from "./profile/InvoiceDownloadButton";
+import OrdersEmptyState from "./OrdersEmptyState";
 import type { UserOrder } from "@/lib/data";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 
@@ -43,10 +45,10 @@ function itemSummary(order: UserOrder): string {
 }
 
 export default function MobileOrdersLayout({ initialTab = "active", orders, recipientName }: MobileOrdersLayoutProps) {
+  const t = useTranslations("ProfileMobile");
   const format = useFormatter();
   const formatEur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
   const [tab, setTab] = useState<OrdersTab>(initialTab);
-  const [reorderedId, setReorderedId] = useState<string | null>(null);
   const isActive = tab === "active";
 
   const activeOrders = orders.filter((o) => o.status !== "DELIVERED");
@@ -185,23 +187,30 @@ export default function MobileOrdersLayout({ initialTab = "active", orders, reci
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="mt-4 flex h-[50px] w-full items-center justify-center gap-2 rounded-2xl bg-blue-700 text-[14.5px] font-semibold tracking-[-.01em] text-white shadow-[0_14px_30px_-12px_rgba(29,78,216,0.85)] transition-colors hover:bg-blue-800"
+              {/* Was a <button> with no onClick — the card's primary action
+                  did nothing. It now opens the order, which is where the
+                  live carrier tracking actually lives. */}
+              <Link
+                href={`/profile/orders/${featuredActive.id}`}
+                className="mt-4 flex h-[50px] w-full items-center justify-center rounded-2xl bg-blue-700 text-[14.5px] font-semibold tracking-[-.01em] text-white shadow-[0_14px_30px_-12px_rgba(29,78,216,0.85)] transition-colors hover:bg-blue-800"
               >
-                <MapPin size={17} strokeWidth={2} />
-                Live Tracking
-              </button>
+                {t("detailsBtn")}
+              </Link>
             </div>
           </div>
         )}
 
-        {isActive && activeOrders.length === 0 && (
+        {isActive && activeOrders.length === 0 && orders.length > 0 && (
           <div className="px-4 pt-10 text-center text-[13.5px] text-slate-400 dark:text-slate-500">
             No active shipments right now.
           </div>
         )}
 
+        {orders.length === 0 ? (
+          <div className="px-4 pt-8">
+            <OrdersEmptyState compact />
+          </div>
+        ) : (
         <div className="px-4 pt-6">
           <div className="mb-2.5 px-1.5 text-[10.5px] tracking-[.08em] text-slate-400 dark:text-slate-500">
             {isActive ? "PAST ORDERS" : "COMPLETED ORDERS"}
@@ -213,7 +222,6 @@ export default function MobileOrdersLayout({ initialTab = "active", orders, reci
           ) : (
             <div className="flex flex-col gap-2.5">
               {completedOrders.map((order) => {
-                const done = reorderedId === order.id;
                 const totalQty = order.items.reduce((sum, i) => sum + i.quantity, 0);
                 return (
                   <div
@@ -236,19 +244,19 @@ export default function MobileOrdersLayout({ initialTab = "active", orders, reci
                       <span className="text-lg font-semibold tracking-[-.035em] tabular-nums">
                         {formatEur(order.totalAmount)}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => setReorderedId(order.id)}
-                        disabled={done}
-                        className={`flex h-10 flex-none items-center justify-center gap-[7px] rounded-[13px] px-[15px] text-[12.5px] font-semibold tracking-[-.01em] transition-colors ${
-                          done
-                            ? "bg-blue-700 text-white"
-                            : "border-[1.5px] border-blue-700/35 bg-white text-blue-700 hover:border-blue-700/60 dark:bg-transparent dark:text-blue-400"
-                        }`}
+                      {/* "Quick Reorder" used to sit beside this link. It only
+                          called setReorderedId and flipped its own label to
+                          "Added" — nothing was ever put in the cart, so the
+                          buyer was told an order had been repeated when it had
+                          not. Removed until it can call the real cart action;
+                          "Details" already leads to a working reorder path. */}
+                      <InvoiceDownloadButton invoiceId={order.invoiceId} variant="quiet" />
+                      <Link
+                        href={`/profile/orders/${order.id}`}
+                        className="flex h-10 flex-none items-center justify-center rounded-[13px] border border-slate-900/[.16] px-[15px] text-[12.5px] font-semibold tracking-[-.01em] dark:border-hairline-strong"
                       >
-                        <RefreshCw size={14} strokeWidth={2.2} />
-                        {done ? "Added" : "Quick Reorder"}
-                      </button>
+                        {t("detailsBtn")}
+                      </Link>
                     </div>
                   </div>
                 );
@@ -256,6 +264,7 @@ export default function MobileOrdersLayout({ initialTab = "active", orders, reci
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );

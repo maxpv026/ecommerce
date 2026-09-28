@@ -22,7 +22,14 @@ export type RequestOtpErrorCode =
   | "GOOGLE_ACCOUNT"
   | "SEND_FAILED";
 
-export type RequestOtpResult = { ok: true } | { ok: false; code: RequestOtpErrorCode };
+export type RequestOtpResult =
+  /**
+   * `factor` tells the UI what to ask for next: "email" when a code has just
+   * been sent, "totp" when this account uses an authenticator app and no
+   * email was sent at all.
+   */
+  | { ok: true; factor: "email" | "totp" }
+  | { ok: false; code: RequestOtpErrorCode };
 
 /**
  * Step 1 of sign-in/registration: validates credentials, creates the user
@@ -82,6 +89,14 @@ export async function requestEmailOtp(rawInput: {
     }
   }
 
+  // An enrolled authenticator replaces the emailed code rather than adding
+  // to it — the app is the stronger channel, and sending a second code that
+  // is never used would train people to ignore them. Nothing is emailed and
+  // nothing is stored; auth.ts verifies the TOTP against the secret instead.
+  if (existing?.isTwoFactorEnabled && existing.twoFactorSecret) {
+    return { ok: true, factor: "totp" };
+  }
+
   const code = await createOtp(email);
   try {
     await sendOtpEmail(email, code);
@@ -90,5 +105,5 @@ export async function requestEmailOtp(rawInput: {
     return { ok: false, code: "SEND_FAILED" };
   }
 
-  return { ok: true };
+  return { ok: true, factor: "email" };
 }

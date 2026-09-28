@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Header from "./Header";
 import DesktopHome from "./DesktopHome";
 import MobileAppLayout from "./MobileAppLayout";
@@ -9,6 +9,9 @@ import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, Us
 
 interface StorePageProps {
   recommendedProducts: StoreProduct[];
+  /** Server-rendered market-alerts card for the desktop grid. */
+  marketAlertsCard: ReactNode;
+  /** The same articles as data, for the mobile ticker's marquee. */
   marketAlerts: MarketAlertData[];
   dashboard: ProfileDashboardData | null;
   latestOrder: UserOrder | null;
@@ -17,8 +20,7 @@ interface StorePageProps {
   jobTitle: string | null;
 }
 
-export default function StorePage({ recommendedProducts, marketAlerts, dashboard, latestOrder, orders, certificate, jobTitle }: StorePageProps) {
-  const [query, setQuery] = useState("");
+export default function StorePage({ recommendedProducts, marketAlertsCard, marketAlerts, dashboard, latestOrder, orders, certificate, jobTitle }: StorePageProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
@@ -26,13 +28,11 @@ export default function StorePage({ recommendedProducts, marketAlerts, dashboard
       {/* Desktop / tablet — real dashboard-style home */}
       <div className="hidden md:block">
         <Header
-          query={query}
-          onQueryChange={setQuery}
           onSignInClick={() => setIsAuthModalOpen(true)}
         />
         <DesktopHome
           products={recommendedProducts}
-          marketAlerts={marketAlerts}
+          marketAlerts={marketAlertsCard}
           dashboard={dashboard}
           latestOrder={latestOrder}
         />

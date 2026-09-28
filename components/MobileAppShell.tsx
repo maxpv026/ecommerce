@@ -22,6 +22,11 @@ const NAV_HIDDEN_PREFIXES = [
   "/profile/security",
   "/profile/support",
   "/notifications",
+  // Checkout owns the bottom of the screen: it has its own fixed Place
+  // Order bar, and the tab bar sat on top of it (z-[100] over z-50).
+  // Hiding it is also the right call for a payment flow — one stray tap
+  // on "Catalog" mid-checkout loses the sale.
+  "/checkout",
   "/search",
   "/legal",
 ];

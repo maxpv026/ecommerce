@@ -24,8 +24,17 @@ export const QUICK_ACTIONS: QuickAction[] = [
     note: "sdsLibraryNote",
     href: "/profile/docs?tab=sds",
   },
-  // No href: opens the in-page camera scanner modal instead of navigating.
-  { id: "scan", icon: "scan-barcode", label: "scanBarcodeLabel", note: "scanBarcodeNote" },
+  // Replaces the barcode-scanner tile, which was a niche utility holding a
+  // slot in a four-tile grid. Links straight to the carbon record rather than
+  // anchoring at the Records group: the group is now two entries, so a hop
+  // through the profile page bought nothing.
+  {
+    id: "records",
+    icon: "leaf",
+    label: "recordsLabel",
+    note: "recordsNote",
+    href: "/profile/compliance",
+  },
 ];
 
 // EU-facing pricing, matching the "Built for European service teams" mobile

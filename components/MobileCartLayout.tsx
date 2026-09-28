@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronLeft,
   FlaskConical,
+  Lock,
   Minus,
   Plus,
   RefreshCcw,
@@ -20,12 +21,14 @@ import {
   TriangleAlert,
   Wrench,
 } from "lucide-react";
-import { FREE_FREIGHT_THRESHOLD, calculateCartTotals } from "@/lib/cart";
+import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
+import { formatKg } from "@/lib/pricing";
 import { useCartStore, type CartLine } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
 import type { StoreProduct } from "@/lib/data";
-import { useCartCount } from "./CartCountProvider";
+import MagicOrderPad from "./cart/MagicOrderPad";
+import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
 
 const SWIPE_THRESHOLD = 120;
 
@@ -44,6 +47,15 @@ type AuditPhase = "idle" | "thinking" | "compliant" | "optimised" | "unavailable
 interface MobileCartLayoutProps {
   products: StoreProduct[];
   onCheckout: () => void;
+  // F-Gas gate, computed once in CartPage so desktop and mobile can never
+  // disagree about whether this buyer may check out.
+  fgasGate: FgasGate | null;
+  checkoutLocked: boolean;
+  fgasOk: boolean;
+  verifiedCertId: string | null;
+  guestVerified: boolean;
+  onLogIn: () => void;
+  onUploadCertificate: () => void;
 }
 
 /** One swipeable cart line: red action lane behind a left-draggable card. */
@@ -72,6 +84,9 @@ function SwipeLine({
   const laneOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0.4]);
   const [past, setPast] = useState(false);
   const tint = tintFor(product);
+  const pricing = pricingLineFor(item, product);
+  const unit = lineUnitPrice(pricing);
+  const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
 
   const chips: Array<{ label: string; tone: "warn" | "ok" | "muted" }> = [];
   if (product?.gwpClass === "A2L") chips.push({ label: "A2L", tone: "warn" });
@@ -179,13 +194,20 @@ function SwipeLine({
                 <Plus size={14} strokeWidth={2} />
               </motion.button>
             </div>
-            <span className="text-right">
+            <span className="min-w-0 text-right">
               <span className="block text-base font-semibold tracking-[-.035em]" data-line-total>
-                {eur(item.price * item.qty)}
+                {eur(unit * item.qty)}
               </span>
-              <span className="mt-px block text-[10.5px] text-slate-400 dark:text-ink-muted">
-                {eur(item.price)} {t("eachSuffix")}
+              <span className="mt-px block text-[10px] leading-[1.45] text-slate-400 dark:text-ink-muted" data-line-breakdown>
+                {showBreakdown
+                  ? t("lineBreakdown", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg), cylinder: eur(unit) })
+                  : `${eur(unit)} ${t("eachSuffix")}`}
               </span>
+              {(pricing.deposit ?? 0) > 0 && (
+                <span className="block text-[10px] leading-[1.45] text-emerald-700 dark:text-emerald-300/90" data-line-deposit>
+                  {t("depositEach", { amount: eur(pricing.deposit ?? 0) })}
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -194,11 +216,20 @@ function SwipeLine({
   );
 }
 
-export default function MobileCartLayout({ products, onCheckout }: MobileCartLayoutProps) {
+export default function MobileCartLayout({
+  products,
+  onCheckout,
+  fgasGate,
+  checkoutLocked,
+  fgasOk,
+  verifiedCertId,
+  guestVerified,
+  onLogIn,
+  onUploadCertificate,
+}: MobileCartLayoutProps) {
   const t = useTranslations("Cart");
   const format = useFormatter();
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
-  const { setCartCount } = useCartCount();
 
   const items = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
@@ -224,13 +255,9 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
   }, []);
 
   const bySku = new Map(products.map((p) => [p.sku, p]));
-  const { count, subtotal, shipping, vat, total } = calculateCartTotals(shownItems);
+  const totalLines = shownItems.map((i) => pricingLineFor(i, bySku.get(i.sku)));
+  const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
   const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
-
-  // Keep the persistent global nav badge in sync with the real store.
-  useEffect(() => {
-    setCartCount(count);
-  }, [count, setCartCount]);
 
   const runAudit = async () => {
     if (empty || auditPhase === "thinking") return;
@@ -301,7 +328,16 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
         </div>
       </div>
 
-      <div className="relative pb-[calc(210px+env(safe-area-inset-bottom))]">
+      {/* bottom padding tracks the sticky bar's height as the gate alert / verified line come and go */}
+      <div
+        className={`relative ${
+          !empty && fgasGate
+            ? "pb-[calc(345px+env(safe-area-inset-bottom))]"
+            : !empty && fgasOk
+              ? "pb-[calc(255px+env(safe-area-inset-bottom))]"
+              : "pb-[calc(210px+env(safe-area-inset-bottom))]"
+        }`}
+      >
         {/* real freight badge in the design's tier slot */}
         {!empty && (
           <div className="px-[18px] pt-3.5">
@@ -407,14 +443,26 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
                             {s.reason}
                           </span>
                           <span className="mt-auto flex items-center justify-between gap-2 pt-3">
-                            <span className="text-[13px] font-semibold tracking-[-.025em]">{eur(product.price)}</span>
+                            <span className="min-w-0">
+                              <span className="block text-[13px] font-semibold tracking-[-.025em]">{eur(product.cylinderPrice)}</span>
+                              {product.pricedPerKg && (
+                                <span className="block text-[10px] text-slate-400 dark:text-ink-muted">{eur(product.pricePerKg)} / kg</span>
+                              )}
+                            </span>
                             <motion.button
                               type="button"
                               whileTap={{ scale: 0.94 }}
                               disabled={inCart}
                               onClick={() =>
                                 addItem(
-                                  { sku: product.sku, name: product.name, variant: product.weightLabel, price: product.price },
+                                  {
+                                    sku: product.sku,
+                                    name: product.name,
+                                    variant: product.weightLabel,
+                                    pricePerKg: product.pricePerKg,
+                                    weightKg: product.weightKg,
+                                    deposit: product.cylinderDeposit,
+                                  },
                                   1
                                 )
                               }
@@ -434,7 +482,11 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
                 </motion.div>
               )}
             </AnimatePresence>
+          </>
+        )}
 
+        {!empty && (
+          <>
             {/* summary */}
             <div className="px-[18px] pt-[22px]">
               <div className="rounded-[22px] border border-slate-900/[.08] bg-white/70 p-[18px] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
@@ -444,6 +496,17 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
                     {eur(subtotal)}
                   </span>
                 </div>
+                {deposit > 0 && (
+                  <div className="flex items-baseline justify-between gap-3 pb-2.5" data-summary-deposit>
+                    <span className="min-w-0 text-[12.5px] text-slate-500 dark:text-ink-muted">
+                      {t("cylinderDeposit")}
+                      <span className="mt-0.5 block text-[10.5px] leading-[1.4] text-slate-400 dark:text-ink-muted/80">
+                        {t("cylinderDepositDetail", { count: depositUnits })}
+                      </span>
+                    </span>
+                    <span className="flex-none text-[13px] font-semibold tracking-[-.02em] tabular-nums">{eur(deposit)}</span>
+                  </div>
+                )}
                 <div className="flex items-baseline justify-between gap-3 pb-2.5">
                   <span className="text-[12.5px] text-slate-500 dark:text-ink-muted">{t("freightAdr")}</span>
                   <span
@@ -587,11 +650,52 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
             </div>
           </>
         )}
+
+        {/* ── Magic Order ──
+            Last in the scroll flow, and that position is not cosmetic.
+
+            The fixed total bar (~203px) plus the global nav (80px) occlude the
+            bottom ~283px of an 844px viewport. This card first went directly
+            below the line items, which reads better — but there the bar
+            covered it at the DEFAULT scroll position: the Parse button sat at
+            y=716 with the bar starting at 561, and a hit test on the button's
+            centre returned "Proceed to Checkout". Focusing the textarea did
+            not rescue it either, because the field itself was already in view,
+            so nothing triggered a scroll. Tapping "Parse with AI" would have
+            started a checkout.
+
+            The container's bottom padding is already calibrated to the bar's
+            height, so content at the END of the flow is the only position
+            guaranteed to clear it. Present in both states: an empty cart is
+            the likeliest moment for this on a phone, with the engineer on
+            site and a list sitting in a messaging app. */}
+        <div className="px-[18px] pt-5">
+          <MagicOrderPad />
+        </div>
       </div>
 
       {/* sticky total bar above the global bottom nav */}
       {!empty && (
         <div className="fixed bottom-[calc(80px+env(safe-area-inset-bottom))] left-0 z-[90] w-full border-t border-slate-900/[.08] bg-white/90 px-[18px] pb-3.5 pt-3.5 shadow-[0_-18px_44px_-26px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-[#141518]/90">
+          {/* F-Gas gate — directly above the total so it reads as its condition */}
+          <AnimatePresence mode="wait" initial={false}>
+            {fgasGate && (
+              <div key={fgasGate} className="mb-3">
+                <FgasGateAlert gate={fgasGate} compact onLogIn={onLogIn} onUpload={onUploadCertificate} />
+              </div>
+            )}
+            {!fgasGate && fgasOk && (
+              <div key="verified" className="mb-2.5">
+                <FgasVerifiedLine certificateId={verifiedCertId} guest={guestVerified} compact />
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Payment choice sits directly above the checkout button, exactly
+              as on desktop — the same store field feeds both. */}
+          <div className="mb-3">
+          </div>
+
           <div className="flex items-center gap-3.5">
             <span className="min-w-0">
               <span className="block text-[10.5px] tracking-[.07em] text-slate-400 dark:text-ink-muted">
@@ -603,13 +707,21 @@ export default function MobileCartLayout({ products, onCheckout }: MobileCartLay
             </span>
             <motion.button
               type="button"
-              whileTap={{ scale: 0.97 }}
+              whileTap={checkoutLocked ? undefined : { scale: 0.97 }}
+              disabled={checkoutLocked}
+              aria-disabled={checkoutLocked}
+              title={checkoutLocked ? t("fgasLockedAria") : undefined}
               onClick={onCheckout}
               data-checkout-cta
-              className="ml-auto flex h-[54px] flex-none items-center justify-center gap-[9px] rounded-[17px] bg-blue-700 px-[26px] text-[15px] font-semibold tracking-[-.02em] text-white shadow-[0_20px_42px_-14px_#2563eb,0_0_32px_-10px_#2563eb] transition-colors hover:bg-blue-800"
+              data-checkout-locked={checkoutLocked ? "true" : undefined}
+              className={`ml-auto flex h-[54px] flex-none items-center justify-center gap-[9px] rounded-[17px] bg-blue-700 px-[26px] text-[15px] font-semibold tracking-[-.02em] text-white transition-[background-color,box-shadow,opacity,filter] duration-300 ${
+                checkoutLocked
+                  ? "cursor-not-allowed opacity-45 saturate-[.55] shadow-none"
+                  : "shadow-[0_20px_42px_-14px_#2563eb,0_0_32px_-10px_#2563eb] hover:bg-blue-800"
+              }`}
             >
               {t("checkout")}
-              <ArrowRight size={17} strokeWidth={2} />
+              {checkoutLocked ? <Lock size={16} strokeWidth={2.2} /> : <ArrowRight size={17} strokeWidth={2} />}
             </motion.button>
           </div>
         </div>

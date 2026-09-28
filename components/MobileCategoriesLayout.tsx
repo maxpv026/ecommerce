@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -16,8 +16,6 @@ import {
   Rows3,
   Sparkles,
 } from "lucide-react";
-import { useCartStore, selectCartCount } from "@/lib/store/cart";
-import { useCartCount } from "./CartCountProvider";
 import type { CategoryCounts } from "./CategoriesPage";
 
 interface MobileCategorySpec {
@@ -97,13 +95,6 @@ export default function MobileCategoriesLayout({ counts }: MobileCategoriesLayou
   const tHeader = useTranslations("Header");
   const [layout, setLayout] = useState<"grid" | "rows">("grid");
   const [pressed, setPressed] = useState<string | null>(null);
-  const { setCartCount } = useCartCount();
-  const realCartCount = useCartStore(selectCartCount);
-
-  // Keep the global bottom-nav badge on the real persisted cart.
-  useEffect(() => {
-    setCartCount(realCartCount);
-  }, [realCartCount, setCartCount]);
 
   const twoUp = layout === "grid";
 

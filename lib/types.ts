@@ -7,40 +7,12 @@ export interface Product {
   tag: string;
 }
 
-export interface WeightOption {
-  id: string;
-  label: string;
-  price: number;
-}
-
-export interface KeySpec {
-  label: string;
-  value: string;
-}
-
-export interface SpecRow {
-  key: string;
-  value: string;
-}
-
-export interface ProductDetail {
-  id: number;
-  category: string;
-  breadcrumbLabel: string;
-  name: string;
-  description: string;
-  compareAtPrice: number;
-  discountLabel: string;
-  availability: string;
-  certificationBadge: string;
-  keySpecs: KeySpec[];
-  weights: WeightOption[];
-  defaultWeightId: string;
-  baseSpecs: SpecRow[];
-  complianceNote: string;
-  /** Path (under /public) to this product's 3D cylinder model. Falls back to the generic model when omitted. */
-  modelPath?: string;
-}
+// `ProductDetail`, `WeightOption`, `KeySpec` and `SpecRow` used to live here:
+// the shape of the hardcoded lib/productDetails.ts catalogue behind the old
+// /product/[id] page. That route, its view and its mock data are deleted, and
+// the PDP now takes `StoreProduct` from lib/data.ts — a real row, with a real
+// sku, pricePerKg, weightKg and cylinderDeposit. The types are gone rather
+// than left unused so nothing gets built against the mock shape again.
 
 export interface CartItem {
   id: number;
@@ -49,22 +21,6 @@ export interface CartItem {
   stock: string;
   unit: number;
   qty: number;
-}
-
-export interface CatalogEntry {
-  id: number;
-  name: string;
-  type: string;
-  weight: number;
-  price: number;
-  sku: string;
-  tag: string;
-  note: string;
-  /** Canonical PDP id and weight tier this card links to. */
-  productId: number;
-  weightId: string;
-  /** Prisma Product.sku this listing entry sells — what goes in the cart. */
-  dbSku: string;
 }
 
 export interface AccountField {
@@ -112,6 +68,10 @@ export interface SdsDocument {
   category: SdsCategory;
   doc: string;
   badges: SdsBadgeLabel[];
+  /** Filename under /public/sds — what the download link actually fetches. */
+  file: string;
+  /** Refrigerant designation on its own ("R-32"), for the AI assistant. */
+  gas: string;
 }
 
 export interface CertificationStat {
@@ -145,7 +105,7 @@ export interface TrustCard {
   tagKey: string;
 }
 
-export type QuickActionIconKey = "refresh" | "package-search" | "file-text" | "scan-barcode";
+export type QuickActionIconKey = "refresh" | "package-search" | "file-text" | "scan-barcode" | "leaf";
 
 export interface QuickAction {
   id: string;
@@ -192,9 +152,4 @@ export interface MobileCatalogEntry {
   /** Canonical PDP id and weight tier this card links to. */
   productId: number;
   weightId: string;
-}
-
-export interface MobileFilterOption {
-  id: string;
-  label: string;
 }

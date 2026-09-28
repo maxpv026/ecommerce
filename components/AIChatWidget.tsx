@@ -1,12 +1,39 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { usePathname } from "@/i18n/navigation";
-import { Bot, Send, X } from "lucide-react";
+import { Bot, Send, Sparkles, X } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import Markdown from "react-markdown";
-import { OPEN_AI_CHAT_EVENT, type OpenAiChatDetail } from "@/lib/aiChatEvents";
+import { ASSISTANT_VISIBLE_PATHS, OPEN_AI_CHAT_EVENT, type OpenAiChatDetail } from "@/lib/aiChatEvents";
+
+// react-markdown pulls in the whole unified/remark/micromark chain, and this
+// widget sits in the locale layout — so that parser was being downloaded on
+// every page in the app to format assistant replies that only exist once
+// someone opens the chat. Loaded on first use instead; `ssr: false` because a
+// reply can only ever be rendered client-side anyway.
+const Markdown = dynamic(() => import("react-markdown"), { ssr: false });
+
+/**
+ * The F-Gas consultant is a second, separate assistant sharing this panel.
+ *
+ * Deliberately NOT merged with the general support chat: that one is chatty
+ * and uses general knowledge, this one answers only from the vectorised
+ * knowledge base and refuses everything else. One prompt cannot be both
+ * without making the strict one leaky.
+ *
+ * Deferred again inside this already-deferred widget so its product cards and
+ * tool-part rendering only download when someone actually opens the tab.
+ */
+const RagAssistant = dynamic(() => import("./ai/RagAssistant"), { ssr: false });
+
+type Mode = "support" | "fgas";
+
+const MODES: Array<{ id: Mode; label: string; Icon: typeof Bot }> = [
+  { id: "support", label: "Support", Icon: Bot },
+  { id: "fgas", label: "F-Gas Expert", Icon: Sparkles },
+];
 
 const ACCENT = "#1d4ed8";
 
@@ -15,19 +42,18 @@ const GREETING =
 
 const QUICK_REPLIES = ["Check R-410A stock", "What does error code E9 mean?", "Calculate charge for 50ft line"];
 
-// Only the Home and Catalog pages get the AI assistant launcher.
-const ASSISTANT_VISIBLE_PATHS = ["/", "/cylinders"];
-
 export default function AIChatWidget() {
   const pathname = usePathname();
   const isVisible = ASSISTANT_VISIBLE_PATHS.includes(pathname);
   const fabOffset = "bottom-[120px] md:bottom-6";
   const [isOpen, setIsOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("support");
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat" }));
   const { messages, sendMessage, status } = useChat({ transport });
   const isTyping = status === "submitted" || status === "streaming";
+  const fgas = mode === "fgas";
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -111,15 +137,25 @@ export default function AIChatWidget() {
                   <span className="h-1.5 w-9 rounded-full bg-slate-900/15 dark:bg-white/20" />
                 </div>
 
-                <div className="flex items-center gap-[11px] border-b border-slate-900/[.07] p-4 dark:border-white/[.08]">
+                <div className="flex items-center gap-[11px] px-4 pb-3 pt-4">
                   <span className="flex h-8 w-8 flex-none items-center justify-center rounded-[11px] bg-slate-900 text-white dark:bg-slate-50 dark:text-slate-900">
-                    <Bot size={16} strokeWidth={1.8} />
+                    {fgas ? <Sparkles size={15} strokeWidth={1.9} /> : <Bot size={16} strokeWidth={1.8} />}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-semibold tracking-[-.015em]">My Energy AI Support</div>
+                    <div className="text-[13.5px] font-semibold tracking-[-.015em]">
+                      {fgas ? "F-Gas Consultant" : "My Energy AI Support"}
+                    </div>
                     <div className="mt-[3px] flex items-center gap-1.5 text-[11.5px] text-slate-500 dark:text-slate-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-600 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
-                      Online
+                      {fgas ? (
+                        // No "Online" dot here: this assistant's honesty about
+                        // what it does not know is the thing worth stating.
+                        <span>Answers only from our knowledge base</span>
+                      ) : (
+                        <>
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-600 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
+                          Online
+                        </>
+                      )}
                     </div>
                   </div>
                   <button
@@ -132,6 +168,44 @@ export default function AIChatWidget() {
                   </button>
                 </div>
 
+                {/* Segmented switch. Each tab keeps its own conversation: the
+                    two assistants have different knowledge and different
+                    rules, so carrying a transcript across would be misleading. */}
+                <div
+                  role="tablist"
+                  aria-label="Assistant mode"
+                  className="flex flex-none gap-1 border-b border-slate-900/[.07] px-3 pb-2.5 dark:border-white/[.08]"
+                >
+                  {MODES.map((m) => {
+                    const active = mode === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        onClick={() => setMode(m.id)}
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-2 py-[7px] text-[12px] font-medium tracking-[-.01em] transition-colors ${
+                          active
+                            ? "bg-slate-900/[.06] text-slate-900 dark:bg-white/10 dark:text-slate-50"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                        }`}
+                      >
+                        <m.Icon size={13} strokeWidth={2} />
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {fgas ? (
+                  // Self-contained: it brings its own message list, product
+                  // cards and composer, so the support body below is replaced
+                  // wholesale rather than sharing an input that posts to the
+                  // wrong endpoint.
+                  <RagAssistant embedded />
+                ) : (
+                  <>
                 <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
                 <div className="text-center text-[11px] tracking-[.03em] text-slate-400 dark:text-slate-500">
                   Today
@@ -212,6 +286,8 @@ export default function AIChatWidget() {
                   </button>
                 </div>
               </div>
+                  </>
+                )}
             </div>
           </div>
         </div>

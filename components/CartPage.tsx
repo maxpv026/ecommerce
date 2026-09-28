@@ -12,6 +12,7 @@ import {
   FlaskConical,
   Lock,
   Minus,
+  PackageX,
   Plus,
   RefreshCcw,
   ShoppingCart,
@@ -24,11 +25,17 @@ import {
 import Header from "./Header";
 import AuthModal from "./AuthModal";
 import MobileCartLayout from "./MobileCartLayout";
-import { FREE_FREIGHT_THRESHOLD, calculateCartTotals } from "@/lib/cart";
-import { useCartStore } from "@/lib/store/cart";
+import MagicOrderPad from "./cart/MagicOrderPad";
+import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
+import FgasVerificationModal from "./FgasVerificationModal";
+import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
+import { formatKg } from "@/lib/pricing";
+import { isPurchasable } from "@/lib/waitlist";
+import { useCartStore, type FgasVerification } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
 import type { StoreProduct } from "@/lib/data";
+import type { FGasStatus } from "@/lib/generated/prisma/enums";
 
 const ACCENT = "#1d4ed8";
 
@@ -47,15 +54,26 @@ type AuditPhase = "idle" | "thinking" | "compliant" | "optimised" | "unavailable
 
 interface CartPageProps {
   products: StoreProduct[];
+  /**
+   * The signed-in buyer's F-Gas status, read from the database by the route.
+   * Null when signed out. Preferred over the session copy, which is a JWT
+   * minted at sign-in and goes stale the moment a reviewer decides.
+   */
+  fGasStatus?: FGasStatus | null;
 }
 
-export default function CartPage({ products }: CartPageProps) {
+export default function CartPage({ products, fGasStatus: serverFGasStatus = null }: CartPageProps) {
   const t = useTranslations("Cart");
+  const tProducts = useTranslations("Products");
   const format = useFormatter();
   const router = useRouter();
-  const { status } = useSession();
-  const [query, setQuery] = useState("");
+  const { data: session, status, update: updateSession } = useSession();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // "checkout" carries the buyer straight on after signing in; "inline"
+  // (the gate alert's Log In) stays on the cart so the F-Gas rule can be
+  // re-evaluated against the fresh session before anything moves.
+  const [authIntent, setAuthIntent] = useState<"checkout" | "inline">("checkout");
+  const [isFgasModalOpen, setIsFgasModalOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [trashHover, setTrashHover] = useState<string | null>(null);
 
@@ -70,12 +88,64 @@ export default function CartPage({ products }: CartPageProps) {
   const decrement = useCartStore((s) => s.decrement);
   const removeItem = useCartStore((s) => s.removeItem);
   const clear = useCartStore((s) => s.clear);
+  const fgasVerification = useCartStore((s) => s.fgasVerification);
+  const setFgasVerification = useCartStore((s) => s.setFgasVerification);
 
   // The cart is rehydrated from localStorage on the client — until then,
   // render the server's empty-cart markup to keep hydration clean.
   const hydrated = useHydrated();
   const shownItems = hydrated ? items : [];
   const empty = shownItems.length === 0;
+
+  // Live catalog lookup for the persisted cart lines. Declared up here
+  // because both the stock gate and the totals below depend on it.
+  const bySku = new Map(products.map((p) => [p.sku, p]));
+
+  // ─── F-Gas gate ───
+  // Refrigerant may only be sold to a buyer with an accepted certificate.
+  // The only thing that unlocks checkout is the row-backed status reaching
+  // VERIFIED, read from the server — the browser's own record of a
+  // submission deliberately does NOT count, so a hand-edited local store
+  // grants nothing. Guests are never verified: there is no account to hold
+  // the status.
+  const storedFgas = hydrated ? fgasVerification : null;
+  const sessionUserId = session?.user?.id ?? null;
+  const fGasStatus = serverFGasStatus ?? session?.user?.fGasStatus ?? "NONE";
+  const accountVerified = status === "authenticated" && fGasStatus === "VERIFIED";
+  const fgasOk = accountVerified;
+
+  // A line can go out of stock after it was added (a CRM push, or someone
+  // else buying the last cylinder). Checkout is blocked until it's removed;
+  // placeOrder would refuse it server-side anyway, so catch it here with an
+  // explanation instead of a failed order.
+  const blockedLines = shownItems.filter((i) => {
+    const product = bySku.get(i.sku);
+    return product ? !isPurchasable(product) : false;
+  });
+  const hasBlockedLines = blockedLines.length > 0;
+  const fgasGate: FgasGate | null =
+    status === "loading"
+      ? null
+      : status === "unauthenticated"
+        ? "guest"
+        : accountVerified
+          ? null
+          : "unverified";
+  const checkoutLocked = empty || !fgasOk || hasBlockedLines;
+  const verifiedCertId = accountVerified ? (storedFgas?.certificateId ?? null) : null;
+
+  const openAuth = (intent: "checkout" | "inline") => {
+    setAuthIntent(intent);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleFgasVerified = (verification: FgasVerification) => {
+    // Records what was read, for the receipt shown in the modal. Refreshing
+    // the session is what actually unlocks checkout: it pulls the row's real
+    // status, which the route has just set to VERIFIED or REJECTED.
+    setFgasVerification(verification);
+    if (verification.scope === "account") void updateSession();
+  };
 
   // Entrance stagger applies to the first paint only; lines added later
   // (AI suggestions) rise immediately.
@@ -85,10 +155,12 @@ export default function CartPage({ products }: CartPageProps) {
     return () => clearTimeout(id);
   }, []);
 
-  const bySku = new Map(products.map((p) => [p.sku, p]));
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
-  const { count, subtotal, shipping, vat, total } = calculateCartTotals(shownItems);
+  // Per-kg rate, net weight and deposit come from the live catalog when the
+  // product is known — a stale persisted line can't understate the price.
+  const totalLines = shownItems.map((i) => pricingLineFor(i, bySku.get(i.sku)));
+  const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
   const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
 
   const runAudit = async () => {
@@ -115,15 +187,25 @@ export default function CartPage({ products }: CartPageProps) {
   const addSuggestion = (sku: string) => {
     const product = bySku.get(sku);
     if (!product) return;
-    addItem({ sku: product.sku, name: product.name, variant: product.weightLabel, price: product.price }, 1);
+    addItem(
+      {
+        sku: product.sku,
+        name: product.name,
+        variant: product.weightLabel,
+        pricePerKg: product.pricePerKg,
+        weightKg: product.weightKg,
+        deposit: product.cylinderDeposit,
+      },
+      1
+    );
   };
 
   const goToCheckout = () => {
-    if (empty) return;
+    if (checkoutLocked) return;
     if (status === "authenticated") {
       router.push("/checkout");
     } else {
-      setIsAuthModalOpen(true);
+      openAuth("checkout");
     }
   };
 
@@ -152,7 +234,7 @@ export default function CartPage({ products }: CartPageProps) {
   return (
     <div className="flex-1 bg-white dark:bg-canvas">
       <div className="hidden md:block">
-        <Header query={query} onQueryChange={setQuery} onSignInClick={() => setIsAuthModalOpen(true)} />
+        <Header onSignInClick={() => openAuth("inline")} />
 
         <div className="relative overflow-x-clip">
           {/* Ambient glow field from the design: cyan / violet / blue orbs */}
@@ -217,6 +299,10 @@ export default function CartPage({ products }: CartPageProps) {
                       {shownItems.map((item, idx) => {
                         const product = bySku.get(item.sku);
                         const tint = tintFor(product);
+                        const pricing = pricingLineFor(item, product);
+                        const unit = lineUnitPrice(pricing);
+                        // Equipment is priced per unit — no "€/kg × kg" story to tell.
+                        const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
                         const on = hovered === item.sku;
                         const trashOn = trashHover === item.sku;
                         return (
@@ -320,13 +406,21 @@ export default function CartPage({ products }: CartPageProps) {
                                     <Plus size={14} strokeWidth={2} />
                                   </motion.button>
                                 </div>
-                                <span className="text-right">
+                                <span className="min-w-0 text-right">
                                   <span className="block text-lg font-semibold tracking-[-.035em]" data-line-total>
-                                    {eur(item.price * item.qty)}
+                                    {eur(unit * item.qty)}
                                   </span>
-                                  <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-ink-muted">
-                                    {eur(item.price)} {t("eachSuffix")}
+                                  {/* the maths behind the figure: €/kg × net kg = one cylinder, + deposit */}
+                                  <span className="mt-0.5 block text-[11px] leading-[1.5] text-slate-400 dark:text-ink-muted" data-line-breakdown>
+                                    {showBreakdown
+                                      ? t("lineBreakdown", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg), cylinder: eur(unit) })
+                                      : `${eur(unit)} ${t("eachSuffix")}`}
                                   </span>
+                                  {(pricing.deposit ?? 0) > 0 && (
+                                    <span className="block text-[11px] leading-[1.5] text-emerald-700 dark:text-emerald-300/90" data-line-deposit>
+                                      {t("depositEach", { amount: eur(pricing.deposit ?? 0) })}
+                                    </span>
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -380,7 +474,14 @@ export default function CartPage({ products }: CartPageProps) {
                                     </span>
                                   </span>
                                   <span className="flex flex-none items-center gap-2.5">
-                                    <span className="text-[13px] font-semibold tracking-[-.02em]">{eur(product.price)}</span>
+                                    <span className="text-right">
+                                      <span className="block text-[13px] font-semibold tracking-[-.02em]">{eur(product.cylinderPrice)}</span>
+                                      {product.pricedPerKg && (
+                                        <span className="block text-[10.5px] text-slate-400 dark:text-ink-muted">
+                                          {eur(product.pricePerKg)} {tProducts("perKgSuffix")}
+                                        </span>
+                                      )}
+                                    </span>
                                     <motion.button
                                       type="button"
                                       whileTap={{ scale: 0.95 }}
@@ -404,6 +505,18 @@ export default function CartPage({ products }: CartPageProps) {
                     </AnimatePresence>
                   </div>
                 )}
+
+                {/* Foot of the list column, not a full-width band above it.
+                    It used to sit above the line items on the argument that
+                    pasting a message is how an order starts — but at full
+                    width it pushed the cart itself below the fold, so the
+                    page led with an input instead of with what the buyer came
+                    to check. Here it reads as "add more to this cart", which
+                    is what it actually does, and it inherits the column width
+                    so it lines up with the items above it. */}
+                <div className="mt-5">
+                  <MagicOrderPad />
+                </div>
               </div>
 
               {/* ─── summary column ─── */}
@@ -539,6 +652,18 @@ export default function CartPage({ products }: CartPageProps) {
                         {eur(subtotal)}
                       </span>
                     </div>
+                    {/* mandatory cylinder deposit — its own line, never blended into the gas price */}
+                    {deposit > 0 && (
+                      <div className="flex items-baseline justify-between gap-3.5" data-summary-deposit>
+                        <span className="min-w-0 text-[13px] text-slate-600 dark:text-ink-muted">
+                          {t("cylinderDeposit")}
+                          <span className="mt-0.5 block text-[11px] leading-[1.4] text-slate-400 dark:text-ink-muted/80">
+                            {t("cylinderDepositDetail", { count: depositUnits })}
+                          </span>
+                        </span>
+                        <span className="flex-none text-[13.5px] font-semibold tracking-[-.02em]">{eur(deposit)}</span>
+                      </div>
+                    )}
                     <div className="flex items-baseline justify-between gap-3.5">
                       <span className="text-[13px] text-slate-600 dark:text-ink-muted">{t("freightAdr")}</span>
                       <span
@@ -562,17 +687,83 @@ export default function CartPage({ products }: CartPageProps) {
                     </span>
                   </div>
 
+                  {/* A line that went out of stock after it was added blocks checkout */}
+                  <AnimatePresence initial={false}>
+                    {hasBlockedLines && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        role="alert"
+                        data-cart-oos
+                        className="relative mt-[18px] overflow-hidden rounded-[20px] border border-red-500/35 bg-red-500/[.10] p-4 shadow-[0_0_34px_-12px_rgba(239,68,68,.75)] backdrop-blur-xl backdrop-saturate-150"
+                      >
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,#f87171,transparent_68%)] opacity-40 blur-[40px]"
+                        />
+                        <div className="relative flex items-start gap-3">
+                          <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[12px] bg-[linear-gradient(140deg,#dc2626,#f87171)] text-white shadow-[0_12px_26px_-12px_rgba(239,68,68,.95)]">
+                            <PackageX size={17} strokeWidth={2.2} />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="m-0 text-[13px] font-semibold leading-[1.35] text-red-700 dark:text-red-300">
+                              {tProducts("outOfStockNotice")}
+                            </p>
+                            <p className="mb-0 mt-1 text-[11.5px] leading-[1.5] text-slate-600 dark:text-ink-muted">
+                              {t("cartOosBody", { items: blockedLines.map((l) => l.name).join(", ") })}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => blockedLines.forEach((l) => removeItem(l.sku))}
+                              data-cart-oos-remove
+                              className="mt-2.5 inline-flex h-9 items-center justify-center rounded-[11px] bg-red-600 px-3.5 text-[12px] font-semibold text-white transition-colors hover:bg-red-500"
+                            >
+                              {t("cartOosRemove", { count: blockedLines.length })}
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* F-Gas gate — sits directly under the total */}
+                  <AnimatePresence mode="wait" initial={false}>
+                    {!empty && fgasGate && (
+                      <div key={fgasGate} className="mt-[18px]">
+                        <FgasGateAlert
+                          gate={fgasGate}
+                          onLogIn={() => openAuth("inline")}
+                          onUpload={() => setIsFgasModalOpen(true)}
+                        />
+                      </div>
+                    )}
+                    {!empty && !fgasGate && fgasOk && (
+                      <div key="verified" className="mt-[18px]">
+                        <FgasVerifiedLine certificateId={verifiedCertId} guest={false} />
+                      </div>
+                    )}
+                  </AnimatePresence>
+
                   <motion.button
                     type="button"
-                    whileHover={empty ? undefined : { y: -1 }}
-                    whileTap={empty ? undefined : { scale: 0.97 }}
-                    disabled={empty}
+                    whileHover={checkoutLocked ? undefined : { y: -1 }}
+                    whileTap={checkoutLocked ? undefined : { scale: 0.97 }}
+                    disabled={checkoutLocked}
+                    aria-disabled={checkoutLocked}
+                    title={checkoutLocked && !empty ? t("fgasLockedAria") : undefined}
                     onClick={goToCheckout}
                     data-checkout-cta
-                    className="mt-[22px] flex h-14 w-full items-center justify-center gap-2.5 rounded-[18px] bg-blue-700 text-[15.5px] font-semibold tracking-[-.022em] text-white shadow-[0_20px_42px_-18px_#1d4ed8] transition-[background-color,box-shadow] duration-300 hover:bg-blue-800 hover:shadow-[0_28px_56px_-18px_#1d4ed8,0_0_36px_-8px_#1d4ed8] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-blue-700 disabled:hover:shadow-[0_20px_42px_-18px_#1d4ed8]"
+                    data-checkout-locked={checkoutLocked ? "true" : undefined}
+                    className={`mt-[22px] flex h-14 w-full items-center justify-center gap-2.5 rounded-[18px] bg-blue-700 text-[15.5px] font-semibold tracking-[-.022em] text-white transition-[background-color,box-shadow,opacity,filter] duration-300 ${
+                      checkoutLocked
+                        ? "cursor-not-allowed opacity-45 saturate-[.55] shadow-none"
+                        : "shadow-[0_20px_42px_-18px_#1d4ed8] hover:bg-blue-800 hover:shadow-[0_28px_56px_-18px_#1d4ed8,0_0_36px_-8px_#1d4ed8]"
+                    }`}
                   >
                     {t("proceedToCheckout")}
-                    <ArrowRight size={17} strokeWidth={2} />
+                    {checkoutLocked && !empty ? <Lock size={16} strokeWidth={2.2} /> : <ArrowRight size={17} strokeWidth={2} />}
                   </motion.button>
 
                   {!empty && (
@@ -610,10 +801,32 @@ export default function CartPage({ products }: CartPageProps) {
       </div>
 
       <div className="block md:hidden">
-        <MobileCartLayout products={products} onCheckout={goToCheckout} />
+        <MobileCartLayout
+          products={products}
+          onCheckout={goToCheckout}
+          fgasGate={fgasGate}
+          checkoutLocked={checkoutLocked}
+          fgasOk={fgasOk}
+          verifiedCertId={verifiedCertId}
+          guestVerified={false}
+          onLogIn={() => openAuth("inline")}
+          onUploadCertificate={() => setIsFgasModalOpen(true)}
+        />
       </div>
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} callbackUrl="/checkout" />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        callbackUrl={authIntent === "checkout" ? "/checkout" : undefined}
+      />
+
+      <FgasVerificationModal
+        isOpen={isFgasModalOpen}
+        onClose={() => setIsFgasModalOpen(false)}
+        scope={status === "authenticated" ? "account" : "guest"}
+        userId={sessionUserId}
+        onVerified={handleFgasVerified}
+      />
     </div>
   );
 }

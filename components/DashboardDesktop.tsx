@@ -1,5 +1,6 @@
 "use client";
 
+import { cartLineFromOrderItem } from "@/lib/store/cart";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
@@ -9,6 +10,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   Building2,
   ChevronDown,
+  Clock,
   Droplets,
   Home,
   Pencil,
@@ -19,6 +21,7 @@ import {
   Lock,
   LogOut,
   Package,
+  ShieldAlert,
   ShieldCheck,
   ShoppingBag,
   Truck,
@@ -28,6 +31,8 @@ import { useCartStore } from "@/lib/store/cart";
 import AddressModal from "./AddressModal";
 import EditProfileModal from "./EditProfileModal";
 import ChangePasswordFlow from "./ChangePasswordFlow";
+import RecordsCard from "./profile/RecordsCard";
+import TwoFactorSetup from "./TwoFactorSetup";
 import { deleteAddress, setDefaultAddress } from "@/lib/actions/address";
 import { nativeLanguageName } from "@/lib/languageNames";
 import { ACCOUNT_PROFILE } from "@/lib/account";
@@ -141,6 +146,7 @@ export default function DashboardDesktop({
   const tHome = useTranslations("HomeDesktop");
   const tCheckout = useTranslations("Checkout");
   const tCart = useTranslations("Cart");
+  const tFgas = useTranslations("FgasModal");
   const tAuth = useTranslations("Auth");
   const format = useFormatter();
   const router = useRouter();
@@ -174,14 +180,89 @@ export default function DashboardDesktop({
   const company = preview ? ACCOUNT_PROFILE.companyLabel : profile?.companyName;
   const memberSinceYear = preview ? ACCOUNT_PROFILE.customerSinceYear : (profile?.memberSinceYear ?? null);
   const fgasVerified = preview ? true : Boolean(profile?.fgasVerified);
+  const fGasStatus = preview ? "VERIFIED" : (profile?.fGasStatus ?? "NONE");
+  // Nothing new reaches PENDING_REVIEW since verification went automatic,
+  // but accounts that submitted under the admin-review flow still sit there.
+  const awaitingReview = fGasStatus === "PENDING_REVIEW";
   const cert = preview
     ? { certType: "Category I", certId: "FGAS-849201", issuedYear: 2025 }
     : (profile?.certificate ?? null);
-  const certExpiryYear = cert ? cert.issuedYear + CERT_VALIDITY_YEARS : null;
-  // Renewal progress: elapsed fraction of the certificate's validity window.
-  const renewalProgress = cert
-    ? Math.min(0.95, Math.max(0.05, (new Date().getFullYear() - cert.issuedYear) / CERT_VALIDITY_YEARS))
-    : 0;
+
+  // What the document itself says, as read off it at verification. The
+  // Certificate row is OUR record (its issuedAt is when we approved them),
+  // so anything the extraction knows wins over it here.
+  const extracted = preview
+    ? {
+        companyName: "Nordwind Kälte- und Klimatechnik GmbH",
+        certificateId: "FGAS-849201",
+        category: "Category I",
+        issuedOn: "2025-03-11",
+        expiresAt: "2029-03-10",
+        issuingBody: null,
+      }
+    // Gated on the certificate actually having been accepted. A refused
+    // upload still leaves its reading on the row (an admin needs it to
+    // overturn the call), and showing that here would present a certificate
+    // we rejected as though it were on file.
+    : fgasVerified
+      ? (profile?.fGasExtracted ?? null)
+      : null;
+  const rejectionReason = preview ? null : (profile?.fGasRejectionReason ?? null);
+  const refused = fGasStatus === "REJECTED";
+
+  /** ISO date → a real Date, or null. Guards against a bad stored string. */
+  const asDate = (iso: string | null | undefined) => {
+    if (!iso) return null;
+    const date = new Date(`${iso}T00:00:00Z`);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+  const issuedDate = asDate(extracted?.issuedOn);
+  const expiryDate = asDate(extracted?.expiresAt);
+
+  /** Locale-formatted day; falls back to the raw ISO if Intl can't take it. */
+  const asDay = (date: Date | null, iso: string | null | undefined) =>
+    date ? format.dateTime(date, { dateStyle: "medium", timeZone: "UTC" }) : (iso ?? null);
+
+  // The document buttons. Null disables them — while a certificate is with a
+  // reviewer there is nothing to show yet, and the signed-out preview must
+  // not advertise a file that doesn't exist. The route authorises against
+  // the row anyway, so a guessed URL gets a 404 rather than someone's
+  // compliance document.
+  const certificateHref = preview || awaitingReview ? null : (profile?.fGasDocumentUrl ?? null);
+  const certificateDownloadHref = certificateHref
+    ? `${certificateHref}${certificateHref.includes("?") ? "&" : "?"}download=1`
+    : null;
+
+  // The real expiry when the document gave one. Only when it didn't — legacy
+  // accounts approved before the extraction was stored — does this fall back
+  // to the old guess of issue year + a nominal validity period.
+  const certExpiryYear = expiryDate
+    ? expiryDate.getUTCFullYear()
+    : cert
+      ? cert.issuedYear + CERT_VALIDITY_YEARS
+      : null;
+
+  // Renewal progress: how much of the validity window has elapsed. Measured
+  // between the document's own dates where both are known, so the bar tracks
+  // the actual certificate rather than a four-year assumption.
+  //
+  // Read at day granularity on purpose: this renders on the server and then
+  // hydrates on the client, and a millisecond-precision clock would give the
+  // two runs different bar widths and a hydration mismatch.
+  const renewalProgress = (() => {
+    const clamp = (value: number) => Math.min(0.95, Math.max(0.05, value));
+    const today = new Date();
+    const now = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    if (issuedDate && expiryDate && expiryDate.getTime() > issuedDate.getTime()) {
+      return clamp((now - issuedDate.getTime()) / (expiryDate.getTime() - issuedDate.getTime()));
+    }
+    if (expiryDate) {
+      // Only the end is known: show the last nominal window running down.
+      const window = CERT_VALIDITY_YEARS * 365.25 * 864e5;
+      return clamp(1 - (expiryDate.getTime() - now) / window);
+    }
+    return cert ? clamp((today.getUTCFullYear() - cert.issuedYear) / CERT_VALIDITY_YEARS) : 0;
+  })();
 
   const totalOrders = dashboard?.totalOrders ?? (preview ? ACCOUNT_PROFILE.orderCount : 0);
   const activeShipments = dashboard?.activeShipments ?? (preview ? 1 : 0);
@@ -201,6 +282,7 @@ export default function DashboardDesktop({
           city: "Dallas",
           postalCode: "TX 75247",
           country: "United States",
+          phone: null,
           kind: "SHIPPING",
         },
       ]
@@ -238,11 +320,27 @@ export default function DashboardDesktop({
     { label: t("fieldMemberSince"), value: memberSinceYear ? String(memberSinceYear) : tAccount("fieldEmpty") },
   ];
 
+  // Each field prefers the document's own reading, then our record, then a
+  // neutral placeholder. A VERIFIED account never shows "Not set": the
+  // certificate was accepted, so an unread field says "Verified" rather than
+  // implying nothing is on file.
+  const certPlaceholder = fgasVerified ? tAccount("verified") : tAccount("fieldEmpty");
   const certFields = [
-    { label: t("fieldHolder"), value: displayName || tAccount("fieldEmpty") },
-    { label: t("fieldCertId"), value: cert?.certId ?? tAccount("fieldEmpty") },
-    { label: t("fieldIssued"), value: cert ? String(cert.issuedYear) : "—" },
-    { label: t("fieldExpires"), value: certExpiryYear ? String(certExpiryYear) : "—" },
+    // The holder is the company the certificate was issued to, which is not
+    // necessarily the person holding the account.
+    {
+      label: t("fieldHolder"),
+      value: extracted?.companyName || company || displayName || certPlaceholder,
+    },
+    { label: t("fieldCertId"), value: extracted?.certificateId || cert?.certId || certPlaceholder },
+    {
+      label: t("fieldIssued"),
+      value: asDay(issuedDate, extracted?.issuedOn) ?? (cert ? String(cert.issuedYear) : "—"),
+    },
+    {
+      label: t("fieldExpires"),
+      value: asDay(expiryDate, extracted?.expiresAt) ?? (certExpiryYear ? String(certExpiryYear) : "—"),
+    },
   ];
 
   const stats = [
@@ -274,7 +372,9 @@ export default function DashboardDesktop({
     { id: "certificate", label: t("tabCertificate"), icon: ShieldCheck, target: "certificate", badge: fgasVerified ? t("badgeValid") : tAccount("pendingVerification") },
     { id: "orders", label: tAccount("navOrderHistory"), icon: Package, target: "orders", badge: shownOrders.length > 0 ? String(shownOrders.length) : undefined },
     { id: "addresses", label: t("tabAddresses"), icon: Truck, target: "addresses" },
-    { id: "documents", label: t("tabDocuments"), icon: FileText, href: "/compliance/sds" as const },
+    // Was "/compliance/sds" — the public datasheet library. A tab inside
+    // someone's account should open their own certificate and documents.
+    { id: "documents", label: t("tabDocuments"), icon: FileText, href: "/profile/docs" as const },
     { id: "security", label: tAccount("navSecurity"), icon: Lock, target: "security" },
   ];
 
@@ -298,10 +398,7 @@ export default function DashboardDesktop({
 
   const reorder = (order: UserOrder) => {
     for (const item of order.items) {
-      addItem(
-        { sku: item.sku, name: item.productName, variant: item.variant, price: item.priceAtPurchase },
-        item.quantity
-      );
+      addItem(cartLineFromOrderItem(item), item.quantity);
     }
     setReordered((r) => [...r, order.id]);
   };
@@ -349,7 +446,7 @@ export default function DashboardDesktop({
           </div>
           <div className="flex gap-2.5">
             <Link
-              href="/cylinders"
+              href="/products"
               className="flex h-11 items-center justify-center rounded-[14px] border border-slate-900/[.14] px-5 text-[13.5px] font-semibold tracking-[-.015em] transition-colors hover:bg-slate-900/[.05] dark:border-hairline-strong dark:hover:bg-white/10"
             >
               {tHome("browseCylinders")}
@@ -516,41 +613,120 @@ export default function DashboardDesktop({
                         {tAccount("verified")}
                       </span>
                     ) : (
-                      <span className="flex items-center gap-[7px] rounded-full border border-amber-400/[.34] bg-amber-500/[.16] px-3 py-1.5 text-[11.5px] font-semibold text-amber-300">
-                        {tAccount("pendingVerification")}
+                      // The pill states the status; the panel below explains
+                      // it. Both said the full "pending admin review ·
+                      // checkout locked" sentence before, which read as a
+                      // rendering bug rather than emphasis. Red for a
+                      // refusal — amber next to "Invalid document detected"
+                      // reads as "still working on it", which it isn't.
+                      <span
+                        data-fgas-status={fGasStatus}
+                        className={`flex items-center gap-[7px] rounded-full border px-3 py-1.5 text-[11.5px] font-semibold ${
+                          refused
+                            ? "border-red-400/[.36] bg-red-500/[.16] text-red-300"
+                            : "border-amber-400/[.34] bg-amber-500/[.16] text-amber-300"
+                        }`}
+                      >
+                        {refused ? tFgas("rejectedTitle") : tAccount("pendingVerification")}
                       </span>
                     )}
                   </div>
                   <h2 className="m-0 mt-5 text-[27px] font-semibold leading-[1.14] tracking-[-.04em]">{t("certTitle")}</h2>
                   <p className="mt-3 max-w-[340px] text-[13.5px] leading-[1.62] text-white/70">
-                    {t("certBody", { type: cert?.certType ?? "—" })}
+                    {t("certBody", { type: extracted?.category || cert?.certType || "—" })}
                   </p>
 
-                  <div className="mt-6 grid grid-cols-2 gap-[11px]">
-                    {certFields.map((field) => (
-                      <div
-                        key={field.label}
-                        className="rounded-2xl border border-white/[.12] bg-white/[.07] px-3.5 py-[13px]"
-                      >
-                        <div className="mb-1.5 text-[10px] tracking-[.08em] text-white/50">{field.label}</div>
-                        <div className="truncate text-[13px] font-semibold tracking-[-.015em]">{field.value}</div>
-                      </div>
-                    ))}
-                  </div>
+                  {refused ? (
+                    // The buyer is told why, in the auditor's own words. The
+                    // document buttons stay live underneath: it is their file,
+                    // and seeing it is how they work out what to re-submit.
+                    <div
+                      data-fgas-refused
+                      className="mt-6 flex items-start gap-3 rounded-2xl border border-red-400/[.3] bg-red-500/[.12] px-4 py-[15px]"
+                    >
+                      <ShieldAlert size={17} strokeWidth={2} className="mt-px flex-none text-red-300" />
+                      {/* The pill above already carries the label, so this
+                          panel is only ever the reason — repeating the title
+                          here read as a rendering fault. */}
+                      <p className="m-0 min-w-0 text-[12.5px] leading-[1.6] text-red-100/85">
+                        {rejectionReason || tFgas("rejectedBody")}
+                      </p>
+                    </div>
+                  ) : awaitingReview ? (
+                    // A certificate is with a reviewer: showing four empty
+                    // tiles would read as "nothing on file", which is the
+                    // opposite of what is happening.
+                    <div
+                      data-fgas-pending
+                      data-fgas-pending-desktop
+                      className="mt-6 flex items-start gap-3 rounded-2xl border border-amber-400/[.28] bg-amber-500/[.1] px-4 py-[15px]"
+                    >
+                      <Clock size={17} strokeWidth={2} className="mt-px flex-none text-amber-300" />
+                      <p className="m-0 text-[12.5px] leading-[1.6] text-amber-100/85">{tAccount("fgasPendingReview")}</p>
+                    </div>
+                  ) : (
+                    <div data-fgas-fields className="mt-6 grid grid-cols-2 gap-[11px]">
+                      {certFields.map((field) => (
+                        <div
+                          key={field.label}
+                          data-fgas-field
+                          className="min-w-0 rounded-2xl border border-white/[.12] bg-white/[.07] px-3.5 py-[13px]"
+                        >
+                          <div className="mb-1.5 text-[10px] tracking-[.08em] text-white/50">{field.label}</div>
+                          {/* title= so a long holder name stays readable on hover
+                              once it is ellipsised; min-w-0 above lets truncate
+                              actually bite inside the grid track. */}
+                          <div
+                            title={field.value}
+                            className="truncate text-[13px] font-semibold tracking-[-.015em]"
+                          >
+                            {field.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
+                  {/* Plain <a>, not next/link: this is a file served by an API
+                      route, not a localised page, so it must not be prefixed
+                      with the locale segment or client-side routed. */}
                   <div className="mt-5 flex gap-2.5">
-                    <Link
-                      href="/compliance/certifications"
-                      className="flex h-11 items-center justify-center rounded-[14px] bg-white px-5 text-[13.5px] font-semibold tracking-[-.015em] text-[#0b1020] transition-transform active:scale-[.98]"
+                    <a
+                      href={certificateHref ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-disabled={certificateHref ? undefined : true}
+                      data-fgas-view={certificateHref ? "ready" : "disabled"}
+                      onClick={(event) => {
+                        if (!certificateHref) event.preventDefault();
+                      }}
+                      className={`flex h-11 items-center justify-center rounded-[14px] px-5 text-[13.5px] font-semibold tracking-[-.015em] transition-transform ${
+                        certificateHref
+                          ? "bg-white text-[#0b1020] active:scale-[.98]"
+                          : "pointer-events-none cursor-not-allowed bg-white/40 text-[#0b1020]/50"
+                      }`}
                     >
                       {t("viewCertificate")}
-                    </Link>
-                    <Link
-                      href="/compliance/sds"
-                      className="flex h-11 items-center justify-center rounded-[14px] border border-white/[.24] bg-white/[.06] px-5 text-[13.5px] font-semibold tracking-[-.015em] text-white transition-colors hover:bg-white/[.12]"
+                    </a>
+                    <a
+                      href={certificateDownloadHref ?? undefined}
+                      // `download` covers the same-origin local driver; the
+                      // ?download=1 in the href is what a cross-origin blob
+                      // URL honours, since the attribute is ignored there.
+                      download
+                      aria-disabled={certificateDownloadHref ? undefined : true}
+                      data-fgas-download={certificateDownloadHref ? "ready" : "disabled"}
+                      onClick={(event) => {
+                        if (!certificateDownloadHref) event.preventDefault();
+                      }}
+                      className={`flex h-11 items-center justify-center rounded-[14px] border px-5 text-[13.5px] font-semibold tracking-[-.015em] transition-colors ${
+                        certificateDownloadHref
+                          ? "border-white/[.24] bg-white/[.06] text-white hover:bg-white/[.12]"
+                          : "pointer-events-none cursor-not-allowed border-white/[.12] bg-white/[.03] text-white/40"
+                      }`}
                     >
                       {t("downloadPdf")}
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </motion.div>
@@ -849,9 +1025,28 @@ export default function DashboardDesktop({
               </div>
             </motion.div>
 
-            {/* Security + Shipping */}
+            {/* Records & Compliance — invoices, cylinder balance and the
+                carbon record.
+
+                No id here on purpose. Both layouts mount at every width (the
+                other is merely hidden), so giving each the same `id="records"`
+                put two of them in the DOM and `#records` resolved to whichever
+                came first — the hidden desktop one, at offsetTop 0, so the
+                anchor scrolled nowhere. The id lives on the mobile card, which
+                is the only thing that links to it. */}
             <motion.div
               custom={6}
+              initial="hidden"
+              animate="show"
+              variants={rise}
+              className="col-span-9"
+            >
+              <RecordsCard />
+            </motion.div>
+
+            {/* Security + Shipping */}
+            <motion.div
+              custom={7}
               initial="hidden"
               animate="show"
               variants={rise}
@@ -866,7 +1061,12 @@ export default function DashboardDesktop({
                 <h2 className="m-0 mb-5 text-[13px] tracking-[.09em] text-slate-400 dark:text-ink-muted">
                   {tAccount("accountSecurityTitle")}
                 </h2>
-                <TwoFaRow label={tAccount("twoFaTitle")} body={t("twoFaBody")} />
+                <TwoFactorSetup
+                  initialEnabled={Boolean(profile?.isTwoFactorEnabled)}
+                  label={tAccount("twoFaTitle")}
+                  enabledBody={tAccount("twoFaEnabledBody")}
+                  disabledBody={tAccount("twoFaDisabledBody")}
+                />
                 <ChangePasswordFlow
                   email={email}
                   passwordChangedAt={profile?.passwordChangedAt ?? null}
@@ -1061,12 +1261,13 @@ export default function DashboardDesktop({
       </main>
 
       <EditProfileModal
-        key={editProfileOpen ? `edit-${profile?.name ?? ""}-${profile?.companyName ?? ""}-${profile?.jobTitle ?? ""}` : "ep-closed"}
+        key={editProfileOpen ? `edit-${profile?.name ?? ""}-${profile?.companyName ?? ""}-${profile?.jobTitle ?? ""}-${profile?.vatNumber ?? ""}` : "ep-closed"}
         open={editProfileOpen}
         initial={{
           name: profile?.name ?? displayName,
           companyName: profile?.companyName ?? "",
           jobTitle: profile?.jobTitle ?? "",
+          vatNumber: profile?.vatNumber ?? "",
         }}
         onClose={() => setEditProfileOpen(false)}
         onSaved={() => {
@@ -1092,31 +1293,3 @@ export default function DashboardDesktop({
 }
 
 /* 2FA toggle row — cosmetic local state, matching the design's switch. */
-function TwoFaRow({ label, body }: { label: string; body: string }) {
-  const [on, setOn] = useState(true);
-  return (
-    <div className="flex items-center justify-between gap-5 border-b border-slate-900/[.07] pb-[18px] dark:border-hairline">
-      <span className="min-w-0">
-        <span className="block text-[15px] font-semibold tracking-[-.025em]">{label}</span>
-        <span className="mt-[5px] block max-w-[340px] text-[12.5px] leading-[1.55] text-slate-600 dark:text-ink-muted">
-          {body}
-        </span>
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={on}
-        onClick={() => setOn((v) => !v)}
-        className={`relative h-8 w-[52px] flex-none rounded-full transition-colors duration-300 ${
-          on ? "bg-green-600" : "bg-slate-900/[.14] dark:bg-hairline-strong"
-        }`}
-      >
-        <motion.span
-          animate={{ x: on ? 20 : 0 }}
-          transition={{ type: "spring", stiffness: 500, damping: 32 }}
-          className="absolute left-[3px] top-[3px] h-[26px] w-[26px] rounded-full bg-white shadow-[0_2px_6px_rgba(15,23,42,.3)]"
-        />
-      </button>
-    </div>
-  );
-}

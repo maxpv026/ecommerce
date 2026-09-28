@@ -116,7 +116,6 @@ interface CategoriesPageProps {
 export default function CategoriesPage({ counts }: CategoriesPageProps) {
   const t = useTranslations("Categories");
   const tHome = useTranslations("HomeDesktop");
-  const [query, setQuery] = useState("");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -124,8 +123,6 @@ export default function CategoriesPage({ counts }: CategoriesPageProps) {
     <div className="flex-1 bg-white dark:bg-canvas">
       <div className="hidden md:block">
       <Header
-        query={query}
-        onQueryChange={setQuery}
         onSignInClick={() => setIsAuthModalOpen(true)}
       />
 

@@ -31,5 +31,13 @@ export default async function ProductDetailRoute({ params }: ProductDetailRouteP
     ...all.filter((p) => p.id !== id && p.category !== product.category),
   ].slice(0, 6);
 
-  return <ProductDetail product={product} related={related} />;
+  // Size tiers for the mobile layout's selector. A "25 lb / 50 lb / 100 lb"
+  // tier is a separate Product row here, not a field, so the siblings are
+  // resolved by refrigerant mark (`type`, the leading token of the name) and
+  // ordered by net weight. Always includes `product` itself.
+  const variants = all
+    .filter((p) => p.type === product.type)
+    .sort((a, b) => a.weightKg - b.weightKg);
+
+  return <ProductDetail product={product} related={related} variants={variants} />;
 }

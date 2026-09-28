@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import Footer from "@/components/Footer";
-import AIChatWidget from "@/components/AIChatWidget";
+import AIChatWidgetMount from "@/components/AIChatWidgetMount";
 import MobileAppShell from "@/components/MobileAppShell";
 import { CartCountProvider } from "@/components/CartCountProvider";
 import AuthProvider from "@/components/AuthProvider";
@@ -50,6 +50,15 @@ export default async function RootLayout({
     notFound();
   }
 
+  // Tells next-intl which locale this render is for. Without it, getMessages()
+  // below falls back to reading the locale off the incoming request headers,
+  // and reading request headers is what makes a render dynamic — so every
+  // page under this layout was server-rendered on demand, including ones with
+  // no user-specific content at all. Pages still have to opt in individually
+  // (each calls setRequestLocale too), but nothing can be static until this
+  // line exists.
+  setRequestLocale(locale);
+
   const messages = await getMessages();
 
   return (
@@ -68,7 +77,7 @@ export default async function RootLayout({
             <CartCountProvider>
               <MobileAppShell>{children}</MobileAppShell>
               <Footer />
-              <AIChatWidget />
+              <AIChatWidgetMount />
               <ToastProvider />
             </CartCountProvider>
           </AuthProvider>

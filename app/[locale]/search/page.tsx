@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MobileSearchLayout from "@/components/MobileSearchLayout";
+import AppChrome from "@/components/AppChrome";
 
 export const metadata: Metadata = {
   title: "Search — My Energy",
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 
 export default function SearchPage() {
   return (
-    <div className="block md:hidden">
+    <AppChrome>
+      <div className="mx-auto w-full md:max-w-[620px] md:py-10">
       <MobileSearchLayout />
-    </div>
+      </div>
+    </AppChrome>
   );
 }

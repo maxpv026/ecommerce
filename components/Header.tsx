@@ -6,12 +6,14 @@ import { useTranslations } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { ChevronDown, LayoutDashboard, LogOut, Package, Search, Settings, ShoppingCart, User } from "lucide-react";
+import { ChevronDown, LayoutDashboard, Leaf, LogOut, ShoppingCart, User } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import HeaderSearch from "./HeaderSearch";
 import HeaderLanguageSwitcher from "./HeaderLanguageSwitcher";
 import { initialsFrom } from "@/lib/initials";
 import { useCartStore, selectCartCount } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
+import { RECORDS_LINKS, type RecordsIconKey } from "@/lib/profileRecords";
 
 interface NavLink {
   key: string;
@@ -22,30 +24,58 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
   { key: "categories", href: "/categories" },
   { key: "productList", href: "/products" },
-  { key: "equipment", href: "/#grid" },
-  { key: "compliance", href: "/compliance/sds", matchPrefix: "/compliance" },
+  // /hub is in the public nav on purpose. It is not an account page: the rate
+  // board and the market intelligence are the same for everyone, and the
+  // personalised half degrades to a sign-in prompt and empty chart states
+  // rather than breaking. Putting it behind a session would hide the best
+  // reason a new buyer has to look at this site.
+  { key: "marketHub", href: "/hub" },
+  // The "Compliance" item used to sit here, pointing at /compliance/sds.
+  // It came out because one header label reading "Compliance" and an account
+  // group reading "Records & Compliance" were two different things: public
+  // product datasheets, and a customer's own invoices and carbon figures.
+  //
+  // Nothing is stranded by removing it — the public SDS library is still
+  // linked from the footer, the categories grid, DesktopHome and every PDP,
+  // and it stays public (no session required), which is the point of it.
 ];
 
 // The desktop profile dashboard is a single page with anchored sections, so
 // Orders/Settings deep-link to their section anchors rather than the
 // mobile-only subroutes.
-const MENU_ITEMS = [
-  { key: "menuDashboard", href: "/profile", icon: LayoutDashboard },
-  { key: "menuOrders", href: "/profile#orders", icon: Package },
-  { key: "menuSettings", href: "/profile#security", icon: Settings },
-] as const;
+/**
+ * Icons for the Records group; the list itself lives in lib/profileRecords.
+ *
+ * "Documents & certificates" came out of this menu — the group points only at
+ * the consolidated carbon record now. /profile/docs itself is untouched and
+ * still reached from the dashboard's Documents tab and the mobile surfaces.
+ */
+const RECORD_ICONS: Record<RecordsIconKey, typeof LayoutDashboard> = {
+  carbon: Leaf,
+};
+
+// Dashboard only. "Orders" and "Settings" were anchor links into the desktop
+// dashboard's own sections (/profile#orders, /profile#security) — the account
+// menu duplicating the page it lands on. Both are reachable from the dashboard
+// sidebar, so the menu no longer carries them.
+const MENU_ITEMS = [{ key: "menuDashboard", href: "/profile", icon: LayoutDashboard }] as const;
 
 interface HeaderProps {
-  query: string;
-  onQueryChange: (value: string) => void;
+  /**
+   * Optional mirror of the search term for pages that track it. The search
+   * box owns the value — it seeds from `?search=` and drives its own
+   * dropdown — so nothing has to be passed in for search to work.
+   */
+  onQueryChange?: (value: string) => void;
   onSignInClick: () => void;
 }
 
-export default function Header({ query, onQueryChange, onSignInClick }: HeaderProps) {
+export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("Header");
   const tAuth = useTranslations("Auth");
+  const tRecords = useTranslations("Records");
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated";
 
@@ -97,7 +127,7 @@ export default function Header({ query, onQueryChange, onSignInClick }: HeaderPr
 
         <nav className="ml-3.5 hidden flex-none gap-6.5 min-[1120px]:flex">
           {NAV_LINKS.map(({ key, href, matchPrefix }) => {
-            const active = href !== "/#grid" && pathname.startsWith(matchPrefix ?? href);
+            const active = pathname.startsWith(matchPrefix ?? href);
             return (
               <Link
                 key={key}
@@ -115,15 +145,7 @@ export default function Header({ query, onQueryChange, onSignInClick }: HeaderPr
         </nav>
 
         <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2.5">
-          <div className="flex h-[38px] w-[180px] max-w-[280px] flex-1 items-center gap-2 rounded-full border border-slate-900/[.12] bg-slate-50 px-3.5 dark:border-hairline-strong dark:bg-surface">
-            <Search size={15} className="shrink-0 text-slate-500 dark:text-ink-muted" strokeWidth={2} />
-            <input
-              value={query}
-              onChange={(e) => onQueryChange(e.target.value)}
-              placeholder={t("searchPlaceholder")}
-              className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-slate-900 focus:outline-none dark:text-slate-50 dark:placeholder:text-ink-muted"
-            />
-          </div>
+          <HeaderSearch onQueryChange={onQueryChange} />
 
           <div className="flex flex-none items-center gap-1.5">
             <HeaderLanguageSwitcher />
@@ -187,6 +209,31 @@ export default function Header({ query, onQueryChange, onSignInClick }: HeaderPr
                           {t(key)}
                         </Link>
                       ))}
+                    </div>
+
+                    {/* Records & Compliance — the enterprise views that were
+                        previously reachable only by typing the URL. One list,
+                        shared with the profile pages via lib/profileRecords. */}
+                    <div className="border-t border-slate-900/[.07] py-1 dark:border-white/[.08]">
+                      <div className="px-3 pb-1 pt-1.5 text-[9.5px] tracking-[.1em] text-slate-400 dark:text-slate-500">
+                        {tRecords("title").toUpperCase()}
+                      </div>
+                      {RECORDS_LINKS.map((link) => {
+                        const Icon = RECORD_ICONS[link.icon];
+                        return (
+                          <Link
+                            key={link.id}
+                            role="menuitem"
+                            href={link.href}
+                            data-records-link={link.id}
+                            onClick={() => setMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-[11px] px-3 py-2 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-900/[.05] hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/[.07] dark:hover:text-slate-50"
+                          >
+                            <Icon size={15} strokeWidth={2} className="text-slate-400 dark:text-ink-muted" />
+                            {tRecords(link.labelKey)}
+                          </Link>
+                        );
+                      })}
                     </div>
 
                     <div className="border-t border-slate-900/[.07] pt-1 dark:border-white/[.08]">

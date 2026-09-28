@@ -2,14 +2,23 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../lib/generated/prisma"
+  // Lets the datasource below declare the pgvector extension. Still a preview
+  // feature in Prisma 7.9; the schema does not validate without it.
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
   // Connection URLs live in prisma.config.ts (Prisma 7) and are passed
   // directly to the PrismaClient constructor via the pg adapter at runtime.
+  //
+  // Declaring the extension here tells Prisma the type exists so
+  // Unsupported("vector(1536)") validates. It does NOT create the extension —
+  // `CREATE EXTENSION` and the HNSW index are run by hand against Supabase
+  // (see prisma/sql/2026-09-16_pgvector.sql).
+  extensions = [vector]
 }
 
 // ---------------------------------------------------------------------------
@@ -22,6 +31,20 @@ datasource db {
 enum Role {
   USER
   ADMIN
+}
+
+/// Where a buyer's F-Gas certificate stands. Only VERIFIED unlocks checkout.
+///
+/// Set by the vision model without a human step (app/api/verify-fgas): a
+/// document that satisfies every acceptance criterion goes straight to
+/// VERIFIED, anything else to REJECTED with a reason. An admin can override
+/// either way (lib/fgasReview.ts). PENDING_REVIEW is legacy — nothing new
+/// enters it, and rows still holding it are treated as unverified.
+enum FGasStatus {
+  NONE
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
 }
 
 model User {
@@ -40,26 +63,87 @@ model User {
   // Password is optional: Google-only users never set one.
   password String?
 
-  companyName  String?
+  companyName       String?
+  /// Buyer's VAT identification number, e.g. "NL863495921B01".
+  ///
+  /// Legally required on the invoice for EU cross-border B2B supplies: without
+  /// it the reverse-charge mechanism cannot be applied and the sale has to be
+  /// taxed domestically. Nullable because domestic consumers and pre-existing
+  /// accounts have none — lib/pdf.ts omits the line when it is absent.
+  vatNumber         String?
   // Editable job title shown on the dashboard identity card. Deliberately
   // separate from `role` (RBAC) — users may describe their job, never
   // grant themselves permissions.
-  jobTitle     String?
+  jobTitle          String?
+  // Contact number for the account holder. Distinct from Address.phone,
+  // which is the consignee a freight carrier calls about one delivery.
+  phone             String?
   // Set whenever the password is changed through the verified flow.
   passwordChangedAt DateTime?
-  epaVerified  Boolean @default(false)
-  discountTier String  @default("standard")
-  rewardPoints Int     @default(0)
-  locale       String  @default("en")
+
+  // ── Two-factor authentication (TOTP / authenticator app) ──
+  /// Base32 TOTP secret. Written when setup begins and only becomes
+  /// effective once isTwoFactorEnabled flips, so a half-finished enrolment
+  /// can never lock anyone out. Never leaves the server after setup.
+  twoFactorSecret         String?
+  isTwoFactorEnabled      Boolean   @default(false)
+  /// TOTP time step of the last accepted code. RFC 6238 §5.2 requires a
+  /// code to be accepted only once — otplib's `afterTimeStep` rejects
+  /// anything at or below this, so an observed code cannot be replayed
+  /// inside its 30-second window.
+  twoFactorLastStep       Int?
+  /// Consecutive wrong codes. Six digits is a million combinations; without
+  /// a throttle an attacker holding the password can simply grind them.
+  twoFactorFailedAttempts Int       @default(0)
+  /// Set once the attempts ceiling is hit; verification refuses until it passes.
+  twoFactorLockedUntil    DateTime?
+  /// bcrypt hashes of the single-use recovery codes, never the codes.
+  /// Stored hashed because this array is the whole second factor for anyone
+  /// who has lost their phone — a database leak of plaintext codes would be
+  /// equivalent to leaking the TOTP secrets. Each entry is removed the
+  /// moment it is spent.
+  recoveryCodes           String[]
+  // Legacy mirror of fGasStatus == VERIFIED. Kept in lockstep so any reader
+  // not yet migrated still gates correctly; fGasStatus is the source of truth.
+  epaVerified             Boolean   @default(false)
+
+  // ── F-Gas compliance review ──
+  // The certificate is read and judged by a vision model; an admin overrides.
+  fGasStatus          FGasStatus @default(NONE)
+  /// Where the uploaded certificate is stored. Never public: local uploads
+  /// are served through an authenticated route, and a blob URL is
+  /// unguessable. See lib/fgasStorage.ts.
+  fGasDocumentUrl     String?
+  /// Reading from the vision model — what it says the document said. An
+  /// admin compares it against the stored document rather than trusting it.
+  fGasExtractedData   Json?
+  fGasSubmittedAt     DateTime?
+  fGasReviewedAt      DateTime?
+  /// User id of the admin who approved or rejected it.
+  fGasReviewedBy      String?
+  fGasRejectionReason String?
+  discountTier        String     @default("standard")
+  rewardPoints        Int        @default(0)
+  locale              String     @default("en")
 
   // For future CRM sync (e.g. HubSpot/Salesforce contact id).
   externalId String? @unique
 
-  accounts     Account[]
-  sessions     Session[]
-  addresses    Address[]
-  orders       Order[]
-  certificates Certificate[]
+  // Stripe Customer this buyer's checkouts run against, created lazily on
+  // the first checkout (lib/stripe.ts). Required, not merely convenient,
+  // for SEPA bank transfers: `customer_balance` credits the funds to a
+  // customer, so the same id has to be reused or a transfer would land on
+  // a customer nothing looks at.
+  stripeCustomerId String? @unique
+
+  accounts             Account[]
+  sessions             Session[]
+  addresses            Address[]
+  orders               Order[]
+  certificates         Certificate[]
+  stockSubscriptions   StockSubscription[]
+  cylinderTransactions CylinderTransaction[]
+  restockAlerts        RestockAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -82,6 +166,9 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  // Auth.js looks accounts up by user when linking or unlinking a provider.
+  // Postgres does not index a foreign key for you, so this was a seq scan.
+  @@index([userId])
 }
 
 model Session {
@@ -91,6 +178,10 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unused while the session strategy is JWT, but the adapter still queries
+  // by user whenever a database session is read or revoked.
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -127,28 +218,332 @@ enum OrderStatus {
   DELIVERED
 }
 
+// Settlement state, tracked separately from fulfilment (OrderStatus).
+// SEPA bank transfers settle days after checkout, so an order can sit at
+// PENDING here long after the session was completed.
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+/// Settlement state of an invoice document, separate from Order.paymentStatus:
+/// an order can be PAID while its invoice is still being reissued, and a
+/// CANCELLED invoice must not silently un-pay the order it belongs to.
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+/// The billing document for one order.
+///
+/// Deliberately its own row rather than a field on Order: an invoice has its
+/// own number series, its own issue and due dates, and its own lifecycle. The
+/// PDF is regenerated from this row plus the order, so a stored file is a
+/// cache, never the source of truth.
+model Invoice {
+  id String @id @default(cuid())
+
+  /// Human-facing sequential reference, e.g. "INV-2026-0001". Unique so a
+  /// number can never be issued twice, which is a legal requirement for
+  /// billing documents in the EU.
+  invoiceNumber String @unique
+
+  /// One invoice per order, enforced at the database level.
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Where a rendered copy lives, if one was stored (Blob/S3). Null means
+  /// "render on demand" — the download route can always rebuild it.
+  pdfUrl String?
+
+  status   InvoiceStatus @default(PENDING)
+  issuedAt DateTime      @default(now())
+  /// Net terms. Null for immediately-settled card orders.
+  dueDate  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The invoices list is read per user through the order; this supports
+  /// "newest first" for the admin-wide view.
+  @@index([status, issuedAt(sort: Desc)])
+}
+
+/// What a cylinder movement did to the customer's balance.
+///
+/// The first two move physical cylinders; the last two move money. They are
+/// modelled as one ledger because a deposit is only ever charged or refunded
+/// against a movement, and reconciling two separate tables would let the
+/// count and the cash drift apart.
+enum CylinderTransactionType {
+  BORROWED
+  RETURNED
+  DEPOSIT_CHARGED
+  DEPOSIT_REFUNDED
+}
+
+/// Append-only ledger of returnable-packaging movements.
+///
+/// Never updated or deleted: a correction is a new row in the opposite
+/// direction, exactly as a financial ledger works. The customer's current
+/// holding is therefore always derivable (sum of BORROWED minus sum of
+/// RETURNED) and every change has an audit trail.
+model CylinderTransaction {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The order that caused this movement. Optional: a return handed to a
+  /// driver, or a manual correction by support, belongs to no order.
+  /// SetNull rather than Cascade — deleting an order must not erase the fact
+  /// that the customer still holds its cylinders.
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  type CylinderTransactionType
+
+  /// Always positive. Direction is carried by `type`, so a signed quantity
+  /// would make "-5 RETURNED" expressible and ambiguous.
+  quantity Int
+
+  /// Free text for support: who collected them, which note number, why a
+  /// correction was raised.
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  /// The ledger screen reads one user's rows newest-first, and the balance
+  /// card sums them; both are served by this index.
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([orderId])
+}
+
+/// Where a predicted restock stands.
+///
+/// PENDING is a prediction we have made but not yet acted on; NOTIFIED means
+/// the customer has been emailed. The two are kept apart so a failed send
+/// never leaves a row claiming the customer was contacted when they were not.
+enum RestockAlertStatus {
+  PENDING
+  NOTIFIED
+  CONVERTED
+  DISMISSED
+}
+
+/// A predicted reorder, and the message sent about it.
+///
+/// This table exists as much to STOP us contacting people as to start: the
+/// cron checks it before every send, so a customer whose cadence straddles
+/// the seven-day window cannot be emailed about the same product week after
+/// week. It is also the only place conversion can be measured — without a
+/// row to mark CONVERTED there is no way to tell a working prediction from
+/// a nuisance.
+model RestockAlert {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  /// Suggested reorder size, from the customer's own average order quantity.
+  recommendedQty Int
+
+  /// When we expect them to run out: last order + observed cadence.
+  predictedDate DateTime
+
+  status RestockAlertStatus @default(PENDING)
+
+  /// The generated body. Null when a prediction was recorded but no message
+  /// was produced — a row with NOTIFIED and no message would be a lie.
+  aiMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The suppression lookup the cron runs before every send: "has this user
+  /// been notified about this product recently?". Ordered so the newest row
+  /// for a (user, product) pair is the first one read.
+  @@index([userId, productId, createdAt(sort: Desc)])
+  /// The dashboard widget reads a user's live alerts.
+  @@index([userId, status])
+}
+
+/// One retrievable fact in the F-Gas knowledge base.
+///
+/// Chunks are written by scripts/seed-knowledge.ts and read only by the RAG
+/// route's similarity search. Deliberately NOT related to Product: a chunk is
+/// regulatory or engineering knowledge ("R-404A has a GWP of 3922"), which
+/// stays true whether or not we happen to stock something. Product
+/// suggestions are resolved separately, against the live catalogue.
+/// Severity drives the InsightCard's treatment, so it is an enum rather than
+/// a free string: a typo in "HIGH" would silently downgrade a warning.
+enum InsightSeverity {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+/// Curated market intelligence, written in-house.
+///
+/// Distinct from the live industry feed in lib/services/newsFetcher.ts, which
+/// pulls real RSS headlines from trade publications and is not stored here.
+/// That feed is breadth — whatever the industry published today. This table is
+/// judgement: an editor deciding that a quota date or a supply shock matters
+/// enough to put in front of every buyer, with a severity attached.
+///
+/// The hub reads BOTH and merges them, so it is useful before a single row
+/// exists here.
+model MarketInsight {
+  id      String @id @default(cuid())
+  title   String
+  content String
+
+  severity InsightSeverity @default(MEDIUM)
+
+  /// Free-form labels. Where a tag is a refrigerant designation ("R-404A")
+  /// the personalised feed matches it against what the buyer actually
+  /// purchases, so keep those in catalogue form — normalisation happens at
+  /// read time, but an exact match costs nothing.
+  tags String[]
+
+  /// When it becomes relevant to readers, not when the row was written —
+  /// an insight can be prepared ahead of a quota date.
+  publishedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The hub asks for "latest, newest first" on every load.
+  @@index([publishedAt(sort: Desc)])
+  @@index([severity, publishedAt(sort: Desc)])
+}
+
+model KnowledgeChunk {
+  id      String @id @default(cuid())
+  content String
+
+  /// 1536 dimensions = text-embedding-3-small.
+  ///
+  /// `Unsupported` means Prisma Client cannot read or write this column: it
+  /// is invisible to findMany and cannot appear in a `select`. Every query
+  /// that touches it goes through $queryRaw — that is a property of pgvector
+  /// having no Prisma type, not a shortcut.
+  ///
+  /// Nullable so a chunk row can exist before its embedding is computed; the
+  /// retrieval query filters those out.
+  embedding Unsupported("vector(1536)")?
+
+  /// Free-form provenance: source document, section, regulation reference.
+  /// Returned with the chunk so an answer can cite where it came from.
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// NOTE: the vector index itself is NOT declared here. Prisma has no syntax
+  /// for HNSW operator classes, so `db push` would silently leave the table
+  /// without one and every search would fall back to a sequential scan.
+  /// It is created by the raw SQL file instead.
+  @@index([createdAt])
+}
+
 model Product {
   id         String  @id @default(cuid())
   externalId String? @unique
   name       String
   sku        String  @unique
-  price      Decimal @db.Decimal(10, 2)
+  // Free-text pack label shown as the cart line's variant ("10 kg cylinder",
+  // "Set"). The numbers that drive pricing live in the two fields below.
   weight     String
   gwpClass   String
   inStock    Boolean @default(true)
 
+  // Gas is sold BY WEIGHT: the price of one full cylinder is
+  // pricePerKg × weightKg (lib/pricing.ts), never a stored per-cylinder
+  // figure. Equipment is priced per unit — weightKg 1, pricePerKg = the
+  // unit price. Defaults exist only so `db push` can add the columns to a
+  // populated table; prisma/sql/2026-09-08_price_per_kg.sql backfills them.
+  pricePerKg Float @default(0)
+  weightKg   Float @default(1)
+
+  // Absolute on-hand count. Owned by the CRM (app/api/webhooks/crm-inventory
+  // sets it outright on every push) and mirrored into inStock/stock by
+  // lib/inventory.ts; placeOrder() also decrements it so the shop can't
+  // oversell between two CRM pushes.
+  stockQuantity Int @default(0)
+
+  // Mandatory refundable deposit charged per cylinder on top of the gas
+  // price — deliberately NOT folded into `price` (see lib/cart.ts). 0 for
+  // equipment that isn't a returnable cylinder.
+  cylinderDeposit Decimal @default(15.00) @db.Decimal(10, 2)
+
   // Product-list facets (My Energy Products design): batch purity %, GWP
-  // figure, stock level ("in" | "low" | "order"), and catalog category
-  // ("cylinders" | "blends" | "equipment" | "recovery").
+  // figure, stock level ("in" | "low" | "order" | "out"), and catalog
+  // category ("cylinders" | "blends" | "equipment" | "recovery").
   purity   Decimal? @db.Decimal(5, 2)
   gwp      Int?
   stock    String   @default("in")
   category String   @default("cylinders")
 
-  orderItems OrderItem[]
+  orderItems         OrderItem[]
+  stockSubscriptions StockSubscription[]
+  restockAlerts      RestockAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Out-of-stock rows sort to the bottom of every listing (lib/data.ts).
+  @@index([inStock, createdAt])
+}
+
+// Back-in-stock waitlist. A buyer (signed in or guest) leaves an address
+// against an out-of-stock product; the CRM webhook mails everyone here the
+// moment that product's quantity goes from 0 to any positive number, then
+// marks them notified so a later restock never mails them twice.
+model StockSubscription {
+  id        String  @id @default(cuid())
+  productId String
+  /**
+   * Contact address, always stored lower-cased. The identity for this waitlist.
+   */
+  email     String
+  /**
+   * Set when the subscriber was signed in; null for guests.
+   */
+  userId    String?
+  /**
+   * The locale the subscriber was browsing in when they joined, so the
+   * back-in-stock mail links them to the page in their own language rather
+   * than always /en. Re-subscribing refreshes it. Validated against
+   * routing.locales before it is stored — it ends up inside a URL in an
+   * email, so an unchecked value would be a link-injection vector.
+   */
+  locale    String  @default("en")
+
+  /**
+   * Flipped once the back-in-stock mail is away, so restocks don't spam.
+   */
+  notified   Boolean   @default(false)
+  notifiedAt DateTime?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Deleting an account keeps the waitlist entry: the email still wants the mail.
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One row per address per product — re-subscribing re-arms the existing row.
+  @@unique([productId, email])
+  // The webhook's hot path: everyone still waiting on one product.
+  @@index([productId, notified])
+  // "My waitlist" reads a buyer's own subscriptions.
+  @@index([userId])
 }
 
 model Address {
@@ -167,6 +562,10 @@ model Address {
   city       String?
   postalCode String?
   country    String?
+  // Delivery contact number. ADR freight carriers require a reachable
+  // number for the consignee, so checkout asks for it — nullable only
+  // because rows created before in-checkout address entry have none.
+  phone      String?
   kind       String  @default("SHIPPING") // "SHIPPING" | "BILLING"
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -174,6 +573,9 @@ model Address {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // getUserAddresses filters by user and orders default-first.
+  @@index([userId, isDefault])
 }
 
 model Order {
@@ -184,34 +586,105 @@ model Order {
   status            OrderStatus @default(PENDING)
   totalAmount       Decimal     @db.Decimal(10, 2)
   estimatedDelivery DateTime
+
+  // Stripe Checkout Session that owns this order. Unique so the webhook can
+  // look the order up by session id and so a replayed event can never create
+  // or settle a second order.
+  stripeSessionId String?       @unique
+  // How the buyer chose to pay ("card" | "sepa"), for support and reporting.
+  paymentMethod   String?
+  paymentStatus   PaymentStatus @default(PENDING)
+  paidAt          DateTime?
   // Carrier tracking id (DHL). Set once the shipment is handed to the
   // carrier; orders without one show a status-derived timeline instead.
-  trackingNumber    String?
+  trackingNumber  String?
 
   // Shipping address chosen at checkout. Nullable: pre-checkout seed orders
   // have none, and deleting an address must not delete its order history.
   addressId String?
   address   Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
 
+  // Frozen copy of that address as it read at checkout, one line per field.
+  //
+  // The relation above is the customer's *current* address book entry: they
+  // can edit it, or delete it (onDelete: SetNull) and orphan the order. Where
+  // the cylinders were actually sent must not change retroactively, so the
+  // delivery address is snapshotted here at order time. It is also what the
+  // admin notification quotes.
+  shippingAddress String?
+
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items OrderItem[]
 
+  // One invoice per order. Optional because an order exists the moment
+  // checkout succeeds, and the invoice is written immediately after — a
+  // failure in between must leave a payable order, not lose it.
+  invoice              Invoice?
+  // Cylinder movements this order caused (the BORROWED rows at checkout, and
+  // any RETURNED rows raised against it later).
+  cylinderTransactions CylinderTransaction[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // The hottest read in the app: getUserOrders and the recommendation history
+  // both select a user's orders newest-first, and the home page runs them on
+  // every signed-in request. Sorted descending so the index satisfies the
+  // ORDER BY as well as the filter, with no sort step.
+  @@index([userId, createdAt(sort: Desc)])
+  // getProfileDashboardData counts a user's PENDING/IN_TRANSIT orders.
+  @@index([userId, status])
+  @@index([addressId])
 }
 
 model OrderItem {
-  id              String  @id @default(cuid())
-  orderId         String
-  productId       String
-  quantity        Int
-  priceAtPurchase Decimal @db.Decimal(10, 2)
+  id                   String  @id @default(cuid())
+  orderId              String
+  productId            String
+  quantity             Int
+  // Gas price of ONE cylinder at purchase time (pricePerKgAtPurchase ×
+  // weightKgAtPurchase, rounded to cents). Kept as the line's unit price so
+  // order history totals never drift when the catalog is repriced.
+  priceAtPurchase      Decimal @db.Decimal(10, 2)
+  // The per-kg rate and net weight behind priceAtPurchase, so the
+  // confirmation can show "€25.00 / kg × 10 kg". 0 / 1 on lines placed
+  // before weight-based pricing (the UI hides the breakdown then).
+  pricePerKgAtPurchase Float   @default(0)
+  weightKgAtPurchase   Float   @default(1)
+  // Per-cylinder deposit on this line (Product.cylinderDeposit at purchase
+  // time), so the confirmation can show it as its own row.
+  depositAtPurchase    Decimal @default(0) @db.Decimal(10, 2)
+
+  // ── Carbon footprint snapshot (F-Gas compliance reporting) ──
+  //
+  // GWP of the gas as the catalogue carried it when the order was placed.
+  // Snapshotted for the same reason as the price fields above: published GWP
+  // values are revised (R-1234yf was 4 under AR4 and is under 1 in newer
+  // assessments), and a report re-run next year must reproduce the figure
+  // that was reported, not today's. Null for equipment, which has no GWP —
+  // and on rows placed before this column existed.
+  gwpAtPurchase Int?
+  // This line's footprint in KILOGRAMS of CO2-equivalent:
+  //     weightKgAtPurchase × quantity × gwpAtPurchase
+  // Stored so an audit document prints the number that was recorded rather
+  // than one recomputed by whatever the code does later. It is deliberately
+  // derivable from the three columns above, so an auditor can verify it
+  // rather than having to trust it — lib/compliance.ts recomputes it from
+  // those inputs for exactly that reason. Kilograms, not tonnes: tonnes are
+  // a display unit (divide by 1000) and rounding to them here would lose
+  // precision on small lines.
+  co2eKg Float @default(0)
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Prisma resolves a nested `items` include as `where: { orderId: { in: [...] } }`.
+  // Without this it is a sequential scan of every line item ever sold.
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Certificate {
@@ -225,4 +698,7 @@ model Certificate {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // getUserProfile takes the newest certificate for a user.
+  @@index([userId, issuedAt(sort: Desc)])
 }

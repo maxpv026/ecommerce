@@ -15,6 +15,11 @@ export const authConfig = {
     session({ session, token }) {
       if (session.user) {
         session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
+        session.user.isFGasVerified = Boolean(token.epaVerified);
+        // Needed by proxy.ts's admin gate. Without it `req.auth.user`
+        // carries no 2FA claim on the Edge, the gate reads undefined, and
+        // every admin — enrolled or not — is bounced out of /admin.
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled === true;
       }
       return session;
     },

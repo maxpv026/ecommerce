@@ -286,3 +286,69 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ---------------------------------------------------------------------------
+   Print — the order copy behind "Download invoice" on /profile/orders/[id].
+   The button calls window.print(); the browser's own "Save as PDF" is the
+   download. Everything that is chrome or decoration comes off the sheet.
+   NOTE: this is an order copy, not a VAT invoice — it carries no sequential
+   invoice number and no VAT breakdown. See OrderDetail.printNote.
+--------------------------------------------------------------------------- */
+@media print {
+  /* Ink, not glass: backdrop filters and translucent fills print as muddy
+     boxes, and coloured text costs toner for no gain on a document. */
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* App chrome: the global header, the mobile tab bar, toasts, and anything
+     the page itself marked as screen-only. */
+  header[class*="sticky"],
+  nav,
+  footer,
+  [data-sonner-toaster],
+  nextjs-portal,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Give the content the whole sheet — the on-screen layout reserves room
+     for a fixed footer that is not being printed. */
+  main,
+  main > div {
+    max-width: none !important;
+    padding: 0 !important;
+    gap: 16px !important;
+  }
+
+  /* Keep an order line, a price block or an address from splitting across
+     two pages mid-row. */
+  [data-order-item],
+  [data-order-summary],
+  address,
+  section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Borders have to be drawn explicitly once backgrounds are stripped. */
+  [data-order-summary],
+  section > div {
+    border: 1px solid rgba(0, 0, 0, 0.25) !important;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}

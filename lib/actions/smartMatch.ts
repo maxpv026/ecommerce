@@ -38,7 +38,7 @@ export async function smartMatch(rawQuery: string): Promise<SmartMatchResult> {
           `- ${p.sku}: ${p.name} · category ${p.category} · ${p.weight} · safety ${p.gwpClass}` +
           (p.gwp ? ` · GWP ${p.gwp}` : "") +
           (p.purity ? ` · purity ${p.purity}%` : "") +
-          ` · €${p.price} · stock ${p.stock}`
+          ` · €${p.pricePerKg}/kg (${p.weightKg} kg cylinder) · stock ${p.stock}`
       )
       .join("\n");
 

@@ -1,9 +1,13 @@
 "use client";
 
+import { formatKg } from "@/lib/pricing";
+import ProductThumbnail from "./ProductThumbnail";
+import { isPurchasable } from "@/lib/waitlist";
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useSession } from "next-auth/react";
+import type { ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import {
   ArrowRight,
@@ -13,7 +17,6 @@ import {
   ScanLine,
   Search,
   Sparkles,
-  TrendingUp,
   Truck,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -21,9 +24,22 @@ import HeroBackground from "./HeroBackground";
 import { useCartStore } from "@/lib/store/cart";
 import { openAiChat } from "@/lib/aiChatEvents";
 import { getTimeOfDayGreeting } from "@/lib/greeting";
-import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
+import type { ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
 
-const ThreeCylinder = dynamic(() => import("./ThreeCylinder"), { ssr: false });
+// Browser-only: it picks a refrigerant at random on mount, which must not
+// happen during the server render (see components/HeroModelStage.tsx).
+const HeroModelStage = dynamic(() => import("./HeroModelStage"), { ssr: false });
+
+/**
+ * Fallback for products with no render of their own — equipment, custom
+ * blends. Same outline the card used before, now only shown when there's no
+ * image to resolve.
+ */
+const CYLINDER_OUTLINE = (
+  <span className="absolute inset-0 grid place-items-center">
+    <span className="block h-[132px] w-16 rounded-t-full rounded-b-[9px] border border-dashed border-slate-300 bg-white/85 dark:border-white/20 dark:bg-white/10" />
+  </span>
+);
 
 const CALC_CHIPS = ["4-ton rooftop", "Line set 40 ft", "R-410A retrofit"];
 
@@ -120,7 +136,8 @@ function TiltCard({
 
 interface DesktopHomeProps {
   products: StoreProduct[];
-  marketAlerts: MarketAlertData[];
+  /** Server-rendered <MarketAlertsCard />, passed through from the page. */
+  marketAlerts: ReactNode;
   dashboard: ProfileDashboardData | null;
   latestOrder: UserOrder | null;
 }
@@ -128,6 +145,7 @@ interface DesktopHomeProps {
 export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder }: DesktopHomeProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
+  const tp = useTranslations("Products");
   const format = useFormatter();
   const { data: session, status } = useSession();
   const addItem = useCartStore((s) => s.addItem);
@@ -148,11 +166,14 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
   };
 
   const addToCart = (product: StoreProduct) => {
+    if (!isPurchasable(product)) return;
     addItem({
       sku: product.sku,
       name: product.name,
       variant: product.weightLabel,
-      price: product.price,
+      pricePerKg: product.pricePerKg,
+      weightKg: product.weightKg,
+      deposit: product.cylinderDeposit,
     });
     setAdded(product.id);
     setTimeout(() => setAdded(null), 1400);
@@ -218,7 +239,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
 
           <div className="mt-9 flex items-center gap-2.5">
             <Link
-              href="/cylinders"
+              href="/products"
               className="flex h-[52px] items-center gap-2.5 rounded-[15px] bg-slate-900 px-6 text-[14.5px] font-semibold tracking-tight text-white shadow-[0_18px_34px_-18px_rgba(15,23,42,.6)] hover:bg-slate-800 dark:bg-invert dark:text-invert-ink dark:hover:bg-slate-200"
             >
               {t("browseCylinders")}
@@ -254,8 +275,8 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               and scale together, independent of the static ambient blobs
               behind them. */}
           <div className="group relative z-[1] h-full w-full cursor-pointer transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105">
-            <div className="h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.03]">
-              <ThreeCylinder />
+            <div className="relative h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+              <HeroModelStage className="absolute inset-0" />
             </div>
 
             <div className="pointer-events-none absolute right-[2%] top-[16%] z-[2] rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-[0_20px_44px_-28px_rgba(15,23,42,.5)] backdrop-blur-lg transition-transform duration-500 ease-out group-hover:-translate-y-1 dark:border-white/10 dark:bg-glass">
@@ -358,54 +379,11 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
             </TiltCard>
           </motion.div>
 
-          {/* Market alerts — real AI-generated alerts */}
+          {/* Market alerts — live industry news, rendered on the server.
+              Only the stagger wrapper is client-side; the card itself comes
+              in as a slot so none of its markup ships to the browser. */}
           <motion.div variants={stagger} id="alerts" className="md:col-span-4 md:row-span-2 md:row-start-1">
-            <div className="flex h-full flex-col rounded-[28px] border border-slate-900/[.06] bg-white/[.66] p-6 shadow-[0_26px_56px_-40px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
-              <div className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-[11px] bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400">
-                    <TrendingUp className="h-4 w-4" strokeWidth={1.9} />
-                  </span>
-                  <span className="text-sm font-semibold tracking-tight">{td("marketAlerts")}</span>
-                </span>
-                <span className="text-[11px] text-slate-400 dark:text-ink-muted">{t("liveTag")}</span>
-              </div>
-
-              <div className="mt-5 flex flex-1 flex-col gap-3">
-                {marketAlerts.length > 0 ? (
-                  marketAlerts.map((a) => {
-                    const warning = a.tone === "warning";
-                    return (
-                      <div
-                        key={a.id}
-                        className="rounded-[18px] border border-slate-900/[.05] bg-white px-4 py-3.5 shadow-sm dark:border-white/[.06] dark:bg-surface"
-                      >
-                        <span
-                          className={`text-[10.5px] font-semibold tracking-[.04em] ${
-                            warning ? "text-orange-600 dark:text-orange-400" : "text-emerald-700 dark:text-emerald-400"
-                          }`}
-                        >
-                          {a.eyebrow}
-                        </span>
-                        <div className="mt-1.5 text-[13.5px] font-semibold tracking-tight">{a.title}</div>
-                        <div className="mt-1.5 text-[11.5px] leading-relaxed text-slate-400 dark:text-ink-muted">{a.body}</div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="flex flex-1 items-center justify-center text-center text-[12.5px] text-slate-400 dark:text-ink-muted">
-                    {t("noAlerts")}
-                  </div>
-                )}
-              </div>
-
-              <Link
-                href="/profile/settings"
-                className="mt-4 flex h-11 items-center justify-center rounded-2xl border border-slate-900/[.12] bg-white text-[13px] font-semibold tracking-tight hover:border-slate-900/30 dark:border-hairline-strong dark:bg-surface dark:hover:border-white/30"
-              >
-                {t("managePriceAlerts")}
-              </Link>
-            </div>
+            {marketAlerts}
           </motion.div>
 
           {/* 2×2 quick actions */}
@@ -415,7 +393,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               radius="rounded-[24px]"
               className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
             >
-              <Link href={latestOrder ? "/profile/orders" : "/cylinders"} className="relative block" style={{ transform: "translateZ(26px)" }}>
+              <Link href={latestOrder ? "/profile/orders" : "/products"} className="relative block" style={{ transform: "translateZ(26px)" }}>
                 <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-[0_14px_26px_-14px_rgba(37,99,235,.75)]">
                   <RotateCw className="h-5 w-5" strokeWidth={2} />
                 </span>
@@ -435,7 +413,13 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               radius="rounded-[24px]"
               className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
             >
-              <Link href="/profile/orders" className="relative block" style={{ transform: "translateZ(26px)" }}>
+              {/* With no orders yet there is nothing to track — the card's
+                  own CTA says "browse the catalog", so send them there. */}
+              <Link
+                href={latestOrder ? "/profile/orders" : "/products"}
+                className="relative block"
+                style={{ transform: "translateZ(26px)" }}
+              >
                 <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-cyan-600 to-cyan-400 text-white shadow-[0_14px_26px_-14px_rgba(8,145,178,.7)]">
                   <Truck className="h-5 w-5" strokeWidth={2} />
                 </span>
@@ -480,7 +464,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               radius="rounded-[24px]"
               className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
             >
-              <Link href="/cylinders" className="relative block" style={{ transform: "translateZ(26px)" }}>
+              <Link href="/products" className="relative block" style={{ transform: "translateZ(26px)" }}>
                 <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-indigo-700 to-purple-500 text-white shadow-[0_14px_26px_-14px_rgba(67,56,202,.7)]">
                   <ScanLine className="h-5 w-5" strokeWidth={2} />
                 </span>
@@ -500,14 +484,35 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
       <RevealSection className="pt-20">
         <motion.div variants={stagger} className="mb-5 flex items-baseline justify-between gap-5">
           <h2 className="text-[13px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("popularCylindersEyebrow")}</h2>
-          <Link href="/cylinders" className="text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
+          <Link href="/products" className="text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
             {td("seeAll")}
           </Link>
         </motion.div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Single-row carousel.
+            `-mx-1 px-1` and `-mt-2 pt-2` widen the scroll box just enough
+            that the cards' shadow and hover glare aren't shaved off by
+            `overflow-x-auto`, while the matching padding puts the first
+            card's edge back in line with the heading above it. `pb-6` leaves
+            room under the row where a scrollbar would sit.
+
+            `scroll-px-1` matches that horizontal padding: without it,
+            mandatory snapping resolves against the border box and parks the
+            row 4px in, pulling every card out of line with the heading. */}
+        <div
+          className="-mx-1 -mt-2 flex snap-x snap-mandatory scroll-px-1 gap-6 overflow-x-auto overscroll-x-contain px-1 pb-6 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="region"
+          aria-label={t("popularCylindersEyebrow")}
+          data-popular-carousel
+        >
           {products.map((p) => (
-            <motion.div key={p.id} variants={stagger}>
+            <motion.div
+              key={p.id}
+              variants={stagger}
+              // Exactly three across on desktop: gap-6 is 1.5rem, so three
+              // cards and two gaps come to 3 × (33.3333% − 1rem) + 2 × 1.5rem.
+              className="w-[85vw] shrink-0 snap-start md:w-[calc(50%-1rem)] lg:w-[calc(33.3333%-1rem)]"
+            >
               <TiltCard
                 max={8}
                 radius="rounded-[24px]"
@@ -522,7 +527,14 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                     className="absolute inset-0"
                     style={{ backgroundImage: "repeating-linear-gradient(135deg,rgba(15,23,42,.035) 0 1px,transparent 1px 9px)" }}
                   />
-                  <div className="relative h-[132px] w-16 rounded-t-full rounded-b-[9px] border border-dashed border-slate-300 bg-white/85 dark:border-white/20 dark:bg-white/10" />
+                  {/* Same still renders the catalog grid uses, resolved from
+                      the product's refrigerant mark. */}
+                  <ProductThumbnail
+                    sku={p.sku}
+                    name={p.name}
+                    fallback={CYLINDER_OUTLINE}
+                    sizes="(max-width: 768px) 85vw, (max-width: 1024px) 50vw, 400px"
+                  />
                 </Link>
                 <div className="mt-4.5" style={{ transform: "translateZ(24px)" }}>
                   <Link href={p.pdpHref} className="text-[15.5px] font-semibold tracking-[-0.03em]">
@@ -532,11 +544,25 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                     {p.weightLabel} · {p.gwpClass}
                   </div>
                   <div className="mt-4 flex items-center justify-between gap-3">
-                    <span className="text-[19px] font-semibold tracking-[-0.04em]">{formatEur(p.price)}</span>
+                    <span className="min-w-0">
+                      <span className="flex items-baseline gap-1">
+                        <span className="text-[19px] font-semibold tracking-[-0.04em]">
+                          {p.pricePerKg > 0 ? formatEur(p.pricePerKg) : tp("priceOnRequest")}
+                        </span>
+                        {p.pricedPerKg && p.pricePerKg > 0 && (
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-ink-muted">{tp("perKgSuffix")}</span>
+                        )}
+                      </span>
+                      {p.pricedPerKg && p.pricePerKg > 0 && (
+                        <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-ink-muted" data-cylinder-price>
+                          {tp("cylinderPriceNote", { weight: formatKg(p.weightKg), amount: formatEur(p.cylinderPrice) })}
+                        </span>
+                      )}
+                    </span>
                     <button
                       type="button"
                       onClick={() => addToCart(p)}
-                      disabled={!p.inStock}
+                      disabled={!isPurchasable(p)}
                       className={`h-10 shrink-0 rounded-[13px] px-4 text-[12.5px] font-semibold tracking-tight text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                         added === p.id
                           ? "bg-green-600 shadow-[0_12px_26px_-14px_rgba(22,163,74,.8)]"
@@ -548,7 +574,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                           <Check className="h-3.5 w-3.5" strokeWidth={2.6} />
                           {t("added")}
                         </span>
-                      ) : p.inStock ? (
+                      ) : isPurchasable(p) ? (
                         t("addToCart")
                       ) : (
                         td("outOfStock")

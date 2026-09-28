@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { formatKg } from "@/lib/pricing";
+import { isPurchasable } from "@/lib/waitlist";
+import { cartLineFromOrderItem } from "@/lib/store/cart";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations, useFormatter } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -19,6 +22,7 @@ import {
   Plus,
   RefreshCw,
   ScanBarcode,
+  Leaf,
   Send,
   ShieldCheck,
   Sparkles,
@@ -27,10 +31,18 @@ import {
 import { QUICK_ACTIONS } from "@/lib/mobileHome";
 import { getTimeOfDayGreeting } from "@/lib/greeting";
 import { askHomeAssistant, type HomeAssistantResult } from "@/lib/actions/homeAssistant";
-import { useCartStore, selectCartCount } from "@/lib/store/cart";
+import { useCartStore } from "@/lib/store/cart";
 import type { QuickActionIconKey } from "@/lib/types";
 import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, UserProfileData } from "@/lib/data";
-import { useCartCount } from "./CartCountProvider";
+import type { MarketAlertTag } from "@/lib/services/newsFetcher";
+
+/** Category → Dashboard message key, mirroring MarketAlertsCard. */
+const TAG_KEY: Record<MarketAlertTag, string> = {
+  REGULATION: "tagRegulation",
+  PRICE_TREND: "tagPriceTrend",
+  SUPPLY: "tagSupply",
+  INDUSTRY_NEWS: "tagIndustryNews",
+};
 import ProductScanSheet from "./ProductScanSheet";
 import ThemeToggle from "./ThemeToggle";
 import HeaderLanguageSwitcher from "./HeaderLanguageSwitcher";
@@ -42,6 +54,7 @@ const QUICK_ACTION_ICONS: Record<QuickActionIconKey, typeof RefreshCw> = {
   "package-search": PackageSearch,
   "file-text": FileText,
   "scan-barcode": ScanBarcode,
+  leaf: Leaf,
 };
 // Per-action icon tints from the design (cyan / blue / violet / emerald).
 const QUICK_ACTION_TINTS: Record<string, string> = {
@@ -49,6 +62,7 @@ const QUICK_ACTION_TINTS: Record<string, string> = {
   track: "#60a5fa",
   sds: "#a78bfa",
   scan: "#34d399",
+  records: "#34d399",
 };
 
 // Reason pill derived from real product facts (no invented copy).
@@ -73,8 +87,8 @@ export default function MobileAppLayout({
 }: MobileAppLayoutProps) {
   const t = useTranslations("Dashboard");
   const tm = useTranslations("HomeMobile");
+  const tp = useTranslations("Products");
   const format = useFormatter();
-  const { setCartCount } = useCartCount();
   const { data: session, status } = useSession();
   const [scannerOpen, setScannerOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -89,13 +103,6 @@ export default function MobileAppLayout({
 
   const addItem = useCartStore((s) => s.addItem);
   const cartItems = useCartStore((s) => s.items);
-  const realCartCount = useCartStore(selectCartCount);
-
-  // The shared bottom-nav badge follows the real persisted cart while the
-  // home page is mounted (the cart page does the same).
-  useEffect(() => {
-    setCartCount(realCartCount);
-  }, [realCartCount, setCartCount]);
 
   const formatEur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
@@ -112,7 +119,7 @@ export default function MobileAppLayout({
 
   const scannedSource = featuredProducts[0];
   const SCANNED_PRODUCT = scannedSource
-    ? { name: scannedSource.name, variant: scannedSource.weightLabel, price: formatEur(scannedSource.price) }
+    ? { name: scannedSource.name, variant: scannedSource.weightLabel, price: formatEur(scannedSource.cylinderPrice) }
     : { name: "", variant: "", price: "" };
 
   const handleScanSuccess = () => {
@@ -125,7 +132,14 @@ export default function MobileAppLayout({
   const handleAddScannedToCart = () => {
     if (scannedSource) {
       addItem(
-        { sku: scannedSource.sku, name: scannedSource.name, variant: scannedSource.weightLabel, price: scannedSource.price },
+        {
+          sku: scannedSource.sku,
+          name: scannedSource.name,
+          variant: scannedSource.weightLabel,
+          pricePerKg: scannedSource.pricePerKg,
+          weightKg: scannedSource.weightKg,
+          deposit: scannedSource.cylinderDeposit,
+        },
         1
       );
     }
@@ -153,17 +167,29 @@ export default function MobileAppLayout({
   };
 
   const addProduct = (product: StoreProduct) => {
-    addItem({ sku: product.sku, name: product.name, variant: product.weightLabel, price: product.price }, 1);
+    if (!isPurchasable(product)) return;
+    addItem(
+      {
+        sku: product.sku,
+        name: product.name,
+        variant: product.weightLabel,
+        pricePerKg: product.pricePerKg,
+        weightKg: product.weightKg,
+        deposit: product.cylinderDeposit,
+      },
+      1
+    );
   };
 
   const reorder = (order: UserOrder) => {
     for (const item of order.items) {
-      addItem({ sku: item.sku, name: item.productName, variant: item.variant, price: item.priceAtPurchase }, item.quantity);
+      addItem(cartLineFromOrderItem(item), item.quantity);
     }
     setReordered((prev) => [...prev, order.id]);
   };
 
   const recReason = (p: StoreProduct) => {
+    if (p.stockLevel === "out") return tp("stockOut");
     if (p.stockLevel === "low") return tm("reasonLowStock");
     if (p.stockLevel === "order") return tm("reasonMadeToOrder");
     if (p.gwpClass === "A2L") return tm("reasonLowGwp");
@@ -309,10 +335,14 @@ export default function MobileAppLayout({
                       <span className="mt-0.5 block text-[10px] text-slate-400 dark:text-ink-muted">{t(action.note)}</span>
                     </>
                   );
+                  // h-full on both the motion wrapper and the tile: the grid
+                  // stretches its items, but the wrapper was sizing to its
+                  // content, so a two-line label ("Records & Compliance") left
+                  // its row-mate visibly shorter.
                   const cls =
-                    "block min-h-11 rounded-[18px] border border-slate-900/[.08] bg-slate-100/80 p-[13px] text-left dark:border-hairline dark:bg-surface-3";
+                    "block h-full min-h-11 rounded-[18px] border border-slate-900/[.08] bg-slate-100/80 p-[13px] text-left dark:border-hairline dark:bg-surface-3";
                   return action.href ? (
-                    <motion.div key={action.id} whileTap={{ scale: 0.95 }}>
+                    <motion.div key={action.id} whileTap={{ scale: 0.95 }} className="h-full">
                       <Link href={action.href} className={cls} data-quick-action={action.id}>
                         {content}
                       </Link>
@@ -489,12 +519,26 @@ export default function MobileAppLayout({
                     </span>
                   </Link>
                   <span className="relative flex items-center justify-between gap-2 p-[13px] pt-3">
-                    <span className="text-[14.5px] font-semibold tracking-[-.03em]">{formatEur(product.price)}</span>
+                    <span className="min-w-0">
+                      <span className="flex items-baseline gap-1">
+                        <span className="text-[14.5px] font-semibold tracking-[-.03em]">
+                          {product.pricePerKg > 0 ? formatEur(product.pricePerKg) : tp("priceOnRequest")}
+                        </span>
+                        {product.pricedPerKg && product.pricePerKg > 0 && (
+                          <span className="text-[10px] font-semibold text-slate-400 dark:text-ink-muted">{tp("perKgSuffix")}</span>
+                        )}
+                      </span>
+                      {product.pricedPerKg && product.pricePerKg > 0 && (
+                        <span className="block text-[9.5px] leading-[1.4] text-slate-400 dark:text-ink-muted" data-cylinder-price>
+                          {tp("cylinderPriceNote", { weight: formatKg(product.weightKg), amount: formatEur(product.cylinderPrice) })}
+                        </span>
+                      )}
+                    </span>
                     <motion.button
                       type="button"
                       whileTap={{ scale: 0.9 }}
                       onClick={() => addProduct(product)}
-                      disabled={!product.inStock}
+                      disabled={!isPurchasable(product)}
                       aria-label={tm("addToCartAria", { name: product.name })}
                       className={`flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                         inCart
@@ -650,7 +694,7 @@ export default function MobileAppLayout({
                   {tm("marketKicker")}
                 </span>
                 <span className="max-w-[45%] truncate text-[11.5px] font-semibold text-[#047857] dark:text-[#34d399]">
-                  {marketAlerts[0].eyebrow}
+                  {t(TAG_KEY[marketAlerts[0].tag])}
                 </span>
                 <motion.span animate={{ rotate: tickerOpen ? 180 : 0 }} transition={{ duration: 0.3 }} className="flex flex-none">
                   <ChevronDown size={14} strokeWidth={2} className="text-slate-400 dark:text-ink-muted" />
@@ -668,7 +712,7 @@ export default function MobileAppLayout({
                         ) : (
                           <ArrowDown size={12} strokeWidth={2.2} className="text-[#047857] dark:text-[#34d399]" />
                         )}
-                        <span className="text-[11.5px] font-semibold tracking-[-.015em]">{alert.eyebrow}</span>
+                        <span className="text-[11.5px] font-semibold tracking-[-.015em]">{t(TAG_KEY[alert.tag])}</span>
                         <span
                           className={`text-[11.5px] font-semibold tracking-[-.015em] ${
                             warn ? "text-[#b45309] dark:text-[#fbbf24]" : "text-[#047857] dark:text-[#34d399]"

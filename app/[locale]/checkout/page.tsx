@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "@/i18n/navigation";
 import CheckoutPage from "@/components/CheckoutPage";
-import { getUserAddresses } from "@/lib/data";
+import prisma from "@/lib/prisma";
+import { getProducts, getUserAddresses } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Checkout — My Energy",
@@ -22,7 +23,16 @@ export default async function CheckoutRoute({ params }: CheckoutRouteProps) {
     redirect({ href: { pathname: "/auth", query: { callbackUrl: "/checkout" } }, locale });
   }
 
-  const addresses = await getUserAddresses(userId!);
+  // Deep links and stale tabs land here too — an unverified buyer is sent
+  // back to the cart, which owns the certificate-upload flow, rather than
+  // being allowed to fill in an address only for placeOrder to refuse.
+  const buyer = await prisma.user.findUnique({ where: { id: userId! }, select: { fGasStatus: true } });
+  if (buyer?.fGasStatus !== "VERIFIED") {
+    redirect({ href: "/cart", locale });
+  }
 
-  return <CheckoutPage addresses={addresses} />;
+  // The catalog supplies each cart line's cylinder deposit for the summary.
+  const [addresses, products] = await Promise.all([getUserAddresses(userId!), getProducts()]);
+
+  return <CheckoutPage addresses={addresses} products={products} />;
 }

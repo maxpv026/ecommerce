@@ -1,6 +1,8 @@
 "use client";
 
+import { cartLineFromOrderItem } from "@/lib/store/cart";
 import { useState, useSyncExternalStore } from "react";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -14,18 +16,20 @@ import {
   Download,
   Euro,
   Globe,
+  Hourglass,
   Loader2,
   LogOut,
   MapPin,
   Moon,
   Package,
-  Settings,
   ShieldCheck,
   SlidersHorizontal,
   Truck,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
+import RecordsCard from "./profile/RecordsCard";
+import ProfileEditDrawer from "./ProfileEditDrawer";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 
@@ -43,6 +47,9 @@ const TONES: Record<OrderStatus, { fg: string; dark: string; dot: string; bg: st
   PENDING: { fg: "#b45309", dark: "#fbbf24", dot: "#fbbf24", bg: "rgba(245,158,11,.14)", bd: "rgba(245,158,11,.3)", live: true },
 };
 
+/** The tab the profile opens on when the URL says nothing. */
+const DEFAULT_TAB = "orders";
+
 const TABS = [
   { id: "orders", labelKey: "tabOrders", icon: Package },
   { id: "certs", labelKey: "tabCompliance", icon: ShieldCheck },
@@ -51,6 +58,11 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+/** `?tab=` is user-supplied, so anything unrecognised falls back rather than blanking the page. */
+function parseTab(value: string | null): TabId {
+  return TABS.some((t) => t.id === value) ? (value as TabId) : DEFAULT_TAB;
+}
 
 interface MobileProfileLayoutProps {
   dashboardData: ProfileDashboardData | null;
@@ -70,7 +82,31 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
   const { data: session } = useSession();
   const addItem = useCartStore((s) => s.addItem);
 
-  const [tab, setTab] = useState<TabId>("orders");
+  // Deep-linkable tabs: `/profile?tab=orders` opens on Orders, which is
+  // where Back from an order detail lands.
+  //
+  // The URL is read once, into local state, and written back with
+  // history.replaceState rather than router.replace. A router navigation
+  // would re-run this page's server component on every tab tap — and that
+  // means re-reading the profile, the orders, the addresses and a live DHL
+  // call per order. Tabs must switch instantly; replaceState keeps the URL
+  // honest for sharing and refresh without paying for any of that, and adds
+  // no history entries, so Back still leaves the profile rather than
+  // walking backwards through tabs.
+  const searchParams = useSearchParams();
+  const [tab, setTabState] = useState<TabId>(() => parseTab(searchParams.get("tab")));
+
+  const setTab = (next: TabId) => {
+    setTabState(next);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (next === DEFAULT_TAB) url.searchParams.delete("tab");
+    else url.searchParams.set("tab", next);
+    window.history.replaceState(null, "", url);
+  };
+  // Editing happens in a bottom sheet now; the old /profile/settings route
+  // was a full-page detour for three fields.
+  const [editOpen, setEditOpen] = useState(false);
   const [openOrder, setOpenOrder] = useState<string | null>(orders?.[0]?.id ?? null);
   const [reordered, setReordered] = useState<string[]>([]);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -90,9 +126,15 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
     return isNaN(d.getTime()) ? value : format.dateTime(d, { year: "numeric", month: "short", day: "numeric" });
   };
 
-  const name = session?.user?.name || session?.user?.email || "";
-  const email = session?.user?.email ?? "";
-  const subtitle = [session?.user?.companyName, profile?.jobTitle].filter(Boolean).join(" · ");
+  // Server data first, session second. The session is a JWT minted at
+  // sign-in: editing your name writes to the database but leaves the token
+  // alone, so reading the card from the session would keep showing the old
+  // value until the next sign-in. `profile` comes from getUserProfile() and
+  // is revalidated by updateProfile(), so it is the fresher of the two.
+  const name = profile?.name || session?.user?.name || session?.user?.email || "";
+  const email = profile?.email || session?.user?.email || "";
+  const companyName = profile?.companyName ?? session?.user?.companyName ?? null;
+  const subtitle = [companyName, profile?.jobTitle].filter(Boolean).join(" · ");
   const initials = name
     .split(/[\s@.]+/)
     .filter(Boolean)
@@ -104,7 +146,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
 
   const reorder = (order: UserOrder) => {
     for (const item of order.items) {
-      addItem({ sku: item.sku, name: item.productName, variant: item.variant, price: item.priceAtPurchase }, item.quantity);
+      addItem(cartLineFromOrderItem(item), item.quantity);
     }
     setReordered((prev) => [...prev, order.id]);
   };
@@ -158,15 +200,10 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
             </Link>
           </motion.div>
           <span className="min-w-0 flex-1 text-center text-[16.5px] font-semibold tracking-[-.03em]">{t("title")}</span>
-          <motion.div whileTap={{ scale: 0.9 }} className="flex flex-none">
-            <Link
-              href="/profile/settings"
-              aria-label={tProfile("settingsAria")}
-              className="-mr-[11px] flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-900/[.06] dark:text-ink-muted dark:hover:bg-white/10"
-            >
-              <Settings size={19} strokeWidth={1.9} />
-            </Link>
-          </motion.div>
+          {/* Balances the back button so the title stays centred now the
+              settings gear is gone. It carries the same -11px pull, or the
+              title would sit 5px left of centre. */}
+          <span aria-hidden className="-mr-[11px] h-11 w-11 flex-none" />
         </div>
       </div>
 
@@ -198,6 +235,15 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
             </div>
 
             <div className="relative mt-[15px] flex flex-wrap gap-[7px]">
+              {profile?.fGasStatus === "PENDING_REVIEW" && (
+                <span
+                  data-fgas-pending
+                  className="inline-flex items-center gap-[7px] rounded-full border border-amber-500/35 bg-amber-500/[.15] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-amber-800 shadow-[0_0_18px_-6px_#f59e0b] dark:text-amber-300"
+                >
+                  <Hourglass size={13} strokeWidth={2} />
+                  {tProfile("fgasPendingBadge")}
+                </span>
+              )}
               {profile?.fgasVerified && (
                 <span className="inline-flex items-center gap-[7px] rounded-full border border-[rgba(16,185,129,.32)] bg-[rgba(16,185,129,.15)] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-[#047857] shadow-[0_0_18px_-6px_#34d399] dark:text-[#34d399]">
                   <ShieldCheck size={13} strokeWidth={2} />
@@ -224,15 +270,17 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
               ))}
             </div>
 
-            <motion.div whileTap={{ scale: 0.95 }} className="relative mt-[15px]">
-              <Link
-                href="/profile/settings"
-                data-edit-profile
-                className="flex min-h-[46px] w-full items-center justify-center rounded-[15px] bg-blue-700 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_#2563eb] transition-colors hover:bg-blue-800"
-              >
-                {tPd("editProfile")}
-              </Link>
-            </motion.div>
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setEditOpen(true)}
+              data-edit-profile
+              aria-haspopup="dialog"
+              aria-expanded={editOpen}
+              className="relative mt-[15px] flex min-h-[46px] w-full items-center justify-center rounded-[15px] bg-blue-700 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_#2563eb] transition-colors hover:bg-blue-800"
+            >
+              {tPd("editProfile")}
+            </motion.button>
           </div>
         </motion.div>
 
@@ -258,6 +306,16 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
               </motion.button>
             );
           })}
+        </div>
+
+        {/* ── Records & Compliance ──
+            Outside the tab panels on purpose: it is navigation, not a tab's
+            content, so it stays reachable whichever tab is open. It was first
+            placed inside the "company" panel, where it rendered only on a tab
+            nobody lands on by default. `scroll-mt` clears the sticky header
+            when the home quick action lands on /profile#records. */}
+        <div className="scroll-mt-28 px-[18px] pt-[18px]" id="records">
+          <RecordsCard compact />
         </div>
 
         {/* ── Orders ── */}
@@ -359,7 +417,6 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                                 href={`/profile/orders/${order.id}`}
                                 className="flex min-h-9 items-center gap-1.5 rounded-[11px] border border-slate-900/[.16] px-3 text-[11.5px] font-semibold dark:border-hairline-strong"
                               >
-                                <Download size={13} strokeWidth={2} />
                                 {t("detailsBtn")}
                               </Link>
                             </motion.div>
@@ -420,7 +477,16 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                   </motion.div>
                 </span>
                 <span className="relative mt-[13px] flex flex-wrap gap-[7px]">
-                  {profile?.fgasVerified && (
+                  {profile?.fGasStatus === "PENDING_REVIEW" && (
+                <span
+                  data-fgas-pending
+                  className="inline-flex items-center gap-[7px] rounded-full border border-amber-500/35 bg-amber-500/[.15] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-amber-800 shadow-[0_0_18px_-6px_#f59e0b] dark:text-amber-300"
+                >
+                  <Hourglass size={13} strokeWidth={2} />
+                  {tProfile("fgasPendingBadge")}
+                </span>
+              )}
+              {profile?.fgasVerified && (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(16,185,129,.32)] bg-[rgba(16,185,129,.15)] py-[5px] pl-2 pr-[11px] text-[10px] font-semibold text-[#047857] shadow-[0_0_16px_-7px_#34d399] dark:text-[#34d399]">
                       <span className="h-[5px] w-[5px] flex-none rounded-full bg-[#34d399] shadow-[0_0_7px_1px_#34d399]" />
                       {t("certVerified")}
@@ -446,7 +512,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
               <div className="mb-[13px] text-[9.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("billingEntity")}</div>
               <div className="flex flex-col gap-3">
                 {[
-                  { label: t("fieldLegalEntity"), value: session?.user?.companyName },
+                  { label: t("fieldLegalEntity"), value: companyName },
                   { label: t("fieldRole"), value: profile?.jobTitle },
                   { label: t("fieldBillingEmail"), value: email },
                   { label: t("fieldMemberSince"), value: profile?.memberSinceYear ? String(profile.memberSinceYear) : null },
@@ -592,6 +658,13 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
           <p className="mx-1 mb-0 mt-3 text-center text-[10px] text-slate-400 dark:text-ink-muted">{t("sessionNote")}</p>
         </div>
       </div>
+
+      {/* Deliberately unkeyed: AnimatePresence inside the drawer unmounts
+          its contents after the close animation, so the next open mounts a
+          fresh form seeded from the current profile. A key here would remount
+          instantly instead, cutting off both the exit animation and any
+          save still in flight. */}
+      <ProfileEditDrawer open={editOpen} onClose={() => setEditOpen(false)} profile={profile} />
     </div>
   );
 }
