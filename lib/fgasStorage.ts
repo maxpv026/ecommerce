@@ -20,11 +20,17 @@ import type { FgasMediaType } from "@/lib/fgas";
  * Two drivers:
  *
  *  - `blob`  — Vercel Blob, used when BLOB_READ_WRITE_TOKEN is present.
- *              Uploaded with a random suffix; the resulting URL is public
- *              but unguessable, which is what Telegram needs to fetch it.
+ *              Stored with `access: "private"`: the URL alone fetches
+ *              nothing, only a request carrying the store token does. (It
+ *              used to be public-but-unguessable, which made every leaked
+ *              URL — a log line, a chat message — a working copy of
+ *              someone's certificate.)
  *  - `local` — a directory outside the web root (default `.uploads/fgas`),
- *              for development. Nothing serves it statically: retrieval goes
- *              through app/api/fgas/document, which checks the caller.
+ *              for development.
+ *
+ * Either way the stored URL is internal. The browser only ever sees
+ * /api/fgas/certificate/<userId>, which checks the caller and streams the
+ * file through `readCertificate` below.
  */
 
 export type FgasStorageDriver = "blob" | "local";
@@ -34,9 +40,9 @@ export interface StoredCertificate {
   /**
    * What goes in `User.fGasDocumentUrl`.
    *
-   * For `blob` this is the absolute, publicly-fetchable (but unguessable)
-   * blob URL. For `local` it is an app-relative path into the authenticated
-   * retrieval route — never a filesystem path.
+   * For `blob` the private blob URL (useless without the store token). For
+   * `local` an app-relative path into the authenticated retrieval route —
+   * never a filesystem path. Server-side only; never sent to a browser.
    */
   url: string;
   /** Opaque key for the retrieval route; null for blob. */
@@ -79,10 +85,9 @@ export async function storeCertificate(
     // Imported lazily so the package is only required when it is configured.
     const { put } = await import("@vercel/blob");
     const blob = await put(`fgas/${name}`, Buffer.from(bytes), {
-      access: "public",
+      access: "private",
       contentType,
-      // The random UUID already makes this unguessable; adding Vercel's own
-      // suffix keeps two uploads of the same document from colliding.
+      // Vercel's suffix keeps two uploads of the same document from colliding.
       addRandomSuffix: true,
       token: process.env.BLOB_READ_WRITE_TOKEN,
     });
@@ -146,4 +151,56 @@ export async function readLocalCertificate(
 /** Stable fingerprint of the document, for spotting re-uploads in review. */
 export function fingerprint(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex").slice(0, 16);
+}
+
+const LOCAL_PREFIX = "/api/fgas/document/";
+
+export interface CertificateFile {
+  body: ReadableStream<Uint8Array> | Uint8Array<ArrayBuffer>;
+  contentType: string;
+  size: number | null;
+}
+
+/**
+ * Reads a stored certificate back from wherever `User.fGasDocumentUrl` says
+ * it lives. Does NOT authorise — the caller must have checked that the
+ * requester owns the certificate or is an admin.
+ *
+ * Blob documents are tried as private first; a document uploaded before the
+ * switch to private storage is still public until
+ * scripts/migrate-fgas-blobs-private.ts moves it, so that is the fallback.
+ */
+export async function readCertificate(storedUrl: string): Promise<CertificateFile | null> {
+  if (storedUrl.startsWith(LOCAL_PREFIX)) {
+    const file = await readLocalCertificate(storedUrl.slice(LOCAL_PREFIX.length));
+    return file ? { body: new Uint8Array(file.bytes), contentType: file.contentType, size: file.bytes.length } : null;
+  }
+
+  let host: string;
+  try {
+    host = new URL(storedUrl).hostname;
+  } catch {
+    return null;
+  }
+  // Only our own blob store — never fetch an arbitrary URL from a DB column.
+  if (!host.endsWith(".blob.vercel-storage.com")) return null;
+
+  const { get } = await import("@vercel/blob");
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  for (const access of ["private", "public"] as const) {
+    try {
+      const result = await get(storedUrl, { access, token, useCache: false });
+      if (result?.statusCode === 200) {
+        return { body: result.stream, contentType: result.blob.contentType, size: result.blob.size };
+      }
+    } catch {
+      // Wrong access mode for this blob; try the other one.
+    }
+  }
+  return null;
+}
+
+/** The only URL a browser is given for a user's certificate. */
+export function certificateHref(userId: string): string {
+  return `/api/fgas/certificate/${encodeURIComponent(userId)}`;
 }

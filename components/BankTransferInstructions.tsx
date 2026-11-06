@@ -123,7 +123,7 @@ export default function BankTransferInstructions({
 
       <div className="relative">
         <div className="mb-5 flex items-start gap-3">
-          <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,#0891b2,#1d4ed8)] text-white shadow-[0_12px_26px_-14px_rgba(8,145,178,.9)]">
+          <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,#0891b2,var(--glow-700))] text-white shadow-[0_12px_26px_-14px_rgba(8,145,178,.9)]">
             <Landmark size={18} strokeWidth={2} />
           </span>
           <div className="min-w-0">

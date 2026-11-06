@@ -47,6 +47,13 @@ enum FGasStatus {
   REJECTED
 }
 
+/// Colour scheme. SYSTEM follows the device's prefers-color-scheme.
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -109,7 +116,7 @@ model User {
 
   // ── F-Gas compliance review ──
   // The certificate is read and judged by a vision model; an admin overrides.
-  fGasStatus          FGasStatus @default(NONE)
+  fGasStatus          FGasStatus      @default(NONE)
   /// Where the uploaded certificate is stored. Never public: local uploads
   /// are served through an authenticated route, and a blob URL is
   /// unguessable. See lib/fgasStorage.ts.
@@ -122,9 +129,26 @@ model User {
   /// User id of the admin who approved or rejected it.
   fGasReviewedBy      String?
   fGasRejectionReason String?
-  discountTier        String     @default("standard")
-  rewardPoints        Int        @default(0)
-  locale              String     @default("en")
+  discountTier        String          @default("standard")
+  rewardPoints        Int             @default(0)
+  locale              String          @default("en")
+  /// Light / dark / follow the device. Mirrored into the session JWT so
+  /// every device the user signs in on applies it (components/ThemeSync).
+  themePreference     ThemePreference @default(SYSTEM)
+
+  /// Email preferences (Settings → Notifications). Defaults follow consent:
+  /// back-in-stock is on because every one of those mails answers a
+  /// product the user explicitly asked to watch; price drops and regulatory
+  /// updates are opt-in, because unrequested marketing mail to EU business
+  /// contacts needs prior consent under the ePrivacy rules.
+  notifyBackInStock       Boolean @default(true)
+  notifyPriceDrops        Boolean @default(false)
+  notifyRegulatoryUpdates Boolean @default(false)
+  /// Predictive replenishment reminders (lib/smartRestock): "you usually
+  /// reorder X about now". On by default — it's a service message about the
+  /// customer's own buying pattern — with an opt-out in settings and a
+  /// one-click unsubscribe in every reminder.
+  notifyRestockReminders  Boolean @default(true)
 
   // For future CRM sync (e.g. HubSpot/Salesforce contact id).
   externalId String? @unique
@@ -144,6 +168,11 @@ model User {
   stockSubscriptions   StockSubscription[]
   cylinderTransactions CylinderTransaction[]
   restockAlerts        RestockAlert[]
+  broadcastsSent       Broadcast[]           @relation("BroadcastAuthor")
+  broadcastDeliveries  BroadcastRecipient[]
+  quotes               Quote[]
+  favorites            Favorite[]
+  chatSessions         ChatSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -358,6 +387,13 @@ model RestockAlert {
 
   status RestockAlertStatus @default(PENDING)
 
+  /// The purchase cycle this alert is about: the customer's last order day
+  /// (UTC) for this product when it was raised. Unique per (user, product),
+  /// so a cycle can be reminded about at most once — a second cron run, a
+  /// retried invocation or a dismissed alert can't produce another email.
+  /// A new purchase starts a new cycle. Null on rows from before this column.
+  cycleStart DateTime?
+
   /// The generated body. Null when a prediction was recorded but no message
   /// was produced — a row with NOTIFIED and no message would be a lie.
   aiMessage String?
@@ -365,6 +401,7 @@ model RestockAlert {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, productId, cycleStart])
   /// The suppression lookup the cron runs before every send: "has this user
   /// been notified about this product recently?". Ordered so the newest row
   /// for a (user, product) pair is the first one read.
@@ -490,15 +527,37 @@ model Product {
   stock    String   @default("in")
   category String   @default("cylinders")
 
+  /// What the gas ships in: "Cylinder", "Drum", "Isotank"… Shown in the size
+  /// label ("800 kg drum") and the PDP size selector.
+  containerType String  @default("Cylinder")
+  /// Groups the sizes of one product: every row with the same key is a size
+  /// of the same thing (R-134a in a 10 kg cylinder, an 800 kg drum…). Each
+  /// size stays its own row — own SKU, price, stock, deposit, CRM id, order
+  /// lines — this only says which rows belong together. Null falls back to
+  /// the refrigerant mark, the grouping used before this column existed;
+  /// set it to separate e.g. virgin from reclaimed R-404A.
+  familyKey     String?
+
+  /// Set when an admin deletes a size that has order or quote history: the
+  /// row must survive for those records (OrderItem/QuoteItem point at it),
+  /// but it leaves the storefront, checkout and quoting — every catalog
+  /// read filters on `archivedAt: null` (LISTED in lib/productFamily). A
+  /// size with no history is deleted outright instead.
+  archivedAt DateTime?
+
   orderItems         OrderItem[]
   stockSubscriptions StockSubscription[]
   restockAlerts      RestockAlert[]
+  quoteItems         QuoteItem[]
+  favorites          Favorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Out-of-stock rows sort to the bottom of every listing (lib/data.ts).
   @@index([inStock, createdAt])
+  @@index([familyKey])
+  @@index([archivedAt])
 }
 
 // Back-in-stock waitlist. A buyer (signed in or guest) leaves an address
@@ -614,6 +673,7 @@ model Order {
   shippingAddress String?
 
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quote Quote?
   items OrderItem[]
 
   // One invoice per order. Optional because an order exists the moment
@@ -673,7 +733,7 @@ model OrderItem {
   // those inputs for exactly that reason. Kilograms, not tonnes: tonnes are
   // a display unit (divide by 1000) and rounding to them here would lose
   // precision on small lines.
-  co2eKg Float @default(0)
+  co2eKg        Float @default(0)
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
@@ -701,4 +761,229 @@ model Certificate {
 
   // getUserProfile takes the newest certificate for a user.
   @@index([userId, issuedAt(sort: Desc)])
+}
+
+/// One admin-composed email to everyone opted in to a topic (today:
+/// regulatory updates). The recipient rows are the work queue: the audience
+/// is snapshotted at send time, and lib/broadcast.ts drains it in
+/// time-boxed batches so no single serverless invocation runs long.
+model Broadcast {
+  id      String          @id @default(cuid())
+  /// Which preference gates it — matches lib/notifications NotificationTopic.
+  topic   String          @default("regulatory")
+  subject String
+  content String          @db.Text
+  status  BroadcastStatus @default(SENDING)
+
+  authorId String
+  author   User   @relation("BroadcastAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  /// Denormalised progress for the admin list; recomputed from the
+  /// recipient rows after every batch, which stay the source of truth.
+  total   Int @default(0)
+  sent    Int @default(0)
+  skipped Int @default(0)
+  failed  Int @default(0)
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  recipients BroadcastRecipient[]
+
+  @@index([status, createdAt])
+}
+
+enum BroadcastStatus {
+  SENDING
+  COMPLETED
+  CANCELLED
+}
+
+model BroadcastRecipient {
+  id          String          @id @default(cuid())
+  broadcastId String
+  broadcast   Broadcast       @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      RecipientStatus @default(PENDING)
+  /// Send attempts so far; a row is retried until MAX_ATTEMPTS, then FAILED.
+  attempts    Int             @default(0)
+  lastError   String?
+  /// When a worker took it. A SENDING row older than the lease is presumed
+  /// abandoned (the invocation died) and is reclaimed.
+  claimedAt   DateTime?
+  sentAt      DateTime?
+
+  /// One email per person per broadcast, enforced by the database.
+  @@unique([broadcastId, userId])
+  @@index([broadcastId, status])
+  @@index([userId])
+}
+
+enum RecipientStatus {
+  PENDING
+  SENDING
+  SENT
+  /// Opted out (or lost their address) between the snapshot and the send.
+  SKIPPED
+  FAILED
+}
+
+/// A quote's stored lifecycle. EXPIRED is also derived on read — a PENDING
+/// quote past validUntil is expired whether or not a write has caught up
+/// (lib/quotes.ts effectiveQuoteStatus), so the 48-hour promise never
+/// depends on a cron.
+enum QuoteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+/// A formal price offer: the cart priced from the database at one moment
+/// and frozen for 48 hours, so a buyer can take a PDF to their management.
+/// Every figure is a snapshot — later price, weight or deposit changes to
+/// the products never alter an issued quote. Stock is not reserved.
+model Quote {
+  id          String      @id @default(cuid())
+  /// QUO-<year>-<4 chars>, printed on the document.
+  quoteNumber String      @unique
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      QuoteStatus @default(PENDING)
+  validUntil  DateTime
+
+  /// The buyer block as it read when the quote was issued.
+  buyerName   String?
+  buyerEmail  String?
+  companyName String?
+  vatNumber   String?
+
+  /// Same breakdown checkout charges (lib/cart calculateCartTotals).
+  subtotal       Decimal @db.Decimal(12, 2)
+  depositTotal   Decimal @db.Decimal(12, 2)
+  shippingAmount Decimal @db.Decimal(12, 2)
+  vatAmount      Decimal @db.Decimal(12, 2)
+  totalAmount    Decimal @db.Decimal(12, 2)
+
+  items QuoteItem[]
+
+  /// The order placed from this quote at the quoted prices; set in the same
+  /// transaction that moves the quote to ACCEPTED, so one quote buys once.
+  orderId String? @unique
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model QuoteItem {
+  id        String  @id @default(cuid())
+  quoteId   String
+  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  /// Restrict: a product with quotes against it is archived, not deleted.
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  sku        String
+  name       String
+  /// Pack label, e.g. "80 kg drum".
+  variant    String
+  quantity   Int
+  pricePerKg Float
+  weightKg   Float
+  /// One container's gas price: pricePerKg × weightKg, rounded to cents.
+  unitPrice  Decimal @db.Decimal(12, 2)
+  /// Refundable per-container deposit, outside the VAT base.
+  deposit    Decimal @db.Decimal(10, 2)
+  /// unitPrice × quantity — gas only, deposit excluded.
+  lineTotal  Decimal @db.Decimal(12, 2)
+
+  @@index([quoteId])
+  @@index([productId])
+}
+
+/// A product size a buyer saved to their Favorites. Each size is its own
+/// Product row, so a favourite is one specific container (the 10 kg R-32
+/// cylinder, not "R-32").
+///
+/// The price-drop email (lib/priceDrop.ts) goes to favourites whose owner
+/// opted in to price-drop alerts (User.notifyPriceDrops). lastAlertPrice /
+/// lastAlertAt remember what we last told this buyer about this product, so
+/// a price nudged down three times in an afternoon is one email, not three.
+model Favorite {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  /// The container price (EUR, gas only) in the last price-drop email.
+  lastAlertPrice Decimal?  @db.Decimal(12, 2)
+  lastAlertAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
+
+/// Where a support conversation stands. The AI answers only while
+/// AI_ACTIVE; once ESCALATED_TO_HUMAN it stays silent and the team replies
+/// from /admin/support. RESOLVED closes it — the visitor's next message
+/// starts a fresh session.
+enum ChatSessionStatus {
+  AI_ACTIVE
+  ESCALATED_TO_HUMAN
+  RESOLVED
+}
+
+enum ChatRole {
+  user
+  assistant
+  human_agent
+}
+
+/// One support conversation from the storefront chat widget. Guests have no
+/// userId; their browser is tied to the session by a signed httpOnly cookie
+/// (lib/chatSession.ts), never by an id in a URL.
+model ChatSession {
+  id     String            @id @default(cuid())
+  userId String?
+  /// Cascade: deleting an account erases its conversations (they hold the
+  /// buyer's own words), not just the link to them.
+  user   User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status ChatSessionStatus @default(AI_ACTIVE)
+
+  /// Why it was handed to a person — the model's reason, or "requested by
+  /// the visitor" when they pressed the button.
+  escalationReason String?
+  escalatedAt      DateTime?
+  resolvedAt       DateTime?
+  /// Page the conversation started on, for context in the admin view.
+  startedOn        String?
+
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, updatedAt])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      ChatRole
+  content   String      @db.Text
+  /// Structured parts that aren't text: the product ids a catalog search
+  /// showed, the escalation marker — so a reloaded transcript (and the admin
+  /// view) shows what the visitor actually saw.
+  data      Json?
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
 }

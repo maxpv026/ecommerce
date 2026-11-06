@@ -56,6 +56,9 @@ export type InventoryUpdateResult =
       cameBackInStock: boolean;
       pricePerKg: number;
       weightKg: number;
+      /** Before this push — so callers can tell a price drop (lib/priceDrop). */
+      previousPricePerKg: number;
+      previousWeightKg: number;
       /** pricePerKg × weightKg — what one cylinder now sells for (gas only). */
       cylinderPrice: number;
     }
@@ -115,6 +118,8 @@ export async function applyInventoryUpdate(db: ProductDb, input: InventoryUpdate
     cameBackInStock: !wasPurchasable && isPurchasable,
     pricePerKg: updated.pricePerKg,
     weightKg: updated.weightKg,
+    previousPricePerKg: product.pricePerKg,
+    previousWeightKg: product.weightKg,
     cylinderPrice: cylinderGasPrice(updated.pricePerKg, updated.weightKg),
   };
 }

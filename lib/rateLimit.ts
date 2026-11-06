@@ -80,6 +80,14 @@ export const RATE_LIMIT_RULES: Array<{ prefix: string; rule: RateLimitRule }> = 
   { prefix: "/api/waitlist", rule: { limit: 10, windowMs: 60_000 } },
   // Uploads a file and spends an OpenAI call per request.
   { prefix: "/api/verify-fgas", rule: { limit: 6, windowMs: 60_000 } },
+  // Support chat: a model call per message, and a handoff emails the admin.
+  // Longer prefixes first — ruleFor takes the first match.
+  // The F-Gas consultant tab: its own bucket, or "/api/chat" below would
+  // swallow it by prefix and the two assistants would share one budget.
+  { prefix: "/api/chat-fgas", rule: { limit: 20, windowMs: 60_000 } },
+  { prefix: "/api/chat/escalate", rule: { limit: 5, windowMs: 60_000 } },
+  { prefix: "/api/chat/session", rule: { limit: 60, windowMs: 60_000 } },
+  { prefix: "/api/chat", rule: { limit: 20, windowMs: 60_000 } },
 ];
 
 export function ruleFor(pathname: string): { prefix: string; rule: RateLimitRule } | null {

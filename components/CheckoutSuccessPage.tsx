@@ -54,8 +54,8 @@ export default function CheckoutSuccessPage({ order, bank }: CheckoutSuccessPage
 
       <div className="relative overflow-x-clip">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-[220px] right-[-8%] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-[.12] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite] dark:opacity-[.22]" />
-          <div className="absolute left-[-10%] top-[180px] h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-[.1] blur-[120px] [animation:hc-float_30s_ease-in-out_infinite] dark:opacity-20" />
+          <div className="absolute -top-[220px] right-[-8%] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.12] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite] dark:opacity-[.22]" />
+          <div className="absolute left-[-10%] top-[180px] h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-[.1] blur-[120px] [animation:hc-float_30s_ease-in-out_infinite] dark:opacity-20" />
         </div>
 
         <motion.main
@@ -176,7 +176,7 @@ export default function CheckoutSuccessPage({ order, bank }: CheckoutSuccessPage
             <Link
               href={`/profile/orders/${order.id}`}
               data-view-order
-              className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-[14px] bg-blue-700 px-5 text-[14px] font-semibold tracking-[-.015em] text-white shadow-[0_14px_30px_-12px_#1d4ed8] transition-colors hover:bg-blue-800 md:h-12 md:w-auto md:text-[13.5px]"
+              className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-[14px] bg-blue-700 px-5 text-[14px] font-semibold tracking-[-.015em] text-white shadow-[0_14px_30px_-12px_var(--glow-700)] transition-colors hover:bg-blue-800 md:h-12 md:w-auto md:text-[13.5px]"
             >
               {t("viewOrder")}
               <ArrowRight size={15} strokeWidth={2.2} />

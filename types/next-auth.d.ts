@@ -1,5 +1,5 @@
 import type { DefaultSession } from "next-auth";
-import type { FGasStatus } from "@/lib/generated/prisma/enums";
+import type { FGasStatus, ThemePreference } from "@/lib/generated/prisma/enums";
 
 declare module "next-auth" {
   interface Session {
@@ -25,6 +25,8 @@ declare module "next-auth" {
       isFGasVerified?: boolean;
       /** Mirrors Prisma User.locale — the user's last-saved UI language. */
       locale?: string;
+      /** Mirrors Prisma User.themePreference. Undefined on tokens issued before it existed. */
+      theme?: ThemePreference;
       /** RBAC role — "ADMIN" only for the ADMIN_EMAIL account. */
       role?: "USER" | "ADMIN";
     };
@@ -39,5 +41,6 @@ declare module "next-auth/jwt" {
     fGasStatus?: FGasStatus;
     epaVerified?: boolean;
     locale?: string;
+    theme?: ThemePreference;
   }
 }

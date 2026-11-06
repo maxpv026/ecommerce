@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
+import { LISTED } from "@/lib/productFamily";
 
 const QueryInput = z.string().trim().min(3).max(300);
 
@@ -31,7 +32,7 @@ export async function smartMatch(rawQuery: string): Promise<SmartMatchResult> {
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
 
   try {
-    const catalog = await prisma.product.findMany();
+    const catalog = await prisma.product.findMany({ where: LISTED });
     const catalogList = catalog
       .map(
         (p) =>

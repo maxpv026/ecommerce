@@ -6,12 +6,14 @@ import { useTranslations } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { ChevronDown, LayoutDashboard, Leaf, LogOut, ShoppingCart, User } from "lucide-react";
+import { ChevronDown, Heart, LayoutDashboard, Leaf, LogOut, Settings, ShieldCheck, ShoppingCart, User } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import HeaderSearch from "./HeaderSearch";
 import HeaderLanguageSwitcher from "./HeaderLanguageSwitcher";
 import { initialsFrom } from "@/lib/initials";
+import { Avatar } from "./AvatarUploader";
 import { useCartStore, selectCartCount } from "@/lib/store/cart";
+import { useFavoritesCount } from "@/lib/hooks/useFavorite";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { RECORDS_LINKS, type RecordsIconKey } from "@/lib/profileRecords";
 
@@ -58,7 +60,10 @@ const RECORD_ICONS: Record<RecordsIconKey, typeof LayoutDashboard> = {
 // dashboard's own sections (/profile#orders, /profile#security) — the account
 // menu duplicating the page it lands on. Both are reachable from the dashboard
 // sidebar, so the menu no longer carries them.
-const MENU_ITEMS = [{ key: "menuDashboard", href: "/profile", icon: LayoutDashboard }] as const;
+const MENU_ITEMS = [
+  { key: "menuDashboard", href: "/profile", icon: LayoutDashboard },
+  { key: "menuSettings", href: "/profile/settings", icon: Settings },
+] as const;
 
 interface HeaderProps {
   /**
@@ -78,6 +83,8 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
   const tRecords = useTranslations("Records");
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated";
+  // Same rule the session callback derives (ADMIN_EMAIL-based, fails closed to USER).
+  const isAdmin = isAuthenticated && session?.user?.role === "ADMIN";
 
   // Cart badge: read straight from the persisted store so every add/remove
   // anywhere in the app updates it instantly. Hydration-gated because the
@@ -85,6 +92,9 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
   const cartCount = useCartStore(selectCartCount);
   const hydrated = useHydrated();
   const shownCount = hydrated ? cartCount : 0;
+  // Favorites badge: the shared favourites store, loaded once per account,
+  // so hearting anything on the page moves this number at once.
+  const favoritesCount = useFavoritesCount();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -162,9 +172,12 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
                 aria-label={t("accountMenuAria")}
                 className="flex h-[38px] flex-none items-center gap-2 rounded-full border border-slate-900/[.12] bg-white pl-[5px] pr-3 text-[13px] font-medium text-slate-900 transition-colors hover:border-slate-900/30 dark:border-hairline-strong dark:bg-surface dark:text-slate-50 dark:hover:border-white/30"
               >
-                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-blue-700 text-[11px] font-semibold text-white">
-                  {initialsFrom(session?.user?.name ?? session?.user?.email ?? "?")}
-                </span>
+                <Avatar
+                  avatarUrl={session?.user?.image ?? null}
+                  initials={initialsFrom(session?.user?.name ?? session?.user?.email ?? "?")}
+                  size={28}
+                  className="text-[11px]"
+                />
                 <span className="hidden max-w-[120px] truncate min-[1120px]:block">
                   {session?.user?.name?.split(" ")[0] ?? session?.user?.email?.split("@")[0]}
                 </span>
@@ -195,6 +208,38 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
                         </div>
                       )}
                     </div>
+
+                    {/* Admins only. This decides visibility, not access: /admin
+                        is enforced by proxy.ts and, on every page and action,
+                        by guardAdmin/requireAdmin against the database row.
+                        A non-admin who types the URL is still turned away. */}
+                    {isAdmin && (
+                      <div className="border-b border-slate-900/[.07] py-1 dark:border-white/[.08]">
+                        <Link
+                          role="menuitem"
+                          href="/admin"
+                          data-admin-link
+                          onClick={() => setMenuOpen(false)}
+                          className="group flex items-center gap-2.5 rounded-[11px] bg-blue-700/[.06] px-3 py-2 text-[13px] font-semibold text-blue-700 transition-colors hover:bg-blue-700/[.11] dark:bg-blue-400/[.09] dark:text-blue-300 dark:hover:bg-blue-400/[.15]"
+                        >
+                          <ShieldCheck size={15} strokeWidth={2.2} />
+                          <span className="min-w-0 flex-1">
+                            <span className="block">{t("menuAdmin")}</span>
+                            {/* The proxy sends an admin without an
+                                authenticator to set one up; saying so here
+                                makes that redirect unsurprising. */}
+                            {!session?.user?.isTwoFactorEnabled && (
+                              <span className="mt-0.5 block text-[10.5px] font-medium text-blue-700/70 dark:text-blue-300/70">
+                                {t("menuAdmin2fa")}
+                              </span>
+                            )}
+                          </span>
+                          <span className="rounded-full border border-blue-700/25 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-[.08em] dark:border-blue-300/30">
+                            {t("menuAdminBadge")}
+                          </span>
+                        </Link>
+                      </div>
+                    )}
 
                     <div className="py-1">
                       {MENU_ITEMS.map(({ key, href, icon: Icon }) => (
@@ -262,6 +307,25 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
               {t("signIn")}
             </button>
           )}
+          {/* Signed out it still goes to /profile/favorites, which sends a
+              guest to sign in and back. */}
+          <Link
+            href="/profile/favorites"
+            aria-label={favoritesCount > 0 ? t("favoritesAriaCount", { count: favoritesCount }) : t("favoritesAria")}
+            title={t("favoritesAria")}
+            data-header-favorites
+            className="relative flex h-[38px] w-[38px] flex-none items-center justify-center rounded-full border border-slate-900/[.12] bg-white text-slate-700 transition-colors hover:border-slate-900/30 hover:text-primary dark:border-hairline-strong dark:bg-surface dark:text-slate-200 dark:hover:border-white/30 dark:hover:text-blue-300"
+          >
+            <Heart size={16} strokeWidth={2} fill={favoritesCount > 0 ? "currentColor" : "none"} className={favoritesCount > 0 ? "text-primary dark:text-blue-300" : ""} />
+            {favoritesCount > 0 && (
+              <span
+                data-favorites-badge
+                className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-blue-700 px-[5px] text-[10.5px] font-semibold text-white dark:border-canvas"
+              >
+                {favoritesCount > 99 ? "99+" : favoritesCount}
+              </span>
+            )}
+          </Link>
           <Link
             href="/cart"
             aria-label="Open cart"

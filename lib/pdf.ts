@@ -73,22 +73,10 @@ export function registerFonts(): boolean {
   return true;
 }
 
-/**
- * Everything the seller block prints. Env-overridable so staging isn't billed
- * as production. Shared with the compliance report so one letterhead serves
- * every document this shop issues.
- */
-export function sellerDetails() {
-  return {
-    name: process.env.INVOICE_SELLER_NAME?.trim() || "My Energy",
-    addressLines: (process.env.INVOICE_SELLER_ADDRESS?.trim() || "")
-      .split("|")
-      .map((l) => l.trim())
-      .filter(Boolean),
-    vatId: process.env.INVOICE_SELLER_VAT_ID?.trim() || undefined,
-    email: process.env.INVOICE_SELLER_EMAIL?.trim() || process.env.SMTP_USER?.trim() || undefined,
-  };
-}
+// Moved to lib/seller so emails can use it without this module's PDF
+// renderer; re-exported for the existing PDF callers.
+import { sellerDetails } from "@/lib/seller";
+export { sellerDetails };
 
 /** Fixed locale: an invoice is an archival record, not a localized view. */
 const DATE_FMT = new Intl.DateTimeFormat("en-IE", { day: "2-digit", month: "short", year: "numeric" });

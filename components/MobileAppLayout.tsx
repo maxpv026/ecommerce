@@ -1,8 +1,10 @@
 "use client";
 
-import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
 import { cartLineFromOrderItem } from "@/lib/store/cart";
+import ProductCard from "./ProductCard";
+import { useFavorite } from "@/lib/hooks/useFavorite";
+import StockNotifyModal from "./StockNotifyModal";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations, useFormatter } from "next-intl";
@@ -19,7 +21,6 @@ import {
   FileText,
   Lock,
   PackageSearch,
-  Plus,
   RefreshCw,
   ScanBarcode,
   Leaf,
@@ -45,6 +46,7 @@ const TAG_KEY: Record<MarketAlertTag, string> = {
 };
 import ProductScanSheet from "./ProductScanSheet";
 import ThemeToggle from "./ThemeToggle";
+import { Avatar } from "./AvatarUploader";
 import HeaderLanguageSwitcher from "./HeaderLanguageSwitcher";
 
 const BarcodeScannerModal = dynamic(() => import("./BarcodeScannerModal"), { ssr: false });
@@ -66,7 +68,6 @@ const QUICK_ACTION_TINTS: Record<string, string> = {
 };
 
 // Reason pill derived from real product facts (no invented copy).
-const REC_TINTS: Record<string, string> = { A2L: "#34d399", A1: "#22d3ee" };
 
 interface MobileAppLayoutProps {
   featuredProducts: StoreProduct[];
@@ -93,13 +94,14 @@ export default function MobileAppLayout({
   const [scannerOpen, setScannerOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
-  const [favorited, setFavorited] = useState(false);
 
   const [aiQuery, setAiQuery] = useState("");
   const [aiState, setAiState] = useState<"idle" | "thinking" | "done" | "error">("idle");
   const [aiAnswer, setAiAnswer] = useState("");
   const [tickerOpen, setTickerOpen] = useState(false);
   const [reordered, setReordered] = useState<string[]>([]);
+  // Product whose back-in-stock dialog is open.
+  const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
 
   const addItem = useCartStore((s) => s.addItem);
   const cartItems = useCartStore((s) => s.items);
@@ -118,6 +120,10 @@ export default function MobileAppLayout({
   const subtitleParts = [session?.user?.companyName, jobTitle].filter(Boolean);
 
   const scannedSource = featuredProducts[0];
+  // The scan sheet's heart is the real favourite now (it was local state that
+  // saved nothing). No product → an id that matches nothing; the sheet can't
+  // open without one anyway.
+  const scannedFavorite = useFavorite(scannedSource?.id ?? "", scannedSource ? `${scannedSource.name} · ${scannedSource.weightLabel}` : "");
   const SCANNED_PRODUCT = scannedSource
     ? { name: scannedSource.name, variant: scannedSource.weightLabel, price: formatEur(scannedSource.cylinderPrice) }
     : { name: "", variant: "", price: "" };
@@ -125,7 +131,6 @@ export default function MobileAppLayout({
   const handleScanSuccess = () => {
     setScannerOpen(false);
     setAddedToCart(false);
-    setFavorited(false);
     setSheetOpen(true);
   };
 
@@ -208,13 +213,13 @@ export default function MobileAppLayout({
   const marquee = [...marketAlerts, ...marketAlerts];
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-clip bg-white dark:bg-canvas">
+    <div className="relative min-h-screen w-full overflow-x-clip bg-canvas">
       {/* ambient orb field from the design */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-[170px] left-[-30%] h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-[.32] blur-[92px] [animation:hc-breathe_10s_ease-in-out_infinite]" />
-        <div className="absolute -top-[120px] right-[-28%] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-[.28] blur-[88px] [animation:hc-breathe_13s_ease-in-out_infinite_reverse]" />
-        <div className="absolute left-[6%] top-[330px] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-20 blur-[88px] [animation:hc-breathe_15s_ease-in-out_infinite]" />
-        <div className="absolute -bottom-[120px] right-[-18%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,#34d399,rgba(52,211,153,0)_68%)] opacity-[.18] blur-[84px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -top-[170px] left-[-30%] h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-[.32] blur-[92px] [animation:hc-breathe_10s_ease-in-out_infinite]" />
+        <div className="absolute -top-[120px] right-[-28%] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.28] blur-[88px] [animation:hc-breathe_13s_ease-in-out_infinite_reverse]" />
+        <div className="absolute left-[6%] top-[330px] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-20 blur-[88px] [animation:hc-breathe_15s_ease-in-out_infinite]" />
+        <div className="absolute -bottom-[120px] right-[-18%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,var(--orb-emerald),rgba(52,211,153,0)_68%)] opacity-[.18] blur-[84px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
       </div>
 
       {/* ── sticky glass header: logo · language · theme · bell · avatar ── */}
@@ -253,10 +258,10 @@ export default function MobileAppLayout({
               <Link
                 href="/profile"
                 aria-label={tm("profileAria")}
-                className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[linear-gradient(140deg,#2563eb,#7c3aed)] text-[12.5px] font-semibold text-white"
+                className="flex rounded-full"
                 data-header-avatar
               >
-                {initials || "•"}
+                <Avatar avatarUrl={session?.user?.image ?? null} initials={initials || "•"} size={38} className="text-[12.5px]" />
               </Link>
             ) : (
               <Link
@@ -279,7 +284,7 @@ export default function MobileAppLayout({
           className="px-[18px] pt-3.5"
         >
           <div className="relative overflow-hidden rounded-[28px] border border-slate-900/[.12] bg-white/70 p-[22px] shadow-[0_30px_66px_-44px_rgba(2,4,10,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline-strong dark:bg-glass">
-            <span className="pointer-events-none absolute -top-[110%] right-[-30%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#2563eb,transparent_68%)] opacity-30 blur-[70px]" />
+            <span className="pointer-events-none absolute -top-[110%] right-[-30%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_68%)] opacity-30 blur-[70px]" />
 
             <div className="relative">
               <div className="mb-[9px] text-[10.5px] uppercase tracking-[.09em] text-slate-400 dark:text-ink-muted" suppressHydrationWarning>
@@ -378,7 +383,7 @@ export default function MobileAppLayout({
             style={
               thinking
                 ? {
-                    background: "linear-gradient(90deg,#2563eb,#22d3ee,#7c3aed,#2563eb)",
+                    background: "linear-gradient(90deg,var(--glow-600),#22d3ee,#7c3aed,var(--glow-600))",
                     backgroundSize: "300% 100%",
                     animation: "hc-sweep 2.4s linear infinite",
                   }
@@ -390,7 +395,7 @@ export default function MobileAppLayout({
                 <motion.span
                   animate={thinking ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                   transition={thinking ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
-                  className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,#2563eb,#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.8)]"
+                  className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.8)]"
                 >
                   <Sparkles size={18} strokeWidth={2} className="text-white" />
                 </motion.span>
@@ -408,7 +413,7 @@ export default function MobileAppLayout({
                   onClick={() => runAi()}
                   aria-label={tm("aiSendAria")}
                   data-ai-send
-                  className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-blue-700 shadow-[0_12px_24px_-12px_#2563eb] transition-colors hover:bg-blue-800"
+                  className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-blue-700 shadow-[0_12px_24px_-12px_var(--glow-600)] transition-colors hover:bg-blue-800"
                 >
                   <Send size={15} strokeWidth={2} className="text-white" />
                 </motion.button>
@@ -486,72 +491,21 @@ export default function MobileAppLayout({
               {t("seeAll")}
             </Link>
           </div>
-          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-[18px] pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {featuredProducts.map((product) => {
-              const tint = REC_TINTS[product.gwpClass] ?? "#60a5fa";
-              const inCart = cartItems.some((i) => i.sku === product.sku);
-              return (
-                <div
-                  key={product.id}
-                  data-rec-card={product.sku}
-                  className="relative w-[186px] flex-none snap-start overflow-hidden rounded-[22px] border border-slate-900/[.08] bg-white/70 shadow-[0_14px_34px_-30px_rgba(2,4,10,.8)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
-                >
-                  <span
-                    className="pointer-events-none absolute -top-[56%] right-[-26%] h-[220px] w-[220px] rounded-full opacity-[.16] blur-[58px]"
-                    style={{ background: `radial-gradient(circle,${tint},transparent 68%)` }}
-                  />
-                  <Link href={`/products/${product.id}`} className="block">
-                    <span className="relative m-[11px] mb-0 flex h-[116px] items-center justify-center overflow-hidden rounded-2xl bg-slate-100 dark:bg-surface-3">
-                      <span className="block h-[68px] w-[34px] rounded-t-[18px] rounded-b-[5px] border border-dashed border-slate-900/[.22] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.26] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))]" />
-                      <span
-                        className="absolute left-[9px] top-[9px] inline-flex items-center rounded-full border px-[9px] py-1 text-[9.5px] font-semibold"
-                        style={{ background: `${tint}26`, borderColor: `${tint}55`, color: tint }}
-                      >
-                        {recReason(product)}
-                      </span>
-                    </span>
-                    <span className="relative block p-[13px] pb-0">
-                      <span className="block text-[13px] font-semibold tracking-[-.025em]">{product.name}</span>
-                      <span className="mt-[3px] block text-[10.5px] text-slate-400 dark:text-ink-muted">
-                        {product.weightLabel}
-                        {product.gwp !== null ? ` · GWP ${product.gwp}` : ` · ${product.gwpClass}`}
-                      </span>
-                    </span>
-                  </Link>
-                  <span className="relative flex items-center justify-between gap-2 p-[13px] pt-3">
-                    <span className="min-w-0">
-                      <span className="flex items-baseline gap-1">
-                        <span className="text-[14.5px] font-semibold tracking-[-.03em]">
-                          {product.pricePerKg > 0 ? formatEur(product.pricePerKg) : tp("priceOnRequest")}
-                        </span>
-                        {product.pricedPerKg && product.pricePerKg > 0 && (
-                          <span className="text-[10px] font-semibold text-slate-400 dark:text-ink-muted">{tp("perKgSuffix")}</span>
-                        )}
-                      </span>
-                      {product.pricedPerKg && product.pricePerKg > 0 && (
-                        <span className="block text-[9.5px] leading-[1.4] text-slate-400 dark:text-ink-muted" data-cylinder-price>
-                          {tp("cylinderPriceNote", { weight: formatKg(product.weightKg), amount: formatEur(product.cylinderPrice) })}
-                        </span>
-                      )}
-                    </span>
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => addProduct(product)}
-                      disabled={!isPurchasable(product)}
-                      aria-label={tm("addToCartAria", { name: product.name })}
-                      className={`flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                        inCart
-                          ? "bg-green-600 shadow-[0_12px_24px_-12px_#16a34a]"
-                          : "bg-blue-700 shadow-[0_12px_24px_-12px_#2563eb] hover:bg-blue-800"
-                      }`}
-                    >
-                      {inCart ? <Check size={15} strokeWidth={2.4} /> : <Plus size={15} strokeWidth={2.4} />}
-                    </motion.button>
-                  </span>
-                </div>
-              );
-            })}
+          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-[18px] pb-6 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {featuredProducts.map((product) => (
+              <div key={product.id} data-rec-card={product.sku} className="flex w-[186px] flex-none snap-start [&>*]:w-full">
+                <ProductCard
+                  product={product}
+                  variant="compact"
+                  badgeLabel={recReason(product)}
+                  inCart={cartItems.some((i) => i.sku === product.sku)}
+                  onAddToCart={addProduct}
+                  onNotify={setNotifyFor}
+                  imageSizes="170px"
+                  animateIn={false}
+                />
+              </div>
+            ))}
           </div>
         </motion.div>
 
@@ -567,7 +521,7 @@ export default function MobileAppLayout({
               data-compliance-card
               className="relative overflow-hidden rounded-3xl border border-[rgba(16,185,129,.26)] bg-white/70 p-[18px] shadow-[0_0_28px_-16px_#34d399] backdrop-blur-xl backdrop-saturate-150 dark:bg-glass"
             >
-              <span className="pointer-events-none absolute -bottom-[140%] left-[-24%] h-60 w-60 rounded-full bg-[radial-gradient(circle,#34d399,transparent_68%)] opacity-[.22] blur-[60px]" />
+              <span className="pointer-events-none absolute -bottom-[140%] left-[-24%] h-60 w-60 rounded-full bg-[radial-gradient(circle,var(--orb-emerald),transparent_68%)] opacity-[.22] blur-[60px]" />
               <div className="relative flex items-start gap-3">
                 <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[14px] border border-[rgba(16,185,129,.32)] bg-[rgba(16,185,129,.16)]">
                   <ShieldCheck size={18} strokeWidth={2} className="text-[#047857] dark:text-[#34d399]" />
@@ -776,8 +730,15 @@ export default function MobileAppLayout({
         product={SCANNED_PRODUCT}
         addedToCart={addedToCart}
         onAddToCart={handleAddScannedToCart}
-        favorited={favorited}
-        onToggleFavorite={() => setFavorited((v) => !v)}
+        favorited={scannedFavorite.active}
+        onToggleFavorite={() => void (scannedSource && scannedFavorite.toggle())}
+      />
+
+      <StockNotifyModal
+        isOpen={notifyFor !== null}
+        onClose={() => setNotifyFor(null)}
+        productId={notifyFor?.id ?? ""}
+        productName={notifyFor?.name ?? ""}
       />
     </div>
   );

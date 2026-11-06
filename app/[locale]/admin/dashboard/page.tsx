@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Link } from "@/i18n/navigation";
 import { guardAdmin } from "@/lib/admin/guardAdmin";
 import StatCardRow from "@/components/admin/analytics/StatCardRow";
 import RevenueChart from "@/components/admin/analytics/RevenueChart";
@@ -49,20 +48,6 @@ export default async function AdminAnalyticsPage({
             Dashboard
           </h1>
         </div>
-        <nav className="flex items-center gap-2">
-          <Link
-            href="/admin"
-            className="inline-flex min-h-[38px] items-center rounded-[12px] border border-slate-900/[.12] px-4 text-[13px] font-semibold transition-colors hover:bg-slate-900/[.04] dark:border-white/[.14] dark:hover:bg-white/[.06]"
-          >
-            Vault
-          </Link>
-          <Link
-            href="/admin/inventory"
-            className="inline-flex min-h-[38px] items-center rounded-[12px] border border-slate-900/[.12] px-4 text-[13px] font-semibold transition-colors hover:bg-slate-900/[.04] dark:border-white/[.14] dark:hover:bg-white/[.06]"
-          >
-            Inventory
-          </Link>
-        </nav>
       </header>
 
       <div className="flex flex-col gap-5">

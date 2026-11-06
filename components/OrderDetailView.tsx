@@ -211,7 +211,7 @@ export default function OrderDetailView({ order, bank }: OrderDetailViewProps) {
         >
           <span
             aria-hidden
-            className="pointer-events-none absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,#2563eb,transparent_70%)] opacity-[.18] blur-[60px] print:hidden dark:opacity-[.26]"
+            className="pointer-events-none absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_70%)] opacity-[.18] blur-[60px] print:hidden dark:opacity-[.26]"
           />
           <div className="relative">
             <div className="flex flex-wrap items-center gap-2">

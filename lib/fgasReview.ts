@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { isFounderEmail } from "@/lib/rbac";
 import { escapeMarkdown } from "@/lib/telegram";
+import { certificateHref } from "@/lib/fgasStorage";
 import type { FgasExtraction } from "@/lib/fgas";
 import type { FGasStatus } from "@/lib/generated/prisma/enums";
 
@@ -127,7 +128,8 @@ export async function listPendingReviews(): Promise<PendingReview[]> {
     companyName: row.companyName,
     status: row.fGasStatus,
     submittedAt: row.fGasSubmittedAt?.toISOString() ?? null,
-    documentUrl: row.fGasDocumentUrl,
+    // The secure route, not the storage location (lib/fgasStorage).
+    documentUrl: row.fGasDocumentUrl ? certificateHref(row.id) : null,
     extracted: (row.fGasExtractedData as FgasExtraction | null) ?? null,
     rejectionReason: row.fGasRejectionReason,
     decidedByAi: row.fGasReviewedBy === AI_REVIEWER_ID,

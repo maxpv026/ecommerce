@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { BellRing, Loader2, Package, PackageX } from "lucide-react";
@@ -36,7 +36,7 @@ export interface AdminInventoryRow {
 const CARD =
   "rounded-[20px] border border-slate-900/[.07] bg-white/70 backdrop-blur-xl backdrop-saturate-150 dark:border-white/[.08] dark:bg-white/[.04]";
 
-export default function AdminInventoryTable({ rows }: { rows: AdminInventoryRow[] }) {
+export default function AdminInventoryTable({ rows, children }: { rows: AdminInventoryRow[]; children?: ReactNode }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   // Which row is mid-flight — one at a time, so the spinner sits where it belongs.
@@ -219,6 +219,8 @@ export default function AdminInventoryTable({ rows }: { rows: AdminInventoryRow[
             );
           })}
         </div>
+
+        {children}
       </div>
     </div>
   );

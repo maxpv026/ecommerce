@@ -40,7 +40,7 @@ export default function FgasGateAlert({ gate, compact = false, onLogIn, onUpload
     : "border-amber-500/30 bg-amber-500/10 shadow-[0_0_38px_-12px_rgba(245,158,11,.7)]";
   const aura = guest ? "#60a5fa" : "#fbbf24";
   const tile = guest
-    ? "bg-[linear-gradient(140deg,#2563eb,#7c3aed)] shadow-[0_10px_22px_-10px_rgba(37,99,235,.85)]"
+    ? "bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_10px_22px_-10px_rgba(37,99,235,.85)]"
     : "bg-[linear-gradient(140deg,#f59e0b,#f97316)] shadow-[0_10px_22px_-10px_rgba(245,158,11,.85)]";
   const Icon = guest ? Lock : ShieldAlert;
 
@@ -94,7 +94,7 @@ export default function FgasGateAlert({ gate, compact = false, onLogIn, onUpload
                   whileTap={{ scale: 0.97 }}
                   onClick={onLogIn}
                   data-fgas-login
-                  className={`${btnBase} bg-blue-700 text-white shadow-[0_14px_28px_-14px_#1d4ed8] hover:bg-blue-800 hover:shadow-[0_18px_34px_-14px_#1d4ed8,0_0_24px_-8px_#1d4ed8]`}
+                  className={`${btnBase} bg-blue-700 text-white shadow-[0_14px_28px_-14px_var(--glow-700)] hover:bg-blue-800 hover:shadow-[0_18px_34px_-14px_var(--glow-700),0_0_24px_-8px_var(--glow-700)]`}
                 >
                   <LogIn size={14} strokeWidth={2.2} />
                   {t("fgasLogIn")}

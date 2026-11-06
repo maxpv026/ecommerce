@@ -130,7 +130,8 @@ export default function CompliancePage({
 }) {
   const t = useTranslations("Compliance");
   const tAnalytics = useTranslations("Analytics");
-  const { eur, num, plain } = formatters(useLocale());
+  const locale = useLocale();
+  const { eur, num, plain } = formatters(locale);
 
   // Lowercase, for interpolation mid-sentence ("Shares of year to date CO2e").
   // The button labels are separate keys because several languages capitalise
@@ -365,6 +366,77 @@ export default function CompliancePage({
                   })
                 : t("recordComplete", { count: record?.lines ?? 0 })}
             </p>
+          )}
+
+          {/* ── Purchase log ── every supplied line, the same list the PDF prints */}
+          {data.summary.ledger.length > 0 && (
+            <section className="mt-10" data-compliance-ledger>
+              <div className="mb-3 flex items-baseline justify-between">
+                <h2 className="m-0 text-[15px] font-semibold tracking-[-.02em]">{t("ledgerTitle")}</h2>
+                <span className="text-[11.5px] text-slate-400 dark:text-slate-500">{t("ledgerHint", { period: periodLabel })}</span>
+              </div>
+              <div className="overflow-x-auto rounded-[20px] border border-slate-900/[.08] dark:border-hairline">
+                <table className="w-full min-w-[760px] border-collapse text-left">
+                  <thead>
+                    <tr className="bg-[#0B1020] text-[10px] uppercase tracking-[.09em] text-slate-400">
+                      <th className="px-5 py-3 font-semibold">{t("colDate")}</th>
+                      <th className="px-3 py-3 font-semibold">{t("colOrder")}</th>
+                      <th className="px-3 py-3 font-semibold">{t("colProduct")}</th>
+                      <th className="px-3 py-3 text-right font-semibold">{t("colQty")}</th>
+                      <th className="px-3 py-3 text-right font-semibold">{t("colNetKg")}</th>
+                      <th className="px-3 py-3 text-right font-semibold">{t("colGwp")}</th>
+                      <th className="px-5 py-3 text-right font-semibold normal-case">{t("unitTonnesCo2e")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.summary.ledger.map((line, i) => (
+                      <tr key={`${line.orderId}-${line.sku}-${i}`} className="border-t border-slate-900/[.05] text-[13px] dark:border-white/[.05]" data-ledger-line>
+                        <td className="whitespace-nowrap px-5 py-3 tabular-nums text-slate-600 dark:text-slate-300">
+                          {new Date(line.date).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" })}
+                        </td>
+                        <td className="px-3 py-3">
+                          <Link href={`/profile/orders/${line.orderId}`} className="font-mono text-[12px] text-blue-700 hover:underline dark:text-blue-400">
+                            {line.orderNumber}
+                          </Link>
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="block font-medium">{line.name}</span>
+                          <span className="block font-mono text-[11px] text-slate-400">{line.sku}</span>
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums">{plain.format(line.quantity)}</td>
+                        <td className="px-3 py-3 text-right tabular-nums" title={t("ledgerUnitMass", { kg: num(line.unitMassKg) })}>
+                          {num(line.massKg)}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums text-slate-500 dark:text-slate-400">
+                          {line.gwp === null ? "—" : plain.format(line.gwp)}
+                          {line.estimated && <sup title={t("ledgerEstimatedTitle")}>*</sup>}
+                        </td>
+                        <td className="px-5 py-3 text-right font-semibold tabular-nums">
+                          {line.gwp === null ? <span className="text-[11.5px] font-medium text-amber-700 dark:text-amber-500">{t("ledgerNotCosted")}</span> : num(line.co2eTonnes, 3)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    {/* Reconciles with the headline card above — same period, same lines. */}
+                    <tr className="border-t border-slate-900/[.12] bg-slate-50/80 text-[13px] font-semibold dark:border-white/[.12] dark:bg-white/[.02]">
+                      <td className="px-5 py-3" colSpan={4}>{t("ledgerTotal")}</td>
+                      <td className="px-3 py-3 text-right tabular-nums" data-ledger-total-kg>
+                        {num(data.summary.ledger.reduce((sum, l) => sum + l.massKg, 0))}
+                      </td>
+                      <td />
+                      <td className="px-5 py-3 text-right tabular-nums" data-ledger-total-t>
+                        {num(totals?.co2eTonnes ?? 0, 3)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p className="m-0 mt-2.5 text-[11.5px] leading-[1.55] text-slate-400 dark:text-slate-500">
+                {t("ledgerFormula")}
+                {data.summary.ledger.some((l) => l.estimated) && <> {t("ledgerEstimatedNote")}</>}
+              </p>
+            </section>
           )}
 
           {/* ── Action centre ── */}

@@ -46,7 +46,7 @@ export default function MobileAuthLayout() {
     handleGoogle,
     resendCode,
     goBackToCredentials,
-  } = useAuthFlow(callbackUrl, { initialMode, initialEmail });
+  } = useAuthFlow(callbackUrl, { initialMode, initialEmail, initialErrorCode: searchParams.get("error"), pendingGoogleTwoFactor: searchParams.get("step") === "google-2fa" });
 
   const isSignIn = mode === "signin";
 
@@ -54,8 +54,8 @@ export default function MobileAuthLayout() {
     <div className="relative flex w-full min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 opacity-40 [mask-image:linear-gradient(to_bottom,#000_0%,#000_70%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_70%,transparent_100%)]">
-          <div className="absolute -left-[130px] -top-[190px] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] blur-[80px] [animation:hc-float_22s_ease-in-out_infinite]" />
-          <div className="absolute -right-[110px] -top-[160px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] blur-[80px] [animation:hc-float_28s_ease-in-out_infinite_reverse]" />
+          <div className="absolute -left-[130px] -top-[190px] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] blur-[80px] [animation:hc-float_22s_ease-in-out_infinite]" />
+          <div className="absolute -right-[110px] -top-[160px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] blur-[80px] [animation:hc-float_28s_ease-in-out_infinite_reverse]" />
         </div>
 
         <div className="relative flex flex-col items-center px-6 pb-8 pt-[calc(4rem+env(safe-area-inset-top))] text-center">

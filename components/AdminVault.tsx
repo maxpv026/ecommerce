@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Package, ShieldCheck, Users } from "lucide-react";
-import Header from "./Header";
-import AuthModal from "./AuthModal";
 
 interface AdminVaultProps {
   adminName: string;
@@ -16,17 +13,14 @@ interface AdminVaultProps {
 
 export default function AdminVault({ adminName, adminEmail, userCount, orderCount }: AdminVaultProps) {
   const t = useTranslations("Admin");
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
-      <Header
-        onSignInClick={() => setIsAuthModalOpen(true)}
-      />
-
+    <div className="relative flex-1 overflow-hidden">
+      {/* No storefront header: the admin shell (app/[locale]/admin/layout)
+          carries the navigation, including the way back to the store. */}
       <section className="relative mx-auto max-w-[760px] px-6 pb-[110px] pt-16 md:px-8">
-        <div className="pointer-events-none absolute -left-[8%] top-[4%] aspect-square w-[64%] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-[.22] blur-[110px] [animation:hc-float_24s_ease-in-out_infinite] dark:opacity-[.34]" />
-        <div className="pointer-events-none absolute -right-[10%] bottom-[8%] aspect-square w-[58%] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-[.2] blur-[110px] [animation:hc-float_30s_ease-in-out_infinite_reverse] dark:opacity-[.3]" />
+        <div className="pointer-events-none absolute -left-[8%] top-[4%] aspect-square w-[64%] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-[.22] blur-[110px] [animation:hc-float_24s_ease-in-out_infinite] dark:opacity-[.34]" />
+        <div className="pointer-events-none absolute -right-[10%] bottom-[8%] aspect-square w-[58%] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-[.2] blur-[110px] [animation:hc-float_30s_ease-in-out_infinite_reverse] dark:opacity-[.3]" />
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -78,8 +72,6 @@ export default function AdminVault({ adminName, adminEmail, userCount, orderCoun
           </div>
         </motion.div>
       </section>
-
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }

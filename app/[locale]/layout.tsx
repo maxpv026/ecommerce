@@ -8,6 +8,7 @@ import MobileAppShell from "@/components/MobileAppShell";
 import { CartCountProvider } from "@/components/CartCountProvider";
 import AuthProvider from "@/components/AuthProvider";
 import ToastProvider from "@/components/ToastProvider";
+import ThemeSync from "@/components/ThemeSync";
 import { routing } from "@/i18n/routing";
 import "./globals.css";
 
@@ -27,8 +28,9 @@ export const viewport: Viewport = {
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
+    // "light" | "dark" | "system" (or absent = system). Keep in step with lib/theme.ts.
     var stored = localStorage.getItem("halocore-theme");
-    var isDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var isDark = stored === "dark" || (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
     if (isDark) document.documentElement.classList.add("dark");
   } catch (e) {}
 })();
@@ -74,6 +76,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
+            <ThemeSync />
             <CartCountProvider>
               <MobileAppShell>{children}</MobileAppShell>
               <Footer />

@@ -42,15 +42,34 @@ export interface FgasVerification {
   verifiedAt: string;
 }
 
+/**
+ * The quote the basket was loaded from. While set, the lines carry the
+ * quote's frozen prices and every total is shown from them (not from the
+ * live catalog), and checkout sends `quoteId` so the server charges them.
+ * Any edit to the basket drops it: the quote covers exactly its own lines,
+ * and an edited basket is an ordinary one at today's prices.
+ */
+export interface CartQuote {
+  id: string;
+  quoteNumber: string;
+  /** ISO date-time */
+  validUntil: string;
+}
+
 interface CartState {
   items: CartLine[];
   fgasVerification: FgasVerification | null;
+  quote: CartQuote | null;
   addItem: (line: Omit<CartLine, "qty">, qty?: number) => void;
   increment: (sku: string) => void;
   decrement: (sku: string) => void;
   removeItem: (sku: string) => void;
   clear: () => void;
   setFgasVerification: (verification: FgasVerification | null) => void;
+  /** Replaces the basket with a quote's lines at its prices. */
+  loadQuote: (quote: CartQuote, lines: CartLine[]) => void;
+  /** Back to an ordinary basket (lines kept, live prices). */
+  dropQuote: () => void;
 }
 
 const MAX_QTY = 99;
@@ -60,22 +79,25 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       fgasVerification: null,
+      quote: null,
 
       addItem: (line, qty = 1) =>
         set((state) => {
           const existing = state.items.find((i) => i.sku === line.sku);
           if (existing) {
             return {
+              quote: null,
               items: state.items.map((i) =>
                 i.sku === line.sku ? { ...i, qty: Math.min(MAX_QTY, i.qty + qty) } : i
               ),
             };
           }
-          return { items: [...state.items, { ...line, qty: Math.min(MAX_QTY, qty) }] };
+          return { quote: null, items: [...state.items, { ...line, qty: Math.min(MAX_QTY, qty) }] };
         }),
 
       increment: (sku) =>
         set((state) => ({
+          quote: null,
           items: state.items.map((i) =>
             i.sku === sku ? { ...i, qty: Math.min(MAX_QTY, i.qty + 1) } : i
           ),
@@ -83,18 +105,25 @@ export const useCartStore = create<CartState>()(
 
       // Floor of 1 — removing a line is an explicit action, not qty 0.
       decrement: (sku) =>
-        set((state) => ({
-          items: state.items.map((i) => (i.sku === sku ? { ...i, qty: Math.max(1, i.qty - 1) } : i)),
-        })),
+        set((state) => {
+          const line = state.items.find((i) => i.sku === sku);
+          // At the floor nothing changes, so the quote still matches the basket.
+          if (!line || line.qty <= 1) return state;
+          return { quote: null, items: state.items.map((i) => (i.sku === sku ? { ...i, qty: i.qty - 1 } : i)) };
+        }),
 
       removeItem: (sku) =>
-        set((state) => ({ items: state.items.filter((i) => i.sku !== sku) })),
+        set((state) => ({ quote: null, items: state.items.filter((i) => i.sku !== sku) })),
 
       // Clearing lines deliberately keeps the certificate: it belongs to the
       // buyer, not to a particular basket.
-      clear: () => set({ items: [] }),
+      clear: () => set({ items: [], quote: null }),
 
       setFgasVerification: (verification) => set({ fgasVerification: verification }),
+
+      loadQuote: (quote, lines) => set({ quote, items: lines.map((l) => ({ ...l, qty: Math.min(MAX_QTY, l.qty) })) }),
+
+      dropQuote: () => set({ quote: null }),
     }),
     {
       name: "halocore-cart",

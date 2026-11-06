@@ -130,5 +130,9 @@ export const config = {
     "/api/auth/:path*",
     "/api/waitlist",
     "/api/verify-fgas",
+    // Support chat + F-Gas consultant: rate-limited (a model call each).
+    "/api/chat",
+    "/api/chat/:path*",
+    "/api/chat-fgas",
   ],
 };

@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/smart-restock",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/broadcasts",
+      "schedule": "30 7 * * *"
+    },
+    {
+      "path": "/api/cron/chat-cleanup",
+      "schedule": "0 * * * *"
     }
   ]
 }

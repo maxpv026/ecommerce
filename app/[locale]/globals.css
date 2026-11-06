@@ -3,8 +3,63 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  /* ── Premium light theme ──────────────────────────────────────────────
+     Canvas is a cool off-white; cards, popovers and inputs stay pure white,
+     so elevation comes from the surface itself rather than heavy shadow.
+     Ink is graphite slate, never #000. */
+  --background: #f7f8fa; /* hsl(220 23% 97%) — page canvas */
+  --foreground: #0f172a; /* hsl(222 47% 11%) — headings, primary text */
+
+  /* Semantic tokens (bg-primary, text-muted-foreground, border-border,
+     shadow-card…). New code should reach for these; the existing UI is
+     re-tinted through the brand scale below. */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: var(--brand-700); /* sapphire */
+  --primary-hover: var(--brand-800);
+  --primary-foreground: #ffffff;
+  --secondary: #f1f4f8; /* hsl(216 33% 96%) */
+  --secondary-foreground: #1e293b; /* hsl(217 33% 17%) */
+  --muted: #f1f4f8;
+  --muted-foreground: #64748b; /* hsl(215 16% 47%) — 4.5:1 on canvas */
+  --accent: var(--brand-50);
+  --accent-foreground: var(--brand-800);
+  --border: rgba(15, 23, 42, 0.08); /* ≈ slate-200 at low opacity */
+  --input: rgba(15, 23, 42, 0.12);
+  --ring: color-mix(in oklab, var(--brand-600) 35%, transparent);
+  --shadow-color: 222 47% 11%; /* the ink hue, so shadows tint instead of grey out */
+  --elevation-card: 0 1px 2px hsl(var(--shadow-color) / 0.04), 0 4px 12px -2px hsl(var(--shadow-color) / 0.05),
+    0 12px 32px -8px hsl(var(--shadow-color) / 0.06);
+  --elevation-popover: 0 2px 4px hsl(var(--shadow-color) / 0.04), 0 12px 28px -6px hsl(var(--shadow-color) / 0.1),
+    0 28px 56px -16px hsl(var(--shadow-color) / 0.12);
+
+  /* Brand scale: a sapphire/cobalt ramp, hue 221–227°, chroma held back
+     from Tailwind's electric blue. Mapped onto Tailwind's blue-* below, so
+     every existing bg-blue-700 / text-blue-700 / ring-blue-600 picks it up
+     in light mode. White on 700 is ≈9.0:1, on 600 ≈6.7:1 (AA needs 4.5). */
+  --brand-50: #f3f6fc; /* hsl(222 60% 97%) */
+  --brand-100: #e2e8f8; /* hsl(223 62% 93%) */
+  --brand-200: #c7d3f0; /* hsl(222 58% 86%) */
+  --brand-300: #a0b5e3; /* hsl(221 55% 76%) */
+  --brand-400: #6e8ccf; /* hsl(221 50% 62%) */
+  --brand-500: #476ac2; /* hsl(223 50% 52%) */
+  --brand-600: #3056b5; /* hsl(223 58% 45%) */
+  --brand-700: #22429b; /* hsl(224 64% 37%) */
+  --brand-800: #1c347d; /* hsl(225 64% 30%) */
+  --brand-900: #17285e; /* hsl(226 60% 23%) */
+  --brand-950: #101838; /* hsl(227 56% 14%) */
+  /* Glow colours used inside arbitrary shadows and ambient gradients. */
+  --glow-600: var(--brand-600);
+  --glow-700: var(--brand-700);
+  /* Ambient background orbs (the large blurred radial glows). Mixed down
+     in light mode: on a pale canvas full-strength colour reads as a stain,
+     where the premium look wants a hint of atmosphere. */
+  --orb-blue: color-mix(in oklab, var(--brand-600) 55%, transparent);
+  --orb-violet: color-mix(in oklab, #7c3aed 45%, transparent);
+  --orb-cyan: color-mix(in oklab, #22d3ee 55%, transparent);
+  --orb-emerald: color-mix(in oklab, #34d399 55%, transparent);
   /* Idle-state colors for JS-driven controls (focus rings, selection
      borders) that read these via inline style, since Tailwind's `dark:`
      variant can't reach into a style attribute. */
@@ -35,6 +90,45 @@
      generic slate-950 background/foreground. */
   --background: #090a0c;
   --foreground: #f8f9fa;
+
+  --card: #141518;
+  --card-foreground: #f8f9fa;
+  --popover: #141518;
+  --popover-foreground: #f8f9fa;
+  --primary: var(--brand-700);
+  --primary-hover: var(--brand-800);
+  --primary-foreground: #ffffff;
+  --secondary: #1b1c20;
+  --secondary-foreground: #f8f9fa;
+  --muted: #1b1c20;
+  --muted-foreground: #a1a1aa;
+  --accent: rgba(59, 130, 246, 0.12);
+  --accent-foreground: #93c5fd;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: rgba(96, 165, 250, 0.45);
+  --shadow-color: 0 0% 0%;
+  --elevation-card: 0 1px 2px hsl(0 0% 0% / 0.3), 0 12px 32px -8px hsl(0 0% 0% / 0.45);
+  --elevation-popover: 0 12px 28px -6px hsl(0 0% 0% / 0.5), 0 28px 56px -16px hsl(0 0% 0% / 0.6);
+
+  /* Dark keeps Tailwind's own blue — it was designed against obsidian. */
+  --brand-50: oklch(97% 0.014 254.604);
+  --brand-100: oklch(93.2% 0.032 255.585);
+  --brand-200: oklch(88.2% 0.059 254.128);
+  --brand-300: oklch(80.9% 0.105 251.813);
+  --brand-400: oklch(70.7% 0.165 254.624);
+  --brand-500: oklch(62.3% 0.214 259.815);
+  --brand-600: oklch(54.6% 0.245 262.881);
+  --brand-700: oklch(48.8% 0.243 264.376);
+  --brand-800: oklch(42.4% 0.199 265.638);
+  --brand-900: oklch(37.9% 0.146 265.522);
+  --brand-950: oklch(28.2% 0.091 267.935);
+  --glow-600: #2563eb;
+  --glow-700: #1d4ed8;
+  --orb-blue: #2563eb;
+  --orb-violet: #7c3aed;
+  --orb-cyan: #22d3ee;
+  --orb-emerald: #34d399;
   --hc-border-idle: rgba(255, 255, 255, 0.16);
   --hc-label-idle: #64748b;
   --hc-cat-border: rgba(255, 255, 255, 0.08);
@@ -67,6 +161,38 @@
   --color-ink-muted: var(--ink-muted);
   --color-invert: var(--invert);
   --color-invert-ink: var(--invert-ink);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --shadow-card: var(--elevation-card);
+  --shadow-popover: var(--elevation-popover);
+
+  /* Tailwind's blue-* now resolves to the per-theme brand scale. */
+  --color-blue-50: var(--brand-50);
+  --color-blue-100: var(--brand-100);
+  --color-blue-200: var(--brand-200);
+  --color-blue-300: var(--brand-300);
+  --color-blue-400: var(--brand-400);
+  --color-blue-500: var(--brand-500);
+  --color-blue-600: var(--brand-600);
+  --color-blue-700: var(--brand-700);
+  --color-blue-800: var(--brand-800);
+  --color-blue-900: var(--brand-900);
+  --color-blue-950: var(--brand-950);
   --font-sans: "Helvetica Neue", Helvetica, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -79,7 +205,7 @@ body {
 }
 
 ::selection {
-  background: #dbe6fe;
+  background: var(--brand-100);
 }
 
 .scrollbar-hide {
@@ -213,9 +339,9 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #1d4ed8;
+  background: var(--brand-700);
   border: 2.5px solid #fff;
-  box-shadow: 0 0 12px -1px rgba(29, 78, 216, 0.8);
+  box-shadow: 0 0 12px -1px color-mix(in oklab, var(--glow-700) 80%, transparent);
   cursor: grab;
 }
 
@@ -223,9 +349,9 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #1d4ed8;
+  background: var(--brand-700);
   border: 2.5px solid #fff;
-  box-shadow: 0 0 12px -1px rgba(29, 78, 216, 0.8);
+  box-shadow: 0 0 12px -1px color-mix(in oklab, var(--glow-700) 80%, transparent);
   cursor: grab;
 }
 
@@ -348,7 +474,36 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.25) !important;
   }
 
+  /* The quote document (/profile/quotes/[id]) is already laid out as a
+     sheet: it keeps its own rules and none of the order-copy boxes. */
+  [data-quote-sheet] {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  [data-quote-sheet] *,
+  [data-quote-sheet] section > div {
+    border-color: rgba(0, 0, 0, 0.3) !important;
+  }
+  [data-quote-sheet] section > div {
+    border-style: none !important;
+  }
+  /* A long quote may run to a second page — but never splits a line or the totals. */
+  [data-quote-sheet] [data-quote-items] {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+  [data-quote-sheet] tr,
+  [data-quote-totals] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  [data-quote-sheet] table {
+    min-width: 0 !important;
+  }
+
   @page {
+    size: A4;
     margin: 14mm;
   }
 }

@@ -1,19 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
-import { Bot, Send, Sparkles, X } from "lucide-react";
+import { Bot, Send, Sparkles, UserRound, X } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ASSISTANT_VISIBLE_PATHS, OPEN_AI_CHAT_EVENT, type OpenAiChatDetail } from "@/lib/aiChatEvents";
+import { useCartStore } from "@/lib/store/cart";
+import { isPurchasable } from "@/lib/waitlist";
+import type { StoreProduct } from "@/lib/data";
+import type { SupportUIMessage } from "@/lib/chatSession";
+import SupportMessage from "./ai/SupportMessage";
+import StockNotifyModal from "./StockNotifyModal";
 
-// react-markdown pulls in the whole unified/remark/micromark chain, and this
-// widget sits in the locale layout — so that parser was being downloaded on
-// every page in the app to format assistant replies that only exist once
-// someone opens the chat. Loaded on first use instead; `ssr: false` because a
-// reply can only ever be rendered client-side anyway.
-const Markdown = dynamic(() => import("react-markdown"), { ssr: false });
+/** EXPIRED: deleted by the one-hour retention rule while this panel had it (lib/chatRetention). */
+type ChatStatus = "AI_ACTIVE" | "ESCALATED_TO_HUMAN" | "RESOLVED" | "EXPIRED" | null;
+
+/** How often to look for a team reply while the conversation is with a person. */
+const POLL_OPEN_MS = 5_000;
+const POLL_CLOSED_MS = 20_000;
 
 /**
  * The F-Gas consultant is a second, separate assistant sharing this panel.
@@ -35,12 +42,11 @@ const MODES: Array<{ id: Mode; label: string; Icon: typeof Bot }> = [
   { id: "fgas", label: "F-Gas Expert", Icon: Sparkles },
 ];
 
-const ACCENT = "#1d4ed8";
+const QUICK_REPLY_KEYS = ["quick1", "quick2", "quick3"] as const;
 
-const GREETING =
-  "Hi — I can calculate refrigerant charges, walk through F-Gas Regulation rules, or recommend products. What do you need?";
-
-const QUICK_REPLIES = ["Check R-410A stock", "What does error code E9 mean?", "Calculate charge for 50ft line"];
+/** Newest server timestamp in the list — the poll's cursor. */
+const lastServerTime = (messages: SupportUIMessage[]) =>
+  messages.reduce<string | null>((max, m) => (m.metadata?.createdAt && (!max || m.metadata.createdAt > max) ? m.metadata.createdAt : max), null);
 
 export default function AIChatWidget() {
   const pathname = usePathname();
@@ -50,10 +56,121 @@ export default function AIChatWidget() {
   const [mode, setMode] = useState<Mode>("support");
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat" }));
-  const { messages, sendMessage, status } = useChat({ transport });
+  const t = useTranslations("SupportChat");
+  // Only the newest message goes to the server; the conversation itself
+  // lives in the database (lib/chatSession), which is also where team
+  // replies appear.
+  const [transport] = useState(
+    () =>
+      new DefaultChatTransport<SupportUIMessage>({
+        api: "/api/chat",
+        prepareSendMessagesRequest: ({ messages, body }) => ({ body: { message: messages[messages.length - 1], ...body } }),
+      })
+  );
+  const { messages, setMessages, sendMessage, status } = useChat<SupportUIMessage>({ transport });
   const isTyping = status === "submitted" || status === "streaming";
   const fgas = mode === "fgas";
+
+  // ── Session state: restored from the server, polled while with a person ──
+  const [chatStatus, setChatStatus] = useState<ChatStatus>(null);
+  const [restored, setRestored] = useState(false);
+  const [unread, setUnread] = useState(false);
+  const [escalating, setEscalating] = useState(false);
+  const escalated = chatStatus === "ESCALATED_TO_HUMAN";
+
+  // The handoff tool in a streamed reply moves the widget into "with the team".
+  const lastMessage = messages[messages.length - 1];
+  const streamedHandoff =
+    lastMessage?.role === "assistant" && lastMessage.parts.some((p) => p.type === "tool-escalateToHuman" && p.state === "output-available");
+  if (streamedHandoff && chatStatus !== "ESCALATED_TO_HUMAN" && chatStatus !== "RESOLVED") setChatStatus("ESCALATED_TO_HUMAN");
+
+  // First open: bring back this browser's conversation (it survives page
+  // changes and reloads — the widget remounts, the session doesn't).
+  useEffect(() => {
+    if (!isOpen || restored) return;
+    let cancelled = false;
+    fetch("/api/chat/session", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: { status: ChatStatus; messages: SupportUIMessage[] }) => {
+        if (cancelled) return;
+        setRestored(true);
+        setChatStatus(data.status === "RESOLVED" ? null : data.status);
+        if (data.status !== "RESOLVED" && data.messages?.length) setMessages(data.messages);
+      })
+      .catch(() => setRestored(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, restored, setMessages]);
+
+  // While a person has the conversation: look for their reply. Faster with
+  // the panel open; slower (with an unread dot on the launcher) when closed.
+  // The poll reads the latest list through a ref so the interval isn't torn
+  // down and restarted on every streamed token.
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+  useEffect(() => {
+    if (!escalated) return;
+    const tick = async () => {
+      if (document.visibilityState !== "visible" || isTyping) return;
+      const cursor = lastServerTime(messagesRef.current);
+      try {
+        const res = await fetch(`/api/chat/session${cursor ? `?after=${encodeURIComponent(cursor)}` : ""}`, { cache: "no-store" });
+        const data = (await res.json()) as { status: ChatStatus; messages: SupportUIMessage[] };
+        // The visitor's own messages are already on screen (under a local id).
+        const known = new Set(messagesRef.current.map((m) => m.id));
+        const fresh = (data.messages ?? []).filter((m) => m.metadata?.author !== "user" && !known.has(m.id));
+        if (fresh.length) {
+          setMessages([...messagesRef.current, ...fresh]);
+          if (!isOpen) setUnread(true);
+        }
+        if (data.status === null) {
+          // Gone: an hour without activity and the server deleted it. Clear
+          // the copy on screen too — the transcript no longer exists anywhere.
+          setMessages([]);
+          setChatStatus("EXPIRED");
+        } else if (data.status !== "ESCALATED_TO_HUMAN") setChatStatus(data.status);
+      } catch {
+        // Offline for a moment: the next tick tries again.
+      }
+    };
+    const id = window.setInterval(tick, isOpen ? POLL_OPEN_MS : POLL_CLOSED_MS);
+    return () => window.clearInterval(id);
+  }, [escalated, isOpen, isTyping, setMessages]);
+
+  const talkToPerson = async () => {
+    if (escalating || escalated) return;
+    setEscalating(true);
+    try {
+      const res = await fetch("/api/chat/escalate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pathname }),
+      });
+      if (res.ok) {
+        setChatStatus("ESCALATED_TO_HUMAN");
+        const data = (await fetch("/api/chat/session", { cache: "no-store" }).then((r) => r.json())) as { messages: SupportUIMessage[] };
+        if (data.messages?.length) setMessages(data.messages);
+      }
+    } finally {
+      setEscalating(false);
+    }
+  };
+
+  // ── Product cards inside the chat ──
+  const cartItems = useCartStore((s) => s.items);
+  const addItem = useCartStore((s) => s.addItem);
+  const cartSkus = useMemo(() => new Set(cartItems.map((i) => i.sku)), [cartItems]);
+  const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
+  const addToCart = (product: StoreProduct) => {
+    if (!isPurchasable(product)) return;
+    addItem(
+      { sku: product.sku, name: product.name, variant: product.weightLabel, pricePerKg: product.pricePerKg, weightKg: product.weightKg, deposit: product.cylinderDeposit },
+      1
+    );
+  };
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -74,9 +191,11 @@ export default function AIChatWidget() {
       const trimmed = text.trim();
       if (!trimmed) return;
       setDraft("");
+      // After the team closed it (or it expired), the server starts a fresh session.
+      if (chatStatus === "RESOLVED" || chatStatus === "EXPIRED") setChatStatus("AI_ACTIVE");
       sendMessage({ text: trimmed }, { body: { pathname } });
     },
-    [pathname, sendMessage]
+    [pathname, sendMessage, chatStatus]
   );
 
   // Lets other components (e.g. the Home page's "Try Now" teaser, or the
@@ -109,11 +228,15 @@ export default function AIChatWidget() {
       >
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
-          aria-label="Open My Energy AI Support"
-          className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-blue-600/90 text-white shadow-[0_18px_40px_-14px_rgba(29,78,216,0.55)] backdrop-blur-md backdrop-saturate-150 transition-[transform,box-shadow,background-color] duration-200 hover:scale-[1.06] hover:bg-blue-600 hover:shadow-[0_22px_46px_-14px_rgba(29,78,216,0.65)]"
+          onClick={() => {
+            setIsOpen(true);
+            setUnread(false);
+          }}
+          aria-label={unread ? t("openUnread") : t("open")}
+          className="relative flex h-[58px] w-[58px] items-center justify-center rounded-full bg-blue-600/90 text-white shadow-[0_18px_40px_-14px_rgba(29,78,216,0.55)] backdrop-blur-md backdrop-saturate-150 transition-[transform,box-shadow,background-color] duration-200 hover:scale-[1.06] hover:bg-blue-600 hover:shadow-[0_22px_46px_-14px_rgba(29,78,216,0.65)]"
         >
           <Bot size={22} strokeWidth={1.8} />
+          {unread && <span data-chat-unread className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500" />}
         </button>
       </div>
 
@@ -129,8 +252,8 @@ export default function AIChatWidget() {
           <div className="fixed inset-x-0 bottom-0 z-[100] h-[80vh] w-full [animation:hc-sheet-up_.34s_cubic-bezier(.2,.8,.2,1)_both] md:inset-x-auto md:right-6 md:bottom-6 md:h-[560px] md:w-96 md:max-w-[calc(100vw-32px)] md:max-h-[calc(100vh-48px)] md:[animation:hc-panel_.34s_cubic-bezier(.2,.8,.2,1)_both]">
             <div className="relative h-full overflow-hidden rounded-t-3xl md:rounded-[24px]">
               {/* Faint tech-blue / frost-cyan mesh, behind the glass panel */}
-              <div className="pointer-events-none absolute -left-[90px] -top-[70px] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-20 blur-[64px] [animation:hc-float_20s_ease-in-out_infinite] dark:opacity-[.32]" />
-              <div className="pointer-events-none absolute -right-[80px] -bottom-[60px] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-20 blur-[64px] [animation:hc-float_26s_ease-in-out_infinite_reverse] dark:opacity-[.3]" />
+              <div className="pointer-events-none absolute -left-[90px] -top-[70px] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-20 blur-[64px] [animation:hc-float_20s_ease-in-out_infinite] dark:opacity-[.32]" />
+              <div className="pointer-events-none absolute -right-[80px] -bottom-[60px] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-20 blur-[64px] [animation:hc-float_26s_ease-in-out_infinite_reverse] dark:opacity-[.3]" />
 
               <div className="relative flex h-full flex-col overflow-hidden rounded-t-3xl border border-white/75 bg-white/72 shadow-[0_30px_70px_-24px_rgba(15,23,42,0.34)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/75 md:rounded-[24px]">
                 <div className="flex flex-none justify-center pb-1 pt-2.5 md:hidden">
@@ -143,21 +266,40 @@ export default function AIChatWidget() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="text-[13.5px] font-semibold tracking-[-.015em]">
-                      {fgas ? "F-Gas Consultant" : "My Energy AI Support"}
+                      {fgas ? "F-Gas Consultant" : t("title")}
                     </div>
                     <div className="mt-[3px] flex items-center gap-1.5 text-[11.5px] text-slate-500 dark:text-slate-400">
                       {fgas ? (
                         // No "Online" dot here: this assistant's honesty about
                         // what it does not know is the thing worth stating.
                         <span>Answers only from our knowledge base</span>
+                      ) : escalated ? (
+                        <span data-chat-status="escalated" className="flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
+                          {t("statusWithTeam")}
+                        </span>
                       ) : (
                         <>
                           <span className="h-1.5 w-1.5 rounded-full bg-green-600 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
-                          Online
+                          {t("statusOnline")}
                         </>
                       )}
                     </div>
                   </div>
+                  {!fgas && !escalated && (
+                    // A person on request, without depending on the model to decide.
+                    <button
+                      type="button"
+                      onClick={talkToPerson}
+                      disabled={escalating}
+                      data-talk-to-person
+                      title={t("talkToPerson")}
+                      className="flex h-[30px] flex-none items-center gap-1.5 rounded-[9px] bg-slate-900/5 px-2.5 text-[11.5px] font-medium text-slate-700 transition-colors hover:bg-slate-900/[.11] disabled:opacity-50 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+                    >
+                      <UserRound size={13} strokeWidth={2} />
+                      {t("talkToPersonShort")}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
@@ -212,32 +354,23 @@ export default function AIChatWidget() {
                 </div>
                 <div className="flex justify-start">
                   <div className="max-w-[84%] rounded-[16px_16px_16px_5px] border border-slate-900/[.07] bg-white/92 px-3.5 py-[11px] text-[13px] leading-[1.55] tracking-[-.005em] text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.05)] dark:border-white/[.08] dark:bg-white/[.06] dark:text-slate-50">
-                    {GREETING}
+                    {t("greeting")}
                   </div>
                 </div>
-                {messages.map((m) => {
-                  const ai = m.role === "assistant";
-                  const text = m.parts
-                    .filter((part) => part.type === "text")
-                    .map((part) => part.text)
-                    .join("");
-                  if (!text) return null;
-                  return (
-                    <div key={m.id} className={`flex ${ai ? "justify-start" : "justify-end"}`}>
-                      <div
-                        className={`max-w-[84%] text-pretty px-3.5 py-[11px] text-[13px] leading-[1.55] tracking-[-.005em] ${
-                          ai
-                            ? "rounded-[16px_16px_16px_5px] border border-slate-900/[.07] bg-white/92 text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.05)] dark:border-white/[.08] dark:bg-white/[.06] dark:text-slate-50 [&_p]:m-0 [&_p+p]:mt-2 [&_code]:rounded [&_code]:bg-slate-900/[.06] [&_code]:px-1 [&_code]:py-[1px] [&_code]:text-[12px] dark:[&_code]:bg-white/10"
-                            : "rounded-[16px_16px_5px_16px] text-white"
-                        }`}
-                        style={ai ? undefined : { background: ACCENT, boxShadow: `0 8px 20px -10px ${ACCENT}b3` }}
-                      >
-                        {ai ? <Markdown>{text}</Markdown> : text}
-                      </div>
-                    </div>
-                  );
-                })}
-                {isTyping && (
+                {messages.map((m) => (
+                  <SupportMessage key={m.id} message={m} cartSkus={cartSkus} onAddToCart={addToCart} onNotify={setNotifyFor} />
+                ))}
+                {chatStatus === "RESOLVED" && (
+                  <div data-chat-resolved className="text-center text-[11.5px] text-muted-foreground">
+                    {t("resolvedNotice")}
+                  </div>
+                )}
+                {chatStatus === "EXPIRED" && (
+                  <div data-chat-expired className="text-center text-[11.5px] text-muted-foreground">
+                    {t("expiredNotice")}
+                  </div>
+                )}
+                {isTyping && !escalated && (
                   <div className="flex justify-start">
                     <div className="flex items-center gap-1 rounded-[16px_16px_16px_5px] border border-slate-900/[.07] bg-white/90 px-3.5 py-3 dark:border-white/[.08] dark:bg-white/[.06]">
                       <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_infinite]" />
@@ -249,8 +382,8 @@ export default function AIChatWidget() {
               </div>
 
               <div className="border-t border-slate-900/[.07] p-3 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] dark:border-white/[.08] md:pb-3">
-                <div className="mb-2 flex gap-[7px] overflow-x-auto">
-                  {QUICK_REPLIES.map((label) => (
+                <div className={`mb-2 flex gap-[7px] overflow-x-auto ${escalated ? "hidden" : ""}`}>
+                  {QUICK_REPLY_KEYS.map((key) => t(key)).map((label) => (
                     <button
                       key={label}
                       type="button"
@@ -268,13 +401,13 @@ export default function AIChatWidget() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") send(draft);
                     }}
-                    placeholder="Ask about stock, specs, or F-Gas rules..."
+                    placeholder={escalated ? t("placeholderTeam") : t("placeholder")}
                     className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-slate-900 focus:outline-none dark:text-slate-50 dark:placeholder:text-slate-500"
                   />
                   <button
                     type="button"
                     onClick={() => send(draft)}
-                    aria-label="Send message"
+                    aria-label={t("send")}
                     disabled={!draft.trim()}
                     className={`flex h-8 w-8 flex-none items-center justify-center rounded-[10px] transition-colors disabled:cursor-not-allowed ${
                       draft.trim()
@@ -285,6 +418,7 @@ export default function AIChatWidget() {
                     <Send size={15} strokeWidth={2} />
                   </button>
                 </div>
+                <p data-chat-retention className="m-0 mt-1.5 text-center text-[10.5px] text-slate-400 dark:text-slate-500">{t("retentionNote")}</p>
               </div>
                   </>
                 )}
@@ -293,6 +427,13 @@ export default function AIChatWidget() {
         </div>
         </>
       )}
+
+      <StockNotifyModal
+        isOpen={notifyFor !== null}
+        onClose={() => setNotifyFor(null)}
+        productId={notifyFor?.id ?? ""}
+        productName={notifyFor?.name ?? ""}
+      />
     </>
   );
 }

@@ -79,12 +79,6 @@ export const SDS_DOCUMENTS: SdsDocument[] = [
   },
 ];
 
-export const SDS_LANGUAGES = [
-  { value: "en", label: "Language: English (US)" },
-  { value: "es", label: "Language: Español" },
-  { value: "fr", label: "Language: Français" },
-];
-
 export const SDS_CATEGORIES: { value: "all" | SdsCategory; label: string }[] = [
   { value: "all", label: "All categories" },
   { value: "Single component", label: "Single component" },

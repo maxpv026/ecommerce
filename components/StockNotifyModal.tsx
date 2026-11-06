@@ -69,7 +69,7 @@ function StockNotifyDialog({ onClose, productId, productName }: Omit<StockNotify
         <div className="relative overflow-hidden rounded-[24.5px] bg-white/[.88] p-[26px] backdrop-blur-2xl backdrop-saturate-150 dark:bg-[#141518]/[.92]">
           <span
             aria-hidden
-            className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,#7c3aed,transparent_68%)] opacity-40 blur-[62px] [animation:hc-breathe_7s_ease-in-out_infinite]"
+            className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-40 blur-[62px] [animation:hc-breathe_7s_ease-in-out_infinite]"
           />
 
           <button

@@ -126,6 +126,8 @@ export default function ProfileEditDrawer({ open, onClose, profile }: ProfileEdi
       phone: form.phone.trim(),
       companyName: form.companyName.trim(),
       jobTitle: form.jobTitle.trim(),
+      // The sheet shows a VAT field; without this, an edit to it was dropped.
+      vatNumber: form.vatNumber.trim(),
     });
 
     if (!result.ok) {
@@ -235,7 +237,7 @@ export default function ProfileEditDrawer({ open, onClose, profile }: ProfileEdi
                 onClick={save}
                 disabled={saving}
                 data-drawer-save
-                className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-[16px] bg-blue-700 text-[14.5px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_#2563eb] transition-colors hover:bg-blue-800 disabled:opacity-60"
+                className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-[16px] bg-blue-700 text-[14.5px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_var(--glow-600)] transition-colors hover:bg-blue-800 disabled:opacity-60"
               >
                 {saving && <Loader2 size={16} strokeWidth={2.2} className="animate-spin" />}
                 {saving ? t("drawerSaving") : tAccount("saveChanges")}

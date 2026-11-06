@@ -10,6 +10,7 @@ import {
   type WaitlistErrorCode,
   type WaitlistResponse,
 } from "@/lib/waitlist";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * POST /api/waitlist — join the back-in-stock waitlist for one product.
@@ -88,11 +89,11 @@ export async function POST(request: Request) {
 
   const product = productId
     ? await prisma.product.findUnique({
-        where: { id: productId },
+        where: { id: productId, ...LISTED },
         select: { id: true, inStock: true, stockQuantity: true },
       })
     : await prisma.product.findFirst({
-        where: { sku: { equals: sku!, mode: "insensitive" } },
+        where: { ...LISTED, sku: { equals: sku!, mode: "insensitive" } },
         select: { id: true, inStock: true, stockQuantity: true },
       });
 

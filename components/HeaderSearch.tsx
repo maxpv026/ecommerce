@@ -265,7 +265,7 @@ function HeaderSearchBox({ onQueryChange }: HeaderSearchProps) {
           >
             <span
               aria-hidden
-              className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-[radial-gradient(circle,#22d3ee,transparent_68%)] opacity-[.18] blur-[42px]"
+              className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),transparent_68%)] opacity-[.18] blur-[42px]"
             />
 
             {hits.length > 0 && (

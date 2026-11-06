@@ -1,4 +1,4 @@
-import type { FGasStatus } from "@/lib/generated/prisma/enums";
+import type { FGasStatus, ThemePreference } from "@/lib/generated/prisma/enums";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { ADMIN_LEGAL_NAME, roleForEmail } from "@/lib/rbac";
+import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
 import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -21,8 +22,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      // AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET are the v5 names. The old
+      // GOOGLE_CLIENT_* names stay as a fallback, but with `||`, not `??`:
+      // they were present-but-empty in .env.local, and an explicit "" here
+      // overrode the real values and sent Google a request with no client_id.
+      clientId: process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET,
+      // Lets "Continue with Google" sign in to an account first created by
+      // email — otherwise NextAuth refuses (OAuthAccountNotLinked), and here
+      // almost every account was created by email. Safe only with the two
+      // conditions in callbacks.signIn below: Google must have verified the
+      // address, and accounts protected by an authenticator are excluded.
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       name: "Credentials",
@@ -85,8 +96,82 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return { id: user.id, email: user.email, name: user.name };
       },
     }),
+    // Step 2 of a Google sign-in on an account with an authenticator — the
+    // only way the paused login becomes a session. Requires BOTH the signed
+    // challenge Google's step produced (passed by completeGoogleTwoFactor
+    // from its HttpOnly cookie) and a valid TOTP or recovery code. The
+    // lockout and replay guards are the same ones the password route uses.
+    Credentials({
+      id: "google-2fa",
+      name: "Google two-factor",
+      credentials: { challenge: { type: "text" }, code: { type: "text" } },
+      async authorize(credentials) {
+        const challenge = verifyGoogleTwoFactorChallenge(typeof credentials?.challenge === "string" ? credentials.challenge : null);
+        const code = typeof credentials?.code === "string" ? credentials.code.trim() : "";
+        if (!challenge || !code) return null;
+
+        const user = await prisma.user.findUnique({ where: { id: challenge.userId } });
+        // Re-checked, not assumed: 2FA could have been switched off (or the
+        // account deleted) in the five minutes since the challenge.
+        if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) return null;
+
+        const check = looksLikeRecoveryCode(code)
+          ? await consumeRecoveryCode(prisma, user, code)
+          : await verifyTotpForUser(prisma, user, code);
+        if (!check.ok) {
+          console.warn(`auth: Google 2FA refused for ${user.email ?? user.id}: ${check.reason}`);
+          return null;
+        }
+
+        // First Google sign-in for this account: link it now, so the next
+        // one finds it by Google id. Never re-points a Google id that
+        // already belongs to a different account.
+        await prisma.account
+          .upsert({
+            where: { provider_providerAccountId: { provider: "google", providerAccountId: challenge.providerAccountId } },
+            create: { userId: user.id, type: "oidc", provider: "google", providerAccountId: challenge.providerAccountId },
+            update: {},
+          })
+          .catch((error) => console.error("auth: could not link the Google account after 2FA:", error));
+
+        return { id: user.id, email: user.email, name: user.name };
+      },
+    }),
   ],
   callbacks: {
+    async signIn({ account, profile, user }) {
+      if (account?.provider !== "google") return true;
+
+      // Linking by email trusts that whoever signs in with Google owns the
+      // address. Only true when Google itself says it verified it.
+      if (profile?.email_verified !== true) return "/auth?error=google-unverified";
+
+      // An account with an authenticator must still pass it. Google has
+      // proven who this is, so instead of allowing the login (no session
+      // yet, no account link yet) we pause it: a short-lived signed
+      // challenge goes to /api/two-factor/start, and only the "google-2fa"
+      // provider below can turn it into a session, after a valid code.
+      // See lib/googleTwoFactor for why this isn't a half-verified JWT.
+      const linked = await prisma.account
+        .findUnique({
+          where: { provider_providerAccountId: { provider: "google", providerAccountId: account.providerAccountId } },
+          select: { user: { select: { id: true, isTwoFactorEnabled: true } } },
+        })
+        .catch(() => null);
+      const email = (profile.email ?? user.email)?.trim();
+      const target =
+        linked?.user ??
+        (email
+          ? await prisma.user
+              .findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true, isTwoFactorEnabled: true } })
+              .catch(() => null)
+          : null);
+      if (target?.isTwoFactorEnabled) {
+        const challenge = createGoogleTwoFactorChallenge({ userId: target.id, providerAccountId: account.providerAccountId });
+        return `/api/two-factor/start?c=${encodeURIComponent(challenge)}`;
+      }
+      return true;
+    },
     async jwt({ token, user, account, trigger }) {
       if (user) {
         token.email = user.email ?? token.email;
@@ -113,6 +198,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.fGasStatus = dbUser?.fGasStatus ?? "NONE";
         token.isTwoFactorEnabled = dbUser?.isTwoFactorEnabled ?? false;
         token.locale = dbUser?.locale ?? "en";
+        token.theme = dbUser?.themePreference ?? "SYSTEM";
+        // Profile photo for the header and app bar, which only have the session.
+        token.picture = dbUser?.image ?? token.picture ?? null;
 
         // The iron-clad admin rule: the role is DERIVED from ADMIN_EMAIL on
         // every sign-in, never trusted from the row. A matching email is
@@ -140,7 +228,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
       if (account) {
-        token.provider = account.provider;
+        // The google-2fa step is still a Google sign-in as far as the user
+        // (and the "Google linked" UI) is concerned.
+        token.provider = account.provider === "google-2fa" ? "google" : account.provider;
       }
       // useSession().update() lands here. Mutable profile flags that change
       // inside the app (F-Gas verification from the cart, company edits)
@@ -158,6 +248,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                   fGasStatus: true,
                   companyName: true,
                   locale: true,
+                  themePreference: true,
+                  image: true,
                   // So enabling 2FA unlocks the admin area without a re-login.
                   isTwoFactorEnabled: true,
                 },
@@ -178,6 +270,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.isTwoFactorEnabled = dbUser.isTwoFactorEnabled;
           token.companyName = dbUser.companyName;
           token.locale = dbUser.locale;
+          // So a theme chosen in settings survives the next page load
+          // instead of ThemeSync re-applying the stale value from the token.
+          token.theme = dbUser.themePreference;
+          // An avatar upload/removal calls update(), so the header photo
+          // follows without a re-login.
+          token.picture = dbUser.image;
         }
       }
       return token;
@@ -195,6 +293,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.epaVerified = session.user.fGasStatus === "VERIFIED";
         session.user.isFGasVerified = session.user.fGasStatus === "VERIFIED";
         session.user.locale = (token.locale as string | undefined) ?? "en";
+        // Left undefined for tokens issued before the column existed: ThemeSync
+        // skips undefined, so those users keep their device choice until they
+        // next sign in, rather than being reset to SYSTEM.
+        session.user.theme = token.theme as ThemePreference | undefined;
+        session.user.image = (token.picture as string | null | undefined) ?? null;
         // Absent role (pre-RBAC session tokens) fails closed to USER.
         session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled === true;

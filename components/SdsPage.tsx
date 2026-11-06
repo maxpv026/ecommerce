@@ -10,8 +10,9 @@ import AuthModal from "./AuthModal";
 // Deferred: the modal carries a second copy of the markdown renderer and is
 // only reachable behind a button, so it has no business in the page bundle.
 const SdsAssistantModal = dynamic(() => import("./SdsAssistantModal"), { ssr: false });
-import { SDS_ASSET_DIR, SDS_CATEGORIES, SDS_DOCUMENTS, SDS_LANGUAGES, SDS_ZIP_FILE } from "@/lib/sds";
-import type { SdsBadgeLabel, SdsCategory, SdsDocument } from "@/lib/types";
+import { SDS_ASSET_DIR, SDS_CATEGORIES, SDS_ZIP_FILE } from "@/lib/sds";
+import type { SdsDirectoryEntry } from "@/lib/sdsDirectory";
+import type { SdsBadgeLabel, SdsCategory } from "@/lib/types";
 
 /**
  * Compliance → Safety Data Sheets.
@@ -44,23 +45,27 @@ const SELECT_CLASSES =
 const CARD =
   "border-slate-200 bg-white/80 shadow-sm backdrop-blur-md backdrop-saturate-150 dark:border-white/10 dark:bg-[#141518]/80 dark:shadow-none";
 
-export default function SdsPage() {
+interface SdsPageProps {
+  /** Built on the server (lib/sdsDirectory): links and revisions match what the endpoint serves. */
+  documents: SdsDirectoryEntry[];
+  /** SDS_EMERGENCY_PHONE — the same number every generated sheet prints. */
+  emergencyPhone: string | null;
+}
+
+export default function SdsPage({ documents, emergencyPhone }: SdsPageProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [lang, setLang] = useState("en");
   const [category, setCategory] = useState<"all" | SdsCategory>("all");
-  const [assistantFor, setAssistantFor] = useState<SdsDocument | null>(null);
+  const [assistantFor, setAssistantFor] = useState<SdsDirectoryEntry | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return SDS_DOCUMENTS.filter((d) => {
+    return documents.filter((d) => {
       const matchesCategory = category === "all" || d.category === category;
       const matchesQuery = !q || `${d.name} ${d.cas} ${d.category}`.toLowerCase().includes(q);
       return matchesCategory && matchesQuery;
     });
-  }, [query, category]);
-
-  const pdfHref = (doc: SdsDocument) => `${SDS_ASSET_DIR}/${doc.file}`;
+  }, [documents, query, category]);
 
   return (
     <div className="flex-1 bg-slate-50 text-slate-900 dark:bg-[#0a0a0c] dark:text-slate-100">
@@ -69,9 +74,9 @@ export default function SdsPage() {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)]">
-          <div className="absolute -left-[180px] -top-[340px] h-[780px] w-[780px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-[.18] blur-[120px] [animation:hc-float_26s_ease-in-out_infinite] dark:opacity-[.34]" />
-          <div className="absolute -right-[140px] -top-[280px] h-[700px] w-[700px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-[.16] blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse] dark:opacity-[.28]" />
-          <div className="absolute -top-[200px] left-[40%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_70%)] opacity-[.12] blur-[110px] [animation:hc-float_36s_ease-in-out_infinite] dark:opacity-[.22]" />
+          <div className="absolute -left-[180px] -top-[340px] h-[780px] w-[780px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-[.18] blur-[120px] [animation:hc-float_26s_ease-in-out_infinite] dark:opacity-[.34]" />
+          <div className="absolute -right-[140px] -top-[280px] h-[700px] w-[700px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-[.16] blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse] dark:opacity-[.28]" />
+          <div className="absolute -top-[200px] left-[40%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_70%)] opacity-[.12] blur-[110px] [animation:hc-float_36s_ease-in-out_infinite] dark:opacity-[.22]" />
         </div>
 
         <div className="relative mx-auto max-w-[1240px] px-8 pt-13">
@@ -129,18 +134,11 @@ export default function SdsPage() {
               </div>
 
               <div className="mt-3.5 flex flex-wrap gap-[9px]">
-                <select
-                  value={lang}
-                  onChange={(e) => setLang(e.target.value)}
-                  aria-label="Document language"
-                  className={SELECT_CLASSES}
-                >
-                  {SDS_LANGUAGES.map((l) => (
-                    <option key={l.value} value={l.value}>
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
+                {/* A label, not a picker: every sheet is English today, and a
+                    language selector that changed nothing implied otherwise. */}
+                <span className={`${SELECT_CLASSES} flex cursor-default items-center`} data-sds-language>
+                  Language: English
+                </span>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as "all" | SdsCategory)}
@@ -188,23 +186,29 @@ export default function SdsPage() {
                 </div>
               </div>
 
-              <p className="relative m-0 mb-4 text-[12.5px] leading-[1.55] text-slate-600 dark:text-slate-400">
-                For spills, exposure, or transport incidents in Europe, call the NCEC emergency line
-                before handling the cylinder.
-              </p>
+              {/* The number is SDS_EMERGENCY_PHONE, the one printed in §1.4 of
+                  every sheet, so the page and the documents can't disagree.
+                  Unset, the card offers 112 alone rather than a stale number. */}
+              {emergencyPhone && (
+                <>
+                  <p className="relative m-0 mb-4 text-[12.5px] leading-[1.55] text-slate-600 dark:text-slate-400">
+                    For spills, exposure, or transport incidents, call the 24-hour emergency line
+                    before handling the cylinder.
+                  </p>
 
-              <a
-                href="tel:+441865407333"
-                data-emergency-phone
-                className="relative flex items-center gap-2.5 text-[23px] font-semibold tracking-[-.03em] text-slate-900 transition-colors hover:text-red-700 dark:text-white dark:hover:text-red-300"
+                  <a
+                    href={`tel:${emergencyPhone.replace(/[^\d+]/g, "")}`}
+                    data-emergency-phone
+                    className="relative flex items-center gap-2.5 text-[23px] font-semibold tracking-[-.03em] text-slate-900 transition-colors hover:text-red-700 dark:text-white dark:hover:text-red-300"
+                  >
+                    <Phone size={18} strokeWidth={2.2} className="flex-none text-red-600 dark:text-red-400" />
+                    {emergencyPhone}
+                  </a>
+                </>
+              )}
+              <div
+                className={`relative text-[11.5px] leading-[1.55] text-slate-600 dark:text-slate-400 ${emergencyPhone ? "mt-4 border-t border-red-900/10 pt-3.5 dark:border-white/10" : ""}`}
               >
-                <Phone size={18} strokeWidth={2.2} className="flex-none text-red-600 dark:text-red-400" />
-                +44 1865 407 333
-              </a>
-              <div className="relative mt-1.5 text-[11.5px] text-slate-600 dark:text-slate-400">
-                NCEC · My Energy account #ME-4471 · EN, DE, FR, ES, NL
-              </div>
-              <div className="relative mt-4 border-t border-red-900/10 pt-3.5 text-[11.5px] leading-[1.55] text-slate-600 dark:border-white/10 dark:text-slate-400">
                 Life-threatening emergencies within the EU:{" "}
                 <span className="font-semibold text-red-700 dark:text-red-300">112</span>
               </div>
@@ -244,7 +248,7 @@ export default function SdsPage() {
               >
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,#22d3ee,transparent_68%)] opacity-0 blur-[44px] transition-opacity duration-300 group-hover:opacity-[.12] dark:group-hover:opacity-25"
+                  className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),transparent_68%)] opacity-0 blur-[44px] transition-opacity duration-300 group-hover:opacity-[.12] dark:group-hover:opacity-25"
                 />
 
                 <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
@@ -259,7 +263,10 @@ export default function SdsPage() {
                       <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         CAS {doc.cas} · {doc.category}
                       </div>
-                      <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{doc.doc}</div>
+                      <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400" data-sds-meta>
+                        PDF · {doc.language} · {doc.revision}
+                        {doc.updatedOn && ` · Updated ${doc.updatedOn}`}
+                      </div>
                     </div>
                   </div>
 
@@ -289,7 +296,7 @@ export default function SdsPage() {
                     </button>
 
                     <a
-                      href={pdfHref(doc)}
+                      href={doc.href}
                       download
                       data-sds-download={doc.gas}
                       className="flex h-10 flex-none items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[12.5px] font-semibold tracking-[-.01em] text-slate-700 shadow-sm transition-colors duration-200 hover:border-transparent hover:bg-blue-700 hover:text-white hover:shadow-[0_12px_26px_-12px_rgba(29,78,216,.7)] dark:border-white/10 dark:bg-white/[.04] dark:text-slate-200 dark:shadow-none dark:hover:border-transparent dark:hover:bg-blue-700 dark:hover:text-white dark:hover:shadow-[0_12px_26px_-12px_rgba(29,78,216,.9)]"
@@ -322,7 +329,7 @@ export default function SdsPage() {
           open
           gas={assistantFor.gas}
           documentName={assistantFor.name}
-          pdfHref={pdfHref(assistantFor)}
+          pdfHref={assistantFor.href}
           onClose={() => setAssistantFor(null)}
         />
       )}

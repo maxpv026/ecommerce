@@ -29,7 +29,7 @@ export default function CertificationsPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       <Header
         onSignInClick={() => setIsAuthModalOpen(true)}
       />
@@ -37,8 +37,8 @@ export default function CertificationsPage() {
       {/* Hero: ambient mesh gradient masked to fade into white before the grid */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,#000_0%,#000_56%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_56%,transparent_100%)]">
-          <div className="absolute -left-[190px] -top-[350px] h-[820px] w-[820px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-30 blur-[120px] [animation:hc-float_26s_ease-in-out_infinite] dark:opacity-[.45]" />
-          <div className="absolute -right-[150px] -top-[290px] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-[.28] blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse] dark:opacity-[.4]" />
+          <div className="absolute -left-[190px] -top-[350px] h-[820px] w-[820px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-30 blur-[120px] [animation:hc-float_26s_ease-in-out_infinite] dark:opacity-[.45]" />
+          <div className="absolute -right-[150px] -top-[290px] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-[.28] blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse] dark:opacity-[.4]" />
           <div className="absolute -top-[210px] left-[38%] h-[540px] w-[540px] rounded-full bg-[radial-gradient(circle,#e0e7ff,rgba(224,231,255,0)_70%)] opacity-45 blur-[100px] [animation:hc-float_36s_ease-in-out_infinite] dark:opacity-[.15]" />
         </div>
 

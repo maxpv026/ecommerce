@@ -10,7 +10,9 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
+  FileText,
   FlaskConical,
+  Loader2,
   Lock,
   Minus,
   Plus,
@@ -29,6 +31,7 @@ import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib
 import type { StoreProduct } from "@/lib/data";
 import MagicOrderPad from "./cart/MagicOrderPad";
 import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
+import QuoteCartBanner from "./QuoteCartBanner";
 
 const SWIPE_THRESHOLD = 120;
 
@@ -47,6 +50,10 @@ type AuditPhase = "idle" | "thinking" | "compliant" | "optimised" | "unavailable
 interface MobileCartLayoutProps {
   products: StoreProduct[];
   onCheckout: () => void;
+  // Quote action, owned by CartPage (one createQuote path for both layouts).
+  onGenerateQuote: () => void;
+  quoteLocked: boolean;
+  quoting: boolean;
   // F-Gas gate, computed once in CartPage so desktop and mobile can never
   // disagree about whether this buyer may check out.
   fgasGate: FgasGate | null;
@@ -62,6 +69,7 @@ interface MobileCartLayoutProps {
 function SwipeLine({
   item,
   product,
+  quoted,
   index,
   staggered,
   t,
@@ -72,6 +80,8 @@ function SwipeLine({
 }: {
   item: CartLine;
   product?: StoreProduct;
+  /** The basket is a quote: show the line's frozen price, not the live one. */
+  quoted: boolean;
   index: number;
   staggered: boolean;
   t: ReturnType<typeof useTranslations<"Cart">>;
@@ -84,7 +94,7 @@ function SwipeLine({
   const laneOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0.4]);
   const [past, setPast] = useState(false);
   const tint = tintFor(product);
-  const pricing = pricingLineFor(item, product);
+  const pricing = pricingLineFor(item, quoted ? null : product);
   const unit = lineUnitPrice(pricing);
   const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
 
@@ -219,6 +229,9 @@ function SwipeLine({
 export default function MobileCartLayout({
   products,
   onCheckout,
+  onGenerateQuote,
+  quoteLocked,
+  quoting,
   fgasGate,
   checkoutLocked,
   fgasOk,
@@ -228,10 +241,12 @@ export default function MobileCartLayout({
   onUploadCertificate,
 }: MobileCartLayoutProps) {
   const t = useTranslations("Cart");
+  const tQuotes = useTranslations("Quotes");
   const format = useFormatter();
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
   const items = useCartStore((s) => s.items);
+  const cartQuote = useCartStore((s) => s.quote);
   const addItem = useCartStore((s) => s.addItem);
   const increment = useCartStore((s) => s.increment);
   const decrement = useCartStore((s) => s.decrement);
@@ -255,7 +270,8 @@ export default function MobileCartLayout({
   }, []);
 
   const bySku = new Map(products.map((p) => [p.sku, p]));
-  const totalLines = shownItems.map((i) => pricingLineFor(i, bySku.get(i.sku)));
+  const quote = hydrated ? cartQuote : null;
+  const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
   const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
 
@@ -287,12 +303,12 @@ export default function MobileCartLayout({
   const visibleRecs = optimised && !recsDismissed ? suggestions : [];
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-clip bg-white dark:bg-canvas">
+    <div className="relative min-h-screen w-full overflow-x-clip bg-canvas">
       {/* ambient orb field */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-[150px] right-[-34%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-30 blur-[90px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
-        <div className="absolute left-[-32%] top-[280px] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_66%)] opacity-[.24] blur-[90px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
-        <div className="absolute -bottom-[190px] left-[-10%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-[.28] blur-[84px] [animation:hc-breathe_11s_ease-in-out_infinite]" />
+        <div className="absolute -top-[150px] right-[-34%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-30 blur-[90px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
+        <div className="absolute left-[-32%] top-[280px] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.24] blur-[90px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -bottom-[190px] left-[-10%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-[.28] blur-[84px] [animation:hc-breathe_11s_ease-in-out_infinite]" />
       </div>
 
       {/* sticky glass header */}
@@ -332,12 +348,13 @@ export default function MobileCartLayout({
       <div
         className={`relative ${
           !empty && fgasGate
-            ? "pb-[calc(345px+env(safe-area-inset-bottom))]"
+            ? "pb-[calc(377px+env(safe-area-inset-bottom))]"
             : !empty && fgasOk
-              ? "pb-[calc(255px+env(safe-area-inset-bottom))]"
-              : "pb-[calc(210px+env(safe-area-inset-bottom))]"
+              ? "pb-[calc(287px+env(safe-area-inset-bottom))]"
+              : "pb-[calc(242px+env(safe-area-inset-bottom))]"
         }`}
       >
+        {!empty && <QuoteCartBanner className="mx-[18px] mt-3" />}
         {/* real freight badge in the design's tier slot */}
         {!empty && (
           <div className="px-[18px] pt-3.5">
@@ -357,7 +374,7 @@ export default function MobileCartLayout({
             className="mx-[18px] mt-6 rounded-[26px] border border-dashed border-slate-900/[.14] bg-white/70 px-[22px] py-[62px] text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
           >
             <span className="relative inline-flex h-[88px] w-[88px] items-center justify-center rounded-[30px] border border-slate-900/[.07] bg-slate-100 [animation:hc-bob_6s_ease-in-out_infinite] dark:border-hairline dark:bg-surface-3">
-              <span className="pointer-events-none absolute -inset-7 rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_68%)] opacity-50 blur-[32px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
+              <span className="pointer-events-none absolute -inset-7 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-50 blur-[32px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
               <ShoppingCart size={34} strokeWidth={1.7} className="relative text-blue-700 dark:text-blue-400" />
             </span>
             <div className="mt-6 text-[21px] font-semibold tracking-[-.04em]">{t("cartEmptyShort")}</div>
@@ -366,7 +383,7 @@ export default function MobileCartLayout({
             </p>
             <Link
               href="/products"
-              className="inline-flex h-[50px] items-center justify-center gap-[9px] rounded-2xl bg-blue-700 px-6 text-sm font-semibold tracking-[-.02em] text-white shadow-[0_20px_42px_-18px_#2563eb,0_0_28px_-10px_#2563eb] transition-colors hover:bg-blue-800"
+              className="inline-flex h-[50px] items-center justify-center gap-[9px] rounded-2xl bg-blue-700 px-6 text-sm font-semibold tracking-[-.02em] text-white shadow-[0_20px_42px_-18px_var(--glow-600),0_0_28px_-10px_var(--glow-600)] transition-colors hover:bg-blue-800"
             >
               {t("exploreProducts")}
               <ArrowRight size={16} strokeWidth={2} />
@@ -382,6 +399,7 @@ export default function MobileCartLayout({
                     key={item.sku}
                     item={item}
                     product={bySku.get(item.sku)}
+                    quoted={quote !== null}
                     index={idx}
                     staggered={initialStagger}
                     t={t}
@@ -531,7 +549,7 @@ export default function MobileCartLayout({
                 style={
                   thinking
                     ? {
-                        background: "linear-gradient(90deg,#2563eb,#22d3ee,#7c3aed,#2563eb)",
+                        background: "linear-gradient(90deg,var(--glow-600),#22d3ee,#7c3aed,var(--glow-600))",
                         backgroundSize: "300% 100%",
                         animation: "hc-sweep 2.4s linear infinite",
                       }
@@ -554,7 +572,7 @@ export default function MobileCartLayout({
                     <motion.span
                       animate={thinking ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                       transition={thinking ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
-                      className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,#2563eb,#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.8)]"
+                      className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.8)]"
                     >
                       <Sparkles size={18} strokeWidth={2} className="text-white" />
                     </motion.span>
@@ -691,9 +709,27 @@ export default function MobileCartLayout({
             )}
           </AnimatePresence>
 
-          {/* Payment choice sits directly above the checkout button, exactly
-              as on desktop — the same store field feeds both. */}
-          <div className="mb-3">
+          {/* The quote action, a slim row so the bar stays clear of the
+              content above it (the padding on the scroll container is
+              raised by this row's height). */}
+          <div className="mb-2.5 flex h-8 items-center justify-end">
+            {quote ? (
+              <Link href={`/profile/quotes/${quote.id}`} data-view-quote className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
+                <FileText size={14} strokeWidth={2} />
+                {tQuotes("viewQuote", { number: quote.quoteNumber })}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={onGenerateQuote}
+                disabled={quoteLocked || quoting}
+                data-generate-quote
+                className="inline-flex h-8 items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 disabled:opacity-45 dark:text-blue-400"
+              >
+                {quoting ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} strokeWidth={2} />}
+                {quoting ? tQuotes("generating") : tQuotes("generate")}
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3.5">
@@ -717,7 +753,7 @@ export default function MobileCartLayout({
               className={`ml-auto flex h-[54px] flex-none items-center justify-center gap-[9px] rounded-[17px] bg-blue-700 px-[26px] text-[15px] font-semibold tracking-[-.02em] text-white transition-[background-color,box-shadow,opacity,filter] duration-300 ${
                 checkoutLocked
                   ? "cursor-not-allowed opacity-45 saturate-[.55] shadow-none"
-                  : "shadow-[0_20px_42px_-14px_#2563eb,0_0_32px_-10px_#2563eb] hover:bg-blue-800"
+                  : "shadow-[0_20px_42px_-14px_var(--glow-600),0_0_32px_-10px_var(--glow-600)] hover:bg-blue-800"
               }`}
             >
               {t("checkout")}

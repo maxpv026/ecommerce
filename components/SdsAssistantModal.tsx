@@ -111,11 +111,11 @@ export default function SdsAssistantModal({
             {/* violet / cyan aura, matching the Ask AI trigger */}
             <span
               aria-hidden
-              className="pointer-events-none absolute -left-24 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(circle,#7c3aed,transparent_68%)] opacity-[.10] blur-[70px] dark:opacity-30"
+              className="pointer-events-none absolute -left-24 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-[.10] blur-[70px] dark:opacity-30"
             />
             <span
               aria-hidden
-              className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,#22d3ee,transparent_68%)] opacity-[.10] blur-[70px] dark:opacity-25"
+              className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),transparent_68%)] opacity-[.10] blur-[70px] dark:opacity-25"
             />
 
             {/* header */}

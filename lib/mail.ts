@@ -81,9 +81,12 @@ function getTransporter(): nodemailer.Transporter {
 }
 
 function fromAddress(): string {
-  // Gmail rewrites the From header to the authenticated account anyway, so
-  // derive it from SMTP_USER and keep only the display name fixed.
-  return `"My Energy" <${process.env.SMTP_USER}>`;
+  // SMTP_FROM wins when set — required for providers whose SMTP login is not
+  // an address (Resend's user is literally "resend"; the From must be on a
+  // domain verified there). Otherwise derive it from SMTP_USER, which is what
+  // Gmail rewrites the header to anyway.
+  const explicit = process.env.SMTP_FROM?.trim();
+  return explicit || `"My Energy" <${process.env.SMTP_USER}>`;
 }
 
 function otpEmailHtml(code: string): string {
@@ -346,69 +349,32 @@ export async function sendOrderConfirmationEmail(
 }
 
 /**
- * Predictive restock nudge, with an AI-composed body.
+ * Sends one pre-rendered email (the body is built by the caller, e.g. from a
+ * React Email template). Throws when the recipient is rejected, like
+ * sendBackInStockEmail, so the caller decides whether that is fatal.
  *
- * The message is passed in already generated and cleaned: this module stays
- * free of any AI dependency, and the cron can refuse to send when the model
- * returns something unusable rather than falling back to a template that
- * pretends to be personal.
- *
- * Returns the delivery result instead of throwing — the caller decides
- * whether the alert row is marked NOTIFIED.
+ * `headers` carries List-Unsubscribe for anything that isn't transactional:
+ * Gmail and Yahoo require one-click unsubscribe from bulk senders, and the
+ * ePrivacy rules require an easy opt-out in every marketing message.
  */
-export async function sendSmartRestockEmail(
-  email: string,
-  alert: {
-    customerName: string | null;
-    productName: string;
-    productVariant: string;
-    recommendedQty: number;
-    message: string;
-    productUrl: string;
-  }
-): Promise<MailDelivery> {
-  const active = getTransporter();
-
-  const html = `
-<div style="background:#f8fafc;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:20px;padding:36px 32px;border:1px solid #e2e8f0;">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:28px;">
-      <span style="display:inline-block;width:13px;height:13px;border-radius:999px;border:3.5px solid #0f172a;"></span>
-      <span style="font-size:16px;font-weight:600;letter-spacing:-0.02em;color:#0f172a;">My Energy</span>
-    </div>
-    <p style="margin:0 0 6px;font-size:13px;letter-spacing:.05em;color:#1d4ed8;text-transform:uppercase;font-weight:600;">Restock reminder</p>
-    <h1 style="margin:0 0 14px;font-size:21px;line-height:1.3;letter-spacing:-0.03em;color:#0f172a;">${escapeHtml(alert.productName)}</h1>
-    <p style="margin:0 0 22px;font-size:14.5px;line-height:1.65;color:#334155;">${escapeHtml(alert.message)}</p>
-    <div style="border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin:0 0 24px;">
-      <p style="margin:0;font-size:13px;line-height:1.55;color:#475569;">
-        Suggested reorder: <strong style="color:#0f172a;">${alert.recommendedQty} ×</strong>
-        ${escapeHtml(alert.productName)}${alert.productVariant ? ` · ${escapeHtml(alert.productVariant)}` : ""}
-      </p>
-    </div>
-    <a href="${alert.productUrl}" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;font-size:14.5px;font-weight:600;letter-spacing:-0.01em;padding:14px 26px;border-radius:14px;">
-      Reorder now
-    </a>
-    <p style="margin:26px 0 0;font-size:12px;line-height:1.55;color:#94a3b8;">
-      You are receiving this because your account shows a regular reorder pattern for this product.
-      Manage restock reminders from your profile at any time.
-    </p>
-  </div>
-</div>`.trim();
-
-  const info = await active.sendMail({
-    from: fromAddress(),
-    to: email,
-    subject: `Time to restock ${alert.productName}`,
-    text: `${alert.message}\n\nSuggested reorder: ${alert.recommendedQty} x ${alert.productName}${alert.productVariant ? ` (${alert.productVariant})` : ""}\nReorder: ${alert.productUrl}`,
-    html,
-  });
-
-  return {
+export async function sendHtmlEmail(message: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  headers?: Record<string, string>;
+}): Promise<MailDelivery> {
+  const info = await getTransporter().sendMail({ from: fromAddress(), ...message });
+  const delivery: MailDelivery = {
     accepted: (info.accepted ?? []).map(String),
     rejected: (info.rejected ?? []).map(String),
     response: String(info.response ?? ""),
     messageId: String(info.messageId ?? ""),
   };
+  if (delivery.accepted.length === 0 || delivery.rejected.length > 0) {
+    throw new Error(`SMTP rejected the recipient: response="${delivery.response}"`);
+  }
+  return delivery;
 }
 
 export async function sendOtpEmail(email: string, code: string): Promise<void> {

@@ -16,6 +16,8 @@ const ProfileSchema = z.object({
   name: z.string().trim().min(2).max(120),
   companyName: z.string().trim().max(120),
   jobTitle: z.string().trim().max(80),
+  // Same character class as the action; the action is the real gate.
+  phone: z.string().trim().max(32).regex(/^[\d\s+().\/-]*$/),
   // Loose here; lib/actions/profile normalises and validates the real shape.
   vatNumber: z.string().trim().max(20),
 });
@@ -24,7 +26,7 @@ type ProfileForm = z.infer<typeof ProfileSchema>;
 
 interface EditProfileModalProps {
   open: boolean;
-  initial: { name: string; companyName: string; jobTitle: string; vatNumber: string };
+  initial: { name: string; companyName: string; jobTitle: string; phone: string; vatNumber: string };
   onClose: () => void;
   /** Fires after a successful save (parent toasts + refreshes). */
   onSaved: () => void;
@@ -68,10 +70,11 @@ export default function EditProfileModal({ open, initial, onClose, onSaved }: Ed
     onSaved();
   });
 
-  const fields = [
+  const fields: Array<{ key: keyof ProfileForm; label: string; type?: string; autoComplete?: string }> = [
     { key: "name" as const, label: t("epName") },
     { key: "companyName" as const, label: t("epCompany") },
     { key: "jobTitle" as const, label: t("epRole") },
+    { key: "phone" as const, label: t("epPhone"), type: "tel", autoComplete: "tel" },
     { key: "vatNumber" as const, label: t("epVatNumber") },
   ];
 
@@ -98,8 +101,8 @@ export default function EditProfileModal({ open, initial, onClose, onSaved }: Ed
             className="relative w-[480px] max-w-full overflow-hidden rounded-[30px] border border-slate-900/[.14] bg-white/[.92] p-[30px] shadow-[0_60px_120px_-50px_rgba(2,4,10,.8)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-[rgba(20,21,24,.9)]"
           >
             <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[30px]">
-              <div className="absolute -top-[46%] left-[-14%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-[.34] blur-[90px]" />
-              <div className="absolute -bottom-[44%] right-[-16%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-[.28] blur-[90px]" />
+              <div className="absolute -top-[46%] left-[-14%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-[.34] blur-[90px]" />
+              <div className="absolute -bottom-[44%] right-[-16%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-[.28] blur-[90px]" />
             </div>
 
             <div className="relative">
@@ -141,6 +144,8 @@ export default function EditProfileModal({ open, initial, onClose, onSaved }: Ed
                       </span>
                       <input
                         {...register(field.key)}
+                        type={field.type ?? "text"}
+                        autoComplete={field.autoComplete}
                         onFocus={() => setFocus(field.key)}
                         onBlurCapture={() => setFocus(null)}
                         className="h-14 w-full rounded-2xl border bg-slate-50 px-[15px] pb-2 pt-[22px] text-[13.5px] tracking-[-.01em] text-slate-900 transition-[border-color,box-shadow] duration-[240ms] focus:outline-none dark:bg-white/[.04] dark:text-slate-50"

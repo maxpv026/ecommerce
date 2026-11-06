@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { applyInventoryUpdate, type InventoryUpdateResult } from "@/lib/inventory";
 import { CATALOG_COUNTS_TAG } from "@/lib/cacheTags";
 import { notifyBackInStock, type StockNotifyResult } from "@/lib/stockNotify";
+import { after } from "next/server";
+import { isPriceDrop, notifyPriceDrop } from "@/lib/priceDrop";
 
 /**
  * CRM → storefront inventory webhook.
@@ -174,6 +176,26 @@ export async function POST(request: Request) {
           weight: product.weight,
         })
       );
+    }
+
+    // Price drops on favourited sizes: emailed after the CRM gets its
+    // response, so a push never waits on SMTP (after() keeps the invocation
+    // alive until the mail is out). lib/priceDrop re-reads the product and
+    // skips anything no longer purchasable or no longer cheaper.
+    const drops = results.flatMap((r) =>
+      r.status === "updated" &&
+      isPriceDrop({ pricePerKg: r.previousPricePerKg, weightKg: r.previousWeightKg }, { pricePerKg: r.pricePerKg, weightKg: r.weightKg })
+        ? [r]
+        : []
+    );
+    if (drops.length > 0) {
+      after(async () => {
+        for (const r of drops) {
+          await notifyPriceDrop(r.id, { pricePerKg: r.previousPricePerKg, weightKg: r.previousWeightKg }, { pricePerKg: r.pricePerKg, weightKg: r.weightKg }).catch(
+            (error) => console.error(`[price-drop] ${r.sku} failed:`, error)
+          );
+        }
+      });
     }
 
     const status = updated === results.length ? 200 : updated > 0 ? 207 : 404;

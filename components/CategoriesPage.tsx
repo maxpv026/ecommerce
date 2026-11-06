@@ -120,7 +120,7 @@ export default function CategoriesPage({ counts }: CategoriesPageProps) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       <div className="hidden md:block">
       <Header
         onSignInClick={() => setIsAuthModalOpen(true)}
@@ -129,9 +129,9 @@ export default function CategoriesPage({ counts }: CategoriesPageProps) {
       <div className="relative overflow-x-clip">
         {/* Ambient tri-color glow field, masked to fade by ~44% height */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[900px] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)]">
-          <div className="absolute -top-[320px] left-[-14%] h-[860px] w-[860px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-[.32] blur-[120px] [animation:hc-float_26s_ease-in-out_infinite]" />
-          <div className="absolute -top-[240px] right-[-10%] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-30 blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse]" />
-          <div className="absolute -top-[180px] left-[40%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-[.24] blur-[110px] [animation:hc-float_38s_ease-in-out_infinite]" />
+          <div className="absolute -top-[320px] left-[-14%] h-[860px] w-[860px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-[.32] blur-[120px] [animation:hc-float_26s_ease-in-out_infinite]" />
+          <div className="absolute -top-[240px] right-[-10%] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-30 blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse]" />
+          <div className="absolute -top-[180px] left-[40%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-[.24] blur-[110px] [animation:hc-float_38s_ease-in-out_infinite]" />
         </div>
 
         <main className="relative mx-auto max-w-[1320px] px-8 pb-[120px] pt-16">

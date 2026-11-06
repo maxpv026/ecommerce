@@ -75,8 +75,13 @@ export default function HeroBackground({ children }: HeroBackgroundProps) {
         style={{ opacity: ambientOpacity }}
         className="pointer-events-none absolute inset-0"
       >
-        <div className="absolute left-0 top-1/2 h-[120%] w-[70%] -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.75)_0%,rgba(37,99,235,0.35)_40%,transparent_75%)] blur-[110px]" />
-        <div className="absolute right-0 top-1/2 h-[120%] w-[70%] -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.65)_0%,rgba(167,139,250,0.4)_40%,transparent_75%)] blur-[110px]" />
+        {/* Half strength in light mode: on the pale canvas the full glow
+            reads as a stain rather than atmosphere. Dark is unchanged
+            (--glow-600 is #2563eb there). */}
+        <div className="absolute inset-0 opacity-50 dark:opacity-100">
+          <div className="absolute left-0 top-1/2 h-[120%] w-[70%] -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,color-mix(in_oklab,var(--glow-600)_75%,transparent)_0%,color-mix(in_oklab,var(--glow-600)_35%,transparent)_40%,transparent_75%)] blur-[110px]" />
+          <div className="absolute right-0 top-1/2 h-[120%] w-[70%] -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.65)_0%,rgba(167,139,250,0.4)_40%,transparent_75%)] blur-[110px]" />
+        </div>
       </motion.div>
 
       {/* Mouse spotlight — soft blue/violet glow that trails the cursor. */}

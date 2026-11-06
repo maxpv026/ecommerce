@@ -10,6 +10,7 @@ import {
   type ResolvedItem,
   type UnresolvedItem,
 } from "@/lib/magicOrderResolve";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * "Magic Order" — turns a messy technician's message into a cart.
@@ -114,6 +115,7 @@ export async function parseMagicOrder(rawText: string): Promise<MagicOrderResult
   // AND pushes the fuzzy matching into SQL, where resolveAgainstCatalog's
   // ambiguity guard could not see how many rows a query really matched.
   const catalog = await prisma.product.findMany({
+    where: LISTED,
     select: {
       id: true,
       sku: true,

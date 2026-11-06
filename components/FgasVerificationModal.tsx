@@ -208,7 +208,7 @@ function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: O
   const frameStyle =
     phase === "scanning"
       ? {
-          background: "linear-gradient(90deg,#1d4ed8,#22d3ee,#7c3aed,#1d4ed8)",
+          background: "linear-gradient(90deg,var(--glow-700),#22d3ee,#7c3aed,var(--glow-700))",
           backgroundSize: "300% 100%",
           animation: "hc-sweep 2.4s linear infinite",
           boxShadow: "0 40px 120px -30px rgba(4,10,25,.75), 0 0 70px -18px rgba(34,211,238,.6)",
@@ -318,8 +318,8 @@ function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: O
                       : "border-slate-900/[.16] bg-slate-900/[.025] hover:border-violet-500/50 hover:bg-violet-500/[.05] dark:border-white/[.16] dark:bg-white/[.03] dark:hover:border-violet-400/50"
                   }`}
                 >
-                  <span className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-[linear-gradient(140deg,#2563eb,#7c3aed)] text-white shadow-[0_18px_36px_-16px_rgba(37,99,235,.9)]">
-                    <span className="pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,#7c3aed,transparent_68%)] opacity-40 blur-[18px]" />
+                  <span className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] text-white shadow-[0_18px_36px_-16px_rgba(37,99,235,.9)]">
+                    <span className="pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-40 blur-[18px]" />
                     <Upload size={26} strokeWidth={1.9} className="relative" />
                   </span>
                   <span className="text-[15px] font-semibold tracking-[-.025em]">{t("dropTitle")}</span>
@@ -440,7 +440,7 @@ function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: O
                     transition={{ type: "spring", stiffness: 380, damping: 18, delay: 0.05 }}
                     className="relative flex h-12 w-12 flex-none items-center justify-center rounded-[15px] bg-[linear-gradient(140deg,#059669,#34d399)] text-white shadow-[0_16px_32px_-14px_rgba(16,185,129,.9)]"
                   >
-                    <span className="pointer-events-none absolute -inset-3 rounded-full bg-[radial-gradient(circle,#34d399,transparent_68%)] opacity-50 blur-[14px]" />
+                    <span className="pointer-events-none absolute -inset-3 rounded-full bg-[radial-gradient(circle,var(--orb-emerald),transparent_68%)] opacity-50 blur-[14px]" />
                     <ShieldCheck size={22} strokeWidth={2} className="relative" />
                   </motion.span>
                   <div className="min-w-0">

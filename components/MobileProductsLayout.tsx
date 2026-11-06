@@ -6,16 +6,14 @@ import { isPurchasable } from "@/lib/waitlist";
 import StockNotifyModal from "./StockNotifyModal";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
-  BellRing,
   Check,
   ChevronDown,
   ChevronLeft,
   LayoutGrid,
   Loader2,
-  Plus,
   Rows3,
   Search,
   Send,
@@ -24,31 +22,9 @@ import {
   X,
 } from "lucide-react";
 import { smartMatch, type SmartMatchResult } from "@/lib/actions/smartMatch";
-import ProductThumbnail from "./ProductThumbnail";
+import ProductCard, { STOCK_TONES } from "./ProductCard";
 import { useCartStore } from "@/lib/store/cart";
 import type { StoreProduct } from "@/lib/data";
-
-/**
- * The original outline placeholder, in both tile shapes — the fallback for
- * anything without a render of its own.
- */
-const outlinePoster = (size: string) => (
-  <span className="absolute inset-0 grid place-items-center">
-    <span
-      className={`block rounded-t-2xl rounded-b-[5px] border border-dashed border-slate-900/[.22] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.26] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))] ${size}`}
-    />
-  </span>
-);
-
-const OUTLINE_TWO_UP = outlinePoster("h-[60px] w-[30px]");
-const OUTLINE_ROW = outlinePoster("h-[70px] w-[34px]");
-
-const STOCK_TONE = {
-  in: { fg: "#34d399", bg: "rgba(16,185,129,.16)", bd: "rgba(16,185,129,.32)", labelKey: "stockIn" },
-  low: { fg: "#fbbf24", bg: "rgba(245,158,11,.16)", bd: "rgba(245,158,11,.34)", labelKey: "stockLow" },
-  order: { fg: "#38bdf8", bg: "rgba(56,189,248,.16)", bd: "rgba(56,189,248,.32)", labelKey: "stockOrder" },
-  out: { fg: "#f87171", bg: "rgba(239,68,68,.14)", bd: "rgba(248,113,113,.34)", labelKey: "stockOut" },
-} as const;
 
 const CATEGORY_KEY: Record<string, string> = {
   cylinders: "catCylinders",
@@ -87,8 +63,6 @@ export default function MobileProductsLayout({
 }: MobileProductsLayoutProps) {
   const t = useTranslations("Products");
   const tm = useTranslations("HomeMobile");
-  const format = useFormatter();
-  const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
   const [density, setDensity] = useState<"grid" | "rows">("grid");
   const [sheet, setSheet] = useState(false);
@@ -108,13 +82,26 @@ export default function MobileProductsLayout({
   const [aiState, setAiState] = useState<"idle" | "thinking" | "done" | "error">("idle");
   const [aiSkus, setAiSkus] = useState<string[]>([]);
   const [aiReason, setAiReason] = useState("");
-  const [pressed, setPressed] = useState<string | null>(null);
   const [marksExpanded, setMarksExpanded] = useState(false);
   // Product whose waitlist dialog is open; null when the dialog is closed.
   const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
 
   const addItem = useCartStore((s) => s.addItem);
   const cartItems = useCartStore((s) => s.items);
+  const addToCart = (product: StoreProduct) => {
+    if (!isPurchasable(product)) return;
+    addItem(
+      {
+        sku: product.sku,
+        name: product.name,
+        variant: product.weightLabel,
+        pricePerKg: product.pricePerKg,
+        weightKg: product.weightKg,
+        deposit: product.cylinderDeposit,
+      },
+      1
+    );
+  };
 
   // Facet options with live counts, derived from the catalog itself.
   const weightOptions = useMemo(() => {
@@ -197,7 +184,7 @@ export default function MobileProductsLayout({
     ...filters.weight.map((v) => ({ id: `w-${v}`, label: `${v} lb`, clear: () => toggle("weight", v) })),
     ...filters.stock.map((v) => ({
       id: `s-${v}`,
-      label: t(STOCK_TONE[v as keyof typeof STOCK_TONE].labelKey),
+      label: t(STOCK_TONES[v as keyof typeof STOCK_TONES].labelKey),
       clear: () => toggle("stock", v),
     })),
     ...(purity > PURITY_MIN ? [{ id: "purity", label: `≥ ${purity.toFixed(2)}%`, clear: () => setPurity(PURITY_MIN) }] : []),
@@ -207,7 +194,7 @@ export default function MobileProductsLayout({
   const twoUp = density === "grid";
   const sliderBg = (value: number, min: number, max: number) => {
     const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-    return `linear-gradient(90deg,#2563eb 0%,#2563eb ${pct}%,var(--hc-cat-border,rgba(15,23,42,.16)) ${pct}%,var(--hc-cat-border,rgba(15,23,42,.16)) 100%)`;
+    return `linear-gradient(90deg,var(--glow-600) 0%,var(--glow-600) ${pct}%,var(--hc-cat-border,rgba(15,23,42,.16)) ${pct}%,var(--hc-cat-border,rgba(15,23,42,.16)) 100%)`;
   };
 
   const groups: Array<{ key: keyof Filters; label: string; options: Array<{ value: string; label: string }> }> = [
@@ -220,17 +207,17 @@ export default function MobileProductsLayout({
     {
       key: "stock",
       label: t("groupStock"),
-      options: (["in", "low", "order", "out"] as const).map((value) => ({ value, label: t(STOCK_TONE[value].labelKey) })),
+      options: (["in", "low", "order", "out"] as const).map((value) => ({ value, label: t(STOCK_TONES[value].labelKey) })),
     },
   ];
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-clip bg-white dark:bg-canvas">
+    <div className="relative min-h-screen w-full overflow-x-clip bg-canvas">
       {/* ambient orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-[170px] left-[-26%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-[.28] blur-[90px] [animation:hc-breathe_11s_ease-in-out_infinite]" />
-        <div className="absolute -top-[120px] right-[-24%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-[.26] blur-[86px] [animation:hc-breathe_14s_ease-in-out_infinite_reverse]" />
-        <div className="absolute left-[8%] top-[430px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-[.16] blur-[84px] [animation:hc-breathe_17s_ease-in-out_infinite]" />
+        <div className="absolute -top-[170px] left-[-26%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-[.28] blur-[90px] [animation:hc-breathe_11s_ease-in-out_infinite]" />
+        <div className="absolute -top-[120px] right-[-24%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.26] blur-[86px] [animation:hc-breathe_14s_ease-in-out_infinite_reverse]" />
+        <div className="absolute left-[8%] top-[430px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-[.16] blur-[84px] [animation:hc-breathe_17s_ease-in-out_infinite]" />
       </div>
 
       {/* sticky glass bar */}
@@ -265,7 +252,7 @@ export default function MobileProductsLayout({
             style={
               thinking
                 ? {
-                    background: "linear-gradient(90deg,#2563eb,#22d3ee,#7c3aed,#2563eb)",
+                    background: "linear-gradient(90deg,var(--glow-600),#22d3ee,#7c3aed,var(--glow-600))",
                     backgroundSize: "300% 100%",
                     animation: "hc-sweep 2.2s linear infinite",
                   }
@@ -294,7 +281,7 @@ export default function MobileProductsLayout({
                 onClick={() => runAi()}
                 aria-label={t("aiButton")}
                 data-ai-send
-                className="flex h-[35px] w-[35px] flex-none items-center justify-center rounded-[11px] bg-blue-700 shadow-[0_10px_20px_-10px_#2563eb] transition-colors hover:bg-blue-800"
+                className="flex h-[35px] w-[35px] flex-none items-center justify-center rounded-[11px] bg-blue-700 shadow-[0_10px_20px_-10px_var(--glow-600)] transition-colors hover:bg-blue-800"
               >
                 <Send size={13} strokeWidth={2} className="text-white" />
               </motion.button>
@@ -310,7 +297,7 @@ export default function MobileProductsLayout({
             data-filter-open
             className={`relative flex h-12 w-12 flex-none items-center justify-center rounded-2xl border transition-colors ${
               activeCount > 0
-                ? "border-blue-700 bg-blue-700 text-white shadow-[0_14px_28px_-14px_#2563eb,0_0_20px_-8px_#2563eb]"
+                ? "border-blue-700 bg-blue-700 text-white shadow-[0_14px_28px_-14px_var(--glow-600),0_0_20px_-8px_var(--glow-600)]"
                 : "border-slate-900/[.14] bg-slate-100 text-slate-900 dark:border-hairline-strong dark:bg-surface-3 dark:text-slate-50"
             }`}
           >
@@ -431,182 +418,17 @@ export default function MobileProductsLayout({
             data-product-grid={density}
           >
             <AnimatePresence mode="popLayout">
-              {rows.map((product, i) => {
-                const st = STOCK_TONE[product.stockLevel];
-                const isAi = answered && aiSkus.includes(product.sku);
-                const inCart = cartItems.some((c) => c.sku === product.sku);
-                const down = pressed === product.sku;
-                const purchasable = isPurchasable(product);
-                return (
-                  <motion.div
-                    key={product.sku}
-                    layout
-                    initial={{ opacity: 0, y: 18, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: i * 0.04 } }}
-                    exit={{ opacity: 0, scale: 0.94, transition: { duration: 0.2 } }}
-                    className="flex h-full"
-                  >
-                    <div
-                      data-product-card={product.sku}
-                      className={`relative flex h-full w-full overflow-hidden rounded-[22px] border border-slate-900/[.08] bg-white/70 shadow-[0_16px_40px_-34px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass ${
-                        twoUp ? "flex-col" : "flex-row"
-                      }`}
-                    >
-                      <span
-                        className="pointer-events-none absolute -top-[56%] right-[-30%] h-[260px] w-[260px] rounded-full opacity-[.14] blur-[58px]"
-                        style={{ background: `radial-gradient(circle,${st.fg},transparent 68%)` }}
-                      />
-
-                      {/* image tile → PDP */}
-                      <Link
-                        href={`/products/${product.id}`}
-                        className={`relative flex flex-none items-center justify-center overflow-hidden rounded-2xl bg-slate-100 dark:bg-surface-3 ${
-                          twoUp ? "m-2.5 mb-0 h-[104px]" : "m-2.5 mr-0 w-[108px]"
-                        }`}
-                      >
-                        <span className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(127,127,140,.06)_0_1px,transparent_1px_9px)]" />
-                        {/* A still rendered from the product's own model;
-                            the interactive version lives on the PDP. */}
-                        <ProductThumbnail
-                          sku={product.sku}
-                          name={product.name}
-                          fallback={twoUp ? OUTLINE_TWO_UP : OUTLINE_ROW}
-                          sizes={twoUp ? "45vw" : "120px"}
-                        />
-                        <span
-                          className="absolute left-2 top-2 inline-flex items-center gap-[5px] rounded-full border py-1 pl-1.5 pr-2 text-[9px] font-semibold"
-                          style={{ background: st.bg, borderColor: st.bd, color: st.fg, boxShadow: `0 0 14px -5px ${st.fg}` }}
-                        >
-                          <span
-                            className="h-1 w-1 flex-none rounded-full"
-                            style={{
-                              background: st.fg,
-                              boxShadow: `0 0 6px 1px ${st.fg}`,
-                              animation:
-                                product.stockLevel === "in" || product.stockLevel === "out" ? undefined : "hc-glow 2.2s ease-in-out infinite",
-                            }}
-                          />
-                          {t(st.labelKey)}
-                        </span>
-                        {isAi && (
-                          <span className="absolute right-2 top-2 inline-flex items-center rounded-full border border-[rgba(167,139,250,.44)] bg-[rgba(124,58,237,.24)] px-2 py-1 text-[9px] font-bold text-[#6d28d9] dark:text-[#c4b5fd]">
-                            AI
-                          </span>
-                        )}
-                      </Link>
-
-                      <div className={`relative flex min-w-0 flex-1 flex-col ${twoUp ? "p-3 pt-3" : "p-3 pl-3"}`}>
-                        <Link href={`/products/${product.id}`} className="block">
-                          <span className={`block font-semibold leading-[1.25] tracking-[-.028em] ${twoUp ? "text-[13px]" : "text-[14.5px]"}`}>
-                            {product.name}
-                          </span>
-                          <span className="mt-[3px] block text-[10.5px] text-slate-400 dark:text-ink-muted">
-                            {twoUp ? product.weightLabel : `${product.sku} · ${product.weightLabel}`}
-                          </span>
-                        </Link>
-
-                        <div className="mt-[11px] flex flex-wrap gap-1.5">
-                          {(twoUp
-                            ? [{ label: t("specGwp"), value: product.gwp !== null ? String(product.gwp) : t("na") }]
-                            : [
-                                { label: t("specPurity"), value: product.purity !== null ? `${product.purity}%` : t("na") },
-                                { label: t("specVolume"), value: product.weightLabel },
-                                { label: t("specGwp"), value: product.gwp !== null ? String(product.gwp) : t("na") },
-                              ]
-                          ).map((spec) => (
-                            <span
-                              key={spec.label}
-                              className={`block rounded-[11px] border border-slate-900/[.07] bg-slate-100 px-[9px] py-[7px] dark:border-hairline dark:bg-surface-3 ${
-                                twoUp ? "flex-none" : "min-w-0 flex-1"
-                              }`}
-                            >
-                              <span className="block text-[8.5px] tracking-[.06em] text-slate-400 dark:text-ink-muted">{spec.label}</span>
-                              <span className="mt-0.5 block text-[11px] font-semibold tracking-[-.015em]">{spec.value}</span>
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="mt-auto flex items-center justify-between gap-2.5 pt-[13px]">
-                          {/* Fixed height: the price block holds one price line
-                              plus at most two lines of note, so a long fallback
-                              can't make this card taller than its neighbours. */}
-                          <span className="flex h-[52px] min-w-0 flex-col justify-center">
-                            <span className="flex items-baseline gap-1">
-                              <span
-                                data-card-price
-                                className={`block truncate font-semibold tracking-[-.035em] ${
-                                  product.pricePerKg > 0 ? "text-base" : "text-[12px]"
-                                }`}
-                              >
-                                {product.pricePerKg > 0 ? eur(product.cylinderPrice) : t("priceOnRequest")}
-                              </span>
-                            </span>
-                            <span
-                              className="mt-px line-clamp-2 block text-[9.5px] leading-[1.4] text-slate-400 dark:text-ink-muted"
-                              data-cylinder-price
-                            >
-                              {!product.pricedPerKg
-                                ? twoUp
-                                  ? t("exVatShort")
-                                  : t("unitExVat", { volume: product.weightLabel })
-                                : product.pricePerKg > 0
-                                  ? t("perKgAmount", { amount: eur(product.pricePerKg) })
-                                  : product.weightLabel}
-                            </span>
-                          </span>
-                          {/* Same 44px control either way — only its state differs */}
-                          {purchasable ? (
-                            <motion.button
-                              type="button"
-                              whileTap={{ scale: 0.9 }}
-                              onTouchStart={() => setPressed(product.sku)}
-                              onTouchEnd={() => setPressed(null)}
-                              onMouseDown={() => setPressed(product.sku)}
-                              onMouseUp={() => setPressed(null)}
-                              onMouseLeave={() => setPressed(null)}
-                              onClick={() =>
-                                addItem(
-                                  {
-                                    sku: product.sku,
-                                    name: product.name,
-                                    variant: product.weightLabel,
-                                    pricePerKg: product.pricePerKg,
-                                    weightKg: product.weightKg,
-                                    deposit: product.cylinderDeposit,
-                                  },
-                                  1
-                                )
-                              }
-                              aria-label={tm("addToCartAria", { name: product.name })}
-                              className={`flex h-11 w-11 flex-none items-center justify-center rounded-[15px] text-white transition-colors ${
-                                inCart
-                                  ? "bg-green-600 shadow-[0_14px_28px_-12px_#16a34a]"
-                                  : "bg-blue-700 shadow-[0_14px_28px_-12px_#2563eb] hover:bg-blue-800"
-                              } ${down ? "scale-90" : ""}`}
-                            >
-                              {inCart ? <Check size={18} strokeWidth={2.6} /> : <Plus size={18} strokeWidth={2.6} />}
-                            </motion.button>
-                          ) : (
-                            // Icon-only here because the in-stock control is a
-                            // 44px square; the word "unavailable" carries in the
-                            // label and the dialog it opens.
-                            <button
-                              type="button"
-                              onClick={() => setNotifyFor(product)}
-                              aria-label={`${t("unavailableCta")} — ${t("notifyCta")}`}
-                              title={t("unavailableCta")}
-                              data-unavailable-cta
-                              className="flex h-11 w-11 flex-none items-center justify-center rounded-[15px] border border-slate-900/[.14] bg-slate-900/[.04] text-slate-500 transition-colors hover:bg-slate-900/[.08] dark:border-hairline-strong dark:bg-white/[.05] dark:text-ink-muted dark:hover:bg-white/[.09]"
-                            >
-                              <BellRing size={17} strokeWidth={2.2} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {rows.map((product) => (
+                <ProductCard
+                  key={product.sku}
+                  product={product}
+                  variant={twoUp ? "compact" : "row"}
+                  inCart={cartItems.some((c) => c.sku === product.sku)}
+                  isAiMatch={answered && aiSkus.includes(product.sku)}
+                  onAddToCart={addToCart}
+                  onNotify={setNotifyFor}
+                />
+              ))}
             </AnimatePresence>
           </div>
         )}
@@ -623,7 +445,7 @@ export default function MobileProductsLayout({
               type="button"
               whileTap={{ scale: 0.95 }}
               onClick={resetFilters}
-              className="inline-flex min-h-11 items-center justify-center rounded-[14px] bg-blue-700 px-5 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_#2563eb] transition-colors hover:bg-blue-800"
+              className="inline-flex min-h-11 items-center justify-center rounded-[14px] bg-blue-700 px-5 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_var(--glow-600)] transition-colors hover:bg-blue-800"
             >
               {t("resetFilters")}
             </motion.button>
@@ -682,7 +504,7 @@ export default function MobileProductsLayout({
                             data-filter-option={`${group.key}-${option.value}`}
                             className={`inline-flex min-h-11 flex-none items-center gap-[7px] rounded-full border px-3.5 text-[12.5px] tracking-[-.01em] transition-colors ${
                               on
-                                ? "border-blue-700 bg-blue-700/[.14] font-semibold text-blue-700 shadow-[0_0_18px_-8px_#2563eb] dark:bg-blue-600/[.2] dark:text-blue-400"
+                                ? "border-blue-700 bg-blue-700/[.14] font-semibold text-blue-700 shadow-[0_0_18px_-8px_var(--glow-600)] dark:bg-blue-600/[.2] dark:text-blue-400"
                                 : "border-slate-900/[.08] bg-slate-100 font-medium text-slate-500 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
                             }`}
                           >
@@ -717,7 +539,7 @@ export default function MobileProductsLayout({
                           data-gas-mark={mark}
                           className={`inline-flex min-h-11 flex-none items-center gap-[7px] rounded-full border px-3.5 text-[12.5px] tracking-[-.01em] transition-colors ${
                             on
-                              ? "border-blue-700 bg-blue-700/[.14] font-semibold text-blue-700 shadow-[0_0_18px_-8px_#2563eb] dark:bg-blue-600/[.2] dark:text-blue-400"
+                              ? "border-blue-700 bg-blue-700/[.14] font-semibold text-blue-700 shadow-[0_0_18px_-8px_var(--glow-600)] dark:bg-blue-600/[.2] dark:text-blue-400"
                               : "border-slate-900/[.08] bg-slate-100 font-medium text-slate-500 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
                           }`}
                         >
@@ -796,7 +618,7 @@ export default function MobileProductsLayout({
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setSheet(false)}
                   data-filter-apply
-                  className="flex h-[52px] w-full items-center justify-center rounded-[17px] bg-blue-700 text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_18px_36px_-16px_#2563eb] transition-colors hover:bg-blue-800"
+                  className="flex h-[52px] w-full items-center justify-center rounded-[17px] bg-blue-700 text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_18px_36px_-16px_var(--glow-600)] transition-colors hover:bg-blue-800"
                 >
                   {t("applyShow", { count: rows.length })}
                 </motion.button>

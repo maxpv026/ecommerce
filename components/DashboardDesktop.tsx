@@ -8,6 +8,8 @@ import { useSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
+  ArrowRight,
+  BookOpen,
   Building2,
   ChevronDown,
   Clock,
@@ -18,18 +20,21 @@ import {
   Receipt,
   Trash2,
   FileText,
+  Heart,
   Lock,
   LogOut,
   Package,
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
+  Settings,
   Truck,
   User,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 import AddressModal from "./AddressModal";
 import EditProfileModal from "./EditProfileModal";
+import AvatarUploader, { Avatar } from "./AvatarUploader";
 import ChangePasswordFlow from "./ChangePasswordFlow";
 import RecordsCard from "./profile/RecordsCard";
 import TwoFactorSetup from "./TwoFactorSetup";
@@ -43,6 +48,9 @@ import type { OrderStatus } from "@/lib/generated/prisma/enums";
 // F-Gas certs run on a 4-year cycle — the DB stores the issue date, the
 // expiry and the renewal progress bar are derived from it.
 const CERT_VALIDITY_YEARS = 4;
+
+/** Orders shown before "Show all N orders". */
+const ORDERS_COLLAPSED_COUNT = 5;
 
 /* ── entrance: cascading fade-up, design's cubic-bezier(.16,1,.3,1) ── */
 const rise = {
@@ -79,7 +87,7 @@ const ORDER_TONES: Record<
     badge:
       "border-[rgba(3,105,161,.24)] bg-[rgba(56,189,248,.14)] text-[#0369a1] shadow-[0_0_18px_-6px_rgba(8,145,178,.4)] dark:border-[rgba(56,189,248,.3)] dark:bg-[rgba(56,189,248,.12)] dark:text-[#38bdf8] dark:shadow-[0_0_18px_-6px_rgba(34,211,238,.4)]",
     dot: "bg-[#0891b2] shadow-[0_0_8px_1px_#0891b2] dark:bg-[#22d3ee] dark:shadow-[0_0_8px_1px_#22d3ee]",
-    bar: "bg-[linear-gradient(90deg,#1d4ed8,#0891b2)] shadow-[0_0_12px_-2px_#0891b2] dark:bg-[linear-gradient(90deg,#2563eb,#22d3ee)] dark:shadow-[0_0_12px_-2px_#22d3ee]",
+    bar: "bg-[linear-gradient(90deg,var(--glow-700),#0891b2)] shadow-[0_0_12px_-2px_#0891b2] dark:bg-[linear-gradient(90deg,var(--glow-600),#22d3ee)] dark:shadow-[0_0_12px_-2px_#22d3ee]",
     iconWrap: "border-[rgba(3,105,161,.24)] bg-[rgba(56,189,248,.14)] dark:border-[rgba(56,189,248,.3)] dark:bg-[rgba(56,189,248,.12)]",
     iconText: "text-[#0369a1] dark:text-[#38bdf8]",
     aura: "bg-[radial-gradient(circle,#0891b2,transparent_68%)] dark:bg-[radial-gradient(circle,#22d3ee,transparent_68%)]",
@@ -123,6 +131,14 @@ const STEP_LABEL_KEY: Record<TimelineStepKey, string> = {
   delivered: "stepDelivered",
 };
 
+/** This year's F-Gas logbook figures (lib/compliance), for the logbook card. */
+export interface LogbookSummary {
+  year: number;
+  massKg: number;
+  co2eTonnes: number;
+  lines: number;
+}
+
 interface DashboardDesktopProps {
   isAuthenticated: boolean;
   profile: UserProfileData | null;
@@ -130,6 +146,7 @@ interface DashboardDesktopProps {
   orderTracking: Record<string, OrderTrackingView>;
   addresses: UserAddress[] | null;
   dashboard: ProfileDashboardData | null;
+  logbook?: LogbookSummary | null;
 }
 
 export default function DashboardDesktop({
@@ -139,6 +156,7 @@ export default function DashboardDesktop({
   orderTracking,
   addresses,
   dashboard,
+  logbook = null,
 }: DashboardDesktopProps) {
   const t = useTranslations("ProfileDashboard");
   const tAccount = useTranslations("AccountProfile");
@@ -156,6 +174,7 @@ export default function DashboardDesktop({
   const [activeTab, setActiveTab] = useState("overview");
   const [reordered, setReordered] = useState<string[]>([]);
   const [openOrder, setOpenOrder] = useState<string | null>(() => orders?.[0]?.id ?? null);
+  const [ordersExpanded, setOrdersExpanded] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [addressModal, setAddressModal] = useState<{ address: UserAddress | null } | null>(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -169,6 +188,7 @@ export default function DashboardDesktop({
     ? ACCOUNT_PROFILE.name
     : (profile?.name || session?.user?.name || session?.user?.email || profile?.email) ?? "";
   const email = preview ? "dana@mercermechanical.com" : (profile?.email ?? session?.user?.email ?? "");
+  const avatarUrl = preview ? null : (profile?.avatarUrl ?? null);
   const initials = displayName
     .split(" ")
     .map((w) => w[0])
@@ -228,7 +248,8 @@ export default function DashboardDesktop({
   // not advertise a file that doesn't exist. The route authorises against
   // the row anyway, so a guessed URL gets a 404 rather than someone's
   // compliance document.
-  const certificateHref = preview || awaitingReview ? null : (profile?.fGasDocumentUrl ?? null);
+  // The secure route, never the storage URL (see lib/fgasStorage).
+  const certificateHref = preview || awaitingReview ? null : (profile?.certificateDocumentHref ?? null);
   const certificateDownloadHref = certificateHref
     ? `${certificateHref}${certificateHref.includes("?") ? "&" : "?"}download=1`
     : null;
@@ -267,6 +288,20 @@ export default function DashboardDesktop({
   const totalOrders = dashboard?.totalOrders ?? (preview ? ACCOUNT_PROFILE.orderCount : 0);
   const activeShipments = dashboard?.activeShipments ?? (preview ? 1 : 0);
   const shownOrders = orders ?? [];
+  // B2B accounts accumulate dozens of orders; the card shows the newest few
+  // until asked. The count badge and empty state still use the full list.
+  const ordersCollapsible = shownOrders.length > ORDERS_COLLAPSED_COUNT;
+  const visibleOrders =
+    ordersExpanded || !ordersCollapsible ? shownOrders : shownOrders.slice(0, ORDERS_COLLAPSED_COUNT);
+  const toggleOrders = () => {
+    if (ordersExpanded) {
+      // Collapsing removes everything below row five; without this the
+      // viewport is left far past the shortened card.
+      const card = document.getElementById("orders");
+      if (card && card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    setOrdersExpanded((v) => !v);
+  };
 
   // Signed-out preview shows one representative card; every mutation is a
   // no-op until there is a session.
@@ -314,8 +349,10 @@ export default function DashboardDesktop({
     { label: tAccount("fieldLanguage"), value: profile ? nativeLanguageName(profile.locale) : nativeLanguageName("en") },
     {
       label: t("fieldRole"),
-      value:
-        profile?.jobTitle || (session?.user?.role === "ADMIN" ? t("roleFounder") : t("rolePurchasing")),
+      // What the user entered, or "Not set". It used to fall back to
+      // "Founder" / "Purchasing" by account role, i.e. a job title nobody
+      // gave — now that the field is editable, the gap should invite filling.
+      value: profile?.jobTitle || (preview ? t("rolePurchasing") : tAccount("fieldEmpty")),
     },
     { label: t("fieldMemberSince"), value: memberSinceYear ? String(memberSinceYear) : tAccount("fieldEmpty") },
   ];
@@ -349,7 +386,7 @@ export default function DashboardDesktop({
       value: String(totalOrders),
       note: memberSinceYear ? t("statSinceNote", { year: memberSinceYear }) : "",
       icon: ShoppingBag,
-      grad: "bg-[linear-gradient(140deg,#2563eb,#4338ca)]",
+      grad: "bg-[linear-gradient(140deg,var(--glow-600),#4338ca)]",
     },
     {
       label: tHome("statInTransit"),
@@ -371,11 +408,16 @@ export default function DashboardDesktop({
     { id: "overview", label: t("tabOverview"), icon: User, target: "identity" },
     { id: "certificate", label: t("tabCertificate"), icon: ShieldCheck, target: "certificate", badge: fgasVerified ? t("badgeValid") : tAccount("pendingVerification") },
     { id: "orders", label: tAccount("navOrderHistory"), icon: Package, target: "orders", badge: shownOrders.length > 0 ? String(shownOrders.length) : undefined },
+    // Formal 48-hour price quotes issued from the cart.
+    { id: "quotes", label: t("tabQuotes"), icon: Receipt, href: "/profile/quotes" as const },
+    { id: "favorites", label: t("tabFavorites"), icon: Heart, href: "/profile/favorites" as const },
     { id: "addresses", label: t("tabAddresses"), icon: Truck, target: "addresses" },
     // Was "/compliance/sds" — the public datasheet library. A tab inside
     // someone's account should open their own certificate and documents.
     { id: "documents", label: t("tabDocuments"), icon: FileText, href: "/profile/docs" as const },
     { id: "security", label: tAccount("navSecurity"), icon: Lock, target: "security" },
+    // Preferences (appearance, alerts) live on their own page.
+    { id: "settings", label: t("tabSettings"), icon: Settings, href: "/profile/settings" as const },
   ];
 
   const goTo = (tab: (typeof tabs)[number]) => {
@@ -421,9 +463,9 @@ export default function DashboardDesktop({
       {/* Ambient glows behind the whole dashboard — three floating radial
           cores masked to fade out by ~42% page height, exactly as designed. */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[1000px] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_0%,#000_42%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_42%,transparent_100%)]">
-        <div className="absolute -top-[330px] left-[-13%] h-[900px] w-[900px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-[.34] blur-[120px] [animation:hc-float_26s_ease-in-out_infinite]" />
-        <div className="absolute -top-[250px] right-[-11%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-30 blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse]" />
-        <div className="absolute -top-[190px] left-[38%] h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-[.26] blur-[110px] [animation:hc-float_38s_ease-in-out_infinite]" />
+        <div className="absolute -top-[330px] left-[-13%] h-[900px] w-[900px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-[.34] blur-[120px] [animation:hc-float_26s_ease-in-out_infinite]" />
+        <div className="absolute -top-[250px] right-[-11%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-30 blur-[120px] [animation:hc-float_32s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -top-[190px] left-[38%] h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-[.26] blur-[110px] [animation:hc-float_38s_ease-in-out_infinite]" />
       </div>
 
       <main className="relative mx-auto max-w-[1320px] px-8 pb-[120px] pt-11">
@@ -473,9 +515,7 @@ export default function DashboardDesktop({
           >
             <div className="relative overflow-hidden rounded-[26px] border border-slate-900/[.14] bg-white/70 p-3.5 shadow-[0_30px_70px_-46px_rgba(2,4,10,.6)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline-strong dark:bg-glass">
               <div className="flex items-center gap-3 border-b border-slate-900/[.07] px-2 pb-4 pt-2 dark:border-hairline">
-                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-[linear-gradient(140deg,#2563eb,#7c3aed)] text-[13px] font-semibold text-white">
-                  {initials}
-                </span>
+                <Avatar avatarUrl={avatarUrl} initials={initials} size={40} className="text-[13px]" />
                 <span className="min-w-0">
                   <span className="block truncate text-[13.5px] font-semibold tracking-[-.02em]">{displayName}</span>
                   <span className="mt-0.5 block truncate text-[11.5px] text-slate-400 dark:text-ink-muted">{email}</span>
@@ -498,7 +538,7 @@ export default function DashboardDesktop({
                       }`}
                     >
                       <span
-                        className={`absolute bottom-[11px] left-0 top-[11px] w-[3px] rounded-full bg-[linear-gradient(180deg,#2563eb,#7c3aed)] transition-[opacity,transform] duration-300 ${
+                        className={`absolute bottom-[11px] left-0 top-[11px] w-[3px] rounded-full bg-[linear-gradient(180deg,var(--glow-600),#7c3aed)] transition-[opacity,transform] duration-300 ${
                           on ? "opacity-100 shadow-[0_0_12px_1px_rgba(59,130,246,.7)]" : "scale-y-[.3] opacity-0"
                         }`}
                       />
@@ -541,7 +581,7 @@ export default function DashboardDesktop({
                     initial={{ width: 0 }}
                     animate={{ width: `${renewalProgress * 100}%` }}
                     transition={{ delay: 0.6, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                    className="block h-full rounded-full bg-[linear-gradient(90deg,#2563eb,#22d3ee)]"
+                    className="block h-full rounded-full bg-[linear-gradient(90deg,var(--glow-600),#22d3ee)]"
                   />
                 </div>
               </div>
@@ -558,12 +598,17 @@ export default function DashboardDesktop({
                 className={`relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white p-[30px] shadow-[0_26px_60px_-44px_rgba(2,4,10,.5)] dark:border-hairline dark:bg-surface ${GLOW_HOVER}`}
               >
                 <div className="pointer-events-none absolute inset-0 opacity-50">
-                  <div className="absolute -top-[190px] right-[-90px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-50 blur-[90px]" />
+                  <div className="absolute -top-[190px] right-[-90px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-50 blur-[90px]" />
                 </div>
                 <div className="relative flex flex-wrap items-center gap-[22px]">
-                  <span className="flex h-[86px] w-[86px] flex-none items-center justify-center rounded-full bg-[linear-gradient(140deg,#2563eb,#7c3aed)] text-[27px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_44px_-22px_rgba(37,99,235,.7)]">
-                    {initials}
-                  </span>
+                  <AvatarUploader
+                    key={avatarUrl ?? "no-avatar"}
+                    avatarUrl={avatarUrl}
+                    initials={initials}
+                    size={86}
+                    editable={!preview}
+                    className="text-[27px] tracking-[-.02em] shadow-[0_22px_44px_-22px_rgba(37,99,235,.7)]"
+                  />
                   <div className="min-w-[240px] flex-1">
                     <div className="mb-2 text-[11px] tracking-[.09em] text-slate-400 dark:text-ink-muted">
                       {t("identityEyebrow")}
@@ -593,9 +638,9 @@ export default function DashboardDesktop({
                 className={`relative h-full overflow-hidden rounded-[28px] bg-[#0b1020] p-7 text-white shadow-[0_40px_80px_-46px_rgba(11,16,32,.9)] border border-transparent ${GLOW_HOVER}`}
               >
                 <div className="pointer-events-none absolute inset-0">
-                  <div className="absolute -top-[42%] left-[-16%] h-[460px] w-[460px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-80 blur-[86px]" />
-                  <div className="absolute -bottom-[40%] right-[-20%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_68%)] opacity-[.62] blur-[86px]" />
-                  <div className="absolute -bottom-[34%] left-[46%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_70%)] opacity-50 blur-[78px]" />
+                  <div className="absolute -top-[42%] left-[-16%] h-[460px] w-[460px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-80 blur-[86px]" />
+                  <div className="absolute -bottom-[40%] right-[-20%] h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-[.62] blur-[86px]" />
+                  <div className="absolute -bottom-[34%] left-[46%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_70%)] opacity-50 blur-[78px]" />
                 </div>
                 <div className="relative">
                   <div className="flex items-center justify-between gap-3.5">
@@ -785,7 +830,7 @@ export default function DashboardDesktop({
                     variants={{ hidden: {}, show: { transition: { staggerChildren: 0.075, delayChildren: 0.12 } } }}
                     className="flex flex-col gap-3"
                   >
-                    {shownOrders.map((order) => {
+                    {visibleOrders.map((order) => {
                       const tone = ORDER_TONES[orderTone(order.status)];
                       const done = order.status === "DELIVERED";
                       const open = openOrder === order.id;
@@ -1022,8 +1067,68 @@ export default function DashboardDesktop({
                     })}
                   </motion.div>
                 )}
+
+                {ordersCollapsible && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={toggleOrders}
+                      aria-expanded={ordersExpanded}
+                      aria-controls="orders"
+                      data-orders-toggle
+                      className="group/toggle flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold tracking-[-.01em] text-slate-500 transition-colors duration-200 hover:bg-slate-900/[.04] hover:text-slate-900 dark:text-ink-muted dark:hover:bg-white/[.06] dark:hover:text-slate-50"
+                    >
+                      {ordersExpanded ? t("showFewerOrders") : t("showAllOrders", { count: shownOrders.length })}
+                      <ChevronDown
+                        size={15}
+                        strokeWidth={2}
+                        className={`transition-transform duration-300 ${ordersExpanded ? "rotate-180" : "group-hover/toggle:translate-y-0.5"}`}
+                      />
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
+
+            {/* F-Gas Compliance Logbook — the dark card, right under the
+                order history it is computed from. */}
+            {!preview && (
+              <motion.div custom={6} initial="hidden" animate="show" variants={rise} className="col-span-9">
+                <Link
+                  href="/profile/compliance"
+                  data-logbook-card
+                  className="group relative flex flex-wrap items-center gap-6 overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#0B1020,#111a33)] p-[26px] text-slate-200 shadow-[0_26px_60px_-40px_rgba(11,16,32,.9)] transition-shadow hover:shadow-[0_30px_70px_-36px_rgba(29,78,216,.6)]"
+                >
+                  <span className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),transparent_68%)] opacity-20 blur-[60px]" />
+                  <span className="relative flex h-12 w-12 flex-none items-center justify-center rounded-[16px] bg-[linear-gradient(140deg,var(--glow-700),#0891b2)] text-white shadow-[0_14px_28px_-14px_rgba(29,78,216,.9)]">
+                    <BookOpen size={21} strokeWidth={1.9} />
+                  </span>
+                  <span className="relative min-w-[220px] flex-1">
+                    <span className="block text-[11px] font-semibold uppercase tracking-[.1em] text-blue-300/80">{t("logbookEyebrow")}</span>
+                    <span className="mt-1 block text-[18px] font-semibold tracking-[-.025em] text-white">{t("logbookTitle")}</span>
+                    <span className="mt-1 block text-[12.5px] text-slate-400">{t("logbookBody")}</span>
+                  </span>
+                  <span className="relative flex gap-6">
+                    <span>
+                      <span className="block text-[10.5px] uppercase tracking-[.08em] text-slate-400">{t("logbookKg", { year: logbook?.year ?? new Date().getFullYear() })}</span>
+                      <span className="mt-1 block text-[22px] font-semibold tabular-nums tracking-[-.03em] text-white" data-logbook-kg>
+                        {format.number(logbook?.massKg ?? 0, { maximumFractionDigits: 1 })}
+                      </span>
+                    </span>
+                    <span>
+                      <span className="block text-[10.5px] uppercase tracking-[.08em] text-slate-400">{t("logbookCo2e")}</span>
+                      <span className="mt-1 block text-[22px] font-semibold tabular-nums tracking-[-.03em] text-white" data-logbook-t>
+                        {format.number(logbook?.co2eTonnes ?? 0, { maximumFractionDigits: 2 })}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="relative inline-flex items-center gap-1.5 rounded-[12px] border border-white/15 px-3.5 py-2 text-[12.5px] font-semibold text-white transition-colors group-hover:bg-white/10">
+                    {t("logbookCta")}
+                    <ArrowRight size={14} strokeWidth={2} className="transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </motion.div>
+            )}
 
             {/* Records & Compliance — invoices, cylinder balance and the
                 carbon record.
@@ -1147,7 +1252,7 @@ export default function DashboardDesktop({
                         } hover:shadow-[0_32px_66px_-40px_rgba(2,4,10,.6),0_0_24px_-8px_rgba(59,130,246,.4)]`}
                       >
                         <div
-                          className={`pointer-events-none absolute left-[-14%] top-[-96%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] blur-[64px] transition-all duration-500 group-hover:scale-[1.14] ${
+                          className={`pointer-events-none absolute left-[-14%] top-[-96%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] blur-[64px] transition-all duration-500 group-hover:scale-[1.14] ${
                             isDefault ? "opacity-[.24] group-hover:opacity-[.34]" : "opacity-0 group-hover:opacity-20"
                           }`}
                         />
@@ -1246,7 +1351,7 @@ export default function DashboardDesktop({
                     onClick={() => !preview && setAddressModal({ address: null })}
                     className="group relative flex min-h-[196px] flex-col items-center justify-center gap-[7px] overflow-hidden rounded-[22px] border-[1.5px] border-dashed border-slate-900/[.2] p-5 transition-[border-color,background,box-shadow] duration-300 hover:border-blue-500/[.55] hover:bg-white/60 hover:shadow-[0_0_30px_-10px_rgba(59,130,246,.5)] dark:border-white/20 dark:hover:border-blue-500/[.55] dark:hover:bg-surface/60"
                   >
-                    <span className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-0 blur-[60px] transition-opacity duration-500 group-hover:opacity-[.26]" />
+                    <span className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-0 blur-[60px] transition-opacity duration-500 group-hover:opacity-[.26]" />
                     <span className="relative mb-1 flex h-11 w-11 items-center justify-center rounded-[15px] border border-slate-900/[.07] bg-slate-100 transition-colors duration-300 group-hover:border-blue-700 group-hover:bg-blue-700 dark:border-hairline dark:bg-surface-3">
                       <Plus size={19} strokeWidth={1.9} className="text-slate-600 transition-colors duration-300 group-hover:text-white dark:text-ink-muted" />
                     </span>
@@ -1261,12 +1366,13 @@ export default function DashboardDesktop({
       </main>
 
       <EditProfileModal
-        key={editProfileOpen ? `edit-${profile?.name ?? ""}-${profile?.companyName ?? ""}-${profile?.jobTitle ?? ""}-${profile?.vatNumber ?? ""}` : "ep-closed"}
+        key={editProfileOpen ? `edit-${profile?.name ?? ""}-${profile?.companyName ?? ""}-${profile?.jobTitle ?? ""}-${profile?.phone ?? ""}-${profile?.vatNumber ?? ""}` : "ep-closed"}
         open={editProfileOpen}
         initial={{
           name: profile?.name ?? displayName,
           companyName: profile?.companyName ?? "",
           jobTitle: profile?.jobTitle ?? "",
+          phone: profile?.phone ?? "",
           vatNumber: profile?.vatNumber ?? "",
         }}
         onClose={() => setEditProfileOpen(false)}

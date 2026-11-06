@@ -5,6 +5,7 @@ import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
+import { LISTED } from "@/lib/productFamily";
 
 const AuditInput = z
   .array(z.object({ sku: z.string().min(1).max(64), qty: z.number().int().min(1).max(99) }))
@@ -58,7 +59,7 @@ export async function auditCart(rawLines: Array<{ sku: string; qty: number }>): 
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
 
   try {
-    const catalog = await prisma.product.findMany();
+    const catalog = await prisma.product.findMany({ where: LISTED });
     const bySku = new Map(catalog.map((p) => [p.sku, p]));
     const lines = parsed.data.filter((l) => bySku.has(l.sku));
     if (lines.length === 0) return { ok: false, code: "INVALID_INPUT" };

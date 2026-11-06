@@ -240,6 +240,70 @@ export interface ComplianceSummary {
    * customer's regulatory position.
    */
   record: { lines: number; unknownGwpLines: number; estimatedLines: number; complete: boolean };
+  /** Every refrigerant line supplied in `period`, newest first — the logbook. */
+  ledger: LedgerLine[];
+}
+
+/**
+ * One supplied refrigerant line, as the logbook and the audit PDF list it.
+ * Built only by `ledgerLines`, so the page and the PDF can't disagree.
+ */
+export interface LedgerLine {
+  orderId: string;
+  orderNumber: string;
+  /** ISO timestamp of the order. */
+  date: string;
+  sku: string;
+  name: string;
+  /** "R-410A" — what a regulator reads. */
+  refrigerant: string;
+  quantity: number;
+  /** Net kg of gas per cylinder, as recorded on the order line. */
+  unitMassKg: number;
+  massKg: number;
+  /** The factor used; null when none exists anywhere (the line is then not costed). */
+  gwp: number | null;
+  co2eKg: number;
+  co2eTonnes: number;
+  /** GWP reconstructed from today's catalogue because the line predates the snapshot. */
+  estimated: boolean;
+}
+
+type LedgerOrder = {
+  id: string;
+  orderNumber: string;
+  createdAt: Date;
+  items: Co2eInputItem[];
+};
+
+/**
+ * Flattens orders into logbook lines. Equipment is left out — it carries no
+ * refrigerant, so it belongs on the invoice, not in a gas supply ledger —
+ * and the arithmetic is calculateOrderCo2e's, the one place it lives.
+ */
+export function ledgerLines(orders: LedgerOrder[]): LedgerLine[] {
+  const out: LedgerLine[] = [];
+  for (const order of orders) {
+    for (const line of calculateOrderCo2e(order.items).lines) {
+      if (!line.isGas) continue;
+      out.push({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        date: order.createdAt.toISOString(),
+        sku: line.sku,
+        name: line.name,
+        refrigerant: refrigerantOf(line.name),
+        quantity: line.quantity,
+        unitMassKg: line.unitMassKg,
+        massKg: line.massKg,
+        gwp: line.gwp,
+        co2eKg: line.co2eKg,
+        co2eTonnes: kgToTonnes(line.co2eKg),
+        estimated: line.gwpSource === "catalogue",
+      });
+    }
+  }
+  return out;
 }
 
 /** Refrigerant mark from the product name: "R-410A Premium" → "R-410A". */
@@ -264,6 +328,7 @@ export async function getCustomerComplianceSummary(
     where: { userId, paymentStatus: { not: "FAILED" } },
     select: {
       id: true,
+      orderNumber: true,
       createdAt: true,
       items: {
         select: {
@@ -345,6 +410,8 @@ export async function getCustomerComplianceSummary(
       estimatedLines: all.estimatedLines,
       complete: all.unknownGwpLines === 0,
     },
+    // Orders are already newest-first; the ledger follows the selected period.
+    ledger: ledgerLines(period === "all" ? orders : ytdOrders),
   };
 }
 

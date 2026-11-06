@@ -1,9 +1,11 @@
 "use client";
 
-import { cylinderGasPrice, roundMoney } from "@/lib/pricing";
+import { cylinderGasPrice } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
+import { showSizeInUrl } from "@/lib/productFamily";
 import MobilePdpLayout from "./MobilePdpLayout";
 import StockNotifyBlock from "./StockNotifyBlock";
+import FavoriteButton from "./FavoriteButton";
 import AdminRestockTest from "./AdminRestockTest";
 import { useMemo, useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
@@ -33,18 +35,13 @@ import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/lib/store/cart";
 import { checkCompatibility, type CompatibilityResult } from "@/lib/actions/compatibility";
 import { modelPathForProduct } from "@/lib/productMedia";
+import ProductThumbnail from "./ProductThumbnail";
+import { productDocument, type ProductDocumentType } from "@/lib/productDocuments";
 import type { StoreProduct } from "@/lib/data";
 
 // WebGL has no business in the server bundle, and the viewer pulls in
 // three + drei — keep it out of the page's initial JS.
 const ProductModelViewer = dynamic(() => import("./3d/ProductModelViewer"), { ssr: false });
-
-/* Volume-discount policy applied to the live base price. */
-const TIERS = [
-  { labelKey: "tier1", min: 1, discount: 0 },
-  { labelKey: "tier2", min: 5, discount: 7 },
-  { labelKey: "tier3", min: 20, discount: 13 },
-] as const;
 
 /* Stage light follows the product: A2L low-GWP = emerald, A1 = cyan, gear = blue. */
 const brandFor = (p: StoreProduct) =>
@@ -61,23 +58,31 @@ const STOCK_BADGE = {
   out: { key: "stockOut", dot: "#f87171", cls: "border-[rgba(248,113,113,.32)] bg-[rgba(239,68,68,.12)] text-[#b91c1c] dark:text-[#fca5a5] shadow-[0_0_18px_-6px_#f87171]" },
 } as const;
 
-const RELATED_TINTS = ["#22d3ee", "#34d399", "#60a5fa", "#a78bfa", "#34d399", "#22d3ee"];
+const RELATED_OUTLINE = (
+  <span className="absolute inset-0 grid place-items-center">
+    <span className="block h-[84px] w-[42px] rounded-t-[22px] rounded-b-md border border-dashed border-slate-900/[.22] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.26] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))]" />
+  </span>
+);
 
+const RELATED_TINTS =["#22d3ee", "#34d399", "#60a5fa", "#a78bfa", "#34d399", "#22d3ee"];
+
+// Which of these a product actually has is decided by lib/productDocuments;
+// a row with no file behind it renders as "on request", not as a dead link.
 const DOCS = [
-  { id: "sds", nameKey: "docSds", metaKey: "docSdsMeta", icon: FileText },
-  { id: "adr", nameKey: "docAdr", metaKey: "docAdrMeta", icon: Truck },
-  { id: "coa", nameKey: "docCoa", metaKey: "docCoaMeta", icon: FlaskConical },
-  { id: "ahri", nameKey: "docAhri", metaKey: "docAhriMeta", icon: ShieldCheck },
-] as const;
+  { id: "sds", nameKey: "docSds", icon: FileText },
+  { id: "adr", nameKey: "docAdr", icon: Truck },
+  { id: "coa", nameKey: "docCoa", icon: FlaskConical },
+  { id: "ahri", nameKey: "docAhri", icon: ShieldCheck },
+] as const satisfies readonly { id: ProductDocumentType; nameKey: string; icon: unknown }[];
 
 interface ProductDetailProps {
   product: StoreProduct;
   related: StoreProduct[];
-  /** Sibling SKUs of the same refrigerant — the mobile size selector. */
+  /** Every size of this product (its family), smallest first; includes `product`. */
   variants: StoreProduct[];
 }
 
-export default function ProductDetail({ product, related, variants }: ProductDetailProps) {
+export default function ProductDetail({ product: initialProduct, related, variants }: ProductDetailProps) {
   const locale = useLocale();
   const t = useTranslations("ProductDetail");
   const tProducts = useTranslations("Products");
@@ -87,7 +92,6 @@ export default function ProductDetail({ product, related, variants }: ProductDet
   const addItem = useCartStore((s) => s.addItem);
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [tierIdx, setTierIdx] = useState(0);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -97,6 +101,21 @@ export default function ProductDetail({ product, related, variants }: ProductDet
   const [aiPending, startAi] = useTransition();
   const [relAdded, setRelAdded] = useState<string[]>([]);
   const railRef = useRef<HTMLDivElement>(null);
+
+  // The size selector. Each size is its own row with its own SKU, price,
+  // weight, deposit and stock, so `product` below is simply the chosen row:
+  // the price, net weight, spec sheet, stock badge, waitlist and cart line
+  // all follow the selection with no request and no reload.
+  const [selectedId, setSelectedId] = useState(initialProduct.id);
+  const product = useMemo(
+    () => variants.find((v) => v.id === selectedId) ?? initialProduct,
+    [variants, selectedId, initialProduct]
+  );
+  const selectSize = (id: string) => {
+    setSelectedId(id);
+    setAdded(false);
+    showSizeInUrl(id);
+  };
 
   const brand = brandFor(product);
 
@@ -113,11 +132,11 @@ export default function ProductDetail({ product, related, variants }: ProductDet
   const stock = STOCK_BADGE[stockKey];
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
-  const tier = TIERS[tierIdx];
-  // Volume tiers discount the per-kg rate; the cylinder figure follows from
-  // it (pricePerKg × weightKg). Equipment has weightKg 1, so both coincide.
-  const tierPerKg = (discount: number) => roundMoney(product.pricePerKg * (1 - discount / 100));
-  const unitPerKg = tierPerKg(tier.discount);
+  // One price per size: the container's gas figure, pricePerKg × weightKg.
+  // There is no quantity discount — the volume tiers that used to sit here
+  // were never applied at checkout (prepareOrder prices from the row), so
+  // the cart showed a discount the order then didn't give.
+  const unitPerKg = product.pricePerKg;
   const unitPrice = cylinderGasPrice(unitPerKg, product.weightKg);
 
   // Which .glb this product gets, resolved from its refrigerant mark. Null
@@ -192,7 +211,7 @@ export default function ProductDetail({ product, related, variants }: ProductDet
         : { box: "border-[rgba(245,158,11,.26)] bg-[rgba(245,158,11,.09)]", text: "text-[#b45309] dark:text-[#fbbf24]", label: t("aiUnknown") };
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       {/* Two layouts, one route and one set of real data. The mobile
           tree is its own design (My Energy PDP Mobile) rather than a
           reflow of the desktop one, which is why it is a separate
@@ -202,8 +221,8 @@ export default function ProductDetail({ product, related, variants }: ProductDet
 
       <div className="relative overflow-x-clip">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1000px] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)]">
-          <div className="absolute -top-[280px] left-[-10%] h-[820px] w-[820px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-[.28] blur-[120px] [animation:hc-float_28s_ease-in-out_infinite]" />
-          <div className="absolute -top-[180px] right-[-6%] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_66%)] opacity-[.26] blur-[120px] [animation:hc-float_36s_ease-in-out_infinite_reverse]" />
+          <div className="absolute -top-[280px] left-[-10%] h-[820px] w-[820px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-[.28] blur-[120px] [animation:hc-float_28s_ease-in-out_infinite]" />
+          <div className="absolute -top-[180px] right-[-6%] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.26] blur-[120px] [animation:hc-float_36s_ease-in-out_infinite_reverse]" />
         </div>
 
         {/* page mount: elegant fade + glide up */}
@@ -315,7 +334,7 @@ export default function ProductDetail({ product, related, variants }: ProductDet
                   </p>
 
                   <div className="mt-6 flex flex-wrap items-end gap-3.5">
-                    <span className="min-w-0">
+                    <span className="min-w-0 flex-1">
                       {/* B2B buyers order whole cylinders, so the cylinder is
                           the headline figure; the €/kg rate that produced it
                           sits underneath as supporting detail. */}
@@ -338,51 +357,40 @@ export default function ProductDetail({ product, related, variants }: ProductDet
                         </span>
                       )}
                     </span>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-semibold ${
-                        tier.discount
-                          ? "border-[rgba(16,185,129,.28)] bg-[rgba(16,185,129,.14)] text-[#047857] dark:text-[#34d399]"
-                          : "border-slate-900/[.07] bg-slate-100 text-slate-400 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
-                      }`}
-                    >
-                      {tier.discount ? t("saveTier", { pct: tier.discount }) : t("listPrice")}
-                    </span>
+                    {/* Saves the selected size: switching size switches which row the heart reflects. */}
+                    <FavoriteButton productId={product.id} productName={`${product.name} · ${product.weightLabel}`} size="lg" />
                   </div>
 
-                  {product.pricePerKg > 0 && (
-                  <div className="mt-[22px]">
-                    <div className="mb-2.5 text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("volumeTier")}</div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {TIERS.map((tr, i) => {
-                        const on = i === tierIdx;
-                        return (
-                          <motion.button
-                            key={tr.labelKey}
-                            type="button"
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => setTierIdx(i)}
-                            className={`rounded-[15px] border px-2.5 py-3 text-center transition-colors ${
-                              on
-                                ? "border-blue-700 bg-blue-700 text-white shadow-[0_14px_28px_-14px_#1d4ed8]"
-                                : "border-slate-900/[.07] bg-slate-100 text-slate-600 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
-                            }`}
-                          >
-                            <span className="block text-[12.5px] font-semibold tracking-[-.015em]">{t(tr.labelKey)}</span>
-                            {/* Per cylinder first, matching the headline;
-                                the discounted €/kg follows for reference. */}
-                            <span className="mt-[3px] block text-[11px] opacity-75" data-tier-cylinder>
-                              {eur(cylinderGasPrice(tierPerKg(tr.discount), product.weightKg))}
-                            </span>
-                            {product.pricedPerKg && (
-                              <span className="mt-px block text-[9.5px] opacity-60" data-tier-perkg>
-                                {tProducts("perKgAmount", { amount: eur(tierPerKg(tr.discount)) })}
+                  {variants.length > 1 && (
+                    <div className="mt-[22px]" data-size-selector>
+                      <div className="mb-2.5 text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("sizeHeading")}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {variants.map((v) => {
+                          const on = v.id === product.id;
+                          const sellable = isPurchasable(v) && v.pricePerKg > 0;
+                          return (
+                            <motion.button
+                              key={v.id}
+                              type="button"
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() => selectSize(v.id)}
+                              aria-pressed={on}
+                              data-size={v.sku}
+                              className={`rounded-[15px] border px-3.5 py-2.5 text-left transition-colors ${
+                                on
+                                  ? "border-blue-700 bg-blue-700 text-white shadow-[0_14px_28px_-14px_var(--glow-700)]"
+                                  : "border-slate-900/[.07] bg-slate-100 text-slate-600 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
+                              } ${!on && !sellable ? "opacity-50" : ""}`}
+                            >
+                              <span className="block text-[12.5px] font-semibold tracking-[-.015em]">{v.weightLabel}</span>
+                              <span className="mt-[3px] block text-[11px] opacity-75">
+                                {!isPurchasable(v) ? t("stockOut") : v.pricePerKg > 0 ? eur(v.cylinderPrice) : tProducts("priceOnRequest")}
                               </span>
-                            )}
-                          </motion.button>
-                        );
-                      })}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
                   )}
 
                   {isAvailable ? (
@@ -405,7 +413,7 @@ export default function ProductDetail({ product, related, variants }: ProductDet
                         className={`flex h-[52px] min-w-0 flex-1 items-center justify-center gap-2.5 rounded-2xl px-[22px] text-[15px] font-semibold tracking-[-.02em] text-white transition-[background-color,box-shadow] duration-300 ${
                           added
                             ? "bg-green-600 shadow-[0_26px_52px_-18px_#16a34a,0_0_34px_-8px_#16a34a]"
-                            : "bg-blue-700 shadow-[0_18px_38px_-18px_#1d4ed8] hover:bg-blue-800 hover:shadow-[0_26px_52px_-18px_#1d4ed8,0_0_34px_-8px_#1d4ed8]"
+                            : "bg-blue-700 shadow-[0_18px_38px_-18px_var(--glow-700)] hover:bg-blue-800 hover:shadow-[0_26px_52px_-18px_var(--glow-700),0_0_34px_-8px_var(--glow-700)]"
                         }`}
                       >
                         {added ? t("addedToCart") : tHome("addToCart")}
@@ -434,7 +442,7 @@ export default function ProductDetail({ product, related, variants }: ProductDet
                       <motion.span
                         animate={aiPending ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                         transition={aiPending ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
-                        className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,#2563eb,#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.7)]"
+                        className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.7)]"
                       >
                         <Sparkles size={18} strokeWidth={2} className="text-white" />
                       </motion.span>
@@ -469,7 +477,7 @@ export default function ProductDetail({ product, related, variants }: ProductDet
                               whileTap={{ scale: 0.95 }}
                               onClick={runAi}
                               aria-label={t("aiTitle")}
-                              className="flex h-11 w-11 flex-none items-center justify-center rounded-[14px] bg-blue-700 shadow-[0_12px_24px_-12px_#1d4ed8] transition-colors hover:bg-blue-800"
+                              className="flex h-11 w-11 flex-none items-center justify-center rounded-[14px] bg-blue-700 shadow-[0_12px_24px_-12px_var(--glow-700)] transition-colors hover:bg-blue-800"
                             >
                               <Send size={16} strokeWidth={2} className="text-white" />
                             </motion.button>
@@ -565,25 +573,55 @@ export default function ProductDetail({ product, related, variants }: ProductDet
             >
               <h2 className="m-0 mb-5 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("docsTitle")}</h2>
               <div className="flex flex-col gap-2.5">
-                {DOCS.map(({ id, nameKey, metaKey, icon: Icon }) => (
-                  <motion.div key={id} whileTap={{ scale: 0.97 }}>
-                    <Link
-                      href="/compliance/sds"
-                      className="group flex w-full items-center gap-3 rounded-[18px] border border-slate-900/[.07] p-[13px] text-left transition-[background-color,border-color,box-shadow] duration-300 hover:border-[rgba(96,165,250,.34)] hover:bg-slate-100 hover:shadow-[0_0_22px_-8px_rgba(59,130,246,.6)] dark:border-hairline dark:hover:bg-surface-3"
-                    >
-                      <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] border border-slate-900/[.07] bg-slate-100 transition-colors group-hover:border-[rgba(37,99,235,.3)] group-hover:bg-blue-700/[.08] dark:border-hairline dark:bg-surface-3 dark:group-hover:bg-blue-600/[.18]">
-                        <Icon size={17} strokeWidth={2} className="text-slate-600 transition-colors group-hover:text-blue-700 dark:text-ink-muted dark:group-hover:text-blue-400" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-semibold tracking-[-.02em]">{t(nameKey)}</span>
-                        <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-ink-muted">{t(metaKey)}</span>
-                      </span>
-                      <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[11px] transition-[background-color,box-shadow] duration-300 group-hover:bg-blue-700 group-hover:shadow-[0_12px_24px_-12px_#1d4ed8]">
-                        <Download size={15} strokeWidth={2} className="text-slate-400 transition-colors group-hover:text-white dark:text-ink-muted" />
-                      </span>
-                    </Link>
-                  </motion.div>
-                ))}
+                {DOCS.map(({ id, nameKey, icon: Icon }) => {
+                  const file = productDocument(id, product);
+                  if (!file) {
+                    // Nothing on file for this product: say so instead of
+                    // offering a download that would 404.
+                    return (
+                      <div
+                        key={id}
+                        className="flex w-full items-center gap-3 rounded-[18px] border border-dashed border-slate-900/[.1] p-[13px] dark:border-hairline"
+                        data-doc={id}
+                        data-doc-available="false"
+                      >
+                        <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] border border-slate-900/[.07] bg-slate-100 dark:border-hairline dark:bg-surface-3">
+                          <Icon size={17} strokeWidth={2} className="text-slate-400 dark:text-ink-muted" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13px] font-semibold tracking-[-.02em] text-slate-500 dark:text-ink-muted">{t(nameKey)}</span>
+                          <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-ink-muted">{t("docOnRequest")}</span>
+                        </span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <motion.div key={id} whileTap={{ scale: 0.97 }}>
+                      {/* A plain <a>, not the i18n Link: Link would prefix the
+                          locale and send /en/api/... to the page router. The
+                          route redirects to the static file; `download` names
+                          the saved copy. */}
+                      <a
+                        href={`/api/documents/${id}/${encodeURIComponent(product.sku)}`}
+                        download={file.filename}
+                        data-doc={id}
+                        data-doc-available="true"
+                        className="group flex w-full items-center gap-3 rounded-[18px] border border-slate-900/[.07] p-[13px] text-left transition-[background-color,border-color,box-shadow] duration-300 hover:border-[rgba(96,165,250,.34)] hover:bg-slate-100 hover:shadow-[0_0_22px_-8px_rgba(59,130,246,.6)] dark:border-hairline dark:hover:bg-surface-3"
+                      >
+                        <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] border border-slate-900/[.07] bg-slate-100 transition-colors group-hover:border-[rgba(37,99,235,.3)] group-hover:bg-blue-700/[.08] dark:border-hairline dark:bg-surface-3 dark:group-hover:bg-blue-600/[.18]">
+                          <Icon size={17} strokeWidth={2} className="text-slate-600 transition-colors group-hover:text-blue-700 dark:text-ink-muted dark:group-hover:text-blue-400" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[13px] font-semibold tracking-[-.02em]">{t(nameKey)}</span>
+                          <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-ink-muted">PDF · {file.revision}</span>
+                        </span>
+                        <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[11px] transition-[background-color,box-shadow] duration-300 group-hover:bg-blue-700 group-hover:shadow-[0_12px_24px_-12px_var(--glow-700)]">
+                          <Download size={15} strokeWidth={2} className="text-slate-400 transition-colors group-hover:text-white dark:text-ink-muted" />
+                        </span>
+                      </a>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
 
@@ -664,7 +702,14 @@ export default function ProductDetail({ product, related, variants }: ProductDet
                         style={{ background: `radial-gradient(circle,${tint},transparent 68%)` }}
                       />
                       <span className="relative m-3 mb-0 flex h-[132px] items-center justify-center overflow-hidden rounded-2xl bg-slate-100 dark:bg-surface-3">
-                        <span className="block h-[84px] w-[42px] rounded-t-[22px] rounded-b-md border border-dashed border-slate-900/[.22] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.26] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))]" />
+                        {/* The same still the catalog grid shows; the outline
+                            is only for products with no render of their own. */}
+                        <ProductThumbnail
+                          sku={rel.sku}
+                          name={rel.name}
+                          fallback={RELATED_OUTLINE}
+                          sizes="212px"
+                        />
                       </span>
                       <span className="relative block p-4">
                         <span className="block text-[13.5px] font-semibold tracking-[-.025em]">{rel.name}</span>

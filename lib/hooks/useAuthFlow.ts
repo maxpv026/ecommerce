@@ -8,6 +8,8 @@ import { useRouter } from "@/i18n/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { toast } from "sonner";
 import { requestEmailOtp, type RequestOtpErrorCode } from "@/lib/actions/otp";
+import { cancelGoogleTwoFactor, completeGoogleTwoFactor } from "@/lib/actions/googleTwoFactor";
+import { callbackPath } from "@/lib/callbackPath";
 
 export type AuthMode = "signin" | "register";
 export type AuthStep = "credentials" | "code";
@@ -59,7 +61,29 @@ export interface AuthFlowOptions {
   initialEmail?: string;
   /** Runs right after a successful sign-in (e.g. closing the AuthModal). */
   onSuccess?: () => void;
+  /**
+   * `?error=` on /auth — set by NextAuth (pages.error) or by our own
+   * signIn callback when a Google sign-in is refused.
+   */
+  initialErrorCode?: string | null;
+  /**
+   * `?step=google-2fa` on /auth: Google already confirmed who this is and
+   * the login is paused for the authenticator code (lib/googleTwoFactor).
+   * Opens straight on the code step.
+   */
+  pendingGoogleTwoFactor?: boolean;
 }
+
+/** NextAuth / auth.ts error codes → the Auth message that explains them. */
+const ERROR_MESSAGE_KEYS: Record<string, string> = {
+  "google-2fa-expired": "errorGoogleTwoFactorExpired",
+  "google-unverified": "errorGoogleUnverified",
+  OAuthAccountNotLinked: "errorGoogleNotLinked",
+  AccessDenied: "errorGoogleGeneric",
+  OAuthCallbackError: "errorGoogleGeneric",
+  OAuthSignInError: "errorGoogleGeneric",
+  Configuration: "errorGoogleGeneric",
+};
 
 /**
  * Shared two-step (credentials → emailed OTP) sign-in flow.
@@ -75,17 +99,24 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
   const activeLocale = useLocale();
 
   const [mode, setModeState] = useState<AuthMode>(options.initialMode ?? "signin");
-  const [step, setStep] = useState<AuthStep>("credentials");
+  // A paused Google sign-in (see AuthFlowOptions.pendingGoogleTwoFactor)
+  // finishes through completeGoogleTwoFactor instead of the password route.
+  const [googlePending, setGooglePending] = useState(Boolean(options.pendingGoogleTwoFactor));
+  const [step, setStep] = useState<AuthStep>(options.pendingGoogleTwoFactor ? "code" : "credentials");
   // Which second factor this account uses, so the code screen can say where
   // to look. Accounts with an authenticator are never emailed a code.
-  const [factor, setFactor] = useState<"email" | "totp">("email");
+  const [factor, setFactor] = useState<"email" | "totp">(options.pendingGoogleTwoFactor ? "totp" : "email");
   const [email, setEmail] = useState(options.initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [codeMode, setCodeMode] = useState<CodeMode>("totp");
   const [recoveryCode, setRecoveryCodeState] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    const code = options.initialErrorCode;
+    if (!code) return null;
+    return t(ERROR_MESSAGE_KEYS[code] ?? "errorGoogleGeneric");
+  });
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -209,13 +240,35 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     setError(null);
     setVerifying(true);
 
-    const result = await signIn("credentials", { email, password, code, redirect: false });
-    if (result?.error) {
-      setVerifying(false);
-      const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : "errorInvalidCode";
-      setError(t(key));
-      toast.error(t(key));
-      return;
+    if (googlePending) {
+      const result = await completeGoogleTwoFactor(code).catch(() => null);
+      if (!result?.ok) {
+        setVerifying(false);
+        if (result?.code === "EXPIRED") {
+          // The five-minute window passed: start the Google step again.
+          setGooglePending(false);
+          setStep("credentials");
+          setError(t("errorGoogleTwoFactorExpired"));
+          return;
+        }
+        const message =
+          result?.code === "LOCKED"
+            ? t("errorTwoFactorLockedMinutes", { minutes: result.retryAfterMinutes ?? 15 })
+            : t(codeMode === "recovery" ? "errorInvalidRecoveryCode" : "errorInvalidCode");
+        setError(message);
+        toast.error(message);
+        return;
+      }
+      setGooglePending(false);
+    } else {
+      const result = await signIn("credentials", { email, password, code, redirect: false });
+      if (result?.error) {
+        setVerifying(false);
+        const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : "errorInvalidCode";
+        setError(t(key));
+        toast.error(t(key));
+        return;
+      }
     }
 
     toast.success(t("toastSignedIn"));
@@ -227,13 +280,16 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     setVerifying(false);
     options.onSuccess?.();
     if (callbackUrl !== null) {
+      // Locale-free and same-site only: the next-intl router adds the
+      // locale itself (see lib/callbackPath).
+      const destination = callbackPath(callbackUrl);
       const targetLocale = session?.user?.locale;
       if (targetLocale && targetLocale !== activeLocale) {
-        router.push(callbackUrl, { locale: targetLocale });
+        router.push(destination, { locale: targetLocale });
         router.refresh();
         return;
       }
-      router.push(callbackUrl);
+      router.push(destination);
     }
     router.refresh();
   };
@@ -249,6 +305,11 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
   };
 
   const goBackToCredentials = () => {
+    if (googlePending) {
+      // Abandoning the paused Google sign-in: drop its challenge cookie.
+      setGooglePending(false);
+      void cancelGoogleTwoFactor().catch(() => {});
+    }
     setStep("credentials");
     setError(null);
     setCodeMode("totp");
@@ -287,5 +348,6 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     handleGoogle,
     resendCode,
     goBackToCredentials,
+    googlePending,
   };
 }

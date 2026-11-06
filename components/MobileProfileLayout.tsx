@@ -1,7 +1,7 @@
 "use client";
 
 import { cartLineFromOrderItem } from "@/lib/store/cart";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
@@ -22,6 +22,8 @@ import {
   MapPin,
   Moon,
   Package,
+  Receipt,
+  Heart,
   ShieldCheck,
   SlidersHorizontal,
   Truck,
@@ -30,16 +32,10 @@ import { useCartStore } from "@/lib/store/cart";
 import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import RecordsCard from "./profile/RecordsCard";
 import ProfileEditDrawer from "./ProfileEditDrawer";
+import { useThemeChoice } from "@/lib/hooks/useThemeChoice";
+import AvatarUploader from "./AvatarUploader";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
-
-const THEME_KEY = "halocore-theme";
-const subscribeTheme = (cb: () => void) => {
-  const observer = new MutationObserver(cb);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-  return () => observer.disconnect();
-};
-const themeSnapshot = () => document.documentElement.classList.contains("dark");
 
 const TONES: Record<OrderStatus, { fg: string; dark: string; dot: string; bg: string; bd: string; live: boolean }> = {
   IN_TRANSIT: { fg: "#0369a1", dark: "#38bdf8", dot: "#22d3ee", bg: "rgba(56,189,248,.14)", bd: "rgba(56,189,248,.3)", live: true },
@@ -111,14 +107,10 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
   const [reordered, setReordered] = useState<string[]>([]);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const isDark = useSyncExternalStore(subscribeTheme, themeSnapshot, () => false);
-  const flipTheme = () => {
-    const next = isDark ? "light" : "dark";
-    document.documentElement.classList.toggle("dark", next === "dark");
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {}
-  };
+  // Same hook as the settings card and header toggle, so a flip here also
+  // reaches the account for a signed-in user.
+  const { isDark, setChoice: setThemeChoice } = useThemeChoice();
+  const flipTheme = () => setThemeChoice(isDark ? "light" : "dark");
 
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
   const day = (value: string) => {
@@ -133,6 +125,8 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
   // is revalidated by updateProfile(), so it is the fresher of the two.
   const name = profile?.name || session?.user?.name || session?.user?.email || "";
   const email = profile?.email || session?.user?.email || "";
+  // The row first (revalidated on upload), then the session copy.
+  const avatarUrl = profile?.avatarUrl ?? session?.user?.image ?? null;
   const companyName = profile?.companyName ?? session?.user?.companyName ?? null;
   const subtitle = [companyName, profile?.jobTitle].filter(Boolean).join(" · ");
   const initials = name
@@ -179,12 +173,12 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
   ];
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-clip bg-white dark:bg-canvas">
+    <div className="relative min-h-screen w-full overflow-x-clip bg-canvas">
       {/* ambient orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-[190px] left-[-28%] h-[430px] w-[430px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-30 blur-[92px] [animation:hc-breathe_11s_ease-in-out_infinite]" />
-        <div className="absolute -top-[120px] right-[-24%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_66%)] opacity-[.26] blur-[88px] [animation:hc-breathe_14s_ease-in-out_infinite_reverse]" />
-        <div className="absolute -bottom-[120px] left-[8%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,#34d399,rgba(52,211,153,0)_68%)] opacity-[.16] blur-[84px] [animation:hc-breathe_13s_ease-in-out_infinite]" />
+        <div className="absolute -top-[190px] left-[-28%] h-[430px] w-[430px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-30 blur-[92px] [animation:hc-breathe_11s_ease-in-out_infinite]" />
+        <div className="absolute -top-[120px] right-[-24%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.26] blur-[88px] [animation:hc-breathe_14s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -bottom-[120px] left-[8%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,var(--orb-emerald),rgba(52,211,153,0)_68%)] opacity-[.16] blur-[84px] [animation:hc-breathe_13s_ease-in-out_infinite]" />
       </div>
 
       {/* sticky glass header */}
@@ -216,15 +210,18 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
           className="px-[18px] pt-3.5"
         >
           <div className="relative overflow-hidden rounded-[28px] border border-slate-900/[.1] bg-white/70 p-5 shadow-[0_30px_66px_-44px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
-            <span className="pointer-events-none absolute -top-[104%] right-[-28%] h-[280px] w-[280px] rounded-full bg-[radial-gradient(circle,#2563eb,transparent_68%)] opacity-[.28] blur-[66px]" />
+            <span className="pointer-events-none absolute -top-[104%] right-[-28%] h-[280px] w-[280px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_68%)] opacity-[.28] blur-[66px]" />
 
             <div className="relative flex items-center gap-3.5">
-              <span
-                data-avatar
-                className="flex h-[58px] w-[58px] flex-none items-center justify-center rounded-full bg-[linear-gradient(140deg,#2563eb,#7c3aed)] text-[19px] font-semibold tracking-[-.02em] text-white shadow-[0_16px_32px_-16px_rgba(37,99,235,.8)]"
-              >
-                {initials || "•"}
-              </span>
+              {/* Same uploader as desktop, so a phone can change the photo too. */}
+              <AvatarUploader
+                key={avatarUrl ?? "no-avatar"}
+                avatarUrl={avatarUrl}
+                initials={initials || "•"}
+                size={58}
+                editable={Boolean(profile)}
+                className="text-[19px] tracking-[-.02em] shadow-[0_16px_32px_-16px_rgba(37,99,235,.8)]"
+              />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[17px] font-semibold leading-[1.2] tracking-[-.035em]">{name}</span>
                 {subtitle && (
@@ -277,7 +274,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
               data-edit-profile
               aria-haspopup="dialog"
               aria-expanded={editOpen}
-              className="relative mt-[15px] flex min-h-[46px] w-full items-center justify-center rounded-[15px] bg-blue-700 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_#2563eb] transition-colors hover:bg-blue-800"
+              className="relative mt-[15px] flex min-h-[46px] w-full items-center justify-center rounded-[15px] bg-blue-700 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_var(--glow-600)] transition-colors hover:bg-blue-800"
             >
               {tPd("editProfile")}
             </motion.button>
@@ -297,7 +294,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                 data-profile-tab={id}
                 className={`flex min-h-10 flex-none snap-start items-center gap-[7px] whitespace-nowrap rounded-full border px-3.5 text-[12.5px] font-semibold tracking-[-.015em] transition-colors ${
                   on
-                    ? "border-transparent bg-blue-700 text-white shadow-[0_14px_28px_-16px_#2563eb]"
+                    ? "border-transparent bg-blue-700 text-white shadow-[0_14px_28px_-16px_var(--glow-600)]"
                     : "border-slate-900/[.14] text-slate-500 dark:border-hairline-strong dark:text-ink-muted"
                 }`}
               >
@@ -321,6 +318,36 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
         {/* ── Orders ── */}
         {tab === "orders" && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-orders>
+            {/* Quotes sit with orders: both are "what I'm buying". */}
+            <Link
+              href="/profile/quotes"
+              data-my-quotes
+              className="mb-[11px] flex min-h-[56px] items-center gap-3 rounded-[22px] border border-slate-900/[.1] bg-white/70 px-[15px] py-3 backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[12px] bg-blue-700/[.1] text-blue-700 dark:bg-blue-500/[.16] dark:text-blue-400">
+                <Receipt size={17} strokeWidth={1.9} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-semibold tracking-[-.02em]">{tPd("tabQuotes")}</span>
+                <span className="mt-0.5 block text-[11.5px] text-slate-400 dark:text-ink-muted">{tPd("tabQuotesNote")}</span>
+              </span>
+              <ChevronRight size={16} strokeWidth={2} className="flex-none text-slate-400 dark:text-ink-muted" />
+            </Link>
+            {/* Saved sizes, next to quotes and orders. */}
+            <Link
+              href="/profile/favorites"
+              data-my-favorites
+              className="mb-[11px] flex min-h-[56px] items-center gap-3 rounded-[22px] border border-slate-900/[.1] bg-white/70 px-[15px] py-3 backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[12px] bg-blue-700/[.1] text-blue-700 dark:bg-blue-500/[.16] dark:text-blue-400">
+                <Heart size={17} strokeWidth={1.9} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-semibold tracking-[-.02em]">{tPd("tabFavorites")}</span>
+                <span className="mt-0.5 block text-[11.5px] text-slate-400 dark:text-ink-muted">{tPd("tabFavoritesNote")}</span>
+              </span>
+              <ChevronRight size={16} strokeWidth={2} className="flex-none text-slate-400 dark:text-ink-muted" />
+            </Link>
             {(orders ?? []).map((order) => {
               const tone = TONES[order.status];
               const open = openOrder === order.id;
@@ -426,7 +453,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                               onClick={() => reorder(order)}
                               disabled={again}
                               className={`min-h-9 flex-none rounded-[11px] px-3.5 text-[11.5px] font-semibold tracking-[-.01em] text-white ${
-                                again ? "bg-green-600 shadow-[0_12px_24px_-14px_#16a34a]" : "bg-blue-700 shadow-[0_12px_24px_-14px_#2563eb]"
+                                again ? "bg-green-600 shadow-[0_12px_24px_-14px_#16a34a]" : "bg-blue-700 shadow-[0_12px_24px_-14px_var(--glow-600)]"
                               }`}
                             >
                               {again ? tHm("reorderedBtn") : tHm("reorderBtn")}
@@ -450,7 +477,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                 data-cert-card
                 className="relative mb-3 overflow-hidden rounded-[22px] border border-[rgba(16,185,129,.27)] bg-white/70 p-[17px] shadow-[0_0_26px_-16px_#34d399] backdrop-blur-xl backdrop-saturate-150 dark:bg-glass"
               >
-                <span className="pointer-events-none absolute -bottom-[150%] left-[-22%] h-[230px] w-[230px] rounded-full bg-[radial-gradient(circle,#34d399,transparent_68%)] opacity-20 blur-[58px]" />
+                <span className="pointer-events-none absolute -bottom-[150%] left-[-22%] h-[230px] w-[230px] rounded-full bg-[radial-gradient(circle,var(--orb-emerald),transparent_68%)] opacity-20 blur-[58px]" />
                 <span className="relative flex items-start gap-3">
                   <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl border border-[rgba(16,185,129,.27)] bg-[rgba(16,185,129,.13)]">
                     <ShieldCheck size={16} strokeWidth={1.9} className="text-[#047857] dark:text-[#34d399]" />
@@ -575,6 +602,26 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
         {/* ── Settings ── */}
         {tab === "settings" && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-settings>
+            {/* Admins only — visibility, not access: proxy.ts and guardAdmin
+                still decide who gets into /admin. */}
+            {session?.user?.role === "ADMIN" && (
+              <Link
+                href="/admin"
+                data-admin-link
+                className="mb-3 flex min-h-[60px] w-full items-center gap-3 rounded-[22px] border border-blue-700/20 bg-blue-700/[.06] px-[15px] py-3 dark:border-blue-400/25 dark:bg-blue-400/[.09]"
+              >
+                <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl bg-blue-700 text-white">
+                  <ShieldCheck size={15} strokeWidth={2.2} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-semibold tracking-[-.022em] text-blue-700 dark:text-blue-300">{t("adminRow")}</span>
+                  <span className="mt-[3px] block text-[10.5px] text-blue-700/70 dark:text-blue-300/70">
+                    {session.user.isTwoFactorEnabled ? t("adminRowNote") : t("adminRow2fa")}
+                  </span>
+                </span>
+                <ChevronRight size={14} strokeWidth={2} className="flex-none text-blue-700/60 dark:text-blue-300/60" />
+              </Link>
+            )}
             <div className="overflow-hidden rounded-[22px] border border-slate-900/[.1] bg-white/70 backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
               {settingsRows.slice(0, 2).map((row) => (
                 <Link

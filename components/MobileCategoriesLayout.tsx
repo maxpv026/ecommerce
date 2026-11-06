@@ -99,13 +99,13 @@ export default function MobileCategoriesLayout({ counts }: MobileCategoriesLayou
   const twoUp = layout === "grid";
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-clip bg-white dark:bg-canvas">
+    <div className="relative min-h-screen w-full overflow-x-clip bg-canvas">
       {/* ambient orb field */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-[180px] left-[-28%] h-[430px] w-[430px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-30 blur-[92px] [animation:hc-breathe_10s_ease-in-out_infinite]" />
-        <div className="absolute -top-[130px] right-[-26%] h-[370px] w-[370px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-[.28] blur-[88px] [animation:hc-breathe_13s_ease-in-out_infinite_reverse]" />
-        <div className="absolute left-[10%] top-[420px] h-[330px] w-[330px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-[.18] blur-[86px] [animation:hc-breathe_16s_ease-in-out_infinite]" />
-        <div className="absolute -bottom-[110px] right-[-14%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#34d399,rgba(52,211,153,0)_68%)] opacity-[.16] blur-[82px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -top-[180px] left-[-28%] h-[430px] w-[430px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-30 blur-[92px] [animation:hc-breathe_10s_ease-in-out_infinite]" />
+        <div className="absolute -top-[130px] right-[-26%] h-[370px] w-[370px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.28] blur-[88px] [animation:hc-breathe_13s_ease-in-out_infinite_reverse]" />
+        <div className="absolute left-[10%] top-[420px] h-[330px] w-[330px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-[.18] blur-[86px] [animation:hc-breathe_16s_ease-in-out_infinite]" />
+        <div className="absolute -bottom-[110px] right-[-14%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-emerald),rgba(52,211,153,0)_68%)] opacity-[.16] blur-[82px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
       </div>
 
       {/* sticky glass header */}
@@ -257,11 +257,11 @@ export default function MobileCategoriesLayout({ counts }: MobileCategoriesLayou
             <Link
               href="/"
               data-ai-helper
-              className="relative block min-h-11 overflow-hidden rounded-[22px] border border-blue-700/30 bg-white/70 p-4 shadow-[0_0_26px_-16px_#2563eb] backdrop-blur-xl backdrop-saturate-150 dark:bg-glass"
+              className="relative block min-h-11 overflow-hidden rounded-[22px] border border-blue-700/30 bg-white/70 p-4 shadow-[0_0_26px_-16px_var(--glow-600)] backdrop-blur-xl backdrop-saturate-150 dark:bg-glass"
             >
-              <span className="pointer-events-none absolute -bottom-[150%] left-[-20%] h-60 w-60 rounded-full bg-[radial-gradient(circle,#7c3aed,transparent_68%)] opacity-[.24] blur-[58px]" />
+              <span className="pointer-events-none absolute -bottom-[150%] left-[-20%] h-60 w-60 rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-[.24] blur-[58px]" />
               <span className="relative flex items-center gap-3">
-                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,#2563eb,#7c3aed)] shadow-[0_12px_26px_-12px_rgba(37,99,235,.8)]">
+                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_12px_26px_-12px_rgba(37,99,235,.8)]">
                   <Sparkles size={18} strokeWidth={2} className="text-white" />
                 </span>
                 <span className="min-w-0 flex-1">

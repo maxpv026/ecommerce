@@ -1,38 +1,22 @@
 "use client";
 
-import { useTransition } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { usePathname, useRouter } from "@/i18n/navigation";
 import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
-import { updateUserLocale } from "@/lib/actions/locale";
+import { useSwitchLocale } from "@/lib/hooks/useSwitchLocale";
 import MobileSubPageHeader from "./MobileSubPageHeader";
 
 export default function MobileLanguageSwitcherLayout() {
   const t = useTranslations("LanguageSwitcher");
-  const activeLocale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const { status } = useSession();
-  const [isPending, startTransition] = useTransition();
+  const { activeLocale, switchLocale, isPending } = useSwitchLocale();
 
   // Shared pre-sorted autonym list — identical on server and client (see
   // lib/languageNames.ts), so the sheet never re-orders or mismatches.
   const languages = LANGUAGE_OPTIONS;
 
-  const selectLocale = (locale: string) => {
-    if (locale === activeLocale) return;
-    startTransition(() => {
-      router.replace(pathname, { locale });
-    });
-    // Persist silently for signed-in users so their next login lands them
-    // straight on this locale (see auth.ts's jwt/session callbacks) — never
-    // blocks or surfaces errors from the switch itself.
-    if (status === "authenticated") {
-      void updateUserLocale(locale).catch(() => {});
-    }
-  };
+  // Cookie + same-page navigation (query kept) + account, in one place.
+  const selectLocale = (locale: string) => switchLocale(locale);
+
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">

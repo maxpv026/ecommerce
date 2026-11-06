@@ -95,7 +95,15 @@ export async function notifyBackInStock(
 
   try {
     const waiting = await prisma.stockSubscription.findMany({
-      where: { productId: product.id, notified: false },
+      where: {
+        productId: product.id,
+        notified: false,
+        // Settings → Notifications → Back-in-stock. Guest subscriptions (no
+        // account) have no switch and always send; an account that turned it
+        // off is skipped and its rows stay pending, so turning it back on
+        // resumes them on the next restock.
+        OR: [{ userId: null }, { user: { notifyBackInStock: true } }],
+      },
       select: { id: true, email: true, locale: true },
       orderBy: { createdAt: "asc" },
       take: MAX_NOTIFY_PER_PUSH + 1,

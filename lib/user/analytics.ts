@@ -11,6 +11,7 @@ import {
   kgToTonnes,
   type RefrigerantBreakdown,
 } from "@/lib/compliance";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * The client-facing analytics dashboard's data layer.
@@ -266,6 +267,7 @@ export async function getGreenerAlternatives(
 
   const sellable = await prisma.product.findMany({
     where: {
+      ...LISTED,
       inStock: true,
       stockQuantity: { gt: 0 },
       pricePerKg: { gt: 0 },

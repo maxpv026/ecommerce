@@ -10,6 +10,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { cylinderGasPrice } from "@/lib/pricing";
 import { formatContext, retrieveForQuestion } from "@/lib/rag";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * POST /api/chat-fgas — the F-Gas RAG assistant.
@@ -88,6 +89,7 @@ const suggestProduct = tool({
     const needle = sku.replace(/[^a-z0-9]/gi, "").toUpperCase();
 
     const candidates = await prisma.product.findMany({
+      where: LISTED,
       select: {
         id: true,
         sku: true,

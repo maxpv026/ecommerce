@@ -238,20 +238,44 @@ export function tagLabel(tag: MarketAlertTag): string {
   return TAG_LABEL[tag];
 }
 
+/** One retry: the feed host answers in ~0.5s, but drops the odd request entirely. */
+async function parseWithRetry(url: string) {
+  try {
+    return await parser.parseURL(url);
+  } catch {
+    return await parser.parseURL(url);
+  }
+}
+
 /**
  * Pulls every configured feed, newest first. A feed that is slow, down or
  * malformed is skipped rather than failing the batch — the dashboard shows
- * the sources that did answer, and its empty state if none did.
+ * the sources that did answer.
+ *
+ * If NO feed answers, this throws instead of returning []. That difference
+ * is the whole fix for the widget sticking on "No market alerts right now":
+ * the caller wraps this in a one-hour unstable_cache, and an empty array is
+ * a successful result — so a single timed-out request used to be cached as
+ * "there is no news" for an hour, and re-cached by every revalidation that
+ * hit the same blip. A throw is not cached: the previous good batch keeps
+ * being served (stale) and the next request tries again.
  */
 export async function fetchIndustryNews(limit = NEWS_ITEM_LIMIT): Promise<MarketAlertData[]> {
   const feeds = configuredFeeds();
 
   const settled = await Promise.allSettled(
     feeds.map(async (feed) => {
-      const parsed = await parser.parseURL(feed.url);
+      const parsed = await parseWithRetry(feed.url);
       return (parsed.items ?? []).map((item) => toMarketAlert(item, feed.source));
     })
   );
+
+  if (settled.every((outcome) => outcome.status === "rejected")) {
+    throw new AggregateError(
+      settled.map((outcome) => (outcome as PromiseRejectedResult).reason),
+      `all ${feeds.length} news feed(s) failed`
+    );
+  }
 
   const alerts: MarketAlertData[] = [];
   const seen = new Set<string>();

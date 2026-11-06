@@ -24,7 +24,7 @@ export default function StorePage({ recommendedProducts, marketAlertsCard, marke
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       {/* Desktop / tablet — real dashboard-style home */}
       <div className="hidden md:block">
         <Header

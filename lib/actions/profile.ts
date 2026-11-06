@@ -48,15 +48,22 @@ export async function updateProfile(rawInput: unknown): Promise<UpdateProfileRes
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
   const { name, companyName, jobTitle, phone, vatNumber } = parsed.data;
 
+  // An omitted field is left as it is; only an explicit "" clears one.
+  // Treating "absent" as "blank" erased data: the desktop modal has no phone
+  // field and the mobile drawer never sent vatNumber, so saving either form
+  // silently wiped the other's value — including the VAT number that has to
+  // be printed on reverse-charge invoices. (Prisma skips `undefined` keys.)
+  const optional = (value: string | undefined) => (value === undefined ? undefined : value || null);
+
   try {
     await prisma.user.update({
       where: { id: userId },
       data: {
         name,
-        companyName: companyName || null,
-        vatNumber: vatNumber || null,
-        jobTitle: jobTitle || null,
-        phone: phone || null,
+        companyName: optional(companyName),
+        vatNumber: optional(vatNumber),
+        jobTitle: optional(jobTitle),
+        phone: optional(phone),
       },
     });
     // Re-renders the profile dashboard in the same action roundtrip, so the

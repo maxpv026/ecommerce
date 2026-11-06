@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import {
   ArrowRight,
   Award,
   Check,
+  FileText,
+  Loader2,
   FlaskConical,
   Lock,
   Minus,
@@ -28,12 +31,14 @@ import MobileCartLayout from "./MobileCartLayout";
 import MagicOrderPad from "./cart/MagicOrderPad";
 import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
 import FgasVerificationModal from "./FgasVerificationModal";
+import QuoteCartBanner from "./QuoteCartBanner";
 import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
 import { useCartStore, type FgasVerification } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
+import { createQuote, type QuoteErrorCode } from "@/lib/actions/quotes";
 import type { StoreProduct } from "@/lib/data";
 import type { FGasStatus } from "@/lib/generated/prisma/enums";
 
@@ -90,6 +95,8 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
   const clear = useCartStore((s) => s.clear);
   const fgasVerification = useCartStore((s) => s.fgasVerification);
   const setFgasVerification = useCartStore((s) => s.setFgasVerification);
+  const cartQuote = useCartStore((s) => s.quote);
+  const tQuotes = useTranslations("Quotes");
 
   // The cart is rehydrated from localStorage on the client — until then,
   // render the server's empty-cart markup to keep hydration clean.
@@ -144,7 +151,9 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
     // the session is what actually unlocks checkout: it pulls the row's real
     // status, which the route has just set to VERIFIED or REJECTED.
     setFgasVerification(verification);
-    if (verification.scope === "account") void updateSession();
+    // With an argument: next-auth's update() with none is a plain GET and
+    // never reaches auth.ts's trigger === "update" re-read of the row.
+    if (verification.scope === "account") void updateSession({});
   };
 
   // Entrance stagger applies to the first paint only; lines added later
@@ -157,9 +166,46 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
 
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
+  // ─── 1-click reorder ───
+  // The replenishment email links to /cart?reorder=<sku>&qty=<n>. The line is
+  // added from the live catalog (today's price, only if it can be bought) —
+  // the link carries a reference, never a price — and the query is then
+  // dropped so a refresh doesn't add it twice. Nothing is ordered: the buyer
+  // still reviews the cart and checks out.
+  const reorderHandled = useRef(false);
+  useEffect(() => {
+    if (!hydrated || reorderHandled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const sku = params.get("reorder");
+    if (!sku) return;
+    reorderHandled.current = true;
+    const qty = Math.min(99, Math.max(1, Math.trunc(Number(params.get("qty"))) || 1));
+    const product = products.find((p) => p.sku === sku);
+    if (product && isPurchasable(product) && product.pricePerKg > 0) {
+      addItem(
+        {
+          sku: product.sku,
+          name: product.name,
+          variant: product.weightLabel,
+          pricePerKg: product.pricePerKg,
+          weightKg: product.weightKg,
+          deposit: product.cylinderDeposit,
+        },
+        qty
+      );
+      toast.success(t("reorderAdded", { qty, name: product.name }));
+    } else {
+      toast.error(t("reorderUnavailable"));
+    }
+    router.replace("/cart");
+  }, [hydrated, products, addItem, router, t]);
+
   // Per-kg rate, net weight and deposit come from the live catalog when the
   // product is known — a stale persisted line can't understate the price.
-  const totalLines = shownItems.map((i) => pricingLineFor(i, bySku.get(i.sku)));
+  // …except a basket loaded from a quote, which shows the quote's frozen
+  // figures — the ones checkout will charge for it.
+  const quote = hydrated ? cartQuote : null;
+  const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
   const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
 
@@ -200,6 +246,47 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
     );
   };
 
+  // ─── Quote ───
+  // Signed-in only (a quote belongs to an account). Refrigerant lines need a
+  // verified certificate, the same rule createQuote enforces server-side;
+  // a buyer without one can still quote tools and equipment.
+  const [quoting, startQuote] = useTransition();
+  const hasGasLines = shownItems.some((i) => {
+    const p = bySku.get(i.sku);
+    return p ? p.gwp !== null || p.pricedPerKg : true;
+  });
+  const quoteLocked = empty || hasBlockedLines || (status === "authenticated" && hasGasLines && !accountVerified);
+  const QUOTE_ERROR: Record<QuoteErrorCode, string> = {
+    UNAUTHENTICATED: "errorSignIn",
+    INVALID_INPUT: "errorGeneric",
+    PRODUCT_NOT_FOUND: "errorUnavailable",
+    PRICE_ON_REQUEST: "errorPriceOnRequest",
+    OUT_OF_STOCK: "errorOutOfStock",
+    FGAS_UNVERIFIED: "errorFgas",
+    RATE_LIMITED: "errorRateLimited",
+    FAILED: "errorGeneric",
+  };
+  const generateQuote = () => {
+    if (quoteLocked || quoting) return;
+    if (status !== "authenticated") {
+      openAuth("inline");
+      return;
+    }
+    startQuote(async () => {
+      try {
+        const result = await createQuote(shownItems.map((i) => ({ sku: i.sku, qty: i.qty })));
+        if (!result.ok) {
+          toast.error(tQuotes(QUOTE_ERROR[result.code], { items: (result.skus ?? []).join(", ") }));
+          return;
+        }
+        toast.success(tQuotes("created", { number: result.quoteNumber }));
+        router.push(`/profile/quotes/${result.id}`);
+      } catch {
+        toast.error(tQuotes("errorGeneric"));
+      }
+    });
+  };
+
   const goToCheckout = () => {
     if (checkoutLocked) return;
     if (status === "authenticated") {
@@ -232,16 +319,16 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
   } as const;
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       <div className="hidden md:block">
         <Header onSignInClick={() => openAuth("inline")} />
 
         <div className="relative overflow-x-clip">
           {/* Ambient glow field from the design: cyan / violet / blue orbs */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-[220px] right-[-8%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-[.26] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
-            <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_66%)] opacity-[.22] blur-[120px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
-            <div className="absolute -bottom-[180px] right-[6%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-20 blur-[110px] [animation:hc-float_34s_ease-in-out_infinite]" />
+            <div className="absolute -top-[220px] right-[-8%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.26] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
+            <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.22] blur-[120px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
+            <div className="absolute -bottom-[180px] right-[6%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-20 blur-[110px] [animation:hc-float_34s_ease-in-out_infinite]" />
           </div>
 
           <motion.main
@@ -278,7 +365,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                     className="rounded-[28px] border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-[72px] text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
                   >
                     <span className="relative inline-flex h-24 w-24 items-center justify-center rounded-[32px] border border-slate-900/[.07] bg-slate-100 [animation:hc-bob_6s_ease-in-out_infinite] dark:border-hairline dark:bg-surface-3">
-                      <span className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_68%)] opacity-50 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
+                      <span className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-50 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
                       <ShoppingCart size={38} strokeWidth={1.7} className="relative text-blue-700 dark:text-blue-400" />
                     </span>
                     <div className="mt-[26px] text-[23px] font-semibold tracking-[-.04em]">{t("cartEmptyShort")}</div>
@@ -287,7 +374,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                     </p>
                     <Link
                       href="/products"
-                      className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_#1d4ed8,0_0_30px_-10px_#1d4ed8] transition-colors hover:bg-blue-800"
+                      className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_var(--glow-700),0_0_30px_-10px_var(--glow-700)] transition-colors hover:bg-blue-800"
                     >
                       {t("exploreProducts")}
                       <ArrowRight size={16} strokeWidth={2} />
@@ -299,7 +386,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                       {shownItems.map((item, idx) => {
                         const product = bySku.get(item.sku);
                         const tint = tintFor(product);
-                        const pricing = pricingLineFor(item, product);
+                        const pricing = pricingLineFor(item, quote ? null : product);
                         const unit = lineUnitPrice(pricing);
                         // Equipment is priced per unit — no "€/kg × kg" story to tell.
                         const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
@@ -546,7 +633,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                       <motion.span
                         animate={thinking ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                         transition={thinking ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
-                        className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,#2563eb,#7c3aed)] shadow-[0_14px_28px_-14px_rgba(37,99,235,.7)]"
+                        className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_14px_28px_-14px_rgba(37,99,235,.7)]"
                       >
                         <Sparkles size={19} strokeWidth={2} className="text-white" />
                       </motion.span>
@@ -687,6 +774,8 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                     </span>
                   </div>
 
+                  <QuoteCartBanner className="mt-[18px]" />
+
                   {/* A line that went out of stock after it was added blocks checkout */}
                   <AnimatePresence initial={false}>
                     {hasBlockedLines && (
@@ -759,12 +848,38 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                     className={`mt-[22px] flex h-14 w-full items-center justify-center gap-2.5 rounded-[18px] bg-blue-700 text-[15.5px] font-semibold tracking-[-.022em] text-white transition-[background-color,box-shadow,opacity,filter] duration-300 ${
                       checkoutLocked
                         ? "cursor-not-allowed opacity-45 saturate-[.55] shadow-none"
-                        : "shadow-[0_20px_42px_-18px_#1d4ed8] hover:bg-blue-800 hover:shadow-[0_28px_56px_-18px_#1d4ed8,0_0_36px_-8px_#1d4ed8]"
+                        : "shadow-[0_20px_42px_-18px_var(--glow-700)] hover:bg-blue-800 hover:shadow-[0_28px_56px_-18px_var(--glow-700),0_0_36px_-8px_var(--glow-700)]"
                     }`}
                   >
                     {t("proceedToCheckout")}
                     {checkoutLocked && !empty ? <Lock size={16} strokeWidth={2.2} /> : <ArrowRight size={17} strokeWidth={2} />}
                   </motion.button>
+
+                  {/* Secondary: the same basket as a formal 48-hour quote. A
+                      basket that already is a quote links back to it. */}
+                  {!empty &&
+                    (quote ? (
+                      <Link
+                        href={`/profile/quotes/${quote.id}`}
+                        data-view-quote
+                        className="mt-2.5 flex h-[46px] w-full items-center justify-center gap-2 rounded-[15px] border border-blue-700/30 text-[13px] font-semibold tracking-[-.015em] text-blue-700 transition-colors hover:bg-blue-700/[.05] dark:border-blue-400/30 dark:text-blue-400"
+                      >
+                        <FileText size={15} strokeWidth={2} />
+                        {tQuotes("viewQuote", { number: quote.quoteNumber })}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={generateQuote}
+                        disabled={quoteLocked || quoting}
+                        title={quoteLocked && hasGasLines && !accountVerified ? tQuotes("lockedFgas") : undefined}
+                        data-generate-quote
+                        className="mt-2.5 flex h-[46px] w-full items-center justify-center gap-2 rounded-[15px] border border-blue-700/30 text-[13px] font-semibold tracking-[-.015em] text-blue-700 transition-colors hover:bg-blue-700/[.05] disabled:cursor-not-allowed disabled:opacity-45 dark:border-blue-400/30 dark:text-blue-400"
+                      >
+                        {quoting ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} strokeWidth={2} />}
+                        {quoting ? tQuotes("generating") : tQuotes("generate")}
+                      </button>
+                    ))}
 
                   {!empty && (
                     <button
@@ -804,6 +919,9 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
         <MobileCartLayout
           products={products}
           onCheckout={goToCheckout}
+          onGenerateQuote={generateQuote}
+          quoteLocked={quoteLocked}
+          quoting={quoting}
           fgasGate={fgasGate}
           checkoutLocked={checkoutLocked}
           fgasOk={fgasOk}

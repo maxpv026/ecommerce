@@ -10,6 +10,7 @@ import { Check, ChevronLeft, Loader2, Lock, MapPin, Package, Phone, Plus, Shield
 import Header from "./Header";
 import AuthModal from "./AuthModal";
 import CheckoutAddressForm from "./CheckoutAddressForm";
+import QuoteCartBanner from "./QuoteCartBanner";
 import type { SavedAddress } from "@/lib/actions/address";
 import { calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
@@ -28,6 +29,7 @@ const ERROR_KEY: Record<string, string> = {
   ADDRESS_NOT_FOUND: "errorAddress",
   PRODUCT_NOT_FOUND: "errorGeneric",
   OUT_OF_STOCK: "errorOutOfStock",
+  QUOTE_INVALID: "errorQuote",
   ORDER_FAILED: "errorGeneric",
 };
 
@@ -79,12 +81,16 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
 
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
+  // A basket loaded from a quote is priced from its own lines (the quote's
+  // frozen figures), never re-priced from the live catalog.
+  const quote = useCartStore((s) => s.quote);
+  const dropQuote = useCartStore((s) => s.dropQuote);
   const hydrated = useHydrated();
   const shownItems = hydrated ? items : [];
 
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
   const bySku = new Map(products.map((p) => [p.sku, p]));
-  const totalLines = shownItems.map((i) => pricingLineFor(i, bySku.get(i.sku)));
+  const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
 
   // Selection is only real if the row still exists — a refresh that removed
@@ -123,6 +129,7 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
         body: JSON.stringify({
           addressId,
           items: shownItems.map((i) => ({ sku: i.sku, qty: i.qty })),
+          ...(quote ? { quoteId: quote.id } : {}),
         }),
       });
       const result = (await response.json()) as
@@ -133,6 +140,9 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
         submitting.current = false;
         setPlacing(false);
         const code = "code" in result ? result.code : undefined;
+        // The quote lapsed or was already ordered: fall back to an ordinary
+        // basket so the summary shows what checkout would charge now.
+        if (code === "QUOTE_INVALID") dropQuote();
         toast.error(t(ERROR_KEY[code ?? ""] ?? "errorGeneric"));
         return;
       }
@@ -150,7 +160,7 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
   };
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       {/* Header is a desktop component — no responsive classes in it — so
           it is gated exactly as CartPage gates it. Below md the compact
           header inside the section is the page's chrome. */}
@@ -321,7 +331,7 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
                 <div>
                   {shownItems.map((item, idx) => {
                     const catalogProduct = bySku.get(item.sku);
-                    const pricing = pricingLineFor(item, catalogProduct);
+                    const pricing = pricingLineFor(item, quote ? null : catalogProduct);
                     const unit = lineUnitPrice(pricing);
                     const showBreakdown = catalogProduct ? catalogProduct.pricedPerKg : pricing.weightKg !== 1;
                     const image = catalogProduct ? imagePathForProduct(catalogProduct) : null;
@@ -389,13 +399,14 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
               {/* Ambient mesh: desktop only. Two 100px-blur radial gradients
                   are a real compositing cost on a phone, behind a card that
                   fills the screen anyway. */}
-              <div className="pointer-events-none absolute -left-[14%] -top-[4%] hidden aspect-square w-[118%] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-[.28] blur-[100px] lg:block [animation:hc-float_22s_ease-in-out_infinite] dark:opacity-[.4]" />
-              <div className="pointer-events-none absolute -bottom-[8%] -right-[16%] hidden aspect-square w-full rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-[.26] blur-[100px] lg:block [animation:hc-float_28s_ease-in-out_infinite_reverse] dark:opacity-[.38]" />
+              <div className="pointer-events-none absolute -left-[14%] -top-[4%] hidden aspect-square w-[118%] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-[.28] blur-[100px] lg:block [animation:hc-float_22s_ease-in-out_infinite] dark:opacity-[.4]" />
+              <div className="pointer-events-none absolute -bottom-[8%] -right-[16%] hidden aspect-square w-full rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-[.26] blur-[100px] lg:block [animation:hc-float_28s_ease-in-out_infinite_reverse] dark:opacity-[.38]" />
 
               <div className="relative rounded-[22px] border border-white/75 bg-white/62 p-6 pt-6.5 shadow-[0_26px_60px_-26px_rgba(15,23,42,0.28)] backdrop-blur-md backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/60 dark:shadow-[0_26px_60px_-26px_rgba(0,0,0,0.6)]">
                 <div className="mb-5 text-[17px] font-semibold tracking-[-.025em]">
                   {tCart("orderSummary")}
                 </div>
+                <QuoteCartBanner className="mb-5" />
 
                 <div className="flex flex-col gap-3.5">
                   <div className="flex justify-between text-[13.5px]">

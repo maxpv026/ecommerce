@@ -46,15 +46,15 @@ export default function DesktopAuthCard() {
     handleGoogle,
     resendCode,
     goBackToCredentials,
-  } = useAuthFlow(callbackUrl, { initialMode, initialEmail });
+  } = useAuthFlow(callbackUrl, { initialMode, initialEmail, initialErrorCode: searchParams.get("error"), pendingGoogleTwoFactor: searchParams.get("step") === "google-2fa" });
 
   const isSignIn = mode === "signin";
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-50 px-6 py-16 dark:bg-slate-950">
       <div className="pointer-events-none absolute inset-0 opacity-50">
-        <div className="absolute -left-[160px] -top-[160px] h-[460px] w-[460px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] blur-[100px] [animation:hc-float_22s_ease-in-out_infinite]" />
-        <div className="absolute -right-[140px] -bottom-[140px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] blur-[100px] [animation:hc-float_28s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -left-[160px] -top-[160px] h-[460px] w-[460px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] blur-[100px] [animation:hc-float_22s_ease-in-out_infinite]" />
+        <div className="absolute -right-[140px] -bottom-[140px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] blur-[100px] [animation:hc-float_28s_ease-in-out_infinite_reverse]" />
       </div>
 
       <div

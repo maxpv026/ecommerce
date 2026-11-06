@@ -109,11 +109,11 @@ export default function CheckoutAddressForm({ canCancel, onCancel, onSaved }: Ch
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,#22d3ee,transparent_68%)] opacity-[.22] blur-[52px]"
+          className="pointer-events-none absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),transparent_68%)] opacity-[.22] blur-[52px]"
         />
 
         <div className="relative mb-4 flex items-start gap-3">
-          <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[linear-gradient(140deg,#06b6d4,#2563eb)] text-white shadow-[0_12px_24px_-12px_rgba(6,182,212,.9)]">
+          <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-[linear-gradient(140deg,#06b6d4,var(--glow-600))] text-white shadow-[0_12px_24px_-12px_rgba(6,182,212,.9)]">
             <MapPinPlus size={17} strokeWidth={2} />
           </span>
           <div className="min-w-0">

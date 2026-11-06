@@ -3,7 +3,7 @@ import "server-only";
 import { renderToBuffer } from "@react-pdf/renderer";
 import prisma from "@/lib/prisma";
 import { PDF_FONT_FAMILY, registerFonts, sellerDetails } from "@/lib/pdf";
-import { HIGH_GWP_THRESHOLD, calculateOrderCo2e, kgToTonnes } from "@/lib/compliance";
+import { HIGH_GWP_THRESHOLD, calculateOrderCo2e, kgToTonnes, ledgerLines } from "@/lib/compliance";
 import ComplianceReportPdf, {
   type ComplianceReportData,
   type ComplianceReportLine,
@@ -32,11 +32,6 @@ export type ReportPeriod = "ytd" | "all";
 
 function periodStart(period: ReportPeriod, now: Date): Date | null {
   return period === "ytd" ? new Date(Date.UTC(now.getUTCFullYear(), 0, 1)) : null;
-}
-
-/** "R-410A Premium" → "R-410A" — the mark, which is what a regulator reads. */
-function refrigerantOf(name: string): string {
-  return name.split(" ")[0] || name;
 }
 
 export async function buildComplianceReportData(
@@ -68,6 +63,7 @@ export async function buildComplianceReportData(
         ...(since ? { createdAt: { gte: since } } : {}),
       },
       select: {
+        id: true,
         orderNumber: true,
         createdAt: true,
         items: {
@@ -85,33 +81,26 @@ export async function buildComplianceReportData(
 
   if (!user) throw new ComplianceReportEmptyError(userId);
 
-  // Cost each order separately so every line keeps its order number and date,
-  // then flatten. calculateOrderCo2e is the single place the arithmetic lives.
-  const lines: ComplianceReportLine[] = [];
+  // The same ledger the /profile/compliance page shows (lib/compliance
+  // ledgerLines), so the PDF and the page can never list different lines.
   let unknownGwpLines = 0;
   let estimatedLines = 0;
-
   for (const order of orders) {
     const costed = calculateOrderCo2e(order.items);
     unknownGwpLines += costed.unknownGwpLines;
     estimatedLines += costed.estimatedLines;
-    for (const line of costed.lines) {
-      // Equipment carries no refrigerant; it belongs on the invoice, not in a
-      // gas supply ledger.
-      if (!line.isGas) continue;
-      lines.push({
-        date: DATE_FMT.format(order.createdAt),
-        orderNumber: order.orderNumber,
-        sku: line.sku,
-        refrigerant: refrigerantOf(line.name),
-        quantity: line.quantity,
-        massKg: line.massKg,
-        gwp: line.gwp,
-        co2eKg: line.co2eKg,
-        estimated: line.gwpSource === "catalogue",
-      });
-    }
   }
+  const lines: ComplianceReportLine[] = ledgerLines(orders).map((line) => ({
+    date: DATE_FMT.format(new Date(line.date)),
+    orderNumber: line.orderNumber,
+    sku: line.sku,
+    refrigerant: line.refrigerant,
+    quantity: line.quantity,
+    massKg: line.massKg,
+    gwp: line.gwp,
+    co2eKg: line.co2eKg,
+    estimated: line.estimated,
+  }));
 
   if (lines.length === 0) throw new ComplianceReportEmptyError(userId);
 

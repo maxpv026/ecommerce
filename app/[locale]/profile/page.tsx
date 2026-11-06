@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import AccountLayoutClient from "@/components/AccountLayoutClient";
 import { getProfileDashboardData, getUserAddresses, getUserOrders, getUserProfile } from "@/lib/data";
 import { getTrackingStatus } from "@/lib/actions/tracking";
+import { getCustomerComplianceSummary } from "@/lib/compliance";
 import { getActiveRestockAlerts } from "@/lib/smartRestock";
 import { buildOrderTracking, type OrderTrackingView } from "@/lib/tracking";
 
@@ -33,15 +34,26 @@ async function ProfileContent() {
   const isAuthenticated = Boolean(session?.user);
   const userId = session?.user?.id;
 
-  const [dashboardData, profile, orders, addresses, restockAlerts] = userId
+  const [dashboardData, profile, orders, addresses, restockAlerts, compliance] = userId
     ? await Promise.all([
         getProfileDashboardData(userId),
         getUserProfile(userId),
         getUserOrders(userId),
         getUserAddresses(userId),
         getActiveRestockAlerts(userId),
+        getCustomerComplianceSummary(userId),
       ])
-    : [null, null, null, null, []];
+    : [null, null, null, null, [], null];
+
+  // The logbook card's figures: this year, same numbers /profile/compliance shows.
+  const logbook = compliance
+    ? {
+        year: compliance.generatedAt.getUTCFullYear(),
+        massKg: compliance.yearToDate.massKg,
+        co2eTonnes: compliance.yearToDate.co2eTonnes,
+        lines: compliance.ledger.length,
+      }
+    : null;
 
   // Per-order shipment timelines for the accordion rows: live DHL data
   // where a tracking number exists (cached 5 min upstream), status-derived
@@ -66,6 +78,7 @@ async function ProfileContent() {
       orderTracking={orderTracking}
       addresses={addresses}
       restockAlerts={restockAlerts ?? []}
+      logbook={logbook}
     />
   );
 }

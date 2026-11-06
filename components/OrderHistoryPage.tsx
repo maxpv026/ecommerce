@@ -74,14 +74,14 @@ export default function OrderHistoryPage({ orders }: OrderHistoryPageProps) {
   const empty = orders.length === 0;
 
   return (
-    <div className="flex-1 bg-white dark:bg-canvas">
+    <div className="flex-1 bg-canvas">
       <Header onSignInClick={() => setIsAuthModalOpen(true)} />
 
       <div className="relative overflow-x-clip">
         {/* Ambient orb field, same treatment as the cart */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-[220px] right-[-8%] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_66%)] opacity-[.22] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
-          <div className="absolute left-[-10%] top-[200px] h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_66%)] opacity-20 blur-[120px] [animation:hc-float_30s_ease-in-out_infinite]" />
+          <div className="absolute -top-[220px] right-[-8%] h-[720px] w-[720px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.22] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
+          <div className="absolute left-[-10%] top-[200px] h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-20 blur-[120px] [animation:hc-float_30s_ease-in-out_infinite]" />
         </div>
 
         <motion.main

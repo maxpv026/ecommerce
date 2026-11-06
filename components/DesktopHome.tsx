@@ -1,9 +1,9 @@
 "use client";
 
-import { formatKg } from "@/lib/pricing";
-import ProductThumbnail from "./ProductThumbnail";
+import ProductCard from "./ProductCard";
+import StockNotifyModal from "./StockNotifyModal";
 import { isPurchasable } from "@/lib/waitlist";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useSession } from "next-auth/react";
@@ -11,10 +11,10 @@ import type { ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import {
   ArrowRight,
-  Check,
   FileText,
+  LayoutGrid,
+  Loader2,
   RotateCw,
-  ScanLine,
   Search,
   Sparkles,
   Truck,
@@ -22,7 +22,8 @@ import {
 import { Link } from "@/i18n/navigation";
 import HeroBackground from "./HeroBackground";
 import { useCartStore } from "@/lib/store/cart";
-import { openAiChat } from "@/lib/aiChatEvents";
+import { calculateCharge, type ChargeCalculation } from "@/lib/actions/chargeCalculator";
+import CalculatedChargeCard from "./CalculatedChargeCard";
 import { getTimeOfDayGreeting } from "@/lib/greeting";
 import type { ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
 
@@ -30,18 +31,10 @@ import type { ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
 // happen during the server render (see components/HeroModelStage.tsx).
 const HeroModelStage = dynamic(() => import("./HeroModelStage"), { ssr: false });
 
-/**
- * Fallback for products with no render of their own — equipment, custom
- * blends. Same outline the card used before, now only shown when there's no
- * image to resolve.
- */
-const CYLINDER_OUTLINE = (
-  <span className="absolute inset-0 grid place-items-center">
-    <span className="block h-[132px] w-16 rounded-t-full rounded-b-[9px] border border-dashed border-slate-300 bg-white/85 dark:border-white/20 dark:bg-white/10" />
-  </span>
-);
-
-const CALC_CHIPS = ["4-ton rooftop", "Line set 40 ft", "R-410A retrofit"];
+// Whole sentences: one click shows a complete worked calculation, including
+// what happens when the factory charge is or isn't given. Translated, so a
+// German engineer sees (and sends) a German example — the extraction reads any language.
+const CALC_CHIP_KEYS = ["example1", "example2", "example3"] as const;
 
 /* ── scroll-linked section: scales up on the way in, down on the way out ── */
 
@@ -145,12 +138,14 @@ interface DesktopHomeProps {
 export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder }: DesktopHomeProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
-  const tp = useTranslations("Products");
+  const tc = useTranslations("ChargeCalc");
   const format = useFormatter();
   const { data: session, status } = useSession();
   const addItem = useCartStore((s) => s.addItem);
   const [calcQuery, setCalcQuery] = useState("");
   const [added, setAdded] = useState<string | null>(null);
+  // Product whose back-in-stock dialog is open.
+  const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
 
   const isAuthenticated = status === "authenticated";
   // First name when a name exists, else the account email — never an empty
@@ -160,9 +155,23 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
   const greeting = td(getTimeOfDayGreeting());
   const formatEur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
+  // The calculator: the AI reads the sentence, lib/chargeCalc does the math,
+  // and the worked result renders under the form (no chat hand-off).
+  const [calc, setCalc] = useState<ChargeCalculation | null>(null);
+  const [calcError, setCalcError] = useState<string | null>(null);
+  const [calcPending, startCalc] = useTransition();
   const runCalc = (query: string) => {
-    if (!query.trim()) return;
-    openAiChat(query);
+    if (!query.trim() || calcPending) return;
+    setCalcError(null);
+    startCalc(async () => {
+      const result = await calculateCharge(query).catch(() => null);
+      if (result?.ok) setCalc(result.calc);
+      else {
+        setCalc(null);
+        const field = result && !result.ok && result.field ? tc(`field_${result.field}`) : "";
+        setCalcError(tc(`error_${result?.code ?? "UNAVAILABLE"}`, { field }));
+      }
+    });
   };
 
   const addToCart = (product: StoreProduct) => {
@@ -300,12 +309,12 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
         </motion.div>
 
         <div className="grid gap-4 md:grid-cols-12">
-          {/* AI calculator — feature card, wired to the real chat widget */}
+          {/* AI charge calculator — parses the sentence, computes deterministically, renders the worked result below */}
           <motion.div variants={stagger} className="md:col-span-8 md:row-start-1">
             <TiltCard max={5} className="bg-[#0b1020] p-8 text-white shadow-[0_40px_80px_-44px_rgba(11,16,32,.85)]">
               <div className="pointer-events-none absolute inset-0">
-                <div className="absolute -left-[14%] -top-[40%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,#2563eb,transparent_68%)] opacity-80 blur-[88px]" />
-                <div className="absolute -top-[30%] right-[6%] h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,#7c3aed,transparent_68%)] opacity-70 blur-[84px]" />
+                <div className="absolute -left-[14%] -top-[40%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_68%)] opacity-80 blur-[88px]" />
+                <div className="absolute -top-[30%] right-[6%] h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-70 blur-[84px]" />
                 <div className="absolute -bottom-[42%] -right-[8%] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,#fb7185,transparent_68%)] opacity-60 blur-[80px]" />
                 <div className="absolute -bottom-[46%] left-1/3 h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#fb923c,transparent_68%)] opacity-50 blur-[76px]" />
               </div>
@@ -339,25 +348,35 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                     />
                     <button
                       type="submit"
-                      disabled={!calcQuery.trim()}
-                      className="h-[42px] shrink-0 rounded-xl bg-white px-5 text-[13px] font-semibold tracking-tight text-[#0b1020] transition-colors disabled:opacity-50"
+                      disabled={!calcQuery.trim() || calcPending}
+                      data-calc-submit
+                      className="flex h-[42px] shrink-0 items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-semibold tracking-tight text-[#0b1020] transition-colors disabled:opacity-50"
                     >
-                      {t("calculatorButton")}
+                      {calcPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {calcPending ? tc("calculating") : t("calculatorButton")}
                     </button>
                   </form>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {CALC_CHIPS.map((c) => (
+                    {CALC_CHIP_KEYS.map((key) => tc(key)).map((c) => (
                       <button
                         key={c}
                         type="button"
-                        onClick={() => setCalcQuery(c)}
+                        onClick={() => {
+                          setCalcQuery(c);
+                          runCalc(c);
+                        }}
                         className="h-8 rounded-full border border-white/20 bg-white/[.08] px-3 text-xs font-medium tracking-tight text-white/80 hover:bg-white/[.14]"
                       >
                         {c}
                       </button>
                     ))}
                   </div>
+                  {calcError && (
+                    <p role="alert" data-calc-error className="mt-3 text-[12.5px] text-rose-200">
+                      {calcError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="relative flex h-[266px] items-center justify-center">
@@ -377,6 +396,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                 </div>
               </div>
             </TiltCard>
+            {calc && <CalculatedChargeCard key={calc.query} calc={calc} onClose={() => setCalc(null)} />}
           </motion.div>
 
           {/* Market alerts — live industry news, rendered on the server.
@@ -465,13 +485,13 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
             >
               <Link href="/products" className="relative block" style={{ transform: "translateZ(26px)" }}>
-                <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-indigo-700 to-purple-500 text-white shadow-[0_14px_26px_-14px_rgba(67,56,202,.7)]">
-                  <ScanLine className="h-5 w-5" strokeWidth={2} />
+                <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-[0_14px_26px_-14px_rgba(5,150,105,.65)]">
+                  <LayoutGrid className="h-5 w-5" strokeWidth={2} />
                 </span>
-                <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("scanBarcodeLabel")}</div>
-                <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{td("scanBarcodeNote")}</div>
+                <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("exploreProductsLabel")}</div>
+                <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{td("exploreProductsNote")}</div>
                 <div className="mt-4.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
-                  {t("browseCylinders")}
+                  {td("exploreProductsCta")}
                   <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
                 </div>
               </Link>
@@ -511,82 +531,27 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               variants={stagger}
               // Exactly three across on desktop: gap-6 is 1.5rem, so three
               // cards and two gaps come to 3 × (33.3333% − 1rem) + 2 × 1.5rem.
-              className="w-[85vw] shrink-0 snap-start md:w-[calc(50%-1rem)] lg:w-[calc(33.3333%-1rem)]"
+              className="flex w-[85vw] shrink-0 snap-start md:w-[calc(50%-1rem)] lg:w-[calc(33.3333%-1rem)] [&>*]:w-full"
             >
-              <TiltCard
-                max={8}
-                radius="rounded-[24px]"
-                className="border border-slate-900/[.06] bg-white p-5.5 shadow-[0_18px_44px_-38px_rgba(15,23,42,.55)] dark:border-hairline dark:bg-surface"
-              >
-                <Link
-                  href={p.pdpHref}
-                  className="relative flex h-[196px] items-center justify-center overflow-hidden rounded-[18px] bg-slate-50 dark:bg-surface-2"
-                  style={{ transform: "translateZ(18px)" }}
-                >
-                  <div
-                    className="absolute inset-0"
-                    style={{ backgroundImage: "repeating-linear-gradient(135deg,rgba(15,23,42,.035) 0 1px,transparent 1px 9px)" }}
-                  />
-                  {/* Same still renders the catalog grid uses, resolved from
-                      the product's refrigerant mark. */}
-                  <ProductThumbnail
-                    sku={p.sku}
-                    name={p.name}
-                    fallback={CYLINDER_OUTLINE}
-                    sizes="(max-width: 768px) 85vw, (max-width: 1024px) 50vw, 400px"
-                  />
-                </Link>
-                <div className="mt-4.5" style={{ transform: "translateZ(24px)" }}>
-                  <Link href={p.pdpHref} className="text-[15.5px] font-semibold tracking-[-0.03em]">
-                    {p.name}
-                  </Link>
-                  <div className="mt-1 text-[12.5px] text-slate-400 dark:text-ink-muted">
-                    {p.weightLabel} · {p.gwpClass}
-                  </div>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <span className="min-w-0">
-                      <span className="flex items-baseline gap-1">
-                        <span className="text-[19px] font-semibold tracking-[-0.04em]">
-                          {p.pricePerKg > 0 ? formatEur(p.pricePerKg) : tp("priceOnRequest")}
-                        </span>
-                        {p.pricedPerKg && p.pricePerKg > 0 && (
-                          <span className="text-[11px] font-semibold text-slate-400 dark:text-ink-muted">{tp("perKgSuffix")}</span>
-                        )}
-                      </span>
-                      {p.pricedPerKg && p.pricePerKg > 0 && (
-                        <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-ink-muted" data-cylinder-price>
-                          {tp("cylinderPriceNote", { weight: formatKg(p.weightKg), amount: formatEur(p.cylinderPrice) })}
-                        </span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => addToCart(p)}
-                      disabled={!isPurchasable(p)}
-                      className={`h-10 shrink-0 rounded-[13px] px-4 text-[12.5px] font-semibold tracking-tight text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                        added === p.id
-                          ? "bg-green-600 shadow-[0_12px_26px_-14px_rgba(22,163,74,.8)]"
-                          : "bg-blue-700 shadow-[0_12px_26px_-14px_rgba(29,78,216,.8)]"
-                      }`}
-                    >
-                      {added === p.id ? (
-                        <span className="flex items-center gap-1.5">
-                          <Check className="h-3.5 w-3.5" strokeWidth={2.6} />
-                          {t("added")}
-                        </span>
-                      ) : isPurchasable(p) ? (
-                        t("addToCart")
-                      ) : (
-                        td("outOfStock")
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </TiltCard>
+              <ProductCard
+                product={p}
+                inCart={added === p.id}
+                onAddToCart={addToCart}
+                onNotify={setNotifyFor}
+                imageSizes="(max-width: 768px) 85vw, (max-width: 1024px) 50vw, 400px"
+                animateIn={false}
+              />
             </motion.div>
           ))}
         </div>
       </RevealSection>
+
+      <StockNotifyModal
+        isOpen={notifyFor !== null}
+        onClose={() => setNotifyFor(null)}
+        productId={notifyFor?.id ?? ""}
+        productName={notifyFor?.name ?? ""}
+      />
     </main>
   );
 }

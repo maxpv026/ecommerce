@@ -32,7 +32,7 @@ export default function OrdersEmptyState({ compact = false }: { compact?: boolea
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_68%)] opacity-40 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]"
+          className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-40 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]"
         />
         <PackageOpen
           size={compact ? 34 : 40}
@@ -51,7 +51,7 @@ export default function OrdersEmptyState({ compact = false }: { compact?: boolea
       <Link
         href="/products"
         data-orders-empty-cta
-        className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_#1d4ed8,0_0_30px_-10px_#1d4ed8] transition-colors hover:bg-blue-800"
+        className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_var(--glow-700),0_0_30px_-10px_var(--glow-700)] transition-colors hover:bg-blue-800"
       >
         {t("emptyCta")}
         <ArrowRight size={16} strokeWidth={2} />

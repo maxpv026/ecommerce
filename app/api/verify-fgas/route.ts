@@ -69,6 +69,9 @@ export const dynamic = "force-dynamic";
  * check out regardless.
  */
 
+/** Attachment extension when the stored name doesn't carry one (blob). */
+const EXTENSION_FOR: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
 const STATUS: Record<VerifyFgasErrorCode, number> = {
   NO_FILE: 400,
   UNSUPPORTED_TYPE: 415,
@@ -151,15 +154,14 @@ async function sendAuditCopy(input: {
   name: string | null;
 }) {
   const result = await notifyAdminWithDocument(
-    // Blob URLs are public-but-unguessable, so Telegram can fetch them.
-    // Local storage is private by design, so the bytes go up directly.
-    input.stored.driver === "blob"
-      ? input.stored.url
-      : {
-          bytes: input.bytes,
-          filename: `fgas-certificate.${input.stored.key?.split(".").pop() ?? "pdf"}`,
-          contentType: input.contentType,
-        },
+    // The bytes go up directly for both drivers. Blob certificates are
+    // private now, so Telegram couldn't fetch the URL — and a URL that
+    // anyone could fetch was exactly the exposure being closed.
+    {
+      bytes: input.bytes,
+      filename: `fgas-certificate.${input.stored.key?.split(".").pop() ?? EXTENSION_FOR[input.contentType] ?? "pdf"}`,
+      contentType: input.contentType,
+    },
     buildAuditCaption({
       approved: input.approved,
       name: input.name,

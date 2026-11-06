@@ -1,6 +1,7 @@
 import "server-only";
 
 import prisma from "@/lib/prisma";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * Purchase-velocity prediction for B2B restocking.
@@ -52,6 +53,12 @@ export interface RestockPrediction {
   predictedDate: Date;
   /** Negative when the customer is already overdue. */
   daysUntilPredicted: number;
+  /**
+   * Set by selectDueRestocks when this cycle already has an alert whose
+   * email never went out (left PENDING by a failed send): the run retries
+   * that row instead of creating a second one.
+   */
+  retry?: { alertId: string; updatedAt: Date };
 }
 
 /**
@@ -75,7 +82,10 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
   // selection is four small columns over a bounded range.
   const items = await prisma.orderItem.findMany({
     where: {
-      order: { createdAt: { gte: since }, paymentStatus: { not: "FAILED" } },
+      // Cancelled orders aren't purchases. Customers who turned restock
+      // reminders off aren't analysed at all — nothing about them is
+      // predicted, stored or sent.
+      order: { createdAt: { gte: since }, paymentStatus: { not: "FAILED" }, user: { notifyRestockReminders: true } },
     },
     select: {
       productId: true,
@@ -172,27 +182,33 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
 }
 
 export interface DueOptions {
-  /** How far ahead to act. */
-  lookAheadDays?: number;
+  /**
+   * How many days before the predicted reorder date to remind. Capped per
+   * customer at half their own cadence: someone who reorders every 10 days
+   * would otherwise be "reminded" the day after every delivery.
+   */
+  leadDays?: number;
   /**
    * How far past a missed prediction still counts.
    *
    * A customer who should have reordered four days ago is the single best
-   * person to contact — strictly "the next 7 days" would skip exactly them.
-   * Bounded, though: someone 90 days overdue has changed supplier or stopped
-   * needing it, and chasing them is noise.
+   * person to contact. Bounded, though: someone 90 days overdue has changed
+   * supplier or stopped needing it, and chasing them is noise.
    */
   graceDays?: number;
-  /** Suppression window — no second email about the same product inside it. */
-  suppressionDays?: number;
 }
+
+/** A PENDING alert older than this is a failed send, safe to retry. */
+const RETRY_AFTER_MS = 30 * 60 * 1000;
+
+/** Default reminder lead time — two weeks before the expected reorder. */
+export const REMINDER_LEAD_DAYS = 14;
 
 export interface DueResult {
   due: RestockPrediction[];
   skipped: {
     outsideWindow: number;
-    recentlyNotified: number;
-    openAlert: number;
+    alreadyThisCycle: number;
     noEmail: number;
     unavailable: number;
   };
@@ -201,22 +217,30 @@ export interface DueResult {
 /**
  * Narrows predictions to the ones worth emailing about today.
  *
- * Every exclusion here is a decision not to contact someone, which is the
- * part of this feature that protects the relationship. Counts are returned
- * so a cron run can be read at a glance instead of guessing why it was quiet.
+ * ── One reminder per purchase cycle ──
+ * A cycle starts at the customer's last purchase of the product. Any alert
+ * raised since then — emailed, dismissed on the dashboard, or already
+ * converted — means this cycle is handled, and nothing more is sent until
+ * they buy again and a new cycle begins. The only exception is an alert
+ * whose email failed (still PENDING): that one is retried, on the same row.
+ * RestockAlert's unique (user, product, cycleStart) backs this up in the
+ * database, so two overlapping cron runs can't both send.
+ *
+ * Alerts from before cycleStart existed are matched by date (raised after
+ * the last purchase), so the switch-over doesn't re-send anything.
  */
 export async function selectDueRestocks(
   predictions: RestockPrediction[],
   options: DueOptions = {}
 ): Promise<DueResult> {
-  const lookAhead = options.lookAheadDays ?? 7;
+  const lead = options.leadDays ?? REMINDER_LEAD_DAYS;
   const grace = options.graceDays ?? 14;
-  const suppression = options.suppressionDays ?? 30;
 
-  const skipped = { outsideWindow: 0, recentlyNotified: 0, openAlert: 0, noEmail: 0, unavailable: 0 };
+  const skipped = { outsideWindow: 0, alreadyThisCycle: 0, noEmail: 0, unavailable: 0 };
 
   const inWindow = predictions.filter((p) => {
-    if (p.daysUntilPredicted > lookAhead || p.daysUntilPredicted < -grace) {
+    const window = Math.min(lead, Math.floor(p.averageDays / 2));
+    if (p.daysUntilPredicted > window || p.daysUntilPredicted < -grace) {
       skipped.outsideWindow += 1;
       return false;
     }
@@ -224,48 +248,40 @@ export async function selectDueRestocks(
   });
   if (inWindow.length === 0) return { due: [], skipped };
 
-  // One query for the whole suppression check, not one per candidate.
-  const since = new Date(Date.now() - suppression * DAY_MS);
-  const recent = await prisma.restockAlert.findMany({
+  // One query for every candidate's cycle, not one per candidate.
+  const earliestCycle = new Date(Math.min(...inWindow.map((p) => p.lastOrderedAt.getTime())));
+  const alerts = await prisma.restockAlert.findMany({
     where: {
       userId: { in: [...new Set(inWindow.map((p) => p.userId))] },
       productId: { in: [...new Set(inWindow.map((p) => p.productId))] },
-      OR: [
-        // Contacted about it recently.
-        { status: "NOTIFIED", createdAt: { gte: since } },
-        // Or there is already an alert sitting live on their dashboard —
-        // emailing again while the last one is unread is the definition of
-        // spam, however old it is.
-        { status: { in: ["PENDING", "NOTIFIED"] } },
-      ],
+      OR: [{ cycleStart: { gte: earliestCycle } }, { cycleStart: null, createdAt: { gte: earliestCycle } }],
     },
-    select: { userId: true, productId: true, status: true, createdAt: true },
+    select: { id: true, userId: true, productId: true, status: true, cycleStart: true, createdAt: true, updatedAt: true },
   });
 
-  const notifiedRecently = new Set<string>();
-  const openAlert = new Set<string>();
-  for (const row of recent) {
-    const key = `${row.userId}::${row.productId}`;
-    if (row.status === "NOTIFIED" && row.createdAt >= since) notifiedRecently.add(key);
-    if (row.status === "PENDING" || row.status === "NOTIFIED") openAlert.add(key);
-  }
-
-  const due = inWindow.filter((p) => {
-    const key = `${p.userId}::${p.productId}`;
-    if (notifiedRecently.has(key)) {
-      skipped.recentlyNotified += 1;
-      return false;
-    }
-    if (openAlert.has(key)) {
-      skipped.openAlert += 1;
-      return false;
+  const due: RestockPrediction[] = [];
+  for (const p of inWindow) {
+    const cycle = alerts.filter(
+      (a) =>
+        a.userId === p.userId &&
+        a.productId === p.productId &&
+        (a.cycleStart ? a.cycleStart.getTime() === p.lastOrderedAt.getTime() : a.createdAt >= p.lastOrderedAt)
+    );
+    // PENDING and untouched for a while = a send that failed. A fresher
+    // PENDING row may be another run's send still in flight: leave it.
+    const failedSend = cycle.find(
+      (a) => a.status === "PENDING" && a.cycleStart && Date.now() - a.updatedAt.getTime() > RETRY_AFTER_MS
+    );
+    if (cycle.length > 0 && !(cycle.length === 1 && failedSend)) {
+      skipped.alreadyThisCycle += 1;
+      continue;
     }
     if (!p.userEmail) {
       skipped.noEmail += 1;
-      return false;
+      continue;
     }
-    return true;
-  });
+    due.push(failedSend ? { ...p, retry: { alertId: failedSend.id, updatedAt: failedSend.updatedAt } } : p);
+  }
 
   return { due, skipped };
 }
@@ -283,7 +299,7 @@ export async function filterPurchasable(due: RestockPrediction[]): Promise<{
 }> {
   if (due.length === 0) return { sellable: [], unavailable: 0 };
   const products = await prisma.product.findMany({
-    where: { id: { in: [...new Set(due.map((p) => p.productId))] } },
+    where: { ...LISTED, id: { in: [...new Set(due.map((p) => p.productId))] } },
     select: { id: true, inStock: true, stockQuantity: true },
   });
   const ok = new Set(products.filter((p) => p.inStock && p.stockQuantity > 0).map((p) => p.id));
@@ -330,8 +346,10 @@ export interface ActiveRestockAlert {
 export async function getActiveRestockAlerts(userId: string): Promise<ActiveRestockAlert[]> {
   const rows = await prisma.restockAlert.findMany({
     where: { userId, status: { in: ["PENDING", "NOTIFIED"] } },
-    orderBy: { predictedDate: "asc" },
-    take: 5,
+    // Newest first so that, when an older cycle's alert is still open (the
+    // customer reordered outside checkout), only the current one is shown.
+    orderBy: { createdAt: "desc" },
+    take: 20,
     select: {
       id: true,
       recommendedQty: true,
@@ -353,7 +371,13 @@ export async function getActiveRestockAlerts(userId: string): Promise<ActiveRest
     },
   });
 
-  return rows.map((row) => ({
+  const seen = new Set<string>();
+  const current = rows
+    .filter((row) => !seen.has(row.productId) && seen.add(row.productId))
+    .sort((a, b) => a.predictedDate.getTime() - b.predictedDate.getTime())
+    .slice(0, 5);
+
+  return current.map((row) => ({
     id: row.id,
     recommendedQty: row.recommendedQty,
     predictedDate: row.predictedDate.toISOString(),

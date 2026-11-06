@@ -5,6 +5,7 @@ import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
+import { LISTED } from "@/lib/productFamily";
 
 const QueryInput = z.string().trim().min(2).max(280);
 
@@ -22,7 +23,7 @@ export async function askHomeAssistant(rawQuery: string): Promise<HomeAssistantR
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
 
   try {
-    const [catalog, session] = await Promise.all([prisma.product.findMany(), auth()]);
+    const [catalog, session] = await Promise.all([prisma.product.findMany({ where: LISTED }), auth()]);
     const orders = session?.user?.id
       ? await prisma.order.findMany({
           where: { userId: session.user.id },

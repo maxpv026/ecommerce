@@ -6,6 +6,8 @@ import { Link } from "@/i18n/navigation";
 import dynamic from "next/dynamic";
 import { Award, ChevronLeft, Gauge, Minus, Package, Plus, ShieldCheck, ShoppingCart } from "lucide-react";
 import { isPurchasable } from "@/lib/waitlist";
+import { showSizeInUrl } from "@/lib/productFamily";
+import FavoriteButton from "./FavoriteButton";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { selectCartCount, useCartStore } from "@/lib/store/cart";
 import type { StoreProduct } from "@/lib/data";
@@ -104,6 +106,7 @@ export default function MobilePdpLayout({ product, variants }: MobilePdpLayoutPr
   const selectVariant = (id: string) => {
     setSelectedId(id);
     setAdded(false);
+    showSizeInUrl(id);
   };
 
   const addToCart = () => {
@@ -129,12 +132,12 @@ export default function MobilePdpLayout({ product, variants }: MobilePdpLayoutPr
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-white dark:bg-slate-950">
+    <div className="relative w-full min-h-screen bg-canvas dark:bg-slate-950">
       {/* Hero: mesh gradient studio backdrop, top half only, 3D cylinder centered */}
       <div className="relative h-[396px] overflow-hidden bg-[#fbfcfd] dark:bg-[#0a0f1c]">
         <div className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_58%,transparent_100%)]">
-          <div className="absolute -left-[120px] -top-[150px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-40 blur-[90px] [animation:hc-float_22s_ease-in-out_infinite] dark:opacity-[.55]" />
-          <div className="absolute -right-[110px] -top-[100px] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-40 blur-[90px] [animation:hc-float_28s_ease-in-out_infinite_reverse] dark:opacity-[.5]" />
+          <div className="absolute -left-[120px] -top-[150px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-40 blur-[90px] [animation:hc-float_22s_ease-in-out_infinite] dark:opacity-[.55]" />
+          <div className="absolute -right-[110px] -top-[100px] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-40 blur-[90px] [animation:hc-float_28s_ease-in-out_infinite_reverse] dark:opacity-[.5]" />
           <div className="absolute -top-[90px] left-[28%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#e0e7ff,rgba(224,231,255,0)_70%)] opacity-50 blur-[70px] [animation:hc-float_32s_ease-in-out_infinite] dark:opacity-[.18]" />
         </div>
         {/* The real SKU is the viewer's primary resolution signal; the name
@@ -179,6 +182,12 @@ export default function MobilePdpLayout({ product, variants }: MobilePdpLayoutPr
               />
               {tProducts(STOCK_KEY[stockKey])}
             </span>
+            <FavoriteButton
+              productId={selected.id}
+              productName={`${selected.name} · ${selected.weightLabel}`}
+              size="md"
+              className="ml-auto"
+            />
           </div>
           {/* The mock carried a marketing paragraph per product. There is no
               description column behind it, so rather than invent copy this

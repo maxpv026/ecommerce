@@ -55,8 +55,8 @@ export default function Footer() {
     >
       {/* Mesh glow tucked into the bottom-right corner; dimmer on light so
           it stays a suggestion rather than a smudge. */}
-      <div className="pointer-events-none absolute -bottom-[300px] -right-[140px] h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_70%)] opacity-[.1] blur-[120px] dark:opacity-[.22]" />
-      <div className="pointer-events-none absolute -bottom-[280px] right-[120px] h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,#22d3ee,rgba(34,211,238,0)_70%)] opacity-[.08] blur-[120px] dark:opacity-[.2]" />
+      <div className="pointer-events-none absolute -bottom-[300px] -right-[140px] h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-[.1] blur-[120px] dark:opacity-[.22]" />
+      <div className="pointer-events-none absolute -bottom-[280px] right-[120px] h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-[.08] blur-[120px] dark:opacity-[.2]" />
 
       <div className="relative mx-auto grid max-w-[1240px] grid-cols-1 gap-10 px-8 pt-16 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.2fr] lg:gap-13">
         <div>

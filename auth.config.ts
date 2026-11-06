@@ -5,7 +5,9 @@ import type { NextAuthConfig } from "next-auth";
 // Node.js-only APIs) — JWT verification alone doesn't need the providers or
 // database adapter, so middleware only needs this slice.
 export const authConfig = {
-  pages: { signIn: "/auth" },
+  // Errors land on our own sign-in page (it reads ?error=), not NextAuth's
+  // unstyled default — e.g. a refused Google link explains itself there.
+  pages: { signIn: "/auth", error: "/auth" },
   session: { strategy: "jwt" },
   providers: [],
   callbacks: {

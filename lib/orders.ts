@@ -6,6 +6,7 @@ import { calculateCartTotals, type CartTotals } from "@/lib/cart";
 import { stockStateForQuantity } from "@/lib/inventory";
 import { cylinderGasPrice } from "@/lib/pricing";
 import type { ProductModel } from "@/lib/generated/prisma/models";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * The order core: everything that has to be true before money is taken,
@@ -28,6 +29,12 @@ export const OrderRequest = z.object({
     )
     .min(1)
     .max(50),
+  /**
+   * Order a quote at its quoted prices. The basket must be exactly the
+   * quote's lines; a missing, expired, already-ordered or edited quote is
+   * refused (QUOTE_INVALID) rather than silently charged at today's prices.
+   */
+  quoteId: z.string().min(1).max(64).optional(),
 });
 
 export type OrderRequestInput = z.infer<typeof OrderRequest>;
@@ -39,6 +46,7 @@ export type OrderErrorCode =
   | "ADDRESS_NOT_FOUND"
   | "PRODUCT_NOT_FOUND"
   | "OUT_OF_STOCK"
+  | "QUOTE_INVALID"
   | "ORDER_FAILED";
 
 /** One validated line: the live catalog row plus the requested quantity. */
@@ -66,6 +74,8 @@ export interface OrderDraft {
   address: DeliveryAddress;
   lines: OrderDraftLine[];
   totals: CartTotals;
+  /** Set when the order is placed from a quote; commitOrder claims it. */
+  quoteId?: string;
 }
 
 /**
@@ -100,6 +110,8 @@ function generateOrderNumber(): string {
 
 /** Thrown inside the order transaction to roll it back and surface OUT_OF_STOCK. */
 class OutOfStockError extends Error {}
+/** Thrown when the quote was ordered or expired between prepareOrder and the commit. */
+class QuoteClaimError extends Error {}
 
 /**
  * Runs every pre-payment gate — identity, the F-Gas certificate, address
@@ -117,7 +129,7 @@ export async function prepareOrder(
 
   const parsed = OrderRequest.safeParse(rawInput);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
-  const { addressId, items } = parsed.data;
+  const { addressId, items, quoteId } = parsed.data;
 
   // Regulatory gate: refrigerant may only be sold to a buyer with an
   // accepted F-Gas certificate. VERIFIED is the only status that passes —
@@ -145,11 +157,37 @@ export async function prepareOrder(
   });
   if (!address) return { ok: false, code: "ADDRESS_NOT_FOUND" };
 
-  const products = await prisma.product.findMany({ where: { sku: { in: items.map((i) => i.sku) } } });
+  const products = await prisma.product.findMany({ where: { ...LISTED, sku: { in: items.map((i) => i.sku) } } });
   const bySku = new Map(products.map((p) => [p.sku, p]));
   if (items.some((i) => !bySku.has(i.sku))) return { ok: false, code: "PRODUCT_NOT_FOUND" };
 
-  const lines: OrderDraftLine[] = items.map((i) => ({ product: bySku.get(i.sku)!, qty: i.qty }));
+  let lines: OrderDraftLine[] = items.map((i) => ({ product: bySku.get(i.sku)!, qty: i.qty }));
+
+  // Ordering a quote: the quoted price, weight and deposit replace the live
+  // ones on every line, so the order — its totals, OrderItem snapshots and
+  // invoice — is exactly the document the buyer had approved.
+  if (quoteId) {
+    const quote = await prisma.quote.findFirst({
+      where: { id: quoteId, userId },
+      select: { status: true, validUntil: true, items: { select: { productId: true, sku: true, quantity: true, pricePerKg: true, weightKg: true, deposit: true } } },
+    });
+    if (!quote || quote.status !== "PENDING" || quote.validUntil <= new Date()) return { ok: false, code: "QUOTE_INVALID" };
+
+    const quoted = new Map(quote.items.map((q) => [q.sku, q]));
+    const sameBasket =
+      quote.items.length === items.length &&
+      items.every((i) => quoted.get(i.sku)?.quantity === i.qty && quoted.get(i.sku)?.productId === bySku.get(i.sku)!.id);
+    // A changed net weight means a different container from the one quoted:
+    // the price can be held, the product can't.
+    if (!sameBasket || lines.some((l) => quoted.get(l.product.sku)!.weightKg !== l.product.weightKg)) {
+      return { ok: false, code: "QUOTE_INVALID" };
+    }
+
+    lines = lines.map((l) => {
+      const q = quoted.get(l.product.sku)!;
+      return { qty: l.qty, product: { ...l.product, pricePerKg: q.pricePerKg, weightKg: q.weightKg, cylinderDeposit: q.deposit } };
+    });
+  }
 
   // Early, friendly rejection; commitOrder() re-checks under a conditional
   // update so a concurrent order can't slip through the gap.
@@ -169,7 +207,7 @@ export async function prepareOrder(
     }))
   );
 
-  return { ok: true, value: { userId, addressId, address, lines, totals } };
+  return { ok: true, value: { userId, addressId, address, lines, totals, quoteId } };
 }
 
 /**
@@ -218,7 +256,7 @@ export async function commitOrder(
           await tx.product.update({ where: { id: product.id }, data: stockStateForQuantity(after.stockQuantity) });
         }
 
-        return tx.order.create({
+        const order = await tx.order.create({
           data: {
             orderNumber: generateOrderNumber(),
             userId: draft.userId,
@@ -249,11 +287,24 @@ export async function commitOrder(
           },
           select: { id: true, orderNumber: true, totalAmount: true },
         });
+
+        // The claim, inside the same transaction as the stock and the order:
+        // a quote opened in two tabs is ordered once, and an order can't
+        // land at quoted prices after the quote has lapsed.
+        if (draft.quoteId) {
+          const claimed = await tx.quote.updateMany({
+            where: { id: draft.quoteId, userId: draft.userId, status: "PENDING", validUntil: { gt: new Date() } },
+            data: { status: "ACCEPTED", orderId: order.id },
+          });
+          if (claimed.count === 0) throw new QuoteClaimError(draft.quoteId);
+        }
+        return order;
       });
 
       return { ok: true, value: { ...order, totalAmount: Number(order.totalAmount) } };
     } catch (error) {
       if (error instanceof OutOfStockError) return { ok: false, code: "OUT_OF_STOCK" };
+      if (error instanceof QuoteClaimError) return { ok: false, code: "QUOTE_INVALID" };
       const isUniqueViolation =
         typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
       if (isUniqueViolation && attempt < 2) continue;
@@ -285,8 +336,10 @@ export async function markOrderPaid(orderId: string, paidAt: Date): Promise<bool
  * credit the same stock twice.
  */
 export async function releaseOrder(orderId: string): Promise<boolean> {
+  // Not once it has shipped: the cylinders are on a van, not on the shelf,
+  // so putting them back into stock would sell gas we no longer hold.
   const claimed = await prisma.order.updateMany({
-    where: { id: orderId, paymentStatus: "PENDING" },
+    where: { id: orderId, paymentStatus: "PENDING", status: "PENDING" },
     data: { paymentStatus: "FAILED" },
   });
   if (claimed.count === 0) return false;

@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { HIGH_GWP_THRESHOLD } from "@/lib/compliance";
 import { getMarketAlerts } from "@/lib/data";
 import type { MarketAlertTag } from "@/lib/services/newsFetcher";
+import { LISTED } from "@/lib/productFamily";
 
 /**
  * The hub's market intelligence, from two sources merged into one shape.
@@ -190,7 +191,7 @@ export interface TickerRow {
  */
 export const getTickerRows = cache(async function getTickerRows(): Promise<TickerRow[]> {
   const rows = await prisma.product.findMany({
-    where: { category: { in: ["cylinders", "blends"] }, pricePerKg: { gt: 0 } },
+    where: { ...LISTED, category: { in: ["cylinders", "blends"] }, pricePerKg: { gt: 0 } },
     select: { name: true, pricePerKg: true, gwp: true, inStock: true, stockQuantity: true },
     orderBy: { name: "asc" },
   });

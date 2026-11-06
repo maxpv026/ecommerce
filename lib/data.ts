@@ -10,6 +10,9 @@ import { NEWS_ITEM_LIMIT, fetchIndustryNews, type MarketAlertData as MarketAlert
 import { SEARCH_SUGGESTION_LIMIT, combineWhere, productSearchWhere } from "@/lib/search";
 import { isPurchasable } from "@/lib/waitlist";
 import type { FgasExtraction } from "@/lib/fgas";
+import type { NotificationPreferences } from "@/lib/notifications";
+import { certificateHref } from "@/lib/fgasStorage";
+import { LISTED, refrigerantTypeOf, resolveFamily, sizeLabel } from "@/lib/productFamily";
 
 // ---------------------------------------------------------------------------
 // Products
@@ -23,7 +26,7 @@ export interface StoreProduct {
   type: string;
   /** Net weight in lb (rounded), for the legacy lb-based filters; null for per-unit equipment. */
   weightLb: number | null;
-  /** Pack label used as the cart line variant, e.g. "10 kg cylinder" or "Set". */
+  /** Pack label used as the cart line variant, e.g. "10 kg cylinder", "800 kg drum" or "Set". */
   weightLabel: string;
   /** Gas price per kilogram (EUR). For per-unit equipment this is the unit price (weightKg = 1). */
   pricePerKg: number;
@@ -49,15 +52,10 @@ export interface StoreProduct {
   category: string;
   /** Link to this product's detail page: `/products/<db id>`. */
   pdpHref: string;
-}
-
-function deriveRefrigerantType(name: string): string {
-  return name.split(" ")[0] ?? name;
-}
-
-/** "10 kg cylinder" / "11.34 kg cylinder" — trims float noise, keeps up to 2 decimals. */
-function kgLabel(weightKg: number): string {
-  return `${Number(weightKg.toFixed(2))} kg cylinder`;
+  /** What it ships in: "Cylinder", "Drum"… */
+  containerType: string;
+  /** Rows sharing this value are sizes of one product (see lib/productFamily). */
+  family: string;
 }
 
 function toStoreProduct(product: {
@@ -75,17 +73,20 @@ function toStoreProduct(product: {
   gwp?: number | null;
   stock?: string;
   category?: string;
+  containerType?: string;
+  familyKey?: string | null;
 }): StoreProduct {
-  const type = deriveRefrigerantType(product.name);
+  const type = refrigerantTypeOf(product.name);
   const category = product.category ?? "cylinders";
   const pricedPerKg = isPricedPerKg(category);
+  const containerType = product.containerType ?? "Cylinder";
   return {
     id: product.id,
     sku: product.sku,
     name: product.name,
     type,
     weightLb: pricedPerKg ? Math.round(product.weightKg / KG_PER_LB) : null,
-    weightLabel: pricedPerKg ? kgLabel(product.weightKg) : product.weight,
+    weightLabel: pricedPerKg ? sizeLabel(product.weightKg, containerType) : product.weight,
     pricePerKg: product.pricePerKg,
     weightKg: product.weightKg,
     cylinderPrice: cylinderGasPrice(product.pricePerKg, product.weightKg),
@@ -116,6 +117,8 @@ function toStoreProduct(product: {
     // catalog covered. That route and its mock data are gone; /products/[id]
     // is the only PDP, and every product has a db id, so every card has one.
     pdpHref: `/products/${product.id}`,
+    containerType,
+    family: resolveFamily(product.familyKey, type),
   };
 }
 
@@ -138,7 +141,7 @@ export async function getProducts(query: ProductQuery = {}): Promise<StoreProduc
   const products = await prisma.product.findMany({
     // Marks and free text are ANDed: searching inside a mark selection
     // narrows, it never widens back to the whole catalog.
-    where: combineWhere(gasMarkWhere(query.gasMarks ?? []), productSearchWhere(query.search ?? "")),
+    where: combineWhere(LISTED, gasMarkWhere(query.gasMarks ?? []), productSearchWhere(query.search ?? "")),
     orderBy: IN_STOCK_FIRST,
   });
   return products.map(toStoreProduct);
@@ -157,7 +160,7 @@ export async function searchProducts(
   // Too short to filter on: return nothing rather than the whole catalog.
   if (!where) return [];
   const products = await prisma.product.findMany({
-    where,
+    where: { AND: [LISTED, where] },
     orderBy: IN_STOCK_FIRST,
     take: Math.min(Math.max(1, limit), 25),
   });
@@ -168,7 +171,7 @@ export async function searchProducts(
 export async function countSearchProducts(term: string): Promise<number> {
   const where = productSearchWhere(term);
   if (!where) return 0;
-  return prisma.product.count({ where });
+  return prisma.product.count({ where: { AND: [LISTED, where] } });
 }
 
 /**
@@ -178,7 +181,7 @@ export async function countSearchProducts(term: string): Promise<number> {
  * filter could never be widened.
  */
 export async function getGasMarkCounts(): Promise<Record<string, number>> {
-  const products = await prisma.product.findMany({ select: { name: true, sku: true } });
+  const products = await prisma.product.findMany({ where: LISTED, select: { name: true, sku: true } });
   const counts: Record<string, number> = {};
   for (const mark of GAS_MARKS) {
     counts[mark] = products.filter((product) => productHasGasMark(product, mark)).length;
@@ -186,10 +189,25 @@ export async function getGasMarkCounts(): Promise<Record<string, number>> {
   return counts;
 }
 
+/**
+ * A buyer's favourites, newest first, as catalog cards. Archived sizes drop
+ * out (they can no longer be bought); the Favorite row stays, so a restored
+ * size comes back on its own.
+ */
+export async function getFavoriteProducts(userId: string): Promise<StoreProduct[]> {
+  const favorites = await prisma.favorite.findMany({
+    where: { userId, product: LISTED },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+    select: { product: true },
+  });
+  return favorites.map((f) => toStoreProduct(f.product));
+}
+
 export async function getFeaturedProducts(limit = 4): Promise<StoreProduct[]> {
   // Purchasable products first, so a retired legacy tier never headlines
   // the home page while the CRM-listed cylinders are in stock.
-  const products = await prisma.product.findMany({ orderBy: IN_STOCK_FIRST, take: limit });
+  const products = await prisma.product.findMany({ where: LISTED, orderBy: IN_STOCK_FIRST, take: limit });
   return products.map(toStoreProduct);
 }
 
@@ -244,6 +262,13 @@ export interface UserProfileData {
   vatNumber: string | null;
   jobTitle: string | null;
   phone: string | null;
+  /**
+   * Profile photo: an upload (lib/avatarStorage) or the Google picture set at
+   * sign-in — both live in User.image. Null shows the initials.
+   */
+  avatarUrl: string | null;
+  /** Email preferences, keyed the way the settings toggles and the action name them. */
+  notifications: NotificationPreferences;
   passwordChangedAt: string | null;
   locale: string;
   /** F-Gas verification flag — true only when fGasStatus is VERIFIED. */
@@ -262,12 +287,11 @@ export interface UserProfileData {
    */
   fGasExtracted: FgasExtraction | null;
   /**
-   * Where the document lives: an app-relative path into the authenticated
-   * retrieval route (local storage), or an unguessable blob URL. Null until
-   * something has been uploaded. Only ever handed to its owner — see
-   * app/api/fgas/document/[key].
+   * Where the owner opens their uploaded certificate: the authenticated
+   * /api/fgas/certificate/<id> route, never the storage URL (a private blob
+   * or local key stays on the server). Null until something was uploaded.
    */
-  fGasDocumentUrl: string | null;
+  certificateDocumentHref: string | null;
   memberSinceYear: number;
   defaultAddress: string | null;
   defaultAddressTitle: string | null;
@@ -292,7 +316,12 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
       vatNumber: true,
       jobTitle: true,
       phone: true,
+      image: true,
       passwordChangedAt: true,
+      notifyBackInStock: true,
+      notifyPriceDrops: true,
+      notifyRegulatoryUpdates: true,
+      notifyRestockReminders: true,
       locale: true,
       fGasStatus: true,
       fGasRejectionReason: true,
@@ -322,6 +351,13 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     vatNumber: user.vatNumber,
     jobTitle: user.jobTitle,
     phone: user.phone,
+    avatarUrl: user.image,
+    notifications: {
+      backInStock: user.notifyBackInStock,
+      priceDrops: user.notifyPriceDrops,
+      regulatory: user.notifyRegulatoryUpdates,
+      restockReminders: user.notifyRestockReminders,
+    },
     passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
     locale: user.locale,
     fgasVerified: user.fGasStatus === "VERIFIED",
@@ -329,7 +365,7 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     fGasRejectionReason: user.fGasRejectionReason,
     fGasExtracted: (user.fGasExtractedData as FgasExtraction | null) ?? null,
     isTwoFactorEnabled: user.isTwoFactorEnabled,
-    fGasDocumentUrl: user.fGasDocumentUrl,
+    certificateDocumentHref: user.fGasDocumentUrl ? certificateHref(userId) : null,
     memberSinceYear: user.createdAt.getFullYear(),
     defaultAddress: user.addresses[0]?.fullAddress ?? null,
     defaultAddressTitle: user.addresses[0]?.title ?? null,
@@ -507,6 +543,7 @@ async function computeRecommendedSkus(userId: string, limit: number): Promise<st
   if (orders.length === 0) return [];
 
   const catalog = await prisma.product.findMany({
+    where: LISTED,
     select: { sku: true, name: true, gwpClass: true, weight: true, pricePerKg: true },
   });
   if (catalog.length === 0) return [];
@@ -564,7 +601,7 @@ export async function getRecommendedProducts(userId: string, limit = 3): Promise
     if (!skus || skus.length === 0) return getFeaturedProducts(limit);
 
     // Hydrated fresh every time, so price and stock are never served stale.
-    const recommended = await prisma.product.findMany({ where: { sku: { in: skus } } });
+    const recommended = await prisma.product.findMany({ where: { ...LISTED, sku: { in: skus } } });
     const ordered = skus
       .map((sku) => recommended.find((p) => p.sku === sku))
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
@@ -589,7 +626,12 @@ export type { MarketAlertData, MarketAlertTag } from "@/lib/services/newsFetcher
 // One hour, shared by the /api/market-news route and the dashboard widget's
 // own server-side call — so a page load never costs the publisher a request
 // and both surfaces show the same batch.
-const getCachedMarketAlerts = unstable_cache(() => fetchIndustryNews(NEWS_ITEM_LIMIT), ["market-news"], {
+//
+// The "v2" key part retires entries cached before fetchIndustryNews learned
+// to throw on a total feed failure: those could hold a timed-out request's
+// [] and kept the widget empty. Vercel's data cache outlives deployments,
+// so changing the code alone would not have cleared them.
+const getCachedMarketAlerts = unstable_cache(() => fetchIndustryNews(NEWS_ITEM_LIMIT), ["market-news", "v2"], {
   revalidate: 60 * 60,
   tags: ["market-news"],
 });
@@ -598,7 +640,9 @@ export async function getMarketAlerts(): Promise<MarketAlert[]> {
   try {
     return await getCachedMarketAlerts();
   } catch (error) {
-    // A dead feed is not a dead dashboard: the widget renders its empty state.
+    // Every feed failed and there is no earlier batch to fall back on (a
+    // failure is never cached, so the next request tries again). A dead feed
+    // is not a dead dashboard: the widget renders its empty state.
     console.error("getMarketAlerts failed:", error);
     return [];
   }

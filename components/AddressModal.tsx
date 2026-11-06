@@ -137,8 +137,8 @@ export default function AddressModal({ open, address, onClose, onSaved }: Addres
             className="relative w-[560px] max-w-full overflow-hidden rounded-[30px] border border-slate-900/[.14] bg-white/[.92] p-[30px] shadow-[0_60px_120px_-50px_rgba(2,4,10,.8)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/[.16] dark:bg-[rgba(20,21,24,.9)]"
           >
             <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[30px]">
-              <div className="absolute -top-[46%] left-[-14%] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,#2563eb,rgba(37,99,235,0)_68%)] opacity-[.34] blur-[90px]" />
-              <div className="absolute -bottom-[44%] right-[-16%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,#7c3aed,rgba(124,58,237,0)_68%)] opacity-[.28] blur-[90px]" />
+              <div className="absolute -top-[46%] left-[-14%] h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-[.34] blur-[90px]" />
+              <div className="absolute -bottom-[44%] right-[-16%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-[.28] blur-[90px]" />
             </div>
 
             <div className="relative">

@@ -42,6 +42,7 @@ export const maxDuration = 20;
 const CheckoutRequest = z.object({
   addressId: z.string().min(1),
   items: z.array(z.object({ sku: z.string().min(1), qty: z.number().int().min(1).max(99) })).min(1).max(50),
+  quoteId: z.string().min(1).max(64).optional(),
 });
 
 const STATUS: Record<OrderErrorCode, number> = {
@@ -51,6 +52,7 @@ const STATUS: Record<OrderErrorCode, number> = {
   ADDRESS_NOT_FOUND: 404,
   PRODUCT_NOT_FOUND: 404,
   OUT_OF_STOCK: 409,
+  QUOTE_INVALID: 409,
   ORDER_FAILED: 500,
 };
 
