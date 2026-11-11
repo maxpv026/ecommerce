@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Download,
   Euro,
   Globe,
   Hourglass,
@@ -27,7 +26,9 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Truck,
+  ShieldAlert,
 } from "lucide-react";
+import FgasStatusCard from "./fgas/FgasStatusCard";
 import { useCartStore } from "@/lib/store/cart";
 import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import RecordsCard from "./profile/RecordsCard";
@@ -73,6 +74,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
   const tAccount = useTranslations("AccountProfile");
   const tPd = useTranslations("ProfileDashboard");
   const tHm = useTranslations("HomeMobile");
+  const tFgasProfile = useTranslations("FgasProfile");
   const format = useFormatter();
   const locale = useLocale();
   const { data: session } = useSession();
@@ -135,7 +137,6 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
-  const cert = profile?.certificate ?? null;
   const activeLanguage = LANGUAGE_OPTIONS.find((o) => o.locale === locale)?.name ?? locale.toUpperCase();
 
   const reorder = (order: UserOrder) => {
@@ -240,6 +241,21 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                   <Hourglass size={13} strokeWidth={2} />
                   {tProfile("fgasPendingBadge")}
                 </span>
+              )}
+              {(profile?.fGasStatus === "REJECTED" || profile?.fGasStatus === "EXPIRED") && (
+                <button
+                  type="button"
+                  onClick={() => setTab("certs")}
+                  data-fgas-hero={profile.fGasStatus}
+                  className={`inline-flex items-center gap-[7px] rounded-full border py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold ${
+                    profile.fGasStatus === "REJECTED"
+                      ? "border-red-500/35 bg-red-500/[.12] text-red-700 dark:text-red-300"
+                      : "border-orange-500/40 bg-orange-500/[.14] text-orange-700 dark:text-orange-300"
+                  }`}
+                >
+                  <ShieldAlert size={13} strokeWidth={2} />
+                  {profile.fGasStatus === "REJECTED" ? tFgasProfile("statusRejected") : tFgasProfile("statusExpired")}
+                </button>
               )}
               {profile?.fgasVerified && (
                 <span className="inline-flex items-center gap-[7px] rounded-full border border-[rgba(16,185,129,.32)] bg-[rgba(16,185,129,.15)] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-[#047857] shadow-[0_0_18px_-6px_#34d399] dark:text-[#34d399]">
@@ -472,63 +488,8 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
         {/* ── Compliance ── */}
         {tab === "certs" && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-certs>
-            {cert ? (
-              <div
-                data-cert-card
-                className="relative mb-3 overflow-hidden rounded-[22px] border border-[rgba(16,185,129,.27)] bg-white/70 p-[17px] shadow-[0_0_26px_-16px_#34d399] backdrop-blur-xl backdrop-saturate-150 dark:bg-glass"
-              >
-                <span className="pointer-events-none absolute -bottom-[150%] left-[-22%] h-[230px] w-[230px] rounded-full bg-[radial-gradient(circle,var(--orb-emerald),transparent_68%)] opacity-20 blur-[58px]" />
-                <span className="relative flex items-start gap-3">
-                  <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl border border-[rgba(16,185,129,.27)] bg-[rgba(16,185,129,.13)]">
-                    <ShieldCheck size={16} strokeWidth={1.9} className="text-[#047857] dark:text-[#34d399]" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="mb-[5px] block text-[9.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                      {t("certKind")}
-                    </span>
-                    <span className="block text-[13.5px] font-semibold leading-[1.3] tracking-[-.025em]">
-                      {tHm("certTitle")} · {cert.certType}
-                    </span>
-                    <span className="mt-1 block text-[10.5px] text-slate-400 dark:text-ink-muted">
-                      {cert.certId} · {tHm("certIssued", { year: cert.issuedYear })}
-                    </span>
-                  </span>
-                  <motion.div whileTap={{ scale: 0.95 }} className="flex flex-none">
-                    <Link
-                      href="/profile/docs"
-                      aria-label={tHm("certDownloadAria")}
-                      className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-slate-100 dark:bg-white/[.07]"
-                    >
-                      <Download size={17} strokeWidth={1.9} />
-                    </Link>
-                  </motion.div>
-                </span>
-                <span className="relative mt-[13px] flex flex-wrap gap-[7px]">
-                  {profile?.fGasStatus === "PENDING_REVIEW" && (
-                <span
-                  data-fgas-pending
-                  className="inline-flex items-center gap-[7px] rounded-full border border-amber-500/35 bg-amber-500/[.15] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-amber-800 shadow-[0_0_18px_-6px_#f59e0b] dark:text-amber-300"
-                >
-                  <Hourglass size={13} strokeWidth={2} />
-                  {tProfile("fgasPendingBadge")}
-                </span>
-              )}
-              {profile?.fgasVerified && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(16,185,129,.32)] bg-[rgba(16,185,129,.15)] py-[5px] pl-2 pr-[11px] text-[10px] font-semibold text-[#047857] shadow-[0_0_16px_-7px_#34d399] dark:text-[#34d399]">
-                      <span className="h-[5px] w-[5px] flex-none rounded-full bg-[#34d399] shadow-[0_0_7px_1px_#34d399]" />
-                      {t("certVerified")}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center rounded-full border border-slate-900/[.08] bg-slate-100 px-[11px] py-[5px] text-[10px] font-semibold text-slate-500 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted">
-                    {cert.certType}
-                  </span>
-                </span>
-              </div>
-            ) : (
-              <div className="rounded-[22px] border border-dashed border-slate-900/[.16] bg-white/70 p-[17px] text-center text-xs text-slate-500 backdrop-blur-xl dark:border-hairline-strong dark:bg-glass dark:text-ink-muted">
-                {t("noCerts")}
-              </div>
-            )}
+            {/* The F-Gas standing, with the action that fits it (upload / replace / renew). */}
+            <FgasStatusCard fgas={profile?.fgas ?? null} />
           </motion.div>
         )}
 

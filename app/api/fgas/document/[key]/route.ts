@@ -1,72 +1,58 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
-import { isFounderEmail } from "@/lib/rbac";
-import { isSafeStorageKey, readLocalCertificate } from "@/lib/fgasStorage";
+import { documentOwner, isSafeStorageKey, readCertificate } from "@/lib/fgasStorage";
+import { isAdminViewer } from "@/lib/fgasReview";
 
 /**
- * GET /api/fgas/document/<key>
+ * GET /api/fgas/document/<key>[?download=1]
  *
- * Serves a locally-stored F-Gas certificate. This exists because the upload
- * directory is deliberately outside `public/`: a compliance document naming
- * a company, its certificate number and an individual's qualifications must
- * not be fetchable by anyone who guesses a URL.
+ * One stored certificate document — the current one or any earlier
+ * submission in a buyer's history — decrypted and streamed. Keys are
+ * random ("db-<uuid>" in PostgreSQL, or a legacy local-disk "<uuid>.<ext>").
  *
- * Two callers are allowed, and nobody else:
- *   - the buyer the certificate belongs to;
- *   - an admin, who has to open it to approve or reject it.
- *
- * A missing file and an unauthorised request both answer 404, so this can't
- * be used to probe which certificate ids exist.
- *
- * `?download=1` switches the disposition to `attachment` so the profile's
- * download button saves the file instead of rendering it. The same query
- * param does the same thing on a Vercel Blob URL, so the button can be built
- * the same way whichever driver stored the document.
+ *   401  no session
+ *   403  signed in, but neither the document's owner nor an admin
+ *   404  no such document (or the bytes can't be read)
+ *   200  the owner, or an admin (role ADMIN + ADMIN_EMAIL, read from the row)
  */
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const notFound = () => new Response("Not found", { status: 404 });
+const text = (body: string, status: number) =>
+  new Response(body, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
 
-export async function GET(request: Request, { params }: { params: Promise<{ key: string }> }) {
-  const { key } = await params;
-  if (!isSafeStorageKey(key)) return notFound();
+const EXT: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
-  const download = new URL(request.url).searchParams.get("download");
-  const asAttachment = download === "1" || download === "true";
+export async function GET(request: Request, ctx: RouteContext<"/api/fgas/document/[key]">) {
+  const { key } = await ctx.params;
+  if (!isSafeStorageKey(key)) return text("Not found", 404);
 
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return notFound();
+  const viewerId = session?.user?.id;
+  if (!viewerId) return text("Sign in to view this document.", 401);
 
-  // Authorise against the row, never against the URL: the only people who
-  // may read this document are its owner and an admin.
-  const [owner, viewer] = await Promise.all([
-    prisma.user.findFirst({
-      where: { fGasDocumentUrl: `/api/fgas/document/${key}` },
-      select: { id: true },
-    }),
-    prisma.user.findUnique({ where: { id: userId }, select: { email: true, role: true } }),
-  ]);
+  const storedUrl = `/api/fgas/document/${key}`;
+  const owner = await documentOwner(storedUrl);
+  if (!owner) return text("Not found", 404);
+  if (owner !== viewerId && !(await isAdminViewer(viewerId))) return text("You don't have access to this document.", 403);
 
-  const isAdmin = viewer?.role === "ADMIN" && isFounderEmail(viewer.email);
-  if (!owner) return notFound();
-  if (owner.id !== userId && !isAdmin) return notFound();
+  const file = await readCertificate(storedUrl).catch((error) => {
+    console.error(`[fgas] could not read document ${key}:`, error);
+    return null;
+  });
+  if (!file) return text("The document couldn't be retrieved.", 404);
 
-  const file = await readLocalCertificate(key);
-  if (!file) return notFound();
-
-  return new Response(new Uint8Array(file.bytes), {
+  const download = new URL(request.url).searchParams.get("download") === "1";
+  return new Response(file.body, {
     status: 200,
     headers: {
       "Content-Type": file.contentType,
-      "Content-Length": String(file.bytes.byteLength),
-      // Inline so a reviewer can read it in the browser, but never cached by
-      // a shared proxy and never indexed. `?download=1` flips it to a save.
-      "Content-Disposition": `${asAttachment ? "attachment" : "inline"}; filename="fgas-certificate.${key.split(".").pop()}"`,
+      ...(file.size !== null ? { "Content-Length": String(file.size) } : {}),
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="fgas-certificate.${EXT[file.contentType] ?? "bin"}"`,
       "Cache-Control": "private, no-store",
       "X-Robots-Tag": "noindex, nofollow",
       "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
     },
   });
 }

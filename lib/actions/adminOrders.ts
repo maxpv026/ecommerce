@@ -27,6 +27,8 @@ const ADMIN_ERRORS: Record<ReviewErrorCode, string> = {
   TWO_FACTOR_REQUIRED: "Enable two-factor authentication to manage orders.",
   USER_NOT_FOUND: "Not authorised.",
   NOT_PENDING: "Not authorised.",
+  NO_DOCUMENT: "Not authorised.",
+  DOCUMENT_EXPIRED: "Not authorised.",
   FAILED: "Not authorised.",
 };
 

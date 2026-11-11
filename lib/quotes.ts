@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomInt } from "node:crypto";
 import prisma from "@/lib/prisma";
-import { isPricedPerKg } from "@/lib/pricing";
+import { requiresFgasCertificate } from "@/lib/fgasSubstances";
 import type { QuoteStatus } from "@/lib/generated/prisma/enums";
 
 /**
@@ -42,8 +42,9 @@ export function effectiveQuoteStatus(quote: { status: QuoteStatus; validUntil: D
  * anything priced by weight or carrying a GWP; tools and empty recovery
  * cylinders are not.
  */
-export function isFGasProduct(product: { category: string; gwp: number | null }): boolean {
-  return product.gwp !== null || isPricedPerKg(product.category);
+/** @deprecated use requiresFgasCertificate (lib/fgasSubstances) — substance-based. */
+export function isFGasProduct(product: { name: string; category: string; gwp: number | null }): boolean {
+  return requiresFgasCertificate(product);
 }
 
 export interface QuoteLine {

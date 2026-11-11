@@ -1,159 +1,145 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes, randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
+import prisma from "@/lib/prisma";
 import type { FgasMediaType } from "@/lib/fgas";
 
 /**
  * Where uploaded F-Gas certificates live.
  *
- * These are compliance documents carrying a company's name, certificate
- * number and an individual's qualifications — not marketing assets. Two
- * rules follow from that and drive everything here:
+ * Compliance documents (a company, a certificate number, a person's
+ * qualifications), so: never in public/, never under a guessable name, and
+ * only ever served through the authenticated routes
+ * /api/fgas/document/<key> and /api/fgas/certificate/<userId>.
  *
- *  1. They never go in `public/`. A file under public/ is served to anyone
- *     who can guess the path, forever, with no audit trail.
- *  2. The stored name is random, never derived from the user's filename or
- *     id, so one URL leaking tells an attacker nothing about the others.
+ * Drivers, in order:
+ *   blob      private Vercel Blob, when BLOB_READ_WRITE_TOKEN is set;
+ *   database  PostgreSQL (FgasDocumentFile), AES-256-GCM encrypted here —
+ *             used when there is no Blob token AND whenever a Blob upload
+ *             fails, so an upload never fails for want of a file store.
+ *             (Serverless disks are read-only: the old local-disk fallback
+ *             broke every upload in production.)
+ *   local     read-only now: documents written to .uploads/fgas during
+ *             development before this change can still be read back.
  *
- * Two drivers:
- *
- *  - `blob`  — Vercel Blob, used when BLOB_READ_WRITE_TOKEN is present.
- *              Stored with `access: "private"`: the URL alone fetches
- *              nothing, only a request carrying the store token does. (It
- *              used to be public-but-unguessable, which made every leaked
- *              URL — a log line, a chat message — a working copy of
- *              someone's certificate.)
- *  - `local` — a directory outside the web root (default `.uploads/fgas`),
- *              for development.
- *
- * Either way the stored URL is internal. The browser only ever sees
- * /api/fgas/certificate/<userId>, which checks the caller and streams the
- * file through `readCertificate` below.
+ * Encryption key: HKDF-SHA256 over FGAS_DOCUMENT_KEY when set, else
+ * AUTH_SECRET. The row records which (keyRef), so rotating AUTH_SECRET
+ * without setting FGAS_DOCUMENT_KEY to the old value makes old documents
+ * unreadable — set FGAS_DOCUMENT_KEY once and keep it.
  */
 
-export type FgasStorageDriver = "blob" | "local";
+export type FgasStorageDriver = "blob" | "database";
 
 export interface StoredCertificate {
   driver: FgasStorageDriver;
-  /**
-   * What goes in `User.fGasDocumentUrl`.
-   *
-   * For `blob` the private blob URL (useless without the store token). For
-   * `local` an app-relative path into the authenticated retrieval route —
-   * never a filesystem path. Server-side only; never sent to a browser.
-   */
+  /** What goes in fGasDocumentUrl / Certificate.documentUrl. Server-side only. */
   url: string;
-  /** Opaque key for the retrieval route; null for blob. */
-  key: string | null;
   contentType: FgasMediaType;
   bytes: number;
 }
 
-const LOCAL_ROOT = () => path.resolve(process.cwd(), process.env.FGAS_UPLOAD_DIR?.trim() || ".uploads/fgas");
+const DB_PREFIX = "/api/fgas/document/";
+const DB_KEY = /^db-[0-9a-f-]{36}$/i;
+/** Legacy local-disk key: a plain `<uuid>.<ext>`. */
+const LOCAL_KEY = /^[0-9a-f-]{36}\.(pdf|jpg|png|webp)$/i;
 
-const EXTENSIONS: Record<FgasMediaType, string> = {
-  "application/pdf": "pdf",
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
+export const isDbKey = (key: string) => DB_KEY.test(key);
+export const isLocalKey = (key: string) => LOCAL_KEY.test(key);
+export const isSafeStorageKey = (key: string) => isDbKey(key) || isLocalKey(key);
+
+/** True for a document only the old local-disk driver holds (absent in production). */
+export function isLocalOnlyDocument(url: string | null | undefined): boolean {
+  return Boolean(url?.startsWith(DB_PREFIX) && isLocalKey(url.slice(DB_PREFIX.length)));
+}
 
 export function storageDriver(): FgasStorageDriver {
-  return process.env.BLOB_READ_WRITE_TOKEN?.trim() ? "blob" : "local";
+  return process.env.BLOB_READ_WRITE_TOKEN?.trim() ? "blob" : "database";
 }
 
-/** Random, unguessable, and carrying no user-supplied text. */
-function objectName(contentType: FgasMediaType): string {
-  return `${randomUUID()}.${EXTENSIONS[contentType]}`;
+// ── Encryption ───────────────────────────────────────────────────────────
+
+const KEY_REFS = {
+  "fgas-v1": () => process.env.FGAS_DOCUMENT_KEY?.trim(),
+  "auth-v1": () => process.env.AUTH_SECRET?.trim(),
+} as const;
+type KeyRef = keyof typeof KEY_REFS;
+
+function currentKeyRef(): KeyRef {
+  if (KEY_REFS["fgas-v1"]()) return "fgas-v1";
+  if (KEY_REFS["auth-v1"]()) return "auth-v1";
+  throw new Error("FGAS_DOCUMENT_KEY or AUTH_SECRET is required to encrypt certificate documents");
 }
 
-/**
- * Persists the certificate and returns where it went.
- *
- * Throws on failure: an upload the reviewer can never open is worse than a
- * failed submission the buyer can retry.
- */
-export async function storeCertificate(
-  bytes: Uint8Array,
-  contentType: FgasMediaType
-): Promise<StoredCertificate> {
-  const name = objectName(contentType);
-
-  if (storageDriver() === "blob") {
-    // Imported lazily so the package is only required when it is configured.
-    const { put } = await import("@vercel/blob");
-    const blob = await put(`fgas/${name}`, Buffer.from(bytes), {
-      access: "private",
-      contentType,
-      // Vercel's suffix keeps two uploads of the same document from colliding.
-      addRandomSuffix: true,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
-    return { driver: "blob", url: blob.url, key: null, contentType, bytes: bytes.byteLength };
-  }
-
-  const root = LOCAL_ROOT();
-  await mkdir(root, { recursive: true });
-  await writeFile(path.join(root, name), bytes, { mode: 0o600 });
-
-  return {
-    driver: "local",
-    url: `/api/fgas/document/${name}`,
-    key: name,
-    contentType,
-    bytes: bytes.byteLength,
-  };
+function keyFor(ref: string): Buffer {
+  const secret = (KEY_REFS as Record<string, () => string | undefined>)[ref]?.();
+  if (!secret) throw new Error(`No key material for F-Gas document key "${ref}"`);
+  return Buffer.from(hkdfSync("sha256", secret, "my-energy:fgas-documents", ref, 32));
 }
 
-/** Only ever a plain `<uuid>.<ext>` — no separators, no traversal. */
-const SAFE_KEY = /^[0-9a-f-]{36}\.(pdf|jpg|png|webp)$/i;
-
-export function isSafeStorageKey(key: string): boolean {
-  return SAFE_KEY.test(key);
+export function encryptDocument(bytes: Uint8Array) {
+  const keyRef = currentKeyRef();
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", keyFor(keyRef), iv);
+  const data = Buffer.concat([cipher.update(bytes), cipher.final()]);
+  return { keyRef, iv, authTag: cipher.getAuthTag(), data };
 }
 
-/**
- * Reads a locally-stored certificate back.
- *
- * The key is validated against SAFE_KEY *and* the resolved path is checked
- * to still sit inside the upload root, so a crafted key can never walk out
- * of it. Callers must do their own authorisation first — this function does
- * not know who is asking.
- */
-export async function readLocalCertificate(
-  key: string
-): Promise<{ bytes: Buffer; contentType: string } | null> {
-  if (!isSafeStorageKey(key)) return null;
-
-  const root = LOCAL_ROOT();
-  const target = path.resolve(root, key);
-  if (target !== path.join(root, key)) return null;
-
-  try {
-    const bytes = await readFile(target);
-    const extension = path.extname(key).slice(1).toLowerCase();
-    const contentType =
-      extension === "pdf"
-        ? "application/pdf"
-        : extension === "png"
-          ? "image/png"
-          : extension === "webp"
-            ? "image/webp"
-            : "image/jpeg";
-    return { bytes, contentType };
-  } catch {
-    return null;
-  }
+export function decryptDocument(row: { keyRef: string; iv: Uint8Array; authTag: Uint8Array; data: Uint8Array }): Buffer {
+  const decipher = createDecipheriv("aes-256-gcm", keyFor(row.keyRef), Buffer.from(row.iv));
+  decipher.setAuthTag(Buffer.from(row.authTag));
+  return Buffer.concat([decipher.update(Buffer.from(row.data)), decipher.final()]);
 }
 
-/** Stable fingerprint of the document, for spotting re-uploads in review. */
 export function fingerprint(bytes: Uint8Array): string {
-  return createHash("sha256").update(bytes).digest("hex").slice(0, 16);
+  return createHash("sha256").update(bytes).digest("hex");
 }
 
-const LOCAL_PREFIX = "/api/fgas/document/";
+// ── Store ────────────────────────────────────────────────────────────────
+
+async function storeInDatabase(bytes: Uint8Array, contentType: FgasMediaType, userId: string): Promise<StoredCertificate> {
+  const id = `db-${randomUUID()}`;
+  const sealed = encryptDocument(bytes);
+  await prisma.fgasDocumentFile.create({
+    data: {
+      id,
+      userId,
+      mimeType: contentType,
+      size: bytes.byteLength,
+      sha256: fingerprint(bytes),
+      keyRef: sealed.keyRef,
+      iv: sealed.iv,
+      authTag: sealed.authTag,
+      data: sealed.data,
+    },
+  });
+  return { driver: "database", url: `${DB_PREFIX}${id}`, contentType, bytes: bytes.byteLength };
+}
+
+/**
+ * Persists a certificate for `userId`. Throws only if every driver failed:
+ * a decision pointing at a document nobody can open can't be reviewed.
+ */
+export async function storeCertificate(bytes: Uint8Array, contentType: FgasMediaType, userId: string): Promise<StoredCertificate> {
+  if (storageDriver() === "blob") {
+    try {
+      const { put } = await import("@vercel/blob");
+      const blob = await put(`fgas/${randomUUID()}`, Buffer.from(bytes), {
+        access: "private",
+        contentType,
+        addRandomSuffix: true,
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return { driver: "blob", url: blob.url, contentType, bytes: bytes.byteLength };
+    } catch (error) {
+      console.error("[fgas-storage] Blob upload failed; storing in the database instead:", error);
+    }
+  }
+  return storeInDatabase(bytes, contentType, userId);
+}
+
+// ── Read ─────────────────────────────────────────────────────────────────
 
 export interface CertificateFile {
   body: ReadableStream<Uint8Array> | Uint8Array<ArrayBuffer>;
@@ -161,21 +147,42 @@ export interface CertificateFile {
   size: number | null;
 }
 
+const LOCAL_ROOT = () => path.resolve(process.cwd(), process.env.FGAS_UPLOAD_DIR?.trim() || ".uploads/fgas");
+
+async function readLocal(key: string): Promise<CertificateFile | null> {
+  if (!isLocalKey(key)) return null;
+  const root = LOCAL_ROOT();
+  const target = path.resolve(root, key);
+  if (target !== path.join(root, key)) return null;
+  try {
+    const bytes = await readFile(target);
+    const ext = path.extname(key).slice(1).toLowerCase();
+    const contentType = ext === "pdf" ? "application/pdf" : ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+    return { body: new Uint8Array(bytes), contentType, size: bytes.length };
+  } catch {
+    return null;
+  }
+}
+
+/** Decrypted bytes of a database-stored document, with its owner. */
+export async function readDatabaseDocument(key: string): Promise<(CertificateFile & { userId: string }) | null> {
+  if (!isDbKey(key)) return null;
+  const row = await prisma.fgasDocumentFile.findUnique({ where: { id: key } });
+  if (!row) return null;
+  const bytes = decryptDocument(row);
+  return { body: new Uint8Array(bytes), contentType: row.mimeType, size: bytes.length, userId: row.userId };
+}
+
 /**
- * Reads a stored certificate back from wherever `User.fGasDocumentUrl` says
- * it lives. Does NOT authorise — the caller must have checked that the
- * requester owns the certificate or is an admin.
- *
- * Blob documents are tried as private first; a document uploaded before the
- * switch to private storage is still public until
- * scripts/migrate-fgas-blobs-private.ts moves it, so that is the fallback.
+ * Reads a stored certificate from wherever its URL says it lives. Does NOT
+ * authorise — the caller must have checked owner-or-admin first.
  */
 export async function readCertificate(storedUrl: string): Promise<CertificateFile | null> {
-  if (storedUrl.startsWith(LOCAL_PREFIX)) {
-    const file = await readLocalCertificate(storedUrl.slice(LOCAL_PREFIX.length));
-    return file ? { body: new Uint8Array(file.bytes), contentType: file.contentType, size: file.bytes.length } : null;
+  if (storedUrl.startsWith(DB_PREFIX)) {
+    const key = storedUrl.slice(DB_PREFIX.length);
+    if (isDbKey(key)) return readDatabaseDocument(key);
+    return readLocal(key);
   }
-
   let host: string;
   try {
     host = new URL(storedUrl).hostname;
@@ -184,15 +191,12 @@ export async function readCertificate(storedUrl: string): Promise<CertificateFil
   }
   // Only our own blob store — never fetch an arbitrary URL from a DB column.
   if (!host.endsWith(".blob.vercel-storage.com")) return null;
-
   const { get } = await import("@vercel/blob");
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   for (const access of ["private", "public"] as const) {
     try {
       const result = await get(storedUrl, { access, token, useCache: false });
-      if (result?.statusCode === 200) {
-        return { body: result.stream, contentType: result.blob.contentType, size: result.blob.size };
-      }
+      if (result?.statusCode === 200) return { body: result.stream, contentType: result.blob.contentType, size: result.blob.size };
     } catch {
       // Wrong access mode for this blob; try the other one.
     }
@@ -200,7 +204,33 @@ export async function readCertificate(storedUrl: string): Promise<CertificateFil
   return null;
 }
 
-/** The only URL a browser is given for a user's certificate. */
+/**
+ * Whose document is this? For database documents the row says so; for
+ * legacy local / blob documents, whichever account, certificate or audit
+ * entry references the URL. Null when nothing does.
+ */
+export async function documentOwner(storedUrl: string): Promise<string | null> {
+  const key = storedUrl.startsWith(DB_PREFIX) ? storedUrl.slice(DB_PREFIX.length) : null;
+  if (key && isDbKey(key)) {
+    const row = await prisma.fgasDocumentFile.findUnique({ where: { id: key }, select: { userId: true } });
+    return row?.userId ?? null;
+  }
+  const [user, cert, log] = await Promise.all([
+    prisma.user.findFirst({ where: { fGasDocumentUrl: storedUrl }, select: { id: true } }),
+    prisma.certificate.findFirst({ where: { documentUrl: storedUrl }, select: { userId: true } }),
+    prisma.fgasAuditLog.findFirst({ where: { documentUrl: storedUrl }, select: { userId: true } }),
+  ]);
+  return user?.id ?? cert?.userId ?? log?.userId ?? null;
+}
+
+/** The authenticated URL a browser is given for a stored document. */
+export function documentHref(storedUrl: string | null | undefined): string | null {
+  if (!storedUrl) return null;
+  if (storedUrl.startsWith(DB_PREFIX)) return storedUrl;
+  return null;
+}
+
+/** The only URL a browser is given for a user's CURRENT certificate. */
 export function certificateHref(userId: string): string {
   return `/api/fgas/certificate/${encodeURIComponent(userId)}`;
 }

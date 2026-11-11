@@ -1,17 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { Lock, LogIn, ShieldAlert, ShieldCheck, Upload } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
+import { Clock, Lock, LogIn, ShieldAlert, ShieldCheck, ShieldX, Upload } from "lucide-react";
+import type { FgasSummary } from "@/lib/fgas";
 
-export type FgasGate = "guest" | "unverified";
+/**
+ * Why checkout is locked by the F-Gas rule — shown only when the basket holds
+ * a fluorinated gas (lib/fgasSubstances). Five states, each with its own
+ * words and action:
+ *
+ *   guest       sign in (a certificate is verified against an account)
+ *   unverified  no certificate yet → upload
+ *   pending     with a compliance specialist → wait (or upload another)
+ *   rejected    refused, with the reason → upload another
+ *   expired     lapsed on <date> → upload the renewed one
+ *
+ * Mount inside <AnimatePresence>.
+ */
+export type FgasGate = "guest" | "unverified" | "pending" | "rejected" | "expired";
 
-interface FgasGateAlertProps {
-  gate: FgasGate;
-  /** Tighter spacing for the mobile sticky bar. */
-  compact?: boolean;
-  onLogIn: () => void;
-  onUpload: () => void;
+export function fgasGateFor(signedIn: boolean | null, fgas: FgasSummary | null): FgasGate | null {
+  if (signedIn === null) return null;
+  if (!signedIn) return "guest";
+  switch (fgas?.status ?? "NONE") {
+    case "VERIFIED":
+      return null;
+    case "PENDING_REVIEW":
+      return "pending";
+    case "REJECTED":
+      return "rejected";
+    case "EXPIRED":
+      return "expired";
+    default:
+      return "unverified";
+  }
 }
 
 const RISE = {
@@ -21,108 +44,65 @@ const RISE = {
   transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
 };
 
-/**
- * Blocking notice rendered under the order total whenever checkout is
- * locked by the F-Gas rule. Guests get the sign-in / guest-upload pair on a
- * brand-blue glow; signed-in buyers without a verified certificate get the
- * amber "confirm your certificate" prompt.
- *
- * Two states, because the gate is binary: the certificate is verified or it
- * is not. There is no "with the reviewer" state to sit in — the upload comes
- * back decided. Mount inside <AnimatePresence>.
- */
-export default function FgasGateAlert({ gate, compact = false, onLogIn, onUpload }: FgasGateAlertProps) {
-  const t = useTranslations("Cart");
-  const guest = gate === "guest";
+const STYLE: Record<FgasGate, { shell: string; tile: string; Icon: typeof Lock }> = {
+  guest: { shell: "border-blue-500/30 bg-blue-500/[.07]", tile: "bg-blue-700", Icon: Lock },
+  unverified: { shell: "border-amber-500/30 bg-amber-500/10", tile: "bg-amber-500", Icon: ShieldAlert },
+  pending: { shell: "border-[#3b6fd8]/30 bg-[#3b6fd8]/[.07]", tile: "bg-[#3b6fd8]", Icon: Clock },
+  rejected: { shell: "border-red-500/30 bg-red-500/[.07]", tile: "bg-red-600", Icon: ShieldX },
+  expired: { shell: "border-orange-500/35 bg-orange-500/[.08]", tile: "bg-orange-600", Icon: ShieldAlert },
+};
 
-  const shell = guest
-    ? "border-blue-500/30 bg-blue-500/[.08] shadow-[0_0_38px_-12px_rgba(59,130,246,.62)] dark:bg-blue-500/10"
-    : "border-amber-500/30 bg-amber-500/10 shadow-[0_0_38px_-12px_rgba(245,158,11,.7)]";
-  const aura = guest ? "#60a5fa" : "#fbbf24";
-  const tile = guest
-    ? "bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_10px_22px_-10px_rgba(37,99,235,.85)]"
-    : "bg-[linear-gradient(140deg,#f59e0b,#f97316)] shadow-[0_10px_22px_-10px_rgba(245,158,11,.85)]";
-  const Icon = guest ? Lock : ShieldAlert;
-
-  const btnBase = `inline-flex flex-none items-center justify-center gap-2 rounded-[12px] font-semibold tracking-[-.015em] transition-[background-color,box-shadow,transform] duration-200 ${
-    compact ? "h-9 px-3.5 text-[12px]" : "h-10 px-4 text-[12.5px]"
-  }`;
+export default function FgasGateAlert({
+  gate,
+  fgas = null,
+  compact = false,
+  onLogIn,
+  onUpload,
+}: {
+  gate: FgasGate;
+  fgas?: FgasSummary | null;
+  /** Tighter spacing for the mobile sticky bar. */
+  compact?: boolean;
+  onLogIn: () => void;
+  onUpload: () => void;
+}) {
+  const t = useTranslations("FgasGate");
+  const format = useFormatter();
+  const { shell, tile, Icon } = STYLE[gate];
+  const expiry = fgas?.expiresAt ? format.dateTime(new Date(fgas.expiresAt), { dateStyle: "long", timeZone: "UTC" }) : "—";
+  const body = gate === "expired" ? t("expiredBody", { date: expiry }) : t(`${gate}Body`);
+  const btn = `inline-flex flex-none items-center justify-center gap-2 rounded-[12px] font-semibold tracking-[-.015em] transition-colors ${compact ? "h-9 px-3.5 text-[12px]" : "h-10 px-4 text-[12.5px]"}`;
 
   return (
-    <motion.div
-      {...RISE}
-      role="alert"
-      data-fgas-gate={gate}
-      className={`relative overflow-hidden rounded-[20px] border backdrop-blur-xl backdrop-saturate-150 ${shell} ${
-        compact ? "p-3" : "p-4"
-      }`}
-    >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -top-20 h-44 w-44 rounded-full opacity-40 blur-[42px] [animation:hc-breathe_6s_ease-in-out_infinite]"
-        style={{ background: `radial-gradient(circle,${aura},transparent 68%)` }}
-      />
-
-      <div className={`relative flex items-start ${compact ? "gap-2.5" : "gap-3"}`}>
-        <span
-          className={`flex flex-none items-center justify-center rounded-[13px] text-white ${tile} ${
-            compact ? "h-[34px] w-[34px]" : "h-10 w-10"
-          }`}
-        >
+    <motion.div {...RISE} role="alert" data-fgas-gate={gate} className={`relative overflow-hidden rounded-[20px] border ${shell} ${compact ? "p-3" : "p-4"}`}>
+      <div className={`flex items-start ${compact ? "gap-2.5" : "gap-3"}`}>
+        <span className={`flex flex-none items-center justify-center rounded-[12px] text-white ${tile} ${compact ? "h-[34px] w-[34px]" : "h-10 w-10"}`}>
           <Icon size={compact ? 16 : 18} strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className={`m-0 font-semibold leading-[1.35] tracking-[-.02em] ${compact ? "text-[12.5px]" : "text-[13.5px]"}`}>
-            {guest ? t("fgasGuestTitle") : t("fgasUnverifiedTitle")}
-          </p>
-          {!compact && (
-            <p
-              className={`mb-0 mt-1 text-[12px] leading-[1.55] ${
-                guest ? "text-slate-600 dark:text-ink-muted" : "text-amber-900/75 dark:text-amber-200/70"
-              }`}
-            >
-              {guest ? t("fgasGuestBody") : t("fgasUnverifiedBody")}
+          <p className={`m-0 font-semibold leading-[1.35] tracking-[-.02em] ${compact ? "text-[12.5px]" : "text-[13.5px]"}`}>{t(`${gate}Title`)}</p>
+          {!compact && <p className="mb-0 mt-1 text-[12px] leading-[1.55] text-slate-600 dark:text-ink-muted">{body}</p>}
+          {!compact && (gate === "rejected" || gate === "pending") && fgas?.reason && (
+            <p className="mb-0 mt-2 rounded-[10px] bg-white/60 px-2.5 py-1.5 text-[11.5px] leading-[1.45] text-slate-700 dark:bg-white/[.05] dark:text-slate-200" data-fgas-gate-reason>
+              {fgas.reason}
             </p>
           )}
-
           <div className={`flex flex-wrap ${compact ? "mt-2.5 gap-1.5" : "mt-3 gap-2"}`}>
-            {guest ? (
-              <>
-                <motion.button
-                  type="button"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={onLogIn}
-                  data-fgas-login
-                  className={`${btnBase} bg-blue-700 text-white shadow-[0_14px_28px_-14px_var(--glow-700)] hover:bg-blue-800 hover:shadow-[0_18px_34px_-14px_var(--glow-700),0_0_24px_-8px_var(--glow-700)]`}
-                >
-                  <LogIn size={14} strokeWidth={2.2} />
-                  {t("fgasLogIn")}
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={onUpload}
-                  data-fgas-upload
-                  className={`${btnBase} border border-slate-900/[.14] bg-white/70 text-slate-800 hover:bg-white dark:border-hairline-strong dark:bg-white/[.05] dark:text-slate-100 dark:hover:bg-white/10`}
-                >
-                  <Upload size={14} strokeWidth={2.2} />
-                  {t("fgasUploadGuest")}
-                </motion.button>
-              </>
+            {gate === "guest" ? (
+              <button type="button" onClick={onLogIn} data-fgas-login className={`${btn} bg-blue-700 text-white hover:bg-blue-800`}>
+                <LogIn size={14} strokeWidth={2.2} />
+                {t("signIn")}
+              </button>
             ) : (
-              <motion.button
+              <button
                 type="button"
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.97 }}
                 onClick={onUpload}
                 data-fgas-upload
-                className={`${btnBase} bg-amber-500 text-slate-950 shadow-[0_14px_28px_-14px_rgba(245,158,11,.95)] hover:bg-amber-400 hover:shadow-[0_18px_34px_-14px_rgba(245,158,11,.95),0_0_24px_-8px_#f59e0b]`}
+                className={`${btn} ${gate === "pending" ? "border border-slate-900/[.14] bg-white/70 text-slate-800 hover:bg-white dark:border-white/[.14] dark:bg-white/[.05] dark:text-slate-100" : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900"}`}
               >
                 <Upload size={14} strokeWidth={2.2} />
-                {t("fgasUploadCertificate")}
-              </motion.button>
+                {t(gate === "expired" ? "uploadRenewed" : gate === "unverified" ? "upload" : "uploadAnother")}
+              </button>
             )}
           </div>
         </div>
@@ -131,32 +111,20 @@ export default function FgasGateAlert({ gate, compact = false, onLogIn, onUpload
   );
 }
 
-interface FgasVerifiedLineProps {
-  certificateId?: string | null;
-  /** Verified in this browser only — the buyer still has to sign in. */
-  guest?: boolean;
-  compact?: boolean;
-}
-
-/** Emerald confirmation shown in the alert's slot once checkout is unlocked. */
-export function FgasVerifiedLine({ certificateId, guest = false, compact = false }: FgasVerifiedLineProps) {
-  const t = useTranslations("Cart");
-  const label = certificateId
-    ? guest
-      ? t("fgasGuestVerifiedLine", { certId: certificateId })
-      : t("fgasVerifiedLineId", { certId: certificateId })
-    : t("fgasVerifiedLine");
-
+/** Emerald confirmation in the alert's slot once F-Gas checkout is unlocked. */
+export function FgasVerifiedLine({ fgas, compact = false }: { fgas?: FgasSummary | null; compact?: boolean }) {
+  const t = useTranslations("FgasGate");
+  const format = useFormatter();
+  const number = fgas?.certificateNumber;
+  const until = fgas?.expiresAt ? format.dateTime(new Date(fgas.expiresAt), { dateStyle: "medium", timeZone: "UTC" }) : null;
+  const label = number && until ? t("verifiedLineUntil", { certId: number, date: until }) : number ? t("verifiedLineId", { certId: number }) : t("verifiedLine");
   return (
     <motion.div
       {...RISE}
       role="status"
       data-fgas-verified
-      className={`flex w-full items-start gap-2 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 font-semibold leading-[1.45] text-emerald-700 shadow-[0_0_24px_-8px_#34d399] backdrop-blur-xl dark:text-emerald-300 ${
-        compact ? "py-2 pl-3 pr-3 text-[11px]" : "py-2.5 pl-3 pr-3.5 text-[11.5px]"
-      }`}
+      className={`flex w-full items-start gap-2 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 font-semibold leading-[1.45] text-emerald-700 dark:text-emerald-300 ${compact ? "px-3 py-2 text-[11px]" : "py-2.5 pl-3 pr-3.5 text-[11.5px]"}`}
     >
-      <span className="mt-[6px] h-1.5 w-1.5 flex-none rounded-full bg-emerald-400 shadow-[0_0_8px_1px_#34d399]" />
       <ShieldCheck size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
       <span className="min-w-0 flex-1">{label}</span>
     </motion.div>

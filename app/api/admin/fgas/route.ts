@@ -32,7 +32,13 @@ export const dynamic = "force-dynamic";
 
 const ReviewRequest = z.discriminatedUnion("action", [
   z.object({ action: z.literal("approve"), userId: z.string().min(1) }),
-  z.object({ action: z.literal("reject"), userId: z.string().min(1), reason: z.string().trim().min(3).max(500) }),
+  z.object({
+    action: z.literal("reject"),
+    userId: z.string().min(1),
+    reason: z.string().trim().min(3).max(500),
+    // auto: replacement if one is parked, else reject / revoke by state.
+    mode: z.enum(["auto", "revoke", "replacement"]).default("auto"),
+  }),
 ]);
 
 const STATUS: Record<ReviewErrorCode, number> = {
@@ -42,6 +48,8 @@ const STATUS: Record<ReviewErrorCode, number> = {
   TWO_FACTOR_REQUIRED: 403,
   USER_NOT_FOUND: 404,
   NOT_PENDING: 409,
+  NO_DOCUMENT: 409,
+  DOCUMENT_EXPIRED: 409,
   FAILED: 500,
 };
 
@@ -76,7 +84,7 @@ export async function POST(request: Request) {
   const result =
     parsed.data.action === "approve"
       ? await approveFGasCertificate(callerId, parsed.data.userId)
-      : await rejectFGasCertificate(callerId, parsed.data.userId, parsed.data.reason);
+      : await rejectFGasCertificate(callerId, parsed.data.userId, parsed.data.reason, parsed.data.mode);
 
   if (!result.ok) return Response.json({ ok: false, code: result.code }, { status: STATUS[result.code] });
   return Response.json({ ok: true, userId: parsed.data.userId, status: result.value.status });

@@ -48,6 +48,7 @@ const CheckoutRequest = z.object({
 const STATUS: Record<OrderErrorCode, number> = {
   UNAUTHENTICATED: 401,
   FGAS_UNVERIFIED: 403,
+  FGAS_EXPIRED: 403,
   INVALID_INPUT: 400,
   ADDRESS_NOT_FOUND: 404,
   PRODUCT_NOT_FOUND: 404,

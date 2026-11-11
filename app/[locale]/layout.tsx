@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
@@ -5,6 +6,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import Footer from "@/components/Footer";
 import AIChatWidgetMount from "@/components/AIChatWidgetMount";
 import SmartOrderMount from "@/components/smartOrder/SmartOrderMount";
+import FgasModalMount from "@/components/fgas/FgasModalMount";
 import MobileAppShell from "@/components/MobileAppShell";
 import { CartCountProvider } from "@/components/CartCountProvider";
 import AuthProvider from "@/components/AuthProvider";
@@ -83,6 +85,10 @@ export default async function RootLayout({
               <Footer />
               <AIChatWidgetMount />
               <SmartOrderMount />
+              {/* Suspense: it reads ?fgas=upload, which must not opt pages out of static rendering. */}
+              <Suspense fallback={null}>
+                <FgasModalMount />
+              </Suspense>
               <ToastProvider />
             </CartCountProvider>
           </AuthProvider>

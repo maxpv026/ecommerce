@@ -2,7 +2,7 @@
 
 import { Fragment, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Bot, Check, ChevronDown, ExternalLink, FileText, Loader2, Search, ShieldAlert, ShieldCheck, ShieldX, X } from "lucide-react";
+import { AlertTriangle, Bot, Check, ChevronDown, Clock, ExternalLink, FileText, History, Loader2, Search, ShieldAlert, ShieldCheck, ShieldX, X } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { updateUserFgasStatus } from "@/lib/actions/adminUsers";
 import type { AdminUserFilter, AdminUserRow, AdminUsersPage } from "@/lib/adminUsers";
@@ -20,6 +20,7 @@ const FILTERS: Array<{ id: AdminUserFilter; label: string }> = [
   { id: "all", label: "All" },
   { id: "review", label: "Needs review" },
   { id: "VERIFIED", label: "Verified" },
+  { id: "EXPIRED", label: "Expired" },
   { id: "REJECTED", label: "Rejected" },
   { id: "NONE", label: "Missing" },
 ];
@@ -28,12 +29,57 @@ const STATUS: Record<AdminUserRow["status"], { label: string; icon: typeof Shiel
   VERIFIED: { label: "Verified", icon: ShieldCheck, tone: "border-emerald-600/25 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300" },
   PENDING_REVIEW: { label: "Pending review", icon: ShieldAlert, tone: "border-amber-600/25 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300" },
   REJECTED: { label: "Rejected", icon: ShieldX, tone: "border-red-600/25 bg-red-50 text-red-700 dark:border-red-400/25 dark:bg-red-400/10 dark:text-red-300" },
+  EXPIRED: { label: "Expired", icon: Clock, tone: "border-orange-600/30 bg-orange-50 text-orange-700 dark:border-orange-400/25 dark:bg-orange-400/10 dark:text-orange-300" },
   NONE: { label: "Missing", icon: FileText, tone: "border-slate-300 bg-slate-100 text-slate-600 dark:border-white/10 dark:bg-white/[.05] dark:text-slate-400" },
 };
 
-/** Mirrors lib/fgasReview's APPROVABLE / REVOCABLE. */
-const canVerify = (u: AdminUserRow) => (u.status === "PENDING_REVIEW" || u.status === "REJECTED") && Boolean(u.documentHref);
-const canReject = (u: AdminUserRow) => u.status === "PENDING_REVIEW" || u.status === "VERIFIED";
+type DialogMode = "verify" | "reject" | "revoke" | "replacement";
+
+/** Mirrors lib/fgasReview: what each transition accepts. */
+const canVerify = (u: AdminUserRow) => u.flags.replacementPending || ((u.status === "PENDING_REVIEW" || u.status === "REJECTED") && Boolean(u.documentHref));
+const canReject = (u: AdminUserRow) => u.status === "PENDING_REVIEW";
+const canRevoke = (u: AdminUserRow) => u.status === "VERIFIED" || u.status === "EXPIRED";
+
+const ACTION_LABEL: Record<string, string> = {
+  SUBMITTED_VERIFIED: "Uploaded · AI verified",
+  SUBMITTED_PENDING: "Uploaded · sent to review",
+  SUBMITTED_REJECTED: "Uploaded · AI rejected",
+  REPLACEMENT_PENDING: "Replacement uploaded · in review",
+  REPLACEMENT_REJECTED: "Replacement rejected · current kept",
+  ADMIN_APPROVED: "Approved by admin",
+  ADMIN_REJECTED: "Rejected by admin",
+  ADMIN_REVOKED: "Revoked by admin",
+  AUTO_EXPIRED: "Expired",
+  LEGACY_MIGRATED: "History starts (pre-audit-log)",
+  DOCUMENT_MIGRATED: "Document moved to encrypted storage",
+};
+
+const FLAG_TONE = {
+  red: "border-red-600/25 bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-300",
+  amber: "border-amber-600/25 bg-amber-50 text-amber-800 dark:bg-amber-400/10 dark:text-amber-300",
+  blue: "border-blue-600/25 bg-blue-50 text-blue-800 dark:bg-blue-400/10 dark:text-blue-300",
+};
+
+function Flags({ u }: { u: AdminUserRow }) {
+  const items = [
+    u.flags.missingDocument && { tone: "red" as const, text: "Missing document file — requires re-upload", key: "missing" },
+    u.flags.localOnlyDocument && { tone: "red" as const, text: "Document only on a dev machine — requires re-upload", key: "local" },
+    u.flags.replacementPending && { tone: "blue" as const, text: "Replacement awaiting review", key: "replacement" },
+    u.flags.noExpiry && { tone: "amber" as const, text: "No expiry on file", key: "noexpiry" },
+    u.holderWarning && { tone: "amber" as const, text: u.holderWarning.code === "MISMATCH" ? `Holder ≠ account${u.holderWarning.detail ? `: “${u.holderWarning.detail}”` : ""}` : "Holder not matched", key: "holder" },
+  ].filter(Boolean) as Array<{ tone: keyof typeof FLAG_TONE; text: string; key: string }>;
+  if (!items.length) return null;
+  return (
+    <span className="mt-1.5 flex flex-wrap gap-1">
+      {items.map((f) => (
+        <span key={f.key} data-user-flag={f.key} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-semibold ${FLAG_TONE[f.tone]}`}>
+          <AlertTriangle size={10} strokeWidth={2.4} />
+          {f.text}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 const REASONS = [
   "The certificate has expired.",
@@ -46,12 +92,13 @@ const day = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleDateString("en-IE", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
 const isExpired = (u: AdminUserRow) => Boolean(u.extracted?.expiresAt && new Date(`${u.extracted.expiresAt}T23:59:59Z`) < new Date());
+const docExpired = (u: AdminUserRow) => isExpired(u);
 
 export default function AdminUsersTable({ data, filter, query }: { data: AdminUsersPage; filter: AdminUserFilter; query: string }) {
   const router = useRouter();
   const [search, setSearch] = useState(query);
   const [open, setOpen] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<{ user: AdminUserRow; mode: "verify" | "reject" } | null>(null);
+  const [dialog, setDialog] = useState<{ user: AdminUserRow; mode: DialogMode } | null>(null);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -70,12 +117,20 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
     if (!dialog) return;
     const { user, mode } = dialog;
     startTransition(async () => {
-      const result = await updateUserFgasStatus(user.id, mode === "verify" ? "VERIFIED" : "REJECTED", mode === "reject" ? reason : undefined).catch(() => null);
+      const result = await updateUserFgasStatus(user.id, mode === "verify" ? "VERIFIED" : "REJECTED", mode === "verify" ? undefined : reason, mode === "revoke" ? "revoke" : mode === "replacement" ? "replacement" : "auto").catch(() => null);
       if (!result?.ok) {
         toast.error(result?.error ?? "Couldn't save the change.");
         return;
       }
-      toast.success(mode === "verify" ? `${user.name ?? user.email} is verified and can purchase.` : `Certificate rejected. ${user.name ?? "The buyer"} will see your reason.`);
+      toast.success(
+        mode === "verify"
+          ? `${user.name ?? user.email} is verified and can purchase.`
+          : mode === "replacement"
+            ? "Replacement rejected. The current certificate stays active."
+            : mode === "revoke"
+              ? `Verification revoked. ${user.name ?? "The buyer"} has been emailed your reason.`
+              : `Certificate rejected. ${user.name ?? "The buyer"} has been emailed your reason.`
+      );
       setDialog(null);
       setReason("");
       router.refresh();
@@ -149,7 +204,7 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                 </tr>
               )}
               {data.rows.map((u) => {
-                const s = STATUS[u.status];
+                const s = STATUS[u.effectiveStatus];
                 const expanded = open === u.id;
                 return (
                   <Fragment key={u.id}>
@@ -182,14 +237,15 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                           </span>
                         )}
                         <span className="mt-1 block text-[11px] text-slate-400">{u.submittedAt ? `Submitted ${day(u.submittedAt)}` : "Nothing uploaded"}</span>
+                        <Flags u={u} />
                       </td>
                       <td className="px-4 py-4 text-[12.5px]">
                         {u.extracted ? (
                           <>
                             <span className="block font-mono text-[11.5px]">{u.extracted.certificateId || "—"}</span>
                             <span className="block text-slate-500 dark:text-slate-400">
-                              {u.extracted.category || "—"} · expires {u.extracted.expiresAt ? day(u.extracted.expiresAt) : "—"}
-                              {isExpired(u) && <span className="ml-1 font-semibold text-red-600 dark:text-red-400">Expired</span>}
+                              {u.extracted.category || "—"} · expires {u.expiresAt ? day(u.expiresAt) : u.extracted.expiresAt ? day(u.extracted.expiresAt) : "—"}
+                              {(u.effectiveStatus === "EXPIRED" || isExpired(u)) && <span className="ml-1 font-semibold text-orange-600 dark:text-orange-400">Expired</span>}
                             </span>
                           </>
                         ) : (
@@ -207,16 +263,28 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                           {canVerify(u) && (
                             <button type="button" onClick={() => setDialog({ user: u, mode: "verify" })} data-verify className="inline-flex h-8 items-center gap-1.5 rounded-[10px] bg-emerald-600 px-3 text-[12px] font-semibold text-white hover:bg-emerald-700">
                               <Check size={13} strokeWidth={2.4} />
-                              Verify
+                              {u.flags.replacementPending ? "Approve replacement" : "Verify"}
+                            </button>
+                          )}
+                          {u.flags.replacementPending && (
+                            <button type="button" onClick={() => setDialog({ user: u, mode: "replacement" })} data-reject-replacement className="inline-flex h-8 items-center gap-1.5 rounded-[10px] border border-red-600/30 px-3 text-[12px] font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-400/10">
+                              <X size={13} strokeWidth={2.4} />
+                              Reject replacement
                             </button>
                           )}
                           {canReject(u) && (
                             <button type="button" onClick={() => setDialog({ user: u, mode: "reject" })} data-reject className="inline-flex h-8 items-center gap-1.5 rounded-[10px] border border-red-600/30 px-3 text-[12px] font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-400/10">
                               <X size={13} strokeWidth={2.4} />
-                              {u.status === "VERIFIED" ? "Revoke" : "Reject"}
+                              Reject
                             </button>
                           )}
-                          {!canVerify(u) && !canReject(u) && <span className="text-[12px] text-slate-400">{u.status === "NONE" ? "Awaiting upload" : "—"}</span>}
+                          {canRevoke(u) && (
+                            <button type="button" onClick={() => setDialog({ user: u, mode: "revoke" })} data-revoke className="inline-flex h-8 items-center gap-1.5 rounded-[10px] border border-red-600/30 px-3 text-[12px] font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-400/10">
+                              <ShieldX size={13} strokeWidth={2.2} />
+                              Revoke
+                            </button>
+                          )}
+                          {!canVerify(u) && !canReject(u) && !canRevoke(u) && <span className="text-[12px] text-slate-400">{u.status === "NONE" ? "Awaiting upload" : "—"}</span>}
                         </div>
                       </td>
                     </tr>
@@ -245,6 +313,40 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                               <span className="font-semibold">Reason shown to the buyer:</span> {u.rejectionReason}
                             </p>
                           )}
+                          <div className="mt-4" data-user-audit={u.id}>
+                            <div className="mb-2 flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400">
+                              <History size={12} /> Compliance history
+                            </div>
+                            {u.audit.length === 0 ? (
+                              <p className="m-0 text-[12px] text-slate-400">No events recorded.</p>
+                            ) : (
+                              <ol className="m-0 flex list-none flex-col gap-2 border-l border-slate-900/[.1] pl-4 dark:border-white/[.1]">
+                                {u.audit.map((e) => (
+                                  <li key={e.id} className="relative text-[12px]" data-audit-action={e.action}>
+                                    <span className="absolute -left-[21px] top-[5px] h-2 w-2 rounded-full bg-slate-400" />
+                                    <span className="font-semibold">{ACTION_LABEL[e.action] ?? e.action}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">
+                                      {" · "}
+                                      {day(e.createdAt)} · {e.actor}
+                                      {e.previousStatus || e.newStatus ? ` · ${e.previousStatus ?? "—"} → ${e.newStatus ?? "—"}` : ""}
+                                      {e.certificateId ? ` · ${e.certificateId}` : ""}
+                                    </span>
+                                    {e.documentHref && (
+                                      <a href={e.documentHref} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="ml-2 font-semibold text-blue-700 hover:underline dark:text-blue-400">
+                                        document
+                                      </a>
+                                    )}
+                                    {e.reason && <span className="block text-slate-600 dark:text-slate-300">{e.reason}</span>}
+                                    {e.checks && e.checks.some((c) => c.outcome !== "pass") && (
+                                      <span className="mt-0.5 block font-mono text-[10.5px] text-slate-500">
+                                        {e.checks.filter((c) => c.outcome !== "pass").map((c) => `${c.outcome === "fail" ? "✗" : "!"} ${c.id}:${c.code}`).join("  ")}
+                                      </span>
+                                    )}
+                                  </li>
+                                ))}
+                              </ol>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -278,7 +380,12 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                 <p className="m-0 mt-2 text-[13.5px] leading-[1.6] text-slate-600 dark:text-slate-400">
                   This unlocks the purchase of F-Gas refrigerants for {dialog.user.companyName ?? "this account"}. Only confirm after opening the document and checking it is a valid certificate held by this business.
                 </p>
-                {isExpired(dialog.user) && (
+                {dialog.user.flags.replacementPending && (
+                  <p className="m-0 mt-3 rounded-[12px] border border-blue-600/25 bg-blue-50 p-3 text-[12.5px] text-blue-800 dark:bg-blue-400/10 dark:text-blue-200">
+                    This approves the replacement certificate from the latest upload; it becomes the active one.
+                  </p>
+                )}
+                {docExpired(dialog.user) && !dialog.user.flags.replacementPending && (
                   <p className="m-0 mt-3 rounded-[12px] border border-red-600/25 bg-red-50 p-3 text-[12.5px] font-semibold text-red-700 dark:bg-red-400/10 dark:text-red-300">
                     The certificate&rsquo;s expiry date as read from the document has passed.
                   </p>
@@ -287,10 +394,12 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
             ) : (
               <>
                 <h3 id="decision-title" className="m-0 text-[19px] font-semibold tracking-[-.03em]">
-                  {dialog.user.status === "VERIFIED" ? "Revoke verification" : "Reject certificate"}
+                  {dialog.mode === "revoke" ? "Revoke verification" : dialog.mode === "replacement" ? "Reject replacement certificate" : "Reject certificate"}
                 </h3>
                 <p className="m-0 mt-2 text-[13.5px] leading-[1.6] text-slate-600 dark:text-slate-400">
-                  {dialog.user.name ?? "The buyer"} won&rsquo;t be able to purchase refrigerants and will see this reason on their profile.
+                  {dialog.mode === "replacement"
+                    ? `${dialog.user.name ?? "The buyer"}'s current certificate stays active; they are emailed this reason.`
+                    : `${dialog.user.name ?? "The buyer"} won’t be able to purchase F-Gas refrigerants and is emailed this reason.`}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {REASONS.map((r) => (
@@ -322,7 +431,7 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                 className={`inline-flex h-11 items-center gap-2 rounded-[14px] px-5 text-[13.5px] font-semibold text-white disabled:opacity-50 ${dialog.mode === "verify" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"}`}
               >
                 {pending && <Loader2 size={14} className="animate-spin" />}
-                {dialog.mode === "verify" ? "Verify and unlock purchasing" : dialog.user.status === "VERIFIED" ? "Revoke" : "Reject"}
+                {dialog.mode === "verify" ? (dialog.user.flags.replacementPending ? "Approve replacement" : "Verify and unlock purchasing") : dialog.mode === "revoke" ? "Revoke" : "Reject"}
               </button>
             </div>
           </div>

@@ -29,18 +29,19 @@ import Header from "./Header";
 import AuthModal from "./AuthModal";
 import MobileCartLayout from "./MobileCartLayout";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
-import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
-import FgasVerificationModal from "./FgasVerificationModal";
+import FgasGateAlert, { FgasVerifiedLine, fgasGateFor } from "./FgasGateAlert";
+import { useFgasModal } from "@/lib/fgasModalEvents";
+import { requiresFgasCertificate } from "@/lib/fgasSubstances";
+import type { FgasSummary } from "@/lib/fgas";
 import QuoteCartBanner from "./QuoteCartBanner";
 import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
-import { useCartStore, type FgasVerification } from "@/lib/store/cart";
+import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
 import { createQuote, type QuoteErrorCode } from "@/lib/actions/quotes";
 import type { StoreProduct } from "@/lib/data";
-import type { FGasStatus } from "@/lib/generated/prisma/enums";
 
 const ACCENT = "#1d4ed8";
 
@@ -60,25 +61,24 @@ type AuditPhase = "idle" | "thinking" | "compliant" | "optimised" | "unavailable
 interface CartPageProps {
   products: StoreProduct[];
   /**
-   * The signed-in buyer's F-Gas status, read from the database by the route.
-   * Null when signed out. Preferred over the session copy, which is a JWT
-   * minted at sign-in and goes stale the moment a reviewer decides.
+   * The signed-in buyer's F-Gas standing, read from the database by the
+   * route (lib/fgasAccount) with expiry applied. Null when signed out.
    */
-  fGasStatus?: FGasStatus | null;
+  fgas?: FgasSummary | null;
 }
 
-export default function CartPage({ products, fGasStatus: serverFGasStatus = null }: CartPageProps) {
+export default function CartPage({ products, fgas = null }: CartPageProps) {
   const t = useTranslations("Cart");
   const tProducts = useTranslations("Products");
   const format = useFormatter();
   const router = useRouter();
-  const { data: session, status, update: updateSession } = useSession();
+  const { status } = useSession();
+  const showFgas = useFgasModal((s) => s.show);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   // "checkout" carries the buyer straight on after signing in; "inline"
   // (the gate alert's Log In) stays on the cart so the F-Gas rule can be
   // re-evaluated against the fresh session before anything moves.
   const [authIntent, setAuthIntent] = useState<"checkout" | "inline">("checkout");
-  const [isFgasModalOpen, setIsFgasModalOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [trashHover, setTrashHover] = useState<string | null>(null);
 
@@ -93,8 +93,6 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
   const decrement = useCartStore((s) => s.decrement);
   const removeItem = useCartStore((s) => s.removeItem);
   const clear = useCartStore((s) => s.clear);
-  const fgasVerification = useCartStore((s) => s.fgasVerification);
-  const setFgasVerification = useCartStore((s) => s.setFgasVerification);
   const cartQuote = useCartStore((s) => s.quote);
   const tQuotes = useTranslations("Quotes");
 
@@ -109,17 +107,20 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
   const bySku = new Map(products.map((p) => [p.sku, p]));
 
   // ─── F-Gas gate ───
-  // Refrigerant may only be sold to a buyer with an accepted certificate.
-  // The only thing that unlocks checkout is the row-backed status reaching
-  // VERIFIED, read from the server — the browser's own record of a
-  // submission deliberately does NOT count, so a hand-edited local store
-  // grants nothing. Guests are never verified: there is no account to hold
-  // the status.
-  const storedFgas = hydrated ? fgasVerification : null;
-  const sessionUserId = session?.user?.id ?? null;
-  const fGasStatus = serverFGasStatus ?? session?.user?.fGasStatus ?? "NONE";
-  const accountVerified = status === "authenticated" && fGasStatus === "VERIFIED";
-  const fgasOk = accountVerified;
+  // Only a basket holding a fluorinated gas needs a certificate — decided by
+  // the substance (lib/fgasSubstances), the same rule checkout and quotes
+  // apply on the server; a line we can't find in the catalogue counts as
+  // one (fail safe). When it does, the row-backed EFFECTIVE status must be
+  // VERIFIED (an expired certificate is EXPIRED). Nothing the browser stores
+  // counts: a hand-edited local store grants nothing.
+  const signedIn = status === "loading" ? null : status === "authenticated";
+  const fgasCleared = signedIn === true && fgas?.status === "VERIFIED";
+  const hasGasLines = shownItems.some((i) => {
+    const p = bySku.get(i.sku);
+    return p ? requiresFgasCertificate(p) : true;
+  });
+  const fgasOk = !hasGasLines || fgasCleared;
+  const openFgas = () => showFgas("cart");
 
   // A line can go out of stock after it was added (a CRM push, or someone
   // else buying the last cylinder). Checkout is blocked until it's removed;
@@ -130,30 +131,12 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
     return product ? !isPurchasable(product) : false;
   });
   const hasBlockedLines = blockedLines.length > 0;
-  const fgasGate: FgasGate | null =
-    status === "loading"
-      ? null
-      : status === "unauthenticated"
-        ? "guest"
-        : accountVerified
-          ? null
-          : "unverified";
+  const fgasGate = hasGasLines && !fgasCleared ? fgasGateFor(signedIn, fgas) : null;
   const checkoutLocked = empty || !fgasOk || hasBlockedLines;
-  const verifiedCertId = accountVerified ? (storedFgas?.certificateId ?? null) : null;
 
   const openAuth = (intent: "checkout" | "inline") => {
     setAuthIntent(intent);
     setIsAuthModalOpen(true);
-  };
-
-  const handleFgasVerified = (verification: FgasVerification) => {
-    // Records what was read, for the receipt shown in the modal. Refreshing
-    // the session is what actually unlocks checkout: it pulls the row's real
-    // status, which the route has just set to VERIFIED or REJECTED.
-    setFgasVerification(verification);
-    // With an argument: next-auth's update() with none is a plain GET and
-    // never reaches auth.ts's trigger === "update" re-read of the row.
-    if (verification.scope === "account") void updateSession({});
   };
 
   // Entrance stagger applies to the first paint only; lines added later
@@ -251,11 +234,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
   // verified certificate, the same rule createQuote enforces server-side;
   // a buyer without one can still quote tools and equipment.
   const [quoting, startQuote] = useTransition();
-  const hasGasLines = shownItems.some((i) => {
-    const p = bySku.get(i.sku);
-    return p ? p.gwp !== null || p.pricedPerKg : true;
-  });
-  const quoteLocked = empty || hasBlockedLines || (status === "authenticated" && hasGasLines && !accountVerified);
+  const quoteLocked = empty || hasBlockedLines || (status === "authenticated" && hasGasLines && !fgasCleared);
   const QUOTE_ERROR: Record<QuoteErrorCode, string> = {
     UNAUTHENTICATED: "errorSignIn",
     INVALID_INPUT: "errorGeneric",
@@ -821,16 +800,12 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                   <AnimatePresence mode="wait" initial={false}>
                     {!empty && fgasGate && (
                       <div key={fgasGate} className="mt-[18px]">
-                        <FgasGateAlert
-                          gate={fgasGate}
-                          onLogIn={() => openAuth("inline")}
-                          onUpload={() => setIsFgasModalOpen(true)}
-                        />
+                        <FgasGateAlert gate={fgasGate} fgas={fgas} onLogIn={() => openAuth("inline")} onUpload={openFgas} />
                       </div>
                     )}
-                    {!empty && !fgasGate && fgasOk && (
+                    {!empty && hasGasLines && fgasCleared && (
                       <div key="verified" className="mt-[18px]">
-                        <FgasVerifiedLine certificateId={verifiedCertId} guest={false} />
+                        <FgasVerifiedLine fgas={fgas} />
                       </div>
                     )}
                   </AnimatePresence>
@@ -872,7 +847,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                         type="button"
                         onClick={generateQuote}
                         disabled={quoteLocked || quoting}
-                        title={quoteLocked && hasGasLines && !accountVerified ? tQuotes("lockedFgas") : undefined}
+                        title={quoteLocked && hasGasLines && !fgasCleared ? tQuotes("lockedFgas") : undefined}
                         data-generate-quote
                         className="mt-2.5 flex h-[46px] w-full items-center justify-center gap-2 rounded-[15px] border border-blue-700/30 text-[13px] font-semibold tracking-[-.015em] text-blue-700 transition-colors hover:bg-blue-700/[.05] disabled:cursor-not-allowed disabled:opacity-45 dark:border-blue-400/30 dark:text-blue-400"
                       >
@@ -924,11 +899,10 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
           quoting={quoting}
           fgasGate={fgasGate}
           checkoutLocked={checkoutLocked}
-          fgasOk={fgasOk}
-          verifiedCertId={verifiedCertId}
-          guestVerified={false}
+          fgasVerified={hasGasLines && fgasCleared}
+          fgas={fgas}
           onLogIn={() => openAuth("inline")}
-          onUploadCertificate={() => setIsFgasModalOpen(true)}
+          onUploadCertificate={openFgas}
         />
       </div>
 
@@ -938,13 +912,6 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
         callbackUrl={authIntent === "checkout" ? "/checkout" : undefined}
       />
 
-      <FgasVerificationModal
-        isOpen={isFgasModalOpen}
-        onClose={() => setIsFgasModalOpen(false)}
-        scope={status === "authenticated" ? "account" : "guest"}
-        userId={sessionUserId}
-        onVerified={handleFgasVerified}
-      />
     </div>
   );
 }

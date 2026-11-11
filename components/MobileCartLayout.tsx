@@ -31,6 +31,7 @@ import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib
 import type { StoreProduct } from "@/lib/data";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
+import type { FgasSummary } from "@/lib/fgas";
 import QuoteCartBanner from "./QuoteCartBanner";
 
 const SWIPE_THRESHOLD = 120;
@@ -58,9 +59,9 @@ interface MobileCartLayoutProps {
   // disagree about whether this buyer may check out.
   fgasGate: FgasGate | null;
   checkoutLocked: boolean;
-  fgasOk: boolean;
-  verifiedCertId: string | null;
-  guestVerified: boolean;
+  /** The basket holds F-Gas and the buyer's certificate is in force. */
+  fgasVerified: boolean;
+  fgas: FgasSummary | null;
   onLogIn: () => void;
   onUploadCertificate: () => void;
 }
@@ -234,9 +235,8 @@ export default function MobileCartLayout({
   quoting,
   fgasGate,
   checkoutLocked,
-  fgasOk,
-  verifiedCertId,
-  guestVerified,
+  fgasVerified,
+  fgas,
   onLogIn,
   onUploadCertificate,
 }: MobileCartLayoutProps) {
@@ -349,7 +349,7 @@ export default function MobileCartLayout({
         className={`relative ${
           !empty && fgasGate
             ? "pb-[calc(377px+env(safe-area-inset-bottom))]"
-            : !empty && fgasOk
+            : !empty && fgasVerified
               ? "pb-[calc(287px+env(safe-area-inset-bottom))]"
               : "pb-[calc(242px+env(safe-area-inset-bottom))]"
         }`}
@@ -699,12 +699,12 @@ export default function MobileCartLayout({
           <AnimatePresence mode="wait" initial={false}>
             {fgasGate && (
               <div key={fgasGate} className="mb-3">
-                <FgasGateAlert gate={fgasGate} compact onLogIn={onLogIn} onUpload={onUploadCertificate} />
+                <FgasGateAlert gate={fgasGate} fgas={fgas} compact onLogIn={onLogIn} onUpload={onUploadCertificate} />
               </div>
             )}
-            {!fgasGate && fgasOk && (
+            {!fgasGate && fgasVerified && (
               <div key="verified" className="mb-2.5">
-                <FgasVerifiedLine certificateId={verifiedCertId} guest={guestVerified} compact />
+                <FgasVerifiedLine fgas={fgas} compact />
               </div>
             )}
           </AnimatePresence>

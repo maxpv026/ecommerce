@@ -30,8 +30,11 @@ import {
   Settings,
   Truck,
   User,
+  Upload,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
+import { useFgasModal } from "@/lib/fgasModalEvents";
+import FgasChecklist from "./fgas/FgasChecklist";
 import AddressModal from "./AddressModal";
 import EditProfileModal from "./EditProfileModal";
 import AvatarUploader, { Avatar } from "./AvatarUploader";
@@ -165,6 +168,7 @@ export default function DashboardDesktop({
   const tCheckout = useTranslations("Checkout");
   const tCart = useTranslations("Cart");
   const tFgas = useTranslations("FgasModal");
+  const tFgasProfile = useTranslations("FgasProfile");
   const tAuth = useTranslations("Auth");
   const format = useFormatter();
   const router = useRouter();
@@ -227,8 +231,21 @@ export default function DashboardDesktop({
     : fgasVerified
       ? (profile?.fGasExtracted ?? null)
       : null;
-  const rejectionReason = preview ? null : (profile?.fGasRejectionReason ?? null);
+  const rejectionReason = preview ? null : (profile?.fgas?.reason ?? profile?.fGasRejectionReason ?? null);
   const refused = fGasStatus === "REJECTED";
+  // Effective status (lib/fgasAccount): a certificate past its expiry date is
+  // EXPIRED here and at every gate, before the daily cron writes it down.
+  const fgasSummary = preview ? null : (profile?.fgas ?? null);
+  const expired = fGasStatus === "EXPIRED";
+  const noCertificate = fGasStatus === "NONE";
+  const showFgasModal = useFgasModal((s) => s.show);
+  const uploadLabel = noCertificate
+    ? tFgasProfile("upload")
+    : fgasVerified
+      ? tFgasProfile("replace")
+      : expired
+        ? tFgasProfile("uploadRenewed")
+        : tFgasProfile("uploadAnother");
 
   /** ISO date → a real Date, or null. Guards against a bad stored string. */
   const asDate = (iso: string | null | undefined) => {
@@ -249,7 +266,7 @@ export default function DashboardDesktop({
   // the row anyway, so a guessed URL gets a 404 rather than someone's
   // compliance document.
   // The secure route, never the storage URL (see lib/fgasStorage).
-  const certificateHref = preview || awaitingReview ? null : (profile?.certificateDocumentHref ?? null);
+  const certificateHref = preview ? null : (profile?.certificateDocumentHref ?? null);
   const certificateDownloadHref = certificateHref
     ? `${certificateHref}${certificateHref.includes("?") ? "&" : "?"}download=1`
     : null;
@@ -367,9 +384,9 @@ export default function DashboardDesktop({
     // necessarily the person holding the account.
     {
       label: t("fieldHolder"),
-      value: extracted?.companyName || company || displayName || certPlaceholder,
+      value: fgasSummary?.holder || extracted?.companyName || company || displayName || certPlaceholder,
     },
-    { label: t("fieldCertId"), value: extracted?.certificateId || cert?.certId || certPlaceholder },
+    { label: t("fieldCertId"), value: fgasSummary?.certificateNumber || extracted?.certificateId || cert?.certId || certPlaceholder },
     {
       label: t("fieldIssued"),
       value: asDay(issuedDate, extracted?.issuedOn) ?? (cert ? String(cert.issuedYear) : "—"),
@@ -669,10 +686,18 @@ export default function DashboardDesktop({
                         className={`flex items-center gap-[7px] rounded-full border px-3 py-1.5 text-[11.5px] font-semibold ${
                           refused
                             ? "border-red-400/[.36] bg-red-500/[.16] text-red-300"
-                            : "border-amber-400/[.34] bg-amber-500/[.16] text-amber-300"
+                            : expired
+                              ? "border-orange-400/[.4] bg-orange-500/[.18] text-orange-300"
+                              : "border-amber-400/[.34] bg-amber-500/[.16] text-amber-300"
                         }`}
                       >
-                        {refused ? tFgas("rejectedTitle") : tAccount("pendingVerification")}
+                        {refused
+                          ? tFgas("rejectedTitle")
+                          : expired
+                            ? tFgasProfile("statusExpired")
+                            : noCertificate
+                              ? tFgasProfile("statusNone")
+                              : tAccount("pendingVerification")}
                       </span>
                     )}
                   </div>
@@ -693,9 +718,26 @@ export default function DashboardDesktop({
                       {/* The pill above already carries the label, so this
                           panel is only ever the reason — repeating the title
                           here read as a rendering fault. */}
-                      <p className="m-0 min-w-0 text-[12.5px] leading-[1.6] text-red-100/85">
-                        {rejectionReason || tFgas("rejectedBody")}
+                      <div className="min-w-0">
+                        <p className="m-0 text-[12.5px] leading-[1.6] text-red-100/85">{rejectionReason || tFgas("rejectedBody")}</p>
+                        {fgasSummary?.checks && (
+                          <div className="mt-3 rounded-xl bg-white/95 p-3 text-slate-900">
+                            <FgasChecklist checks={fgasSummary.checks} only={["fail", "review"]} compact />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : expired ? (
+                    <div data-fgas-expired className="mt-6 flex items-start gap-3 rounded-2xl border border-orange-400/[.32] bg-orange-500/[.12] px-4 py-[15px]">
+                      <ShieldAlert size={17} strokeWidth={2} className="mt-px flex-none text-orange-300" />
+                      <p className="m-0 text-[12.5px] leading-[1.6] text-orange-100/90">
+                        {tFgasProfile("expiredBody", { date: asDay(fgasSummary?.expiresAt ? new Date(fgasSummary.expiresAt) : null, null) ?? "—" })}
                       </p>
+                    </div>
+                  ) : noCertificate ? (
+                    <div data-fgas-none className="mt-6 flex items-start gap-3 rounded-2xl border border-white/[.14] bg-white/[.06] px-4 py-[15px]">
+                      <ShieldAlert size={17} strokeWidth={2} className="mt-px flex-none text-white/70" />
+                      <p className="m-0 text-[12.5px] leading-[1.6] text-white/75">{tFgasProfile("noneBody")}</p>
                     </div>
                   ) : awaitingReview ? (
                     // A certificate is with a reviewer: showing four empty
@@ -707,7 +749,14 @@ export default function DashboardDesktop({
                       className="mt-6 flex items-start gap-3 rounded-2xl border border-amber-400/[.28] bg-amber-500/[.1] px-4 py-[15px]"
                     >
                       <Clock size={17} strokeWidth={2} className="mt-px flex-none text-amber-300" />
-                      <p className="m-0 text-[12.5px] leading-[1.6] text-amber-100/85">{tAccount("fgasPendingReview")}</p>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[12.5px] leading-[1.6] text-amber-100/85">{tAccount("fgasPendingReview")}</p>
+                        {fgasSummary?.checks && (
+                          <div className="mt-3 rounded-xl bg-white/95 p-3 text-slate-900">
+                            <FgasChecklist checks={fgasSummary.checks} only={["review"]} compact />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div data-fgas-fields className="mt-6 grid grid-cols-2 gap-[11px]">
@@ -735,7 +784,28 @@ export default function DashboardDesktop({
                   {/* Plain <a>, not next/link: this is a file served by an API
                       route, not a localised page, so it must not be prefixed
                       with the locale segment or client-side routed. */}
-                  <div className="mt-5 flex gap-2.5">
+                  {fgasVerified && fgasSummary?.replacementPending && (
+                    <p data-fgas-replacement-pending className="m-0 mt-4 flex items-center gap-2 text-[12px] text-blue-200/90">
+                      <Clock size={13} strokeWidth={2} /> {tFgasProfile("replacementPending")}
+                    </p>
+                  )}
+                  {fgasVerified && fgasSummary?.daysLeft !== null && fgasSummary?.daysLeft !== undefined && fgasSummary.daysLeft <= 60 && (
+                    <p data-fgas-expiring className="m-0 mt-4 flex items-center gap-2 text-[12px] font-semibold text-orange-300">
+                      <Clock size={13} strokeWidth={2} /> {tFgasProfile("expiringSoon", { days: fgasSummary.daysLeft })}
+                    </p>
+                  )}
+                  <div className="mt-5 flex flex-wrap gap-2.5">
+                    {!preview && (
+                      <button
+                        type="button"
+                        onClick={() => showFgasModal("profile")}
+                        data-fgas-upload-profile
+                        className="flex h-11 items-center justify-center gap-2 rounded-[14px] bg-blue-500 px-5 text-[13.5px] font-semibold tracking-[-.015em] text-white transition-colors hover:bg-blue-400"
+                      >
+                        <Upload size={15} strokeWidth={2.2} />
+                        {uploadLabel}
+                      </button>
+                    )}
                     <a
                       href={certificateHref ?? undefined}
                       target="_blank"

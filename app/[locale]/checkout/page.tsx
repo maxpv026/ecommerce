@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "@/i18n/navigation";
 import CheckoutPage from "@/components/CheckoutPage";
-import prisma from "@/lib/prisma";
+import { getFgasSummary } from "@/lib/fgasAccount";
 import { getProducts, getUserAddresses } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -26,16 +26,12 @@ export default async function CheckoutRoute({ params }: CheckoutRouteProps) {
     return null;
   }
 
-  // Deep links and stale tabs land here too — an unverified buyer is sent
-  // back to the cart, which owns the certificate-upload flow, rather than
-  // being allowed to fill in an address only for placeOrder to refuse.
-  const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { fGasStatus: true } });
-  if (buyer?.fGasStatus !== "VERIFIED") {
-    redirect({ href: "/cart", locale });
-  }
+  // Whether this buyer may check out depends on what's in the basket, which
+  // only the browser knows: a tools-only or hydrocarbon basket needs no
+  // certificate. So the effective status goes to the client, which sends an
+  // F-Gas basket without a certificate in force back to the cart (it owns the
+  // upload flow). prepareOrder enforces the same rule on the server anyway.
+  const [addresses, products, fgas] = await Promise.all([getUserAddresses(userId), getProducts(), getFgasSummary(userId)]);
 
-  // The catalog supplies each cart line's cylinder deposit for the summary.
-  const [addresses, products] = await Promise.all([getUserAddresses(userId), getProducts()]);
-
-  return <CheckoutPage addresses={addresses} products={products} />;
+  return <CheckoutPage addresses={addresses} products={products} fgasCleared={fgas?.status === "VERIFIED"} />;
 }

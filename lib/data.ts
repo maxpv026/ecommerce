@@ -12,6 +12,8 @@ import { isPurchasable } from "@/lib/waitlist";
 import type { FgasExtraction } from "@/lib/fgas";
 import type { NotificationPreferences } from "@/lib/notifications";
 import { certificateHref } from "@/lib/fgasStorage";
+import { getFgasSummary } from "@/lib/fgasAccount";
+import type { FgasSummary } from "@/lib/fgas";
 import { LISTED, refrigerantTypeOf, resolveFamily, sizeLabel } from "@/lib/productFamily";
 
 // ---------------------------------------------------------------------------
@@ -297,6 +299,8 @@ export interface UserProfileData {
   defaultAddressTitle: string | null;
   defaultAddressRecipient: string | null;
   certificate: { certType: string; certId: string; issuedYear: number } | null;
+  /** Full F-Gas standing (effective status, active certificate, review state). */
+  fgas: FgasSummary | null;
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfileData | null> {
@@ -343,6 +347,7 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
   });
   if (!user) return null;
 
+  const fgas = await getFgasSummary(userId);
   const cert = user.certificates[0] ?? null;
   return {
     name: user.name,
@@ -360,8 +365,9 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     },
     passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
     locale: user.locale,
-    fgasVerified: user.fGasStatus === "VERIFIED",
-    fGasStatus: user.fGasStatus,
+    // Effective (expiry applied): an expired certificate is not "verified" here.
+    fgasVerified: (fgas?.status ?? user.fGasStatus) === "VERIFIED",
+    fGasStatus: fgas?.status ?? user.fGasStatus,
     fGasRejectionReason: user.fGasRejectionReason,
     fGasExtracted: (user.fGasExtractedData as FgasExtraction | null) ?? null,
     isTwoFactorEnabled: user.isTwoFactorEnabled,
@@ -373,6 +379,7 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     certificate: cert
       ? { certType: cert.certType, certId: cert.certId, issuedYear: cert.issuedAt.getFullYear() }
       : null,
+    fgas,
   };
 }
 

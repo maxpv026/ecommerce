@@ -7,6 +7,8 @@ import { stockStateForQuantity } from "@/lib/inventory";
 import { cylinderGasPrice } from "@/lib/pricing";
 import type { ProductModel } from "@/lib/generated/prisma/models";
 import { LISTED } from "@/lib/productFamily";
+import { getEffectiveFgasStatus } from "@/lib/fgas";
+import { basketRequiresFgas } from "@/lib/fgasSubstances";
 
 /**
  * The order core: everything that has to be true before money is taken,
@@ -42,6 +44,8 @@ export type OrderRequestInput = z.infer<typeof OrderRequest>;
 export type OrderErrorCode =
   | "UNAUTHENTICATED"
   | "FGAS_UNVERIFIED"
+  /** Was verified, but the certificate's expiry date has passed. */
+  | "FGAS_EXPIRED"
   | "INVALID_INPUT"
   | "ADDRESS_NOT_FOUND"
   | "PRODUCT_NOT_FOUND"
@@ -76,6 +80,12 @@ export interface OrderDraft {
   totals: CartTotals;
   /** Set when the order is placed from a quote; commitOrder claims it. */
   quoteId?: string;
+  /**
+   * The certificate that authorises an order containing F-Gas lines, frozen
+   * onto the order by commitOrder. Null for tools-only / non-fluorinated
+   * orders, which need none.
+   */
+  authorizingCertificate: { id: string | null; number: string | null; expiresAt: Date | null } | null;
 }
 
 /**
@@ -131,13 +141,37 @@ export async function prepareOrder(
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
   const { addressId, items, quoteId } = parsed.data;
 
-  // Regulatory gate: refrigerant may only be sold to a buyer with an
-  // accepted F-Gas certificate. VERIFIED is the only status that passes —
-  // the check is binary, and no other state is treated as "close enough".
-  // The row is the source of truth: a stale session or a hand-crafted
-  // request cannot bypass it.
-  const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { fGasStatus: true } });
-  if (buyer?.fGasStatus !== "VERIFIED") return { ok: false, code: "FGAS_UNVERIFIED" };
+  const products = await prisma.product.findMany({ where: { ...LISTED, sku: { in: items.map((i) => i.sku) } } });
+  const bySku = new Map(products.map((p) => [p.sku, p]));
+  if (items.some((i) => !bySku.has(i.sku))) return { ok: false, code: "PRODUCT_NOT_FOUND" };
+
+  // Regulatory gate, by SUBSTANCE (lib/fgasSubstances): only a basket with a
+  // fluorinated gas in it needs a certificate — tools, accessories and
+  // hydrocarbons never do. When it does, the effective status must be
+  // VERIFIED: a certificate past its expiry date is EXPIRED from that
+  // instant, whether or not the daily cron has written it down yet. The row
+  // is the source of truth; a stale session or crafted request can't pass.
+  let authorizingCertificate: OrderDraft["authorizingCertificate"] = null;
+  if (basketRequiresFgas(products)) {
+    const buyer = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        fGasStatus: true,
+        fGasExpiresAt: true,
+        fGasExtractedData: true,
+        certificates: { where: { isActive: true }, select: { id: true, certificateNumber: true, certId: true, expiresAt: true }, take: 1 },
+      },
+    });
+    const effective = buyer ? getEffectiveFgasStatus(buyer) : "NONE";
+    if (effective === "EXPIRED") return { ok: false, code: "FGAS_EXPIRED" };
+    if (effective !== "VERIFIED") return { ok: false, code: "FGAS_UNVERIFIED" };
+    const cert = buyer!.certificates[0];
+    authorizingCertificate = {
+      id: cert?.id ?? null,
+      number: cert?.certificateNumber ?? cert?.certId ?? ((buyer!.fGasExtractedData as { certificateId?: string } | null)?.certificateId ?? null),
+      expiresAt: cert?.expiresAt ?? buyer!.fGasExpiresAt ?? null,
+    };
+  }
 
   // Ownership check: the address must belong to the ordering user. Read in
   // full so the order can freeze a copy of it (the customer may edit or
@@ -156,10 +190,6 @@ export async function prepareOrder(
     },
   });
   if (!address) return { ok: false, code: "ADDRESS_NOT_FOUND" };
-
-  const products = await prisma.product.findMany({ where: { ...LISTED, sku: { in: items.map((i) => i.sku) } } });
-  const bySku = new Map(products.map((p) => [p.sku, p]));
-  if (items.some((i) => !bySku.has(i.sku))) return { ok: false, code: "PRODUCT_NOT_FOUND" };
 
   let lines: OrderDraftLine[] = items.map((i) => ({ product: bySku.get(i.sku)!, qty: i.qty }));
 
@@ -207,7 +237,7 @@ export async function prepareOrder(
     }))
   );
 
-  return { ok: true, value: { userId, addressId, address, lines, totals, quoteId } };
+  return { ok: true, value: { userId, addressId, address, lines, totals, quoteId, authorizingCertificate } };
 }
 
 /**
@@ -267,6 +297,10 @@ export async function commitOrder(
             paymentMethod: payment.paymentMethod,
             paymentStatus: "PENDING",
             shippingAddress,
+            // The legal record of what authorised this F-Gas sale; never updated.
+            authorizingCertificateId: draft.authorizingCertificate?.id ?? null,
+            authorizingCertificateNumber: draft.authorizingCertificate?.number ?? null,
+            authorizingCertificateExpiresAt: draft.authorizingCertificate?.expiresAt ?? null,
             items: {
               create: draft.lines.map(({ product, qty }) => ({
                 productId: product.id,

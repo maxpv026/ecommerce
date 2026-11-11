@@ -3,187 +3,126 @@
 import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
-import { Check, FileText, ShieldAlert, ShieldCheck, Sparkles, TriangleAlert, Upload, X } from "lucide-react";
-import { FGAS_MAX_BYTES, isAcceptedFgasFile, type VerifyFgasErrorCode, type VerifyFgasResponse } from "@/lib/fgas";
-import type { FgasVerification } from "@/lib/store/cart";
-
-type Phase = "idle" | "scanning" | "success" | "error";
+import { useSession } from "next-auth/react";
+import { ArrowRight, Check, Clock, FileText, Loader2, Lock, ShieldAlert, ShieldCheck, TriangleAlert, Upload, X } from "lucide-react";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { useFgasModal } from "@/lib/fgasModalEvents";
+import { FGAS_MAX_BYTES, daysUntil, isAcceptedFgasFile, type VerifyFgasErrorCode, type VerifyFgasEvent, type VerifyFgasResponse, type VerifyFgasResult } from "@/lib/fgas";
+import FgasChecklist, { flagOf } from "./fgas/FgasChecklist";
 
 /**
- * A rejection ("this is a receipt, not a certificate") is a red boundary —
- * the document was audited and refused. Everything else is amber: a wrong
- * file, a slow service, a missing key. Both carry the server's own reason
- * when it sent one.
+ * The F-Gas verification window — one instance for the whole app, opened
+ * from the cart, the dashboard and the mobile profile (lib/fgasModalEvents).
+ *
+ *   guest    sign in first: a certificate is verified against an account
+ *   idle     drop zone
+ *   running  the server's own four stages, streamed (POST ?stream=1)
+ *   result   VERIFIED / PENDING_REVIEW / REJECTED, each its own view
+ *   error    a technical failure (file, timeout, service) — not a verdict
  */
-interface ErrorState {
-  tone: "reject" | "warn";
-  titleKey: string;
-  bodyKey: string;
-  /** Specific finding from the server, shown verbatim under the message. */
-  reason: string | null;
-}
 
-const REJECTED_ERROR = { tone: "reject", titleKey: "rejectedTitle", bodyKey: "rejectedBody" } as const;
-const WARN_ERROR = { tone: "warn", titleKey: "errorTitle" } as const;
-
-/** Maps a server error code onto the boundary the user sees. */
-function errorStateFor(code: VerifyFgasErrorCode, reason: string | null): ErrorState {
-  switch (code) {
-    case "REJECTED":
-      return { ...REJECTED_ERROR, reason };
-    case "UNSUPPORTED_TYPE":
-      return { ...WARN_ERROR, bodyKey: "errorFileType", reason: null };
-    case "TOO_LARGE":
-      return { ...WARN_ERROR, bodyKey: "errorFileSize", reason: null };
-    case "CORRUPT_FILE":
-      return { ...WARN_ERROR, bodyKey: "errorFileCorrupt", reason: null };
-    case "AI_UNCONFIGURED":
-      return { ...WARN_ERROR, bodyKey: "errorUnconfigured", reason: null };
-    case "AI_TIMEOUT":
-      return { ...WARN_ERROR, bodyKey: "errorTimeout", reason: null };
-    case "AI_ERROR":
-      return { ...WARN_ERROR, bodyKey: "errorService", reason: null };
-    default:
-      return { ...WARN_ERROR, bodyKey: "errorBody", reason: null };
-  }
-}
-
-const localError = (bodyKey: string): ErrorState => ({ ...WARN_ERROR, bodyKey, reason: null });
-
-// A real vision pass takes a few seconds; the floor only stops the scan
-// animation from flashing past on a fast rejection.
-const MIN_SCAN_MS = 900;
-const STEP_TIMINGS_MS = [900, 2600, 5200];
-// Slightly beyond the route's own 15 s AI budget, so a hung connection
-// still resolves instead of leaving the modal spinning forever.
-const CLIENT_TIMEOUT_MS = 25_000;
-
-interface FgasVerificationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  /** Where the result will live — copy only; the route decides from the real session. */
-  scope: "guest" | "account";
-  userId?: string | null;
-  onVerified: (verification: FgasVerification) => void;
-}
-
+type Phase = "idle" | "running" | "result" | "error";
 const EASE = [0.16, 1, 0.3, 1] as const;
+const CLIENT_TIMEOUT_MS = 70_000;
 
-/**
- * The dialog body mounts only while open, so every opening starts from a
- * fresh dropzone without a reset effect; AnimatePresence keeps it mounted
- * through the exit animation.
- */
-export default function FgasVerificationModal({ isOpen, ...dialog }: FgasVerificationModalProps) {
-  return <AnimatePresence>{isOpen && <FgasVerificationDialog key="fgas-modal" {...dialog} />}</AnimatePresence>;
+const ERROR_KEY: Partial<Record<VerifyFgasErrorCode, string>> = {
+  SIGN_IN_REQUIRED: "errorSignIn",
+  UNSUPPORTED_TYPE: "errorFileType",
+  TOO_LARGE: "errorFileSize",
+  CORRUPT_FILE: "errorFileCorrupt",
+  AI_UNCONFIGURED: "errorUnconfigured",
+  AI_TIMEOUT: "errorTimeout",
+  AI_ERROR: "errorService",
+};
+
+export default function FgasVerificationModal() {
+  const open = useFgasModal((s) => s.open);
+  return <AnimatePresence>{open && <Dialog key="fgas" />}</AnimatePresence>;
 }
 
-function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: Omit<FgasVerificationModalProps, "isOpen">) {
+function Dialog() {
   const t = useTranslations("FgasModal");
   const format = useFormatter();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { status: authStatus, update } = useSession();
+  const source = useFgasModal((s) => s.source);
+  const hide = useFgasModal((s) => s.hide);
 
   const [phase, setPhase] = useState<Phase>("idle");
-  const [step, setStep] = useState(0);
+  const [stage, setStage] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [error, setError] = useState<ErrorState>(localError("errorBody"));
-  const [result, setResult] = useState<FgasVerification | null>(null);
-  const [issuingBody, setIssuingBody] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState("errorBody");
+  const [result, setResult] = useState<VerifyFgasResult | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const running = phase === "running";
 
-  const scanning = phase === "scanning";
-  const rejected = phase === "error" && error.tone === "reject";
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => e.key === "Escape" && !running && hide();
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [running, hide]);
 
   const reset = () => {
     setPhase("idle");
-    setStep(0);
-    setDragOver(false);
+    setStage(0);
     setFileName(null);
     setResult(null);
-    setIssuingBody(null);
   };
 
-  // Escape closes (never mid-scan); body scroll is locked while open — same
-  // contract as AuthModal so the two feel identical.
-  useEffect(() => {
-    const onKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape" && !scanning) onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [scanning, onClose]);
-
-  // Progress steps light up on a fixed cadence under the laser.
-  useEffect(() => {
-    if (!scanning) return;
-    const ids = STEP_TIMINGS_MS.map((ms, i) => setTimeout(() => setStep(i + 1), ms));
-    return () => ids.forEach(clearTimeout);
-  }, [scanning]);
-
-  const fail = (state: ErrorState) => {
-    setError(state);
+  const fail = (key: string) => {
+    setErrorKey(key);
     setPhase("error");
   };
 
+  const finish = (payload: VerifyFgasResponse) => {
+    if (!payload.ok) return fail(ERROR_KEY[payload.code] ?? "errorBody");
+    setResult(payload);
+    setPhase("result");
+    // The account's status may have changed: refresh the session claim and
+    // every server-rendered gate on the page.
+    void update({});
+    router.refresh();
+  };
+
   const submit = async (file: File) => {
-    // Fast local feedback only — the route re-checks all of this, and also
-    // sniffs the bytes, so a hand-crafted request gains nothing.
-    if (!isAcceptedFgasFile(file)) return fail(localError("errorFileType"));
-    if (file.size > FGAS_MAX_BYTES) return fail(localError("errorFileSize"));
-
+    if (!isAcceptedFgasFile(file)) return fail("errorFileType");
+    if (file.size > FGAS_MAX_BYTES) return fail("errorFileSize");
     setFileName(file.name);
-    setStep(0);
-    setPhase("scanning");
-
+    setStage(1);
+    setPhase("running");
     const body = new FormData();
     body.append("certificate", file);
-    const floor = new Promise((resolve) => setTimeout(resolve, MIN_SCAN_MS));
-
     try {
-      const [response] = await Promise.all([
-        fetch("/api/verify-fgas", { method: "POST", body, signal: AbortSignal.timeout(CLIENT_TIMEOUT_MS) }),
-        floor,
-      ]);
-
-      let payload: VerifyFgasResponse | null = null;
-      try {
-        payload = (await response.json()) as VerifyFgasResponse;
-      } catch {
-        // Non-JSON body (proxy error page, 413 from the platform).
-        return fail(localError(response.status === 413 ? "errorFileSize" : "errorBody"));
+      const res = await fetch("/api/verify-fgas?stream=1", { method: "POST", body, signal: AbortSignal.timeout(CLIENT_TIMEOUT_MS) });
+      if (res.status === 429) return fail("errorRateLimited");
+      if (!res.body) return fail(res.status === 413 ? "errorFileSize" : "errorBody");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (value) buffer += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buffer.indexOf("\n")) >= 0) {
+          const line = buffer.slice(0, nl).trim();
+          buffer = buffer.slice(nl + 1);
+          if (!line) continue;
+          const event = JSON.parse(line) as VerifyFgasEvent;
+          if (event.type === "stage") setStage(event.stage);
+          else return finish(event.result);
+        }
+        if (done) break;
       }
-
-      // A certificate the route accepted comes back as VERIFIED (or GUEST
-      // for a signed-out visitor); a refused or unreadable one comes back as
-      // an error code. Anything without a `status` is a failure.
-      if (!response.ok || payload.status === undefined) {
-        const code = payload.status === undefined ? payload.code : "FAILED";
-        const reason = payload.status === undefined ? payload.errorReason : null;
-        return fail(errorStateFor(code, reason));
-      }
-
-      const submission: FgasVerification = {
-        scope: payload.status === "VERIFIED" ? "account" : "guest",
-        userId: payload.status === "VERIFIED" ? userId : null,
-        companyName: payload.extracted.companyName,
-        certificateId: payload.extracted.certificateId,
-        category: payload.extracted.category,
-        expiresAt: payload.extracted.expiresAt,
-        verifiedAt: payload.submittedAt,
-      };
-      setIssuingBody(payload.extracted.issuingBody);
-      setResult(submission);
-      setPhase("success");
-      onVerified(submission);
+      fail("errorBody");
     } catch (e) {
-      // AbortSignal.timeout fires a TimeoutError; anything else is a network drop.
-      const timedOut = e instanceof DOMException && e.name === "TimeoutError";
-      fail(localError(timedOut ? "errorTimeout" : "errorBody"));
+      fail(e instanceof DOMException && e.name === "TimeoutError" ? "errorTimeout" : "errorBody");
     }
   };
 
@@ -191,119 +130,101 @@ function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: O
     const file = files?.[0];
     if (file) void submit(file);
   };
-
   const onDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
     if (phase === "idle") pick(e.dataTransfer.files);
   };
-
-  const onZoneKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+  const onZoneKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       inputRef.current?.click();
     }
   };
 
-  const frameStyle =
-    phase === "scanning"
-      ? {
-          background: "linear-gradient(90deg,var(--glow-700),#22d3ee,#7c3aed,var(--glow-700))",
-          backgroundSize: "300% 100%",
-          animation: "hc-sweep 2.4s linear infinite",
-          boxShadow: "0 40px 120px -30px rgba(4,10,25,.75), 0 0 70px -18px rgba(34,211,238,.6)",
-        }
-      : phase === "success"
-        ? { background: "rgba(16,185,129,.55)", boxShadow: "0 40px 120px -30px rgba(4,10,25,.75), 0 0 80px -18px rgba(52,211,153,.75)" }
-        : phase === "error"
-          ? rejected
-            ? { background: "rgba(239,68,68,.6)", boxShadow: "0 40px 120px -30px rgba(4,10,25,.75), 0 0 74px -16px rgba(239,68,68,.7)" }
-            : { background: "rgba(245,158,11,.5)", boxShadow: "0 40px 120px -30px rgba(4,10,25,.75), 0 0 70px -18px rgba(245,158,11,.6)" }
-          : dragOver
-            ? { background: "rgba(34,211,238,.55)", boxShadow: "0 40px 120px -30px rgba(4,10,25,.75), 0 0 70px -18px rgba(34,211,238,.6)" }
-            : { background: "var(--hc-border-idle)", boxShadow: "0 40px 120px -30px rgba(4,10,25,.7)" };
+  const verdict = phase === "result" ? result?.verdict : null;
+  const accent =
+    verdict === "VERIFIED" ? "#10b981" : verdict === "PENDING_REVIEW" ? "#3b6fd8" : verdict === "REJECTED" ? "#ef4444" : phase === "error" ? "#f59e0b" : running ? "#22d3ee" : "#64748b";
+  const dateOf = (iso: string | null | undefined) => (iso ? format.dateTime(new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso), { dateStyle: "long", timeZone: "UTC" }) : null);
 
-  const steps = [t("stepLayout"), t("stepFields"), t("stepRegister")];
-  const expiryLabel = result
-    ? format.dateTime(new Date(`${result.expiresAt}T00:00:00Z`), { dateStyle: "long", timeZone: "UTC" })
-    : "";
+  const stages = [t("stage1"), t("stage2"), t("stage3"), t("stage4")];
+  const guest = authStatus === "unauthenticated";
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-[#090A0C]/80 p-4 backdrop-blur-md"
-      onClick={() => {
-        if (!scanning) onClose();
-      }}
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-[#090A0C]/75 backdrop-blur-md sm:items-center sm:p-4"
+      onClick={() => !running && hide()}
     >
       <motion.div
-        initial={{ opacity: 0, y: -10, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -6, scale: 0.98, transition: { duration: 0.2 } }}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 16, transition: { duration: 0.2 } }}
         transition={{ duration: 0.45, ease: EASE }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="fgas-modal-title"
-        data-fgas-modal={phase}
+        data-fgas-modal={phase === "result" ? verdict : guest ? "guest" : phase}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-[480px] max-w-full rounded-[28px] p-[1.5px] transition-[box-shadow] duration-500"
-        style={frameStyle}
+        className="relative flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white shadow-[0_40px_120px_-30px_rgba(4,10,25,.75)] sm:max-h-[90vh] sm:w-[540px] sm:rounded-[24px] dark:bg-[#141518]"
       >
-        <div className="relative overflow-hidden rounded-[26.5px] bg-white/[.88] p-[30px] pb-6 backdrop-blur-2xl backdrop-saturate-150 dark:bg-[#141518]/[.92]">
-          {/* ambient tint follows the phase */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full opacity-40 blur-[70px] transition-[background] duration-700 [animation:hc-breathe_7s_ease-in-out_infinite]"
-            style={{
-              background: `radial-gradient(circle,${
-                phase === "success"
-                  ? "#34d399"
-                  : phase === "error"
-                    ? rejected
-                      ? "#f87171"
-                      : "#fbbf24"
-                    : phase === "scanning"
-                      ? "#22d3ee"
-                      : "#7c3aed"
-              },transparent 68%)`,
-            }}
-          />
+        {/* status rail */}
+        <span aria-hidden className="block h-1 w-full flex-none transition-colors duration-500" style={{ background: accent }} />
 
+        <div className="flex flex-none items-start gap-3 px-6 pb-4 pt-5">
+          <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[12px] bg-slate-900 text-white dark:bg-white/10">
+            <ShieldCheck size={18} strokeWidth={2} />
+          </span>
+          <div className="min-w-0 flex-1 pr-8">
+            <div className="text-[10.5px] font-semibold tracking-[.1em] text-slate-400 dark:text-ink-muted">{t("poweredBy")}</div>
+            <h2 id="fgas-modal-title" className="m-0 mt-0.5 text-[19px] font-semibold tracking-[-.03em]">
+              {t("title")}
+            </h2>
+          </div>
           <button
             type="button"
-            onClick={onClose}
-            disabled={scanning}
+            onClick={hide}
+            disabled={running}
             aria-label={t("close")}
-            className="absolute right-4 top-4 z-10 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-slate-900/5 text-slate-600 transition-colors hover:bg-slate-900/[.11] disabled:opacity-40 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+            className="absolute right-4 top-5 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/5 text-slate-600 hover:bg-slate-900/10 disabled:opacity-40 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
           >
-            <X size={14} strokeWidth={2} />
+            <X size={15} strokeWidth={2} />
           </button>
+        </div>
 
-          <div className="relative mb-1 flex items-center gap-2 text-[10.5px] font-semibold tracking-[.09em] text-slate-400 dark:text-ink-muted">
-            <Sparkles size={13} strokeWidth={2} className="text-violet-600 dark:text-violet-400" />
-            {t("poweredBy")}
-          </div>
-          <h2 id="fgas-modal-title" className="relative m-0 pr-8 text-[23px] font-semibold tracking-[-.035em]">
-            {t("title")}
-          </h2>
-          <p className="relative mb-6 mt-[7px] text-[13px] leading-[1.55] text-slate-500 dark:text-ink-muted">{t("subtitle")}</p>
-
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-5">
           <AnimatePresence mode="wait" initial={false}>
-            {phase === "idle" && (
-              <motion.div
-                key="idle"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6, transition: { duration: 0.18 } }}
-                transition={{ duration: 0.4, ease: EASE }}
-              >
+            {guest ? (
+              <motion.div key="guest" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} data-fgas-guest>
+                <div className="flex items-start gap-3 rounded-[16px] border border-slate-900/[.08] bg-slate-50 p-4 dark:border-hairline dark:bg-white/[.03]">
+                  <Lock size={18} strokeWidth={2} className="mt-0.5 flex-none text-slate-500" />
+                  <div>
+                    <div className="text-[14.5px] font-semibold">{t("guestTitle")}</div>
+                    <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-slate-600 dark:text-ink-muted">{t("guestBody")}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    hide();
+                    router.push({ pathname: "/auth", query: { callbackUrl: pathname } });
+                  }}
+                  data-fgas-signin
+                  className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-slate-900 text-[14px] font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+                >
+                  {t("signIn")}
+                  <ArrowRight size={15} strokeWidth={2.2} />
+                </button>
+              </motion.div>
+            ) : phase === "idle" ? (
+              <motion.div key="idle" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <p className="m-0 mb-4 text-[13px] leading-[1.55] text-slate-600 dark:text-ink-muted">{t("subtitle")}</p>
                 <div
                   role="button"
                   tabIndex={0}
-                  onKeyDown={onZoneKeyDown}
+                  onKeyDown={onZoneKey}
                   onClick={() => inputRef.current?.click()}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -312,108 +233,57 @@ function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: O
                   onDragLeave={() => setDragOver(false)}
                   onDrop={onDrop}
                   data-fgas-dropzone
-                  className={`relative flex cursor-pointer flex-col items-center justify-center rounded-[22px] border-[1.5px] border-dashed px-6 py-9 text-center transition-[border-color,background-color,box-shadow] duration-300 focus:outline-none focus-visible:ring-[3.5px] focus-visible:ring-cyan-400/30 ${
-                    dragOver
-                      ? "border-cyan-400 bg-cyan-400/[.08] shadow-[0_0_40px_-14px_#22d3ee]"
-                      : "border-slate-900/[.16] bg-slate-900/[.025] hover:border-violet-500/50 hover:bg-violet-500/[.05] dark:border-white/[.16] dark:bg-white/[.03] dark:hover:border-violet-400/50"
+                  className={`flex cursor-pointer flex-col items-center justify-center rounded-[18px] border-[1.5px] border-dashed px-6 py-8 text-center transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-blue-600/30 ${
+                    dragOver ? "border-blue-600 bg-blue-600/[.06]" : "border-slate-900/[.16] bg-slate-50/60 hover:border-blue-600/50 dark:border-white/[.16] dark:bg-white/[.02]"
                   }`}
                 >
-                  <span className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] text-white shadow-[0_18px_36px_-16px_rgba(37,99,235,.9)]">
-                    <span className="pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-40 blur-[18px]" />
-                    <Upload size={26} strokeWidth={1.9} className="relative" />
+                  <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-[14px] bg-blue-700 text-white">
+                    <Upload size={20} strokeWidth={2} />
                   </span>
-                  <span className="text-[15px] font-semibold tracking-[-.025em]">{t("dropTitle")}</span>
-                  <span className="mt-1.5 text-[12px] text-slate-500 dark:text-ink-muted">{t("dropHint")}</span>
-                  <span className="mt-5 inline-flex h-10 items-center justify-center rounded-[12px] border border-slate-900/[.14] bg-white px-4 text-[12.5px] font-semibold tracking-[-.015em] text-slate-900 transition-colors dark:border-hairline-strong dark:bg-white/[.06] dark:text-slate-50">
-                    {t("browse")}
-                  </span>
+                  <span className="text-[14.5px] font-semibold tracking-[-.02em]">{t("dropTitle")}</span>
+                  <span className="mt-1 text-[12px] text-slate-500 dark:text-ink-muted">{t("dropHint")}</span>
+                  <span className="mt-4 inline-flex h-9 items-center rounded-[11px] border border-slate-900/[.14] bg-white px-4 text-[12.5px] font-semibold dark:border-white/[.14] dark:bg-white/[.06]">{t("browse")}</span>
                   <input
                     ref={inputRef}
                     type="file"
-                    accept=".pdf,image/jpeg,image/png,image/webp"
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
                     className="sr-only"
+                    data-fgas-file
                     onChange={(e) => {
                       pick(e.target.files);
                       e.target.value = "";
                     }}
                   />
                 </div>
+                <p className="m-0 mt-3 text-[11.5px] leading-[1.5] text-slate-500 dark:text-ink-muted">{t("addCompanyHint")}</p>
               </motion.div>
-            )}
-
-            {phase === "scanning" && (
-              <motion.div
-                key="scanning"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6, transition: { duration: 0.18 } }}
-                transition={{ duration: 0.4, ease: EASE }}
-                aria-live="polite"
-                className="flex flex-col items-center"
-              >
-                {/* document under the scanner */}
-                <div className="relative flex h-[172px] w-[134px] flex-col overflow-hidden rounded-[16px] border border-cyan-400/40 bg-white/80 p-4 shadow-[0_24px_50px_-28px_rgba(2,4,10,.7),0_0_34px_-12px_rgba(34,211,238,.7)] dark:bg-white/[.05]">
-                  <FileText size={22} strokeWidth={1.7} className="mb-3 text-slate-500 dark:text-slate-300" />
-                  {[78, 100, 62, 92, 54, 84].map((w, i) => (
-                    <span
-                      key={i}
-                      className="mb-[7px] block h-[5px] rounded-full bg-slate-900/[.09] dark:bg-white/[.12]"
-                      style={{ width: `${w}%` }}
-                    />
-                  ))}
-
-                  {/* laser sweep */}
-                  <motion.span
-                    aria-hidden
-                    initial={{ top: "0%" }}
-                    animate={{ top: ["0%", "100%"] }}
-                    transition={{ duration: 1.4, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-                    className="pointer-events-none absolute inset-x-0 h-0"
-                  >
-                    <span className="absolute inset-x-0 -top-10 h-10 bg-[linear-gradient(to_bottom,transparent,rgba(34,211,238,.28))]" />
-                    <span className="absolute inset-x-0 -top-px h-[2px] bg-[linear-gradient(90deg,transparent,#22d3ee_20%,#a78bfa_80%,transparent)] shadow-[0_0_14px_2px_rgba(34,211,238,.8)]" />
-                  </motion.span>
+            ) : phase === "running" ? (
+              <motion.div key="running" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} aria-live="polite" data-fgas-running>
+                <div className="mb-4 flex items-center gap-2.5 rounded-[14px] bg-slate-50 px-3.5 py-3 dark:bg-white/[.04]">
+                  <FileText size={16} strokeWidth={2} className="flex-none text-slate-500" />
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{fileName}</span>
+                  <Loader2 size={15} className="flex-none animate-spin text-blue-600" />
                 </div>
-
-                <div className="mt-6 text-center">
-                  <div className="text-[16px] font-semibold tracking-[-.03em]">{t("scanningTitle")}</div>
-                  <div className="mt-1 flex items-center justify-center gap-1.5 text-[12px] text-slate-500 dark:text-ink-muted">
-                    {[0, 0.16, 0.32].map((d) => (
-                      <span
-                        key={d}
-                        className="h-[5px] w-[5px] rounded-full bg-cyan-500 dark:bg-cyan-400"
-                        style={{ animation: `hc-dots 1.2s ease-in-out ${d}s infinite` }}
-                      />
-                    ))}
-                    <span className="ml-1 truncate">{fileName ?? t("scanningNote")}</span>
-                  </div>
-                </div>
-
-                <ol className="mt-5 flex w-full flex-col gap-2">
-                  {steps.map((label, i) => {
-                    const done = step > i;
-                    const active = step === i;
+                <ol className="m-0 flex list-none flex-col gap-2 p-0">
+                  {stages.map((label, i) => {
+                    const n = i + 1;
+                    const done = stage > n;
+                    const active = stage === n;
                     return (
                       <li
                         key={label}
-                        className={`flex items-center gap-2.5 rounded-[12px] border px-3 py-2 text-[12px] transition-[border-color,background-color,color] duration-300 ${
+                        data-stage={n}
+                        data-state={done ? "done" : active ? "active" : "todo"}
+                        className={`flex items-center gap-3 rounded-[12px] border px-3.5 py-2.5 text-[13px] transition-colors ${
                           done
-                            ? "border-emerald-500/30 bg-emerald-500/[.08] text-emerald-700 dark:text-emerald-300"
+                            ? "border-emerald-500/30 bg-emerald-500/[.06] text-emerald-800 dark:text-emerald-300"
                             : active
-                              ? "border-cyan-400/40 bg-cyan-400/[.08] text-slate-900 dark:text-slate-50"
-                              : "border-slate-900/[.07] text-slate-400 dark:border-hairline dark:text-ink-muted"
+                              ? "border-blue-600/40 bg-blue-600/[.06] font-semibold"
+                              : "border-slate-900/[.07] text-slate-400 dark:border-hairline"
                         }`}
                       >
-                        <span className="flex h-4 w-4 flex-none items-center justify-center">
-                          {done ? (
-                            <Check size={13} strokeWidth={2.6} />
-                          ) : (
-                            <span
-                              className={`h-1.5 w-1.5 rounded-full ${
-                                active ? "bg-cyan-400 shadow-[0_0_8px_1px_#22d3ee] [animation:hc-glow_1.1s_ease-in-out_infinite]" : "bg-slate-300 dark:bg-white/20"
-                              }`}
-                            />
-                          )}
+                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full text-[11px] font-bold">
+                          {done ? <Check size={14} strokeWidth={3} /> : active ? <Loader2 size={14} className="animate-spin" /> : n}
                         </span>
                         {label}
                       </li>
@@ -421,156 +291,136 @@ function FgasVerificationDialog({ onClose, scope, userId = null, onVerified }: O
                   })}
                 </ol>
               </motion.div>
-            )}
-
-            {phase === "success" && result && (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6, transition: { duration: 0.18 } }}
-                transition={{ duration: 0.4, ease: EASE }}
-                aria-live="polite"
-                data-fgas-success
-              >
-                <div className="flex items-start gap-3.5">
-                  <motion.span
-                    initial={{ scale: 0.4, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 380, damping: 18, delay: 0.05 }}
-                    className="relative flex h-12 w-12 flex-none items-center justify-center rounded-[15px] bg-[linear-gradient(140deg,#059669,#34d399)] text-white shadow-[0_16px_32px_-14px_rgba(16,185,129,.9)]"
-                  >
-                    <span className="pointer-events-none absolute -inset-3 rounded-full bg-[radial-gradient(circle,var(--orb-emerald),transparent_68%)] opacity-50 blur-[14px]" />
-                    <ShieldCheck size={22} strokeWidth={2} className="relative" />
-                  </motion.span>
-                  <div className="min-w-0">
-                    <div className="text-[17px] font-semibold tracking-[-.03em]">{t("successTitle")}</div>
-                    <p className="mb-0 mt-1 text-[12.5px] leading-[1.55] text-slate-500 dark:text-ink-muted">
-                      {scope === "account" ? t("successBodyAccount") : t("successBodyGuest")}
-                    </p>
-                  </div>
-                </div>
-
-                <dl className="mt-5 grid grid-cols-2 gap-2.5">
-                  {[
-                    { label: t("fieldCompany"), value: result.companyName },
-                    { label: t("fieldCertId"), value: result.certificateId, mono: true },
-                    { label: t("fieldCategory"), value: result.category },
-                    { label: t("fieldExpiry"), value: expiryLabel },
-                  ].map((row, i) => (
-                    <motion.div
-                      key={row.label}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.35, ease: EASE, delay: 0.12 + i * 0.06 }}
-                      className="min-w-0 rounded-[14px] border border-emerald-500/20 bg-emerald-500/[.06] px-3.5 py-3"
-                    >
-                      <dt className="text-[10px] font-semibold tracking-[.08em] text-emerald-700/80 dark:text-emerald-300/80">
-                        {row.label.toUpperCase()}
-                      </dt>
-                      <dd className={`m-0 mt-1 truncate text-[13px] font-semibold tracking-[-.02em] ${row.mono ? "tabular-nums" : ""}`}>
-                        {row.value}
-                      </dd>
-                    </motion.div>
-                  ))}
-                </dl>
-
-                {issuingBody && (
-                  <p className="mb-0 mt-2.5 text-center text-[11.5px] text-slate-500 dark:text-ink-muted" data-fgas-issuer>
-                    {t("issuedBy", { body: issuingBody })}
-                  </p>
-                )}
-
-                <motion.button
-                  type="button"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={onClose}
-                  data-fgas-done
-                  className="mt-5 flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-emerald-600 text-[14.5px] font-semibold tracking-[-.01em] text-white shadow-[0_18px_36px_-16px_#10b981,0_0_26px_-8px_#34d399] transition-colors hover:bg-emerald-500"
-                >
-                  <Check size={16} strokeWidth={2.4} />
-                  {t("done")}
-                </motion.button>
-              </motion.div>
-            )}
-
-            {phase === "error" && (
-              <motion.div
-                key="error"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6, transition: { duration: 0.18 } }}
-                transition={{ duration: 0.4, ease: EASE }}
-                role="alert"
-                data-fgas-error={error.tone}
-              >
-                <div
-                  className={`flex items-start gap-3.5 rounded-[18px] border p-3.5 ${
-                    rejected
-                      ? "border-red-500/40 bg-red-500/[.09] shadow-[0_0_34px_-14px_rgba(239,68,68,.8)]"
-                      : "border-amber-500/35 bg-amber-500/[.09]"
-                  }`}
-                >
-                  <span
-                    className={`flex h-12 w-12 flex-none items-center justify-center rounded-[15px] text-white ${
-                      rejected
-                        ? "bg-[linear-gradient(140deg,#dc2626,#f87171)] shadow-[0_16px_32px_-14px_rgba(239,68,68,.95)]"
-                        : "bg-[linear-gradient(140deg,#f59e0b,#f97316)] shadow-[0_16px_32px_-14px_rgba(245,158,11,.9)]"
-                    }`}
-                  >
-                    {rejected ? <ShieldAlert size={22} strokeWidth={2} /> : <TriangleAlert size={22} strokeWidth={2} />}
-                  </span>
-                  <div className="min-w-0">
+            ) : phase === "result" && result ? (
+              <motion.div key={`result-${result.verdict}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} data-fgas-result={result.verdict} data-kept-active={result.keptActive ? "1" : "0"}>
+                {result.verdict === "VERIFIED" ? (
+                  <VerifiedView result={result} dateOf={dateOf} />
+                ) : (
+                  <>
                     <div
-                      className={`text-[17px] font-semibold tracking-[-.03em] ${
-                        rejected ? "text-red-700 dark:text-red-300" : ""
+                      className={`flex items-start gap-3 rounded-[16px] border p-4 ${
+                        result.verdict === "PENDING_REVIEW" ? "border-blue-600/25 bg-blue-600/[.05]" : "border-red-500/30 bg-red-500/[.06]"
                       }`}
                     >
-                      {t(error.titleKey)}
+                      <span className={`flex h-10 w-10 flex-none items-center justify-center rounded-[12px] text-white ${result.verdict === "PENDING_REVIEW" ? "bg-[#3b6fd8]" : "bg-red-600"}`}>
+                        {result.verdict === "PENDING_REVIEW" ? <Clock size={18} strokeWidth={2} /> : <ShieldAlert size={18} strokeWidth={2} />}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-[15.5px] font-semibold tracking-[-.02em]">{result.verdict === "PENDING_REVIEW" ? t("pendingTitle") : t("rejectedTitle")}</div>
+                        <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-slate-600 dark:text-ink-muted">{result.verdict === "PENDING_REVIEW" ? t("pendingBody") : t("rejectedBody")}</p>
+                      </div>
                     </div>
-                    <p className="mb-0 mt-1 text-[12.5px] leading-[1.55] text-slate-600 dark:text-ink-muted">
-                      {t(error.bodyKey)}
-                    </p>
+                    {result.keptActive && (
+                      <p className="m-0 mt-3 flex items-start gap-2 rounded-[12px] bg-emerald-500/[.08] px-3.5 py-2.5 text-[12.5px] font-medium text-emerald-800 dark:text-emerald-300" data-fgas-kept-active>
+                        <ShieldCheck size={14} strokeWidth={2.2} className="mt-0.5 flex-none" />
+                        {t("keptActive")}
+                      </p>
+                    )}
+                    <div className="mt-4 text-[10.5px] font-semibold uppercase tracking-[.09em] text-slate-400">
+                      {result.verdict === "PENDING_REVIEW" ? t("reviewTitle") : t("checksTitle")}
+                    </div>
+                    <div className="mt-2.5">
+                      <FgasChecklist checks={result.checks} only={result.verdict === "PENDING_REVIEW" ? ["review"] : undefined} />
+                    </div>
+                    {result.verdict === "PENDING_REVIEW" && result.checks.some((c) => c.id === "holder" && c.outcome === "review") && (
+                      <p className="m-0 mt-3 text-[11.5px] leading-[1.5] text-slate-500 dark:text-ink-muted">{t("addCompanyHint")}</p>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div key="error" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} role="alert" data-fgas-error={errorKey}>
+                <div className="flex items-start gap-3 rounded-[16px] border border-amber-500/35 bg-amber-500/[.08] p-4">
+                  <TriangleAlert size={18} strokeWidth={2} className="mt-0.5 flex-none text-amber-600" />
+                  <div>
+                    <div className="text-[15px] font-semibold">{t("errorTitle")}</div>
+                    <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-slate-600 dark:text-ink-muted">{t(errorKey)}</p>
                   </div>
                 </div>
-
-                {/* The auditor's own finding, so the buyer knows what to fix */}
-                {error.reason && (
-                  <div className="mt-3 rounded-[14px] border border-slate-900/[.08] bg-slate-900/[.03] px-3.5 py-3 dark:border-hairline dark:bg-white/[.04]">
-                    <div className="text-[9.5px] font-semibold tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                      {t("reasonLabel").toUpperCase()}
-                    </div>
-                    <p className="mb-0 mt-1 text-[12.5px] leading-[1.5] text-slate-700 dark:text-slate-200" data-fgas-reason>
-                      {error.reason}
-                    </p>
-                  </div>
-                )}
-
-                <motion.button
-                  type="button"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={reset}
-                  data-fgas-retry
-                  className={`mt-5 flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] text-[14.5px] font-semibold tracking-[-.01em] transition-colors ${
-                    rejected
-                      ? "bg-red-600 text-white shadow-[0_18px_36px_-16px_rgba(220,38,38,.95)] hover:bg-red-500"
-                      : "bg-amber-500 text-slate-950 shadow-[0_18px_36px_-16px_rgba(245,158,11,.95)] hover:bg-amber-400"
-                  }`}
-                >
-                  <Upload size={16} strokeWidth={2.2} />
-                  {t("retry")}
-                </motion.button>
               </motion.div>
             )}
           </AnimatePresence>
-
-          <p className="relative mb-0 mt-5 text-center text-[11px] leading-[1.5] text-slate-400 dark:text-slate-500">
-            {t("privacyNote")}
-          </p>
         </div>
+
+        {/* footer: actions + the accurate privacy statement */}
+        {!guest && (
+          <div className="flex-none border-t border-slate-900/[.07] px-6 pb-5 pt-4 dark:border-hairline">
+            {phase === "result" && result?.verdict === "VERIFIED" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  hide();
+                  if (source === "cart") router.push("/checkout");
+                }}
+                data-fgas-done
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-emerald-600 text-[14px] font-semibold text-white hover:bg-emerald-500"
+              >
+                {source === "cart" ? t("proceedCheckout") : t("done")}
+                <ArrowRight size={15} strokeWidth={2.2} />
+              </button>
+            ) : phase === "result" && result?.verdict === "PENDING_REVIEW" ? (
+              <button type="button" onClick={hide} data-fgas-done className="flex h-12 w-full items-center justify-center rounded-[14px] bg-slate-900 text-[14px] font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900">
+                {t("done")}
+              </button>
+            ) : phase === "result" || phase === "error" ? (
+              <button type="button" onClick={reset} data-fgas-retry className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-blue-700 text-[14px] font-semibold text-white hover:bg-blue-800">
+                <Upload size={15} strokeWidth={2.2} />
+                {phase === "result" ? t("uploadAnother") : t("retry")}
+              </button>
+            ) : null}
+            <p className={`m-0 text-center text-[11px] leading-[1.5] text-slate-400 dark:text-slate-500 ${phase === "result" || phase === "error" ? "mt-3" : ""}`} data-fgas-privacy>
+              {t("privacyNote")}
+            </p>
+          </div>
+        )}
       </motion.div>
     </motion.div>
+  );
+}
+
+function VerifiedView({ result, dateOf }: { result: VerifyFgasResult; dateOf: (iso: string | null | undefined) => string | null }) {
+  const t = useTranslations("FgasModal");
+  const x = result.extracted;
+  const days = daysUntil(x?.expiresAt ? `${x.expiresAt}T23:59:59Z` : null);
+  const rows = [
+    { label: t("fieldCertId"), value: x?.certificateId ?? "—", mono: true },
+    { label: t("fieldHolder"), value: x?.companyName ?? x?.personName ?? "—" },
+    { label: t("fieldIssuer"), value: x?.issuingBody ?? "—" },
+    { label: t("fieldCountry"), value: x?.countryCode ? `${flagOf(x.countryCode)} ${x.countryCode}` : "—" },
+    { label: t("fieldCategory"), value: x?.category ?? "—" },
+    { label: t("fieldExpiry"), value: dateOf(x?.expiresAt) ?? t("noExpiry") },
+  ];
+  return (
+    <div data-fgas-verified>
+      <div className="flex items-start gap-3 rounded-[16px] border border-emerald-500/30 bg-emerald-500/[.06] p-4">
+        <motion.span
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 380, damping: 18 }}
+          className="flex h-10 w-10 flex-none items-center justify-center rounded-[12px] bg-emerald-600 text-white"
+        >
+          <ShieldCheck size={18} strokeWidth={2} />
+        </motion.span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[15.5px] font-semibold tracking-[-.02em]">{t("verifiedTitle")}</span>
+            {days !== null && (
+              <span className="rounded-full bg-emerald-600/12 px-2 py-[2px] text-[11px] font-semibold text-emerald-700 dark:text-emerald-300" data-fgas-countdown>
+                {t("daysLeft", { days })}
+              </span>
+            )}
+          </div>
+          <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-slate-600 dark:text-ink-muted">{t("verifiedBody")}</p>
+        </div>
+      </div>
+      <dl className="m-0 mt-4 grid grid-cols-2 gap-2">
+        {rows.map((r) => (
+          <div key={r.label} className="min-w-0 rounded-[12px] border border-slate-900/[.08] px-3 py-2.5 dark:border-hairline">
+            <dt className="text-[10px] font-semibold uppercase tracking-[.08em] text-slate-400">{r.label}</dt>
+            <dd className={`m-0 mt-0.5 truncate text-[13px] font-semibold ${r.mono ? "font-mono tabular-nums" : ""}`}>{r.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }

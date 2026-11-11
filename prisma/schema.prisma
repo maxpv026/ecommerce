@@ -33,18 +33,25 @@ enum Role {
   ADMIN
 }
 
-/// Where a buyer's F-Gas certificate stands. Only VERIFIED unlocks checkout.
+/// Where a buyer's F-Gas certificate stands. Only VERIFIED (and not past its
+/// expiry — see getEffectiveFgasStatus in lib/fgas.ts) unlocks F-Gas sales.
 ///
-/// Set by the vision model without a human step (app/api/verify-fgas): a
-/// document that satisfies every acceptance criterion goes straight to
-/// VERIFIED, anything else to REJECTED with a reason. An admin can override
-/// either way (lib/fgasReview.ts). PENDING_REVIEW is legacy — nothing new
-/// enters it, and rows still holding it are treated as unverified.
+/// Decided by the 3-tier engine in app/api/verify-fgas (lib/fgasLifecycle):
+///   VERIFIED        every regulatory criterion met, holder matches, no duplicate
+///   PENDING_REVIEW  plausible certificate a person must confirm (holder name
+///                   differs, no expiry printed, national-only citation, a
+///                   number already active on another company's account…)
+///   REJECTED        clearly not a valid certificate, with the failed checks
+///   EXPIRED         was VERIFIED; its expiry date passed (daily cron, and
+///                   treated as such at read time before the cron runs)
+/// Admins override any of these (lib/fgasReview.ts). Every change is written
+/// to FgasAuditLog.
 enum FGasStatus {
   NONE
   PENDING_REVIEW
   VERIFIED
   REJECTED
+  EXPIRED
 }
 
 /// Colour scheme. SYSTEM follows the device's prefers-color-scheme.
@@ -122,25 +129,34 @@ model User {
 
   // ── F-Gas compliance review ──
   // The certificate is read and judged by a vision model; an admin overrides.
-  fGasStatus          FGasStatus      @default(NONE)
+  fGasStatus              FGasStatus         @default(NONE)
   /// Where the uploaded certificate is stored. Never public: local uploads
   /// are served through an authenticated route, and a blob URL is
   /// unguessable. See lib/fgasStorage.ts.
-  fGasDocumentUrl     String?
+  fGasDocumentUrl         String?
   /// Reading from the vision model — what it says the document said. An
   /// admin compares it against the stored document rather than trusting it.
-  fGasExtractedData   Json?
-  fGasSubmittedAt     DateTime?
-  fGasReviewedAt      DateTime?
+  fGasExtractedData       Json?
+  fGasSubmittedAt         DateTime?
+  fGasReviewedAt          DateTime?
   /// User id of the admin who approved or rejected it.
-  fGasReviewedBy      String?
-  fGasRejectionReason String?
-  discountTier        String          @default("standard")
-  rewardPoints        Int             @default(0)
-  locale              String          @default("en")
+  fGasReviewedBy          String?
+  fGasRejectionReason     String?
+  /// Expiry of the certificate that makes this account VERIFIED (null for a
+  /// certificate printed without one, accepted by an admin). Denormalised
+  /// from the active Certificate so every gate can decide without a join.
+  fGasExpiresAt           DateTime?
+  /// A VERIFIED buyer's replacement certificate that is waiting for an admin
+  /// (FgasAuditLog id). The current certificate stays active meanwhile.
+  fGasPendingSubmissionId String?
+  fgasAuditLog            FgasAuditLog[]
+  fgasDocuments           FgasDocumentFile[]
+  discountTier            String             @default("standard")
+  rewardPoints            Int                @default(0)
+  locale                  String             @default("en")
   /// Light / dark / follow the device. Mirrored into the session JWT so
   /// every device the user signs in on applies it (components/ThemeSync).
-  themePreference     ThemePreference @default(SYSTEM)
+  themePreference         ThemePreference    @default(SYSTEM)
 
   /// Email preferences (Settings → Notifications). Defaults follow consent:
   /// back-in-stock is on because every one of those mails answers a
@@ -654,6 +670,14 @@ model Order {
   totalAmount       Decimal     @db.Decimal(10, 2)
   estimatedDelivery DateTime
 
+  // ── F-Gas compliance snapshot ──
+  // The certificate that authorised this sale, frozen when the order was
+  // placed. Null on orders with no F-Gas line (tools, hydrocarbons) and on
+  // orders placed before this existed. Never updated afterwards.
+  authorizingCertificateId        String?
+  authorizingCertificateNumber    String?
+  authorizingCertificateExpiresAt DateTime?
+
   // Stripe Checkout Session that owns this order. Unique so the webhook can
   // look the order up by session id and so a replayed event can never create
   // or settle a second order.
@@ -755,12 +779,35 @@ model OrderItem {
   @@index([productId])
 }
 
+/// An accepted F-Gas certificate. One per acceptance; the buyer's current one
+/// has isActive = true (at most one per user), earlier ones stay as history.
 model Certificate {
   id       String   @id @default(cuid())
   userId   String
   certType String
+  /// Legacy name for certificateNumber; both are written.
   certId   String
+  /// When WE accepted it. (The document's own issue date is documentIssuedAt.)
   issuedAt DateTime
+
+  certificateNumber String?
+  /// certificateNumber upper-cased with every non-alphanumeric removed: what
+  /// the duplicate check compares across accounts.
+  numberKey         String?
+  companyName       String?
+  holderName        String?
+  /// ISO 3166-1 alpha-2 of the issuing EU member state, when legible.
+  countryCode       String?
+  issuingBody       String?
+  category          String?
+  regulationCited   String?
+  documentIssuedAt  DateTime?
+  /// Null when the certificate prints no expiry (accepted by an admin only).
+  expiresAt         DateTime?
+  documentUrl       String?
+  isActive          Boolean   @default(false)
+  /// Who accepted it: an admin's user id, or "ai-vision".
+  approvedBy        String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -769,6 +816,57 @@ model Certificate {
 
   // getUserProfile takes the newest certificate for a user.
   @@index([userId, issuedAt(sort: Desc)])
+  @@index([numberKey, isActive])
+}
+
+/// Every F-Gas event, append-only: submissions, AI verdicts, admin
+/// approvals / rejections / revocations, expiries. Nothing here is updated
+/// or deleted by the application.
+model FgasAuditLog {
+  id             String      @id @default(cuid())
+  userId         String
+  /// SUBMITTED_VERIFIED | SUBMITTED_PENDING | SUBMITTED_REJECTED |
+  /// REPLACEMENT_REJECTED | ADMIN_APPROVED | ADMIN_REJECTED | ADMIN_REVOKED |
+  /// AUTO_EXPIRED | LEGACY_MIGRATED
+  action         String
+  /// Admin user id, "ai-vision" or "system".
+  actorId        String
+  previousStatus FGasStatus?
+  newStatus      FGasStatus?
+  /// Certificate number as read (not a foreign key: a rejected document has none).
+  certificateId  String?
+  extractedData  Json?
+  /// The itemised checks behind an automatic verdict (lib/fgas FgasCheck[]).
+  checks         Json?
+  reason         String?
+  documentUrl    String?
+  createdAt      DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+/// Certificate documents stored in PostgreSQL when Vercel Blob is not
+/// configured (or fails). AES-256-GCM encrypted at the application layer;
+/// served only by /api/fgas/document/<key> to the owner or an admin.
+model FgasDocumentFile {
+  /// The public key in the URL: "db-<uuid>".
+  id        String   @id
+  userId    String
+  mimeType  String
+  size      Int
+  sha256    String
+  /// Which key encrypted it (lib/fgasStorage KEY_REFS).
+  keyRef    String
+  iv        Bytes
+  authTag   Bytes
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// One admin-composed email to everyone opted in to a topic (today:

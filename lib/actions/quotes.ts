@@ -8,7 +8,9 @@ import { calculateCartTotals } from "@/lib/cart";
 import { cylinderGasPrice, roundMoney } from "@/lib/pricing";
 import { LISTED } from "@/lib/productFamily";
 import { isPurchasable } from "@/lib/waitlist";
-import { QUOTES_PER_HOUR, QUOTE_VALIDITY_HOURS, generateQuoteNumber, isFGasProduct } from "@/lib/quotes";
+import { QUOTES_PER_HOUR, QUOTE_VALIDITY_HOURS, generateQuoteNumber } from "@/lib/quotes";
+import { requiresFgasCertificate } from "@/lib/fgasSubstances";
+import { getEffectiveFgasStatus } from "@/lib/fgas";
 
 /**
  * Turns the cart into a formal quote.
@@ -58,7 +60,7 @@ export async function createQuote(cartItems: unknown): Promise<CreateQuoteResult
     // The row, not the session: a stale token can't quote gas after a revocation.
     prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, email: true, companyName: true, vatNumber: true, fGasStatus: true },
+      select: { name: true, email: true, companyName: true, vatNumber: true, fGasStatus: true, fGasExpiresAt: true },
     }),
     prisma.quote.count({ where: { userId, createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) } } }),
     prisma.product.findMany({ where: { ...LISTED, sku: { in: [...qtyBySku.keys()] } } }),
@@ -72,10 +74,11 @@ export async function createQuote(cartItems: unknown): Promise<CreateQuoteResult
 
   const lines = [...qtyBySku].map(([sku, qty]) => ({ product: bySku.get(sku)!, qty }));
 
-  // Regulatory gate, same rule as checkout: refrigerant only for a VERIFIED
-  // certificate. A buyer without one can still quote tools and equipment.
-  const gas = lines.filter((l) => isFGasProduct(l.product)).map((l) => l.product.sku);
-  if (gas.length && buyer.fGasStatus !== "VERIFIED") return { ok: false, code: "FGAS_UNVERIFIED", skus: gas };
+  // Regulatory gate, the same rule as checkout (lib/fgasSubstances + the
+  // effective status): fluorinated gas only for a certificate in force. A
+  // buyer without one can still quote tools, accessories and hydrocarbons.
+  const gas = lines.filter((l) => requiresFgasCertificate(l.product)).map((l) => l.product.sku);
+  if (gas.length && getEffectiveFgasStatus(buyer) !== "VERIFIED") return { ok: false, code: "FGAS_UNVERIFIED", skus: gas };
 
   // A quote must be something checkout could accept: a price to hold, and
   // the stock to fill it today. Stock is not reserved — it's re-checked when

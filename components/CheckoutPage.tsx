@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -18,6 +18,7 @@ import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { imagePathForProduct } from "@/lib/productMedia";
 import type { StoreProduct, UserAddress } from "@/lib/data";
+import { requiresFgasCertificate } from "@/lib/fgasSubstances";
 
 const ACCENT = "#1d4ed8";
 
@@ -25,6 +26,7 @@ const ACCENT = "#1d4ed8";
 const ERROR_KEY: Record<string, string> = {
   UNAUTHENTICATED: "errorGeneric",
   FGAS_UNVERIFIED: "errorFgas",
+  FGAS_EXPIRED: "errorFgasExpired",
   INVALID_INPUT: "errorGeneric",
   ADDRESS_NOT_FOUND: "errorAddress",
   PRODUCT_NOT_FOUND: "errorGeneric",
@@ -37,9 +39,11 @@ interface CheckoutPageProps {
   addresses: UserAddress[];
   /** Live catalog — supplies each line's cylinder deposit for the summary. */
   products: StoreProduct[];
+  /** The buyer's certificate is in force (effective VERIFIED). */
+  fgasCleared: boolean;
 }
 
-export default function CheckoutPage({ addresses: savedAddresses, products }: CheckoutPageProps) {
+export default function CheckoutPage({ addresses: savedAddresses, products, fgasCleared }: CheckoutPageProps) {
   const t = useTranslations("Checkout");
   const tCart = useTranslations("Cart");
   const format = useFormatter();
@@ -90,6 +94,17 @@ export default function CheckoutPage({ addresses: savedAddresses, products }: Ch
 
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
   const bySku = new Map(products.map((p) => [p.sku, p]));
+  // An F-Gas basket without a certificate in force can't be ordered: back to
+  // the cart, which explains why and owns the upload. Tools-only and
+  // hydrocarbon baskets stay. (A line missing from the catalogue counts as
+  // F-Gas — fail safe. prepareOrder enforces the same rule.)
+  const needsFgas = shownItems.some((i) => {
+    const p = bySku.get(i.sku);
+    return p ? requiresFgasCertificate(p) : true;
+  });
+  useEffect(() => {
+    if (hydrated && needsFgas && !fgasCleared) router.replace("/cart");
+  }, [hydrated, needsFgas, fgasCleared, router]);
   const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
 

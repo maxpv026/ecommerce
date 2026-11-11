@@ -25,6 +25,8 @@ const MESSAGES: Record<ReviewErrorCode, string> = {
   TWO_FACTOR_REQUIRED: "Enable two-factor authentication to review certificates.",
   USER_NOT_FOUND: "That account no longer exists.",
   NOT_PENDING: "That status change isn't possible from the account's current state — refresh to see it.",
+  NO_DOCUMENT: "There is no document on file to approve — ask the buyer to upload one.",
+  DOCUMENT_EXPIRED: "The certificate's own expiry date has passed — approving it would grant nothing. Ask for a renewed certificate.",
   FAILED: "Couldn't save the change. Try again.",
 };
 
@@ -61,9 +63,12 @@ const StatusInput = z.discriminatedUnion("status", [
 export async function updateUserFgasStatus(
   userId: string,
   status: "VERIFIED" | "REJECTED",
-  reason?: string
+  reason?: string,
+  /** For REJECTED: "replacement" refuses only a parked replacement; "revoke" ends the certificate in force. */
+  mode: unknown = "auto"
 ): Promise<{ ok: true; status: "VERIFIED" | "REJECTED" } | Failure> {
   const parsed = StatusInput.safeParse({ userId, status, reason });
+  const rejectMode = mode === "replacement" || mode === "revoke" ? mode : "auto";
   if (!parsed.success) {
     return { ok: false, error: status === "REJECTED" ? "Give the buyer a reason (at least 5 characters)." : "Invalid request." };
   }
@@ -72,7 +77,7 @@ export async function updateUserFgasStatus(
   const result =
     parsed.data.status === "VERIFIED"
       ? await approveFGasCertificate(session?.user?.id, parsed.data.userId)
-      : await rejectFGasCertificate(session?.user?.id, parsed.data.userId, parsed.data.reason);
+      : await rejectFGasCertificate(session?.user?.id, parsed.data.userId, parsed.data.reason, rejectMode);
 
   if (!result.ok) return { ok: false, error: MESSAGES[result.code] };
   revalidatePath("/[locale]/admin/users", "page");
