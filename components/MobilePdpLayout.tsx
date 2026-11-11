@@ -143,19 +143,24 @@ export default function MobilePdpLayout({ product, variants }: MobilePdpLayoutPr
         {/* The real SKU is the viewer's primary resolution signal; the name
             covers the few SKUs that drop the "R" and are only identifiable
             from it. Follows the selected size. */}
+        {/* The viewer stops where the sheet below begins (it pulls up 26px,
+            -mt-6.5): the model is framed in the part of the stage that is
+            actually visible, so its base clears the sheet, and the badge sits
+            14px above the sheet's edge instead of 8px underneath it. */}
         <ProductModelViewer
           sku={selected.sku}
           name={selected.name}
-          className="absolute inset-0"
+          className="absolute inset-x-0 top-0 bottom-6.5"
           badgeLabel={tStage("stageTag")}
+          badgeClassName="bottom-3.5 left-5"
           poster={CYLINDER_OUTLINE}
         />
       </div>
 
       {/* Overlapping info card: slides up over the hero as the user scrolls */}
-      <div className="relative -mt-6.5 rounded-t-[26px] bg-white shadow-[0_-14px_34px_-22px_rgba(15,23,42,0.28)] dark:bg-slate-950">
-        <div className="px-5 pt-5.5">
-          <div className="mb-2.5 text-[11px] tracking-[.09em] text-slate-400 dark:text-slate-500">
+      <div data-pdp-sheet className="relative -mt-6.5 rounded-t-[26px] bg-white shadow-[0_-14px_34px_-22px_rgba(15,23,42,0.28)] dark:bg-slate-950">
+        <div className="px-5 pt-6">
+          <div data-pdp-category className="mb-2.5 text-[11px] tracking-[.09em] text-slate-400 dark:text-slate-500">
             {tCat(CATEGORY_KEY[selected.category] ?? "cylTitle")}
           </div>
           <h1 className="m-0 text-[25px] font-semibold leading-[1.15] tracking-[-.035em] text-balance">

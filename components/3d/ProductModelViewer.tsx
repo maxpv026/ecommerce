@@ -202,6 +202,7 @@ interface ModelStageProps {
   src: string;
   poster: ReactNode;
   badgeLabel?: string;
+  badgeClassName: string;
   className: string;
   onFail: () => void;
 }
@@ -210,7 +211,7 @@ interface ModelStageProps {
  * Mounted under `key={src}`, so switching products resets load state by
  * remounting rather than by reaching back in with an effect.
  */
-function ModelStage({ src, poster, badgeLabel, className, onFail }: ModelStageProps) {
+function ModelStage({ src, poster, badgeLabel, badgeClassName, className, onFail }: ModelStageProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
@@ -343,9 +344,12 @@ function ModelStage({ src, poster, badgeLabel, className, onFail }: ModelStagePr
           {ready && badgeLabel && (
             <span
               data-model-badge
-              className="pointer-events-none absolute bottom-[18px] left-5 inline-flex items-center gap-[7px] rounded-full border border-white/[.16] bg-white/[.08] py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-white/[.86] backdrop-blur-sm"
+              // Opaque enough to read over any backdrop: the stage is near-white
+              // in light mode, where the old white-on-8%-white pill measured
+              // 2.5:1 and the first half of the label vanished.
+              className={`pointer-events-none absolute z-20 inline-flex items-center gap-[7px] rounded-full border border-slate-200/80 bg-white/90 py-1.5 pl-[9px] pr-3 text-[10.5px] font-semibold text-slate-900 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-slate-900/85 dark:text-slate-100 ${badgeClassName}`}
             >
-              <span className="h-[5px] w-[5px] rounded-full bg-cyan-300 shadow-[0_0_8px_1px_#67e8f9]" />
+              <span className="h-[5px] w-[5px] rounded-full bg-cyan-500 shadow-[0_0_8px_1px_#22d3ee] dark:bg-cyan-300 dark:shadow-[0_0_8px_1px_#67e8f9]" />
               {badgeLabel}
             </span>
           )}
@@ -380,6 +384,8 @@ export interface ProductModelViewerProps {
   posterAlt?: string;
   /** "3D · drag to orbit". Passed in so the caller owns the translation. */
   badgeLabel?: string;
+  /** Where the badge sits inside the stage (Tailwind position classes). */
+  badgeClassName?: string;
   className?: string;
   /** Notified when a resolved model turns out not to be loadable. */
   onFallback?: () => void;
@@ -393,6 +399,7 @@ function ProductModelViewer({
   posterSrc,
   posterAlt,
   badgeLabel,
+  badgeClassName = "bottom-[18px] left-5",
   className = "absolute inset-0",
   onFallback,
 }: ProductModelViewerProps) {
@@ -441,6 +448,7 @@ function ProductModelViewer({
       src={src}
       poster={fallback}
       badgeLabel={badgeLabel}
+      badgeClassName={badgeClassName}
       className={className}
       onFail={handleFail}
     />
