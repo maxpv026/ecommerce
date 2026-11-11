@@ -135,5 +135,6 @@ export const config = {
     "/api/chat/:path*",
     "/api/chat-fgas",
     "/api/chat-sds",
+    "/api/smart-order",
   ],
 };

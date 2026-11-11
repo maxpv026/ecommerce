@@ -28,7 +28,7 @@ import {
 import Header from "./Header";
 import AuthModal from "./AuthModal";
 import MobileCartLayout from "./MobileCartLayout";
-import MagicOrderPad from "./cart/MagicOrderPad";
+import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
 import FgasVerificationModal from "./FgasVerificationModal";
 import QuoteCartBanner from "./QuoteCartBanner";
@@ -602,7 +602,7 @@ export default function CartPage({ products, fGasStatus: serverFGasStatus = null
                     is what it actually does, and it inherits the column width
                     so it lines up with the items above it. */}
                 <div className="mt-5">
-                  <MagicOrderPad />
+                  <SmartOrderButton variant="panel" source="cart" />
                 </div>
               </div>
 

@@ -29,7 +29,7 @@ import { useCartStore, type CartLine } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
 import type { StoreProduct } from "@/lib/data";
-import MagicOrderPad from "./cart/MagicOrderPad";
+import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
 import QuoteCartBanner from "./QuoteCartBanner";
 
@@ -688,7 +688,7 @@ export default function MobileCartLayout({
             the likeliest moment for this on a phone, with the engineer on
             site and a list sitting in a messaging app. */}
         <div className="px-[18px] pt-5">
-          <MagicOrderPad />
+          <SmartOrderButton variant="panel" source="cart" />
         </div>
       </div>
 

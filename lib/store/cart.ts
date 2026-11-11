@@ -61,6 +61,8 @@ interface CartState {
   fgasVerification: FgasVerification | null;
   quote: CartQuote | null;
   addItem: (line: Omit<CartLine, "qty">, qty?: number) => void;
+  /** Several lines in ONE state update: subscribers never see half a batch. */
+  addItems: (entries: Array<{ line: Omit<CartLine, "qty">; qty: number }>) => void;
   increment: (sku: string) => void;
   decrement: (sku: string) => void;
   removeItem: (sku: string) => void;
@@ -93,6 +95,19 @@ export const useCartStore = create<CartState>()(
             };
           }
           return { quote: null, items: [...state.items, { ...line, qty: Math.min(MAX_QTY, qty) }] };
+        }),
+
+      addItems: (entries) =>
+        set((state) => {
+          if (entries.length === 0) return state;
+          const items = state.items.map((i) => ({ ...i }));
+          for (const { line, qty } of entries) {
+            if (!(qty > 0)) continue;
+            const existing = items.find((i) => i.sku === line.sku);
+            if (existing) existing.qty = Math.min(MAX_QTY, existing.qty + qty);
+            else items.push({ ...line, qty: Math.min(MAX_QTY, qty) });
+          }
+          return { quote: null, items };
         }),
 
       increment: (sku) =>

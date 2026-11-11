@@ -4,6 +4,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import Footer from "@/components/Footer";
 import AIChatWidgetMount from "@/components/AIChatWidgetMount";
+import SmartOrderMount from "@/components/smartOrder/SmartOrderMount";
 import MobileAppShell from "@/components/MobileAppShell";
 import { CartCountProvider } from "@/components/CartCountProvider";
 import AuthProvider from "@/components/AuthProvider";
@@ -81,6 +82,7 @@ export default async function RootLayout({
               <MobileAppShell>{children}</MobileAppShell>
               <Footer />
               <AIChatWidgetMount />
+              <SmartOrderMount />
               <ToastProvider />
             </CartCountProvider>
           </AuthProvider>

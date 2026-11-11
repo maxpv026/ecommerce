@@ -24,6 +24,7 @@ import HeroBackground from "./HeroBackground";
 import { useCartStore } from "@/lib/store/cart";
 import { calculateCharge, type ChargeCalculation } from "@/lib/actions/chargeCalculator";
 import CalculatedChargeCard from "./CalculatedChargeCard";
+import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import { getTimeOfDayGreeting } from "@/lib/greeting";
 import type { ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
 
@@ -426,6 +427,10 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                   <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
                 </div>
               </Link>
+              {/* A sibling of the Link, not inside it: a button can't live in an anchor. */}
+              <div className="relative mt-3 border-t border-slate-900/[.06] pt-3 dark:border-hairline" style={{ transform: "translateZ(26px)" }}>
+                <SmartOrderButton variant="link" source="dashboard" />
+              </div>
             </TiltCard>
 
             <TiltCard

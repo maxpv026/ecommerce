@@ -18,6 +18,7 @@ import { useCartStore } from "@/lib/store/cart";
 import { smartMatch } from "@/lib/actions/smartMatch";
 import ProductCard, { CATEGORY_LABEL_KEY, STOCK_TONES } from "./ProductCard";
 import type { StoreProduct } from "@/lib/data";
+import SmartOrderButton from "./smartOrder/SmartOrderButton";
 
 /**
  * The original placeholder. Still the fallback for equipment, custom blends
@@ -234,10 +235,16 @@ export default function ProductBrowser({
             transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-3 text-xs tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("eyebrow")}</div>
-            <h1 className="m-0 text-[40px] font-semibold leading-[1.05] tracking-[-.045em]">{t("title")}</h1>
-            <p className="mt-3 max-w-[520px] text-[15px] leading-[1.6] text-slate-600 dark:text-ink-muted">
-              {t("subtitle")}
-            </p>
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+              <div className="min-w-0">
+                <h1 className="m-0 text-[40px] font-semibold leading-[1.05] tracking-[-.045em]">{t("title")}</h1>
+                <p className="mb-0 mt-3 max-w-[520px] text-[15px] leading-[1.6] text-slate-600 dark:text-ink-muted">
+                  {t("subtitle")}
+                </p>
+              </div>
+              {/* Bulk orders start from a spec or a BOM, not from browsing. */}
+              <SmartOrderButton variant="pill" source="catalog" className="flex-none" />
+            </div>
 
             {/* The term that produced this list, and the way out of it. */}
             <AnimatePresence initial={false}>

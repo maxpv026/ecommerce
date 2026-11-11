@@ -25,6 +25,7 @@ import { smartMatch, type SmartMatchResult } from "@/lib/actions/smartMatch";
 import ProductCard, { STOCK_TONES } from "./ProductCard";
 import { useCartStore } from "@/lib/store/cart";
 import type { StoreProduct } from "@/lib/data";
+import SmartOrderButton from "./smartOrder/SmartOrderButton";
 
 const CATEGORY_KEY: Record<string, string> = {
   cylinders: "catCylinders",
@@ -233,6 +234,7 @@ export default function MobileProductsLayout({
             </Link>
           </motion.div>
           <span className="min-w-0 flex-1 text-base font-semibold tracking-[-.03em]">{t("mobileTitle")}</span>
+          <SmartOrderButton variant="icon" source="catalog" />
           <motion.button
             type="button"
             whileTap={{ scale: 0.9 }}
