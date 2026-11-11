@@ -42,5 +42,7 @@ declare module "next-auth/jwt" {
     epaVerified?: boolean;
     locale?: string;
     theme?: ThemePreference;
+    /** Epoch ms of the holder's last sign-in (or password-change re-stamp); see lib/sessionRevocation. */
+    authTime?: number;
   }
 }

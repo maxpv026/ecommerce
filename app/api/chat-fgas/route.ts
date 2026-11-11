@@ -11,6 +11,7 @@ import prisma from "@/lib/prisma";
 import { cylinderGasPrice } from "@/lib/pricing";
 import { formatContext, retrieveForQuestion } from "@/lib/rag";
 import { LISTED } from "@/lib/productFamily";
+import { boundTranscript } from "@/lib/aiMessages";
 
 /**
  * POST /api/chat-fgas — the F-Gas RAG assistant.
@@ -168,10 +169,13 @@ const suggestProduct = tool({
 export async function POST(request: Request) {
   let messages: UIMessage[];
   try {
-    ({ messages } = await request.json());
-    if (!Array.isArray(messages) || messages.length === 0) {
+    // Client-supplied transcript: bounded and reduced to user / assistant
+    // text before anything is embedded or billed (lib/aiMessages).
+    const bounded = boundTranscript((await request.json())?.messages);
+    if (!bounded) {
       return Response.json({ error: "No messages" }, { status: 400 });
     }
+    messages = bounded;
   } catch {
     return Response.json({ error: "Body must be valid JSON" }, { status: 400 });
   }
@@ -229,6 +233,7 @@ export async function POST(request: Request) {
     // ai@6 the default is stepCountIs(1), which would stop right after the
     // tool call and never produce prose.)
     stopWhen: stepCountIs(2),
+    maxOutputTokens: 900,
     onError: ({ error }) => console.error("[RAG] stream error:", error),
   });
 

@@ -70,6 +70,7 @@
     "errorEmailExists": "Tällä sähköpostiosoitteella on jo tili. Kirjaudu sen sijaan sisään.",
     "errorNoAccount": "Tällä sähköpostiosoitteella ei löytynyt tiliä. Luo sen sijaan uusi tili.",
     "errorWrongPassword": "Väärä salasana.",
+    "errorTooManyAttempts": "Liian monta yritystä. Odota 15 minuuttia ja yritä uudelleen.",
     "errorGoogleAccount": "Tämä sähköpostiosoite on yhdistetty Googleen. Jatka sen sijaan Googlella.",
     "toastSignedIn": "Kirjauduttu sisään. Tervetuloa takaisin!",
     "toastSignedOut": "Sinut on kirjattu ulos.",

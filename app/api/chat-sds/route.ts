@@ -1,5 +1,6 @@
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { boundTranscript } from "@/lib/aiMessages";
 import { SDS_DOCUMENTS } from "@/lib/sds";
 
 /**
@@ -40,7 +41,7 @@ function resolveGas(raw: unknown): string | null {
 }
 
 export async function POST(req: Request) {
-  let body: { messages?: UIMessage[]; gas?: string };
+  let body: { messages?: unknown; gas?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -51,7 +52,10 @@ export async function POST(req: Request) {
   if (!gas) {
     return Response.json({ error: "Unknown refrigerant" }, { status: 400 });
   }
-  if (!Array.isArray(body.messages) || body.messages.length === 0) {
+  // The transcript is the client's: bounded in size and reduced to user /
+  // assistant text before it is billed (lib/aiMessages).
+  const messages = boundTranscript(body.messages);
+  if (!messages) {
     return Response.json({ error: "No messages" }, { status: 400 });
   }
 
@@ -67,7 +71,8 @@ export async function POST(req: Request) {
   const result = streamText({
     model: openai("gpt-4o-mini"),
     system: systemPromptFor(gas),
-    messages: await convertToModelMessages(body.messages),
+    messages: await convertToModelMessages(messages),
+    maxOutputTokens: 700,
   });
 
   return result.toUIMessageStreamResponse();

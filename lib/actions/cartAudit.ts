@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
+import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { auth } from "@/auth";
 import { LISTED } from "@/lib/productFamily";
 
@@ -57,6 +58,8 @@ export type CartAuditResult =
 export async function auditCart(rawLines: Array<{ sku: string; qty: number }>): Promise<CartAuditResult> {
   const parsed = AuditInput.safeParse(rawLines);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
+  // Callable without signing in, and each call is a paid model request.
+  if (!(await withinActionLimit("cartAudit", PUBLIC_AI_RULE))) return { ok: false, code: "UNAVAILABLE" };
 
   try {
     const catalog = await prisma.product.findMany({ where: LISTED });

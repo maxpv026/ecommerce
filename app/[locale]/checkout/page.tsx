@@ -21,18 +21,21 @@ export default async function CheckoutRoute({ params }: CheckoutRouteProps) {
 
   if (!userId) {
     redirect({ href: { pathname: "/auth", query: { callbackUrl: "/checkout" } }, locale });
+    // redirect() throws, but return anyway: a userId that is undefined would
+    // make every `where: { userId }` below match ANY row in Prisma.
+    return null;
   }
 
   // Deep links and stale tabs land here too — an unverified buyer is sent
   // back to the cart, which owns the certificate-upload flow, rather than
   // being allowed to fill in an address only for placeOrder to refuse.
-  const buyer = await prisma.user.findUnique({ where: { id: userId! }, select: { fGasStatus: true } });
+  const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { fGasStatus: true } });
   if (buyer?.fGasStatus !== "VERIFIED") {
     redirect({ href: "/cart", locale });
   }
 
   // The catalog supplies each cart line's cylinder deposit for the summary.
-  const [addresses, products] = await Promise.all([getUserAddresses(userId!), getProducts()]);
+  const [addresses, products] = await Promise.all([getUserAddresses(userId), getProducts()]);
 
   return <CheckoutPage addresses={addresses} products={products} />;
 }

@@ -70,6 +70,7 @@
     "errorEmailExists": "Există deja un cont cu acest email. Conectați-vă în schimb.",
     "errorNoAccount": "Nu a fost găsit niciun cont cu acest email. Creați unul în schimb.",
     "errorWrongPassword": "Parolă incorectă.",
+    "errorTooManyAttempts": "Prea multe încercări. Așteptați 15 minute, apoi încercați din nou.",
     "errorGoogleAccount": "Acest email este asociat cu Google. Continuați cu Google în schimb.",
     "toastSignedIn": "Conectat. Bine ai revenit!",
     "toastSignedOut": "Ai fost deconectat.",

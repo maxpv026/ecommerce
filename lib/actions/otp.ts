@@ -3,14 +3,18 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
-import { createOtp } from "@/lib/otp";
+import { createOtp, otpRecentlySent } from "@/lib/otp";
+import { checkPassword } from "@/lib/loginThrottle";
+import { withinActionLimit } from "@/lib/actionRateLimit";
 import { sendOtpEmail } from "@/lib/mail";
 import { ADMIN_LEGAL_NAME, isFounderEmail } from "@/lib/rbac";
 
 const RequestOtpInput = z.object({
   mode: z.enum(["signin", "register"]),
   email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(8),
+  // bcrypt reads only the first 72 bytes; the ceiling just refuses
+  // megabyte-sized bodies before they are hashed.
+  password: z.string().min(8).max(256),
 });
 
 export type RequestOtpErrorCode =
@@ -20,6 +24,7 @@ export type RequestOtpErrorCode =
   | "NO_ACCOUNT"
   | "WRONG_PASSWORD"
   | "GOOGLE_ACCOUNT"
+  | "TOO_MANY_ATTEMPTS"
   | "SEND_FAILED";
 
 export type RequestOtpResult =
@@ -49,6 +54,13 @@ export async function requestEmailOtp(rawInput: {
     return { ok: false, code: tooShort ? "PASSWORD_TOO_SHORT" : "INVALID_EMAIL" };
   }
   const { mode, email, password } = parsed.data;
+
+  // A Server Action is a POST to the page, so proxy.ts's /api/auth limiter
+  // never sees it — and this action checks passwords and sends email. Per
+  // address here; per account (in the database) in checkPassword below.
+  if (!(await withinActionLimit("signin-otp", { limit: 10, windowMs: 60_000 }))) {
+    return { ok: false, code: "TOO_MANY_ATTEMPTS" };
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
 
@@ -83,10 +95,11 @@ export async function requestEmailOtp(rawInput: {
     if (!existing) {
       return { ok: false, code: "NO_ACCOUNT" };
     }
-    const validPassword = await bcrypt.compare(password, existing.password!);
-    if (!validPassword) {
-      return { ok: false, code: "WRONG_PASSWORD" };
-    }
+    // Counted per account (lib/loginThrottle): ten wrong passwords lock it
+    // for fifteen minutes, wherever and however fast they arrive.
+    const check = await checkPassword(existing, password);
+    if (check === "locked") return { ok: false, code: "TOO_MANY_ATTEMPTS" };
+    if (check === "wrong") return { ok: false, code: "WRONG_PASSWORD" };
   }
 
   // An enrolled authenticator replaces the emailed code rather than adding
@@ -96,6 +109,10 @@ export async function requestEmailOtp(rawInput: {
   if (existing?.isTwoFactorEnabled && existing.twoFactorSecret) {
     return { ok: true, factor: "totp" };
   }
+
+  // The code sent seconds ago is still pending and valid; minting another
+  // would let anyone turn this form into an email bomb.
+  if (await otpRecentlySent(email)) return { ok: true, factor: "email" };
 
   const code = await createOtp(email);
   try {

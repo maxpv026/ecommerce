@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { sweepExpiredChats } from "@/lib/chatRetention";
 import { createUIMessageStream, createUIMessageStreamResponse, hasToolCall, stepCountIs, streamText, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
@@ -65,6 +66,8 @@ const Body = z.object({
 const silentResponse = () => createUIMessageStreamResponse({ stream: createUIMessageStream({ execute: () => {} }) });
 
 export async function POST(req: Request) {
+  // Retention sweep for everyone's chats, after this response (lib/chatRetention).
+  after(sweepExpiredChats);
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, code: "INVALID_INPUT" }, { status: 400 });
   const text = parsed.data.message.parts
@@ -155,6 +158,9 @@ export async function POST(req: Request) {
     // Tool → answer needs a second step; a handoff ends the turn at once so
     // the model can't keep talking for the team.
     stopWhen: [stepCountIs(5), hasToolCall("escalateToHuman")],
+    // Per step. Replies are one or two sentences; this caps what a prompt
+    // engineered to make the model ramble can cost.
+    maxOutputTokens: 800,
   });
 
   return result.toUIMessageStreamResponse({

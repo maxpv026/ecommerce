@@ -70,6 +70,7 @@
     "errorEmailExists": "Det finns redan ett konto med den här e-postadressen. Logga in istället.",
     "errorNoAccount": "Inget konto hittades med den här e-postadressen. Skapa ett istället.",
     "errorWrongPassword": "Fel lösenord.",
+    "errorTooManyAttempts": "För många försök. Vänta 15 minuter och försök sedan igen.",
     "errorGoogleAccount": "Den här e-postadressen är kopplad till Google. Fortsätt med Google istället.",
     "toastSignedIn": "Inloggad. Välkommen tillbaka!",
     "toastSignedOut": "Du har loggats ut.",

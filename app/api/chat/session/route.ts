@@ -1,4 +1,6 @@
+import { after as afterResponse } from "next/server";
 import { auth } from "@/auth";
+import { sweepExpiredChats } from "@/lib/chatRetention";
 import { currentSession, transcript } from "@/lib/chatSession";
 
 /**
@@ -14,6 +16,8 @@ import { currentSession, transcript } from "@/lib/chatSession";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  // Retention sweep for everyone's chats, after this response (lib/chatRetention).
+  afterResponse(sweepExpiredChats);
   const userId = (await auth())?.user?.id ?? null;
   const session = await currentSession(userId, { includeResolved: true });
   if (!session) return Response.json({ status: null, messages: [] });

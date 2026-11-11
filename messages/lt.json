@@ -70,6 +70,7 @@
     "errorEmailExists": "Paskyra su šiuo el. paštu jau egzistuoja. Verčiau prisijunkite.",
     "errorNoAccount": "Su šiuo el. paštu paskyros nerasta. Verčiau sukurkite naują.",
     "errorWrongPassword": "Neteisingas slaptažodis.",
+    "errorTooManyAttempts": "Per daug bandymų. Palaukite 15 minučių ir bandykite dar kartą.",
     "errorGoogleAccount": "Šis el. paštas susietas su „Google“. Tęskite su „Google“.",
     "toastSignedIn": "Prisijungta. Sveiki sugrįžę!",
     "toastSignedOut": "Atsijungėte.",

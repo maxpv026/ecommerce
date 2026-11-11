@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
+import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { answerLanguage } from "@/lib/answerLanguage";
 
 /**
@@ -62,6 +63,8 @@ export async function checkCompatibility(rawInput: {
 }): Promise<CompatibilityResult> {
   const parsed = QueryInput.safeParse(rawInput);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
+  // Callable without signing in, and each call is a paid model request.
+  if (!(await withinActionLimit("compatibility", PUBLIC_AI_RULE))) return { ok: false, code: "UNAVAILABLE" };
 
   try {
     const product = await prisma.product.findUnique({ where: { sku: parsed.data.sku } });

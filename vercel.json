@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/chat-cleanup",
-      "schedule": "0 * * * *"
+      "schedule": "15 3 * * *"
     }
   ]
 }

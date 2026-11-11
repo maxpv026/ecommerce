@@ -3,15 +3,16 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
+import { checkPassword } from "@/lib/loginThrottle";
+import { readRestamp, sessionAnchor, sessionStillValid } from "@/lib/sessionRevocation";
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { ADMIN_LEGAL_NAME, roleForEmail } from "@/lib/rbac";
 import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
 import { authConfig } from "./auth.config";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   ...authConfig,
   // The adapter persists Google sign-ins (User/Account rows) to Postgres.
   // Credentials providers bypass it and manage their own lookups below —
@@ -56,8 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.password) return null;
 
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) return null;
+        // Same per-account lockout as step 1 (lib/loginThrottle): this
+        // endpoint is reachable directly, so it must count guesses too.
+        if ((await checkPassword(user, password)) !== "ok") return null;
 
         // Which second factor applies is a property of the account, not of
         // the request: an authenticator beats an emailed code, so a user who
@@ -159,20 +161,69 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
         .catch(() => null);
       const email = (profile.email ?? user.email)?.trim();
-      const target =
-        linked?.user ??
-        (email
+      // Not yet linked: the account Google will be linked to, found by email.
+      const byEmail =
+        !linked?.user && email
           ? await prisma.user
-              .findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true, isTwoFactorEnabled: true } })
+              .findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true, isTwoFactorEnabled: true, emailVerified: true, password: true } })
               .catch(() => null)
-          : null);
+          : null;
+      const target = linked?.user ?? byEmail;
       if (target?.isTwoFactorEnabled) {
         const challenge = createGoogleTwoFactorChallenge({ userId: target.id, providerAccountId: account.providerAccountId });
         return `/api/two-factor/start?c=${encodeURIComponent(challenge)}`;
       }
+
+      // Pre-hijacking guard. Registering never needs to prove the address
+      // (the row is written before the emailed code is entered), so anyone
+      // can create an unverified row for someone else's email, with a
+      // password they know, and wait for its owner to "Continue with
+      // Google" into it. Google has just proven ownership, so the
+      // unverified row becomes the owner's: its password — set by whoever
+      // registered it, possibly not them — is discarded, and the address is
+      // marked verified. Affects only rows that never completed a sign-in.
+      if (byEmail && !byEmail.emailVerified) {
+        const cleared = await prisma.user
+          .updateMany({ where: { id: byEmail.id, emailVerified: null }, data: { password: null, emailVerified: new Date() } })
+          .catch((error) => {
+            console.error("auth: could not clear the unverified account before linking Google:", error);
+            return null;
+          });
+        // Linking into an account whose foreign password we failed to remove
+        // is exactly the takeover this prevents: refuse instead.
+        if (!cleared) return "/auth?error=OAuthAccountNotLinked";
+        if (byEmail.password) console.warn(`auth: discarded the password of unverified account ${byEmail.id} on its first Google sign-in`);
+      }
       return true;
     },
-    async jwt({ token, user, account, trigger }) {
+    async jwt({ token, user, account, trigger, session }) {
+      if (user) {
+        // When this holder last proved who they are. Compared against
+        // passwordChangedAt on every later read (lib/sessionRevocation).
+        token.authTime = Date.now();
+      } else if (token.sub) {
+        // ── Revocation on password change ──
+        // The device that just changed the password re-stamps its own
+        // session (lib/actions/password → unstable_update) with a stamp only
+        // the server can mint; every other token issued before the change is
+        // refused, and returning null makes Auth.js clear its cookie.
+        const anchor = await sessionAnchor(token.sub).catch((error) => {
+          // A transient database error must not sign everyone out (null
+          // deletes the cookie): fail open for this one read, loudly.
+          console.error("auth: could not check the session against the account:", error);
+          return undefined;
+        });
+        if (anchor !== undefined) {
+          const restamped = trigger === "update" ? readRestamp((session as { restamp?: unknown } | undefined)?.restamp, token.sub) : null;
+          if (restamped !== null && anchor?.passwordChangedAt?.getTime() === restamped) {
+            token.authTime = Date.now();
+          } else {
+            // Tokens minted before authTime existed fall back to iat (seconds).
+            const authTime = typeof token.authTime === "number" ? token.authTime : typeof token.iat === "number" ? token.iat * 1000 : 0;
+            if (!sessionStillValid(anchor, authTime)) return null;
+          }
+        }
+      }
       if (user) {
         token.email = user.email ?? token.email;
         token.name = user.name ?? token.name;

@@ -70,6 +70,7 @@
     "errorEmailExists": "Tá cuntas ann cheana leis an ríomhphost seo. Sínigh isteach ina ionad sin.",
     "errorNoAccount": "Níor aimsíodh cuntas leis an ríomhphost seo. Cruthaigh ceann ina ionad sin.",
     "errorWrongPassword": "Pasfhocal mícheart.",
+    "errorTooManyAttempts": "An iomarca iarrachtaí. Fan 15 nóiméad agus bain triail eile as.",
     "errorGoogleAccount": "Tá an ríomhphost seo nasctha le Google. Lean ar aghaidh le Google ina ionad sin.",
     "toastSignedIn": "Sínithe isteach. Fáilte ar ais!",
     "toastSignedOut": "Tá tú sínithe amach.",

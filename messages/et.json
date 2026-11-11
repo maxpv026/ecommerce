@@ -70,6 +70,7 @@
     "errorEmailExists": "Selle e-postiga konto on juba olemas. Logige selle asemel sisse.",
     "errorNoAccount": "Selle e-postiga kontot ei leitud. Looge selle asemel uus.",
     "errorWrongPassword": "Vale parool.",
+    "errorTooManyAttempts": "Liiga palju katseid. Oodake 15 minutit ja proovige uuesti.",
     "errorGoogleAccount": "See e-post on seotud Google'iga. Jätkake selle asemel Google'iga.",
     "toastSignedIn": "Sisse logitud. Tere tulemast tagasi!",
     "toastSignedOut": "Olete välja logitud.",

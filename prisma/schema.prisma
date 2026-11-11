@@ -104,6 +104,12 @@ model User {
   twoFactorFailedAttempts Int       @default(0)
   /// Set once the attempts ceiling is hit; verification refuses until it passes.
   twoFactorLockedUntil    DateTime?
+  /// Consecutive wrong passwords (sign-in step 1 and the Credentials
+  /// provider both count). The proxy's per-IP limiter is per-instance and
+  /// spread across regions; this one is in the database and per account.
+  loginFailedAttempts     Int       @default(0)
+  /// Set when loginFailedAttempts reaches the ceiling (lib/loginThrottle).
+  loginLockedUntil        DateTime?
   /// bcrypt hashes of the single-use recovery codes, never the codes.
   /// Stored hashed because this array is the whole second factor for anyone
   /// who has lost their phone — a database leak of plaintext codes would be
@@ -231,6 +237,8 @@ model OtpCode {
   // Scopes what a code may be used for ("signin" | "password-change") —
   // a password-change code can never complete a sign-in and vice versa.
   purpose   String   @default("signin")
+  /// Wrong guesses against this code; at the ceiling it is deleted (lib/otp).
+  attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
 

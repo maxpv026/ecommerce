@@ -70,6 +70,7 @@
     "errorEmailExists": "该邮箱已注册账户,请尝试登录。",
     "errorNoAccount": "未找到该邮箱对应的账户,请尝试注册。",
     "errorWrongPassword": "密码不正确。",
+    "errorTooManyAttempts": "尝试次数过多。请等待 15 分钟后再试。",
     "errorGoogleAccount": "该邮箱已关联 Google 账户,请使用 Google 继续。",
     "toastSignedIn": "登录成功,欢迎回来!",
     "toastSignedOut": "您已退出登录。",

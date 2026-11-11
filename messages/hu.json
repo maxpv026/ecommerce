@@ -70,6 +70,7 @@
     "errorEmailExists": "Már létezik fiók ezzel az e-mail címmel. Inkább jelentkezz be.",
     "errorNoAccount": "Nem található fiók ezzel az e-mail címmel. Inkább hozz létre egyet.",
     "errorWrongPassword": "Helytelen jelszó.",
+    "errorTooManyAttempts": "Túl sok próbálkozás. Várjon 15 percet, majd próbálja újra.",
     "errorGoogleAccount": "Ez az e-mail cím Google-fiókhoz van kapcsolva. Folytasd inkább a Google-lal.",
     "toastSignedIn": "Bejelentkezve. Üdvözöljük újra!",
     "toastSignedOut": "Kijelentkeztél.",

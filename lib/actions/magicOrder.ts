@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
+import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import {
   resolveAgainstCatalog,
   type AmbiguousItem,
@@ -77,6 +78,8 @@ export type MagicOrderResult =
 export async function parseMagicOrder(rawText: string): Promise<MagicOrderResult> {
   const parsed = RawInput.safeParse(rawText);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
+  // Callable without signing in, and each call is a paid model request.
+  if (!(await withinActionLimit("magicOrder", PUBLIC_AI_RULE))) return { ok: false, code: "UNAVAILABLE" };
 
   // No key, no parsing. Per the standing rule, this reports the gap rather
   // than falling back to a keyword guess dressed up as an AI result.

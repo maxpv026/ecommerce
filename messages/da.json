@@ -70,6 +70,7 @@
     "errorEmailExists": "Der findes allerede en konto med denne e-mail. Log ind i stedet.",
     "errorNoAccount": "Ingen konto fundet med denne e-mail. Opret en i stedet.",
     "errorWrongPassword": "Forkert adgangskode.",
+    "errorTooManyAttempts": "For mange forsøg. Vent 15 minutter, og prøv igen.",
     "errorGoogleAccount": "Denne e-mail er tilknyttet Google. Fortsæt med Google i stedet.",
     "toastSignedIn": "Logget ind. Velkommen tilbage!",
     "toastSignedOut": "Du er blevet logget ud.",

@@ -70,6 +70,7 @@
     "errorEmailExists": "Konts ar šo e-pastu jau pastāv. Tā vietā piesakieties.",
     "errorNoAccount": "Konts ar šo e-pastu nav atrasts. Tā vietā izveidojiet jaunu.",
     "errorWrongPassword": "Nepareiza parole.",
+    "errorTooManyAttempts": "Pārāk daudz mēģinājumu. Uzgaidiet 15 minūtes un mēģiniet vēlreiz.",
     "errorGoogleAccount": "Šis e-pasts ir saistīts ar Google. Tā vietā turpiniet ar Google.",
     "toastSignedIn": "Pieteikšanās veiksmīga. Laipni lūdzam atpakaļ!",
     "toastSignedOut": "Jūs esat izrakstījies.",

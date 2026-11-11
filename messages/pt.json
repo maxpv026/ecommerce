@@ -70,6 +70,7 @@
     "errorEmailExists": "Já existe uma conta com este email. Inicie sessão em alternativa.",
     "errorNoAccount": "Não foi encontrada nenhuma conta com este email. Crie uma em alternativa.",
     "errorWrongPassword": "Palavra-passe incorreta.",
+    "errorTooManyAttempts": "Demasiadas tentativas. Aguarde 15 minutos e tente novamente.",
     "errorGoogleAccount": "Este email está associado ao Google. Continue com o Google em alternativa.",
     "toastSignedIn": "Sessão iniciada. Bem-vindo de volta!",
     "toastSignedOut": "A sua sessão foi terminada.",

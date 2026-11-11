@@ -51,6 +51,7 @@ const ERROR_KEY: Record<RequestOtpErrorCode, string> = {
   NO_ACCOUNT: "errorNoAccount",
   WRONG_PASSWORD: "errorWrongPassword",
   GOOGLE_ACCOUNT: "errorGoogleAccount",
+  TOO_MANY_ATTEMPTS: "errorTooManyAttempts",
   SEND_FAILED: "errorSendCode",
 };
 

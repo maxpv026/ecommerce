@@ -134,5 +134,6 @@ export const config = {
     "/api/chat",
     "/api/chat/:path*",
     "/api/chat-fgas",
+    "/api/chat-sds",
   ],
 };

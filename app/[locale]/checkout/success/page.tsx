@@ -26,6 +26,9 @@ export default async function CheckoutSuccessRoute({ params, searchParams }: Che
 
   if (!userId) {
     redirect({ href: { pathname: "/auth", query: { callbackUrl: "/checkout" } }, locale });
+    // redirect() throws, but return anyway: a userId that is undefined would
+    // make every `where: { userId }` below match ANY row in Prisma.
+    return null;
   }
 
   // No order id means someone reached this URL directly rather than through
@@ -37,7 +40,7 @@ export default async function CheckoutSuccessRoute({ params, searchParams }: Che
   // Scoped by userId — an order id in the query string is not authorisation
   // to read someone else's order.
   const order = await prisma.order.findFirst({
-    where: { id: orderId, userId: userId! },
+    where: { id: orderId, userId: userId },
     select: {
       id: true,
       orderNumber: true,

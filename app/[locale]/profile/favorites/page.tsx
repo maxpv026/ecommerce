@@ -19,11 +19,16 @@ export default async function FavoritesPage({ params }: PageProps<"/[locale]/pro
   const { locale } = await params;
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) redirect({ href: { pathname: "/auth", query: { callbackUrl: "/profile/favorites" } }, locale });
+  if (!userId) {
+    redirect({ href: { pathname: "/auth", query: { callbackUrl: "/profile/favorites" } }, locale });
+    // redirect() throws, but return anyway: a userId that is undefined would
+    // make every `where: { userId }` below match ANY row in Prisma.
+    return null;
+  }
 
   const [favorites, user] = await Promise.all([
     getFavorites(),
-    prisma.user.findUnique({ where: { id: userId! }, select: { notifyPriceDrops: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { notifyPriceDrops: true } }),
   ]);
 
   return (

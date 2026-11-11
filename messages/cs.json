@@ -70,6 +70,7 @@
     "errorEmailExists": "Účet s tímto e-mailem již existuje. Raději se přihlaste.",
     "errorNoAccount": "Účet s tímto e-mailem nebyl nalezen. Raději si jej vytvořte.",
     "errorWrongPassword": "Nesprávné heslo.",
+    "errorTooManyAttempts": "Příliš mnoho pokusů. Počkejte 15 minut a zkuste to znovu.",
     "errorGoogleAccount": "Tento e-mail je propojen s Google. Pokračujte raději s Google.",
     "toastSignedIn": "Přihlášeno. Vítejte zpět!",
     "toastSignedOut": "Byli jste odhlášeni.",

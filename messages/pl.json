@@ -70,6 +70,7 @@
     "errorEmailExists": "Konto z tym adresem e-mail już istnieje. Zamiast tego zaloguj się.",
     "errorNoAccount": "Nie znaleziono konta z tym adresem e-mail. Zamiast tego załóż nowe.",
     "errorWrongPassword": "Nieprawidłowe hasło.",
+    "errorTooManyAttempts": "Zbyt wiele prób. Odczekaj 15 minut i spróbuj ponownie.",
     "errorGoogleAccount": "Ten adres e-mail jest połączony z kontem Google. Kontynuuj z Google.",
     "toastSignedIn": "Zalogowano. Witamy ponownie!",
     "toastSignedOut": "Wylogowano.",

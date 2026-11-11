@@ -2,10 +2,11 @@
 
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { auth } from "@/auth";
+import { auth, unstable_update } from "@/auth";
 import prisma from "@/lib/prisma";
-import { createOtp, peekOtp, verifyAndConsumeOtp } from "@/lib/otp";
+import { createOtp, otpRecentlySent, peekOtp, verifyAndConsumeOtp } from "@/lib/otp";
 import { sendOtpEmail } from "@/lib/mail";
+import { mintRestamp } from "@/lib/sessionRevocation";
 
 // Minimum 8 chars with at least one letter and one digit.
 const NewPasswordSchema = z
@@ -28,6 +29,9 @@ export async function requestPasswordChangeOtp(): Promise<PasswordActionResult> 
   const session = await auth();
   const email = session?.user?.email?.toLowerCase();
   if (!session?.user?.id || !email) return { ok: false, code: "UNAUTHENTICATED" };
+
+  // A code sent seconds ago is still pending and valid: don't mail another.
+  if (await otpRecentlySent(email, "password-change")) return { ok: true };
 
   const code = await createOtp(email, "password-change");
   try {
@@ -75,10 +79,21 @@ export async function changePassword(codeInput: string, newPassword: string): Pr
 
   try {
     const hashed = await bcrypt.hash(newPassword, 12);
+    const changedAt = new Date();
     await prisma.user.update({
       where: { id: userId },
-      data: { password: hashed, passwordChangedAt: new Date() },
+      data: { password: hashed, passwordChangedAt: changedAt },
     });
+    // From here every session signed in before `changedAt` is refused
+    // (lib/sessionRevocation) — a thief holding an old cookie is out. This
+    // device proved itself with the code just now, so its own session is
+    // re-stamped and stays signed in. If that fails it is merely signed out
+    // too, which is the safe direction.
+    try {
+      await unstable_update({ restamp: mintRestamp(userId, changedAt) } as Parameters<typeof unstable_update>[0]);
+    } catch (error) {
+      console.error("changePassword: could not keep this device signed in:", error);
+    }
     return { ok: true };
   } catch (error) {
     console.error("changePassword failed:", error);

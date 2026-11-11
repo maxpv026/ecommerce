@@ -70,6 +70,7 @@
     "errorEmailExists": "Bu e-postayla kayıtlı bir hesap zaten var. Giriş yapmayı deneyin.",
     "errorNoAccount": "Bu e-postayla kayıtlı hesap bulunamadı. Yeni hesap oluşturmayı deneyin.",
     "errorWrongPassword": "Şifre hatalı.",
+    "errorTooManyAttempts": "Çok fazla deneme. 15 dakika bekleyip tekrar deneyin.",
     "errorGoogleAccount": "Bu e-posta bir Google hesabına bağlı. Google ile devam edin.",
     "toastSignedIn": "Giriş yapıldı. Tekrar hoş geldiniz!",
     "toastSignedOut": "Oturumunuz kapatıldı.",

@@ -70,6 +70,7 @@
     "errorEmailExists": "Er bestaat al een account met dit e-mailadres. Log liever in.",
     "errorNoAccount": "Geen account gevonden met dit e-mailadres. Maak liever een nieuw account aan.",
     "errorWrongPassword": "Onjuist wachtwoord.",
+    "errorTooManyAttempts": "Te veel pogingen. Wacht 15 minuten en probeer het opnieuw.",
     "errorGoogleAccount": "Dit e-mailadres is gekoppeld aan Google. Ga verder met Google.",
     "toastSignedIn": "Ingelogd. Welkom terug!",
     "toastSignedOut": "Je bent uitgelogd.",

@@ -70,6 +70,7 @@
     "errorEmailExists": "Račun s ovom e-poštom već postoji. Umjesto toga se prijavite.",
     "errorNoAccount": "Nije pronađen račun s ovom e-poštom. Umjesto toga izradite novi.",
     "errorWrongPassword": "Netočna lozinka.",
+    "errorTooManyAttempts": "Previše pokušaja. Pričekajte 15 minuta pa pokušajte ponovno.",
     "errorGoogleAccount": "Ova je e-pošta povezana s Googleom. Umjesto toga nastavite s Googleom.",
     "toastSignedIn": "Prijavljeni ste. Dobrodošli natrag!",
     "toastSignedOut": "Odjavljeni ste.",

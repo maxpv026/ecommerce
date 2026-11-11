@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
+import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { auth } from "@/auth";
 import { LISTED } from "@/lib/productFamily";
 
@@ -21,6 +22,8 @@ export type HomeAssistantResult =
 export async function askHomeAssistant(rawQuery: string): Promise<HomeAssistantResult> {
   const parsed = QueryInput.safeParse(rawQuery);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
+  // Callable without signing in, and each call is a paid model request.
+  if (!(await withinActionLimit("homeAssistant", PUBLIC_AI_RULE))) return { ok: false, code: "UNAVAILABLE" };
 
   try {
     const [catalog, session] = await Promise.all([prisma.product.findMany({ where: LISTED }), auth()]);

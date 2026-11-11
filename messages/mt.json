@@ -70,6 +70,7 @@
     "errorEmailExists": "Diġà jeżisti kont b'dan l-indirizz email. Idħol minflok.",
     "errorNoAccount": "Ma nstab l-ebda kont b'dan l-indirizz email. Oħloq wieħed minflok.",
     "errorWrongPassword": "Password mhux korretta.",
+    "errorTooManyAttempts": "Wisq tentattivi. Stenna 15-il minuta u erġa' pprova.",
     "errorGoogleAccount": "Dan l-indirizz email hu marbut mal-Google. Kompli bil-Google minflok.",
     "toastSignedIn": "Dhalt. Merhba lura!",
     "toastSignedOut": "Hriġt mill-kont.",

@@ -85,6 +85,8 @@ export const RATE_LIMIT_RULES: Array<{ prefix: string; rule: RateLimitRule }> = 
   // The F-Gas consultant tab: its own bucket, or "/api/chat" below would
   // swallow it by prefix and the two assistants would share one budget.
   { prefix: "/api/chat-fgas", rule: { limit: 20, windowMs: 60_000 } },
+  // The SDS safety assistant: unauthenticated, a model call per message.
+  { prefix: "/api/chat-sds", rule: { limit: 20, windowMs: 60_000 } },
   { prefix: "/api/chat/escalate", rule: { limit: 5, windowMs: 60_000 } },
   { prefix: "/api/chat/session", rule: { limit: 60, windowMs: 60_000 } },
   { prefix: "/api/chat", rule: { limit: 20, windowMs: 60_000 } },

@@ -68,6 +68,7 @@
     "errorEmailExists": "Ya existe una cuenta con este correo. Inicia sesión en su lugar.",
     "errorNoAccount": "No se encontró ninguna cuenta con este correo. Crea una en su lugar.",
     "errorWrongPassword": "Contraseña incorrecta.",
+    "errorTooManyAttempts": "Demasiados intentos. Espera 15 minutos y vuelve a intentarlo.",
     "errorGoogleAccount": "Este correo está vinculado a Google. Continúa con Google en su lugar.",
     "toastSignedIn": "Sesión iniciada. ¡Bienvenido de nuevo!",
     "toastSignedOut": "Has cerrado sesión.",

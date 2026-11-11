@@ -22,10 +22,13 @@ export default async function QuotePage({ params }: PageProps<"/[locale]/profile
   const userId = session?.user?.id;
   if (!userId) {
     redirect({ href: { pathname: "/auth", query: { callbackUrl: `/profile/quotes/${id}` } }, locale });
+    // redirect() throws, but return anyway: a userId that is undefined would
+    // make every `where: { userId }` below match ANY row in Prisma.
+    return null;
   }
 
   // Scoped by owner: another account's quote id is a 404, not a 403.
-  const quote = await getQuoteForUser(id, userId!);
+  const quote = await getQuoteForUser(id, userId);
   if (!quote) notFound();
 
   return (

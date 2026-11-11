@@ -70,6 +70,7 @@
     "errorEmailExists": "Esiste già un account con questa email. Accedi invece.",
     "errorNoAccount": "Nessun account trovato con questa email. Creane uno invece.",
     "errorWrongPassword": "Password errata.",
+    "errorTooManyAttempts": "Troppi tentativi. Attendi 15 minuti e riprova.",
     "errorGoogleAccount": "Questa email è collegata a Google. Continua invece con Google.",
     "toastSignedIn": "Accesso effettuato. Bentornato!",
     "toastSignedOut": "Sei stato disconnesso.",

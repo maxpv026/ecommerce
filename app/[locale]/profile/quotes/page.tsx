@@ -24,9 +24,14 @@ export default async function QuotesPage({ params }: PageProps<"/[locale]/profil
   const { locale } = await params;
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) redirect({ href: { pathname: "/auth", query: { callbackUrl: "/profile/quotes" } }, locale });
+  if (!userId) {
+    redirect({ href: { pathname: "/auth", query: { callbackUrl: "/profile/quotes" } }, locale });
+    // redirect() throws, but return anyway: a userId that is undefined would
+    // make every `where: { userId }` below match ANY row in Prisma.
+    return null;
+  }
 
-  const [quotes, t, format] = await Promise.all([getUserQuotes(userId!), getTranslations("Quotes"), getFormatter()]);
+  const [quotes, t, format] = await Promise.all([getUserQuotes(userId), getTranslations("Quotes"), getFormatter()]);
   const active = quotes.filter((q) => q.status === "PENDING");
   const past = quotes.filter((q) => q.status !== "PENDING");
 

@@ -68,8 +68,11 @@ const CSP_DIRECTIVES: Record<string, string> = {
   // far weaker vector than script injection.
   "style-src": "'self' 'unsafe-inline'",
   // data: for the 2FA QR code and inlined icons; blob: for anything a
-  // client generates in-page.
-  "img-src": "'self' data: blob:",
+  // client generates in-page. Plus the two hosts profile photos come from,
+  // which the Avatar component loads directly (unoptimized): Google account
+  // pictures, and uploads stored in public Vercel Blob (production). Without
+  // them every photo was blocked and silently fell back to initials.
+  "img-src": "'self' data: blob: https://*.googleusercontent.com https://*.public.blob.vercel-storage.com",
   "font-src": "'self' data:",
   // Same-origin only. Every third party this app talks to — DHL, Telegram,
   // OpenAI, SMTP — is called from the server, never the browser.
@@ -128,10 +131,13 @@ export function securityHeaders(): HttpHeader[] {
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     {
-      // None of these are used. Denying them means a compromised script
-      // cannot quietly reach for a camera or a location either.
+      // Camera: this origin only — the mobile barcode scanner
+      // (components/BarcodeScannerModal) reads cylinder labels with it, and
+      // `camera=()` made getUserMedia fail even after the user allowed it.
+      // Frames and other origins still get nothing. The rest are unused and
+      // denied outright, so a compromised script can't reach for them.
       key: "Permissions-Policy",
-      value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+      value: "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
     },
     {
       // Keeps this origin out of any other site's browsing-context group,
