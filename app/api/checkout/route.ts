@@ -7,6 +7,7 @@ import { buildNewOrderMessage } from "@/lib/orderNotification";
 import { notifyAdmin } from "@/lib/telegram";
 import { issueInvoiceForOrder } from "@/lib/invoicing";
 import { convertRestockAlerts } from "@/lib/smartRestock";
+import { clearSavedCart } from "@/lib/savedCart";
 import { generateInvoicePdfBuffer } from "@/lib/pdf";
 import { sendOrderConfirmationEmail } from "@/lib/mail";
 import { absoluteUrl } from "@/lib/siteUrl";
@@ -136,6 +137,17 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error(`[SMART-RESTOCK] could not credit alerts for ${order.orderNumber}:`, error);
+  }
+
+  // The basket became an order: drop its server copy so no "you left items
+  // in your cart" reminder follows a purchase. The browser clears its cart
+  // too and syncs the empty basket, but that request can be lost when the
+  // tab closes; this one can't. Caught: a stale snapshot is not worth a
+  // failed response (the reminder also skips anyone who ordered since).
+  try {
+    await clearSavedCart(userId);
+  } catch (error) {
+    console.error(`[cart-sync] could not clear the saved cart after ${order.orderNumber}:`, error);
   }
 
   // ── 6. Bill it, open the cylinder ledger, and send the invoice ──

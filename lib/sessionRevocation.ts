@@ -5,7 +5,8 @@ import { cache } from "react";
 import prisma from "@/lib/prisma";
 
 /**
- * Revoking sessions when a password changes.
+ * Revoking sessions when a password changes, or when the buyer signs out
+ * of all other devices (User.sessionsRevokedAt).
  *
  * Sessions are stateless JWTs, so there is no session row to delete. Instead
  * every token carries `authTime` — when its holder last proved who they are
@@ -67,14 +68,29 @@ export function readRestamp(stamp: unknown, userId: string): number | null {
  * a render that calls auth() several times reads the row once.
  */
 export const sessionAnchor = cache(async (userId: string) =>
-  prisma.user.findUnique({ where: { id: userId }, select: { passwordChangedAt: true } })
+  prisma.user.findUnique({ where: { id: userId }, select: { passwordChangedAt: true, sessionsRevokedAt: true } })
 );
+
+type Anchor = { passwordChangedAt: Date | null; sessionsRevokedAt?: Date | null };
+
+/**
+ * The moment before which every session is void: the later of the last
+ * password change and the last "sign out of all other devices". Null when
+ * neither ever happened. The re-stamp of the device that triggered either
+ * one vouches for exactly this value.
+ */
+export function revokedBefore(anchor: Anchor | null | undefined): number | null {
+  const times = [anchor?.passwordChangedAt?.getTime(), anchor?.sessionsRevokedAt?.getTime()].filter((t): t is number => typeof t === "number");
+  return times.length ? Math.max(...times) : null;
+}
 
 /**
  * Is a token signed in at `authTime` (epoch ms) still valid for this
- * account? False when the account is gone or its password changed after.
+ * account? False when the account is gone, or its password changed or its
+ * other sessions were revoked after that.
  */
-export function sessionStillValid(anchor: { passwordChangedAt: Date | null } | null, authTime: number): boolean {
+export function sessionStillValid(anchor: Anchor | null, authTime: number): boolean {
   if (!anchor) return false;
-  return !anchor.passwordChangedAt || anchor.passwordChangedAt.getTime() <= authTime;
+  const cutoff = revokedBefore(anchor);
+  return cutoff === null || cutoff <= authTime;
 }

@@ -4,15 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { NOTIFICATION_COLUMNS, type NotificationTopic } from "@/lib/notifications";
+import { NOTIFICATION_COLUMNS, NOTIFICATION_TOPICS, isReorderCadence, type NotificationTopic } from "@/lib/notifications";
 
 const PreferencesInput = z
-  .object({
-    backInStock: z.boolean(),
-    priceDrops: z.boolean(),
-    regulatory: z.boolean(),
-    restockReminders: z.boolean(),
-  })
+  .object(Object.fromEntries(NOTIFICATION_TOPICS.map((topic) => [topic, z.boolean()])) as Record<NotificationTopic, z.ZodBoolean>)
   .partial()
   .strict()
   .refine((value) => Object.keys(value).length > 0);
@@ -52,6 +47,25 @@ export async function updateNotificationPreferences(
     return { ok: true };
   } catch (error) {
     console.error("updateNotificationPreferences failed:", error);
+    return { ok: false, code: "FAILED" };
+  }
+}
+
+/**
+ * Restock reminder cadence: null (from the customer's own order rhythm) or a
+ * fixed 14 / 30 / 60 days after their last purchase of a product.
+ */
+export async function updateReorderCadence(days: unknown): Promise<UpdateNotificationPreferencesResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, code: "UNAUTHENTICATED" };
+  if (!isReorderCadence(days)) return { ok: false, code: "INVALID_INPUT" };
+  try {
+    await prisma.user.update({ where: { id: userId }, data: { reorderReminderDays: days } });
+    revalidatePath("/[locale]/profile/settings", "page");
+    return { ok: true };
+  } catch (error) {
+    console.error("updateReorderCadence failed:", error);
     return { ok: false, code: "FAILED" };
   }
 }

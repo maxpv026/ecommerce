@@ -43,8 +43,14 @@ export interface RestockPrediction {
   productVariant: string;
   /** Distinct purchase occasions observed (same-day orders count once). */
   purchaseCount: number;
-  /** Mean days between consecutive purchase occasions. */
+  /** Mean days between consecutive purchase occasions — or the fixed cadence. */
   averageDays: number;
+  /**
+   * The customer chose a fixed cadence (User.reorderReminderDays): remind
+   * exactly that many days after the last purchase, from the first order on.
+   * Null = learned from their own history (needs two occasions).
+   */
+  fixedDays: number | null;
   /** Mean units per occasion, rounded up — what we suggest reordering. */
   recommendedQty: number;
   /** Last purchase, at UTC-day resolution. */
@@ -73,7 +79,7 @@ export interface RestockPrediction {
  * purchases are collapsed to UTC-day occasions first, and quantities summed
  * within a day.
  */
-export async function getRestockPredictions(): Promise<RestockPrediction[]> {
+export async function getRestockPredictions(options: { userId?: string; includeOptedOut?: boolean } = {}): Promise<RestockPrediction[]> {
   const since = new Date(Date.now() - HISTORY_DAYS * DAY_MS);
 
   // One pass over the window. Grouping happens here rather than in SQL
@@ -85,12 +91,18 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
       // Cancelled orders aren't purchases. Customers who turned restock
       // reminders off aren't analysed at all — nothing about them is
       // predicted, stored or sent.
-      order: { createdAt: { gte: since }, paymentStatus: { not: "FAILED" }, user: { notifyRestockReminders: true } },
+      // `includeOptedOut` is only for the account holder's own test send.
+      order: {
+        createdAt: { gte: since },
+        paymentStatus: { not: "FAILED" },
+        ...(options.userId ? { userId: options.userId } : {}),
+        ...(options.includeOptedOut ? {} : { user: { notifyRestockReminders: true } }),
+      },
     },
     select: {
       productId: true,
       quantity: true,
-      order: { select: { userId: true, createdAt: true } },
+      order: { select: { userId: true, createdAt: true, user: { select: { reorderReminderDays: true } } } },
       product: { select: { name: true, sku: true, weight: true, inStock: true, stockQuantity: true } },
     },
     orderBy: { order: { createdAt: "asc" } },
@@ -98,6 +110,7 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
 
   interface Group {
     userId: string;
+    fixedDays: number | null;
     productId: string;
     product: { name: string; sku: string; weight: string; inStock: boolean; stockQuantity: number };
     /** UTC-day epoch → units bought that day. */
@@ -111,6 +124,7 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
       groups.get(key) ??
       {
         userId: item.order.userId,
+        fixedDays: item.order.user.reorderReminderDays ?? null,
         productId: item.productId,
         product: item.product,
         byDay: new Map<number, number>(),
@@ -124,16 +138,19 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
   const now = Date.now();
 
   for (const group of groups.values()) {
-    // "Purchased at least 2 times" means two distinct occasions, not two rows.
-    if (group.byDay.size < 2) continue;
-
     const days = [...group.byDay.keys()].sort((a, b) => a - b);
-    const intervals: number[] = [];
-    for (let i = 1; i < days.length; i++) intervals.push((days[i] - days[i - 1]) / DAY_MS);
-    if (intervals.length === 0) continue;
-
-    const averageDays = intervals.reduce((n, d) => n + d, 0) / intervals.length;
-    if (averageDays < MIN_CADENCE_DAYS || averageDays > MAX_CADENCE_DAYS) continue;
+    let averageDays: number;
+    if (group.fixedDays) {
+      // A cadence the customer chose: one purchase is enough to start it.
+      averageDays = group.fixedDays;
+    } else {
+      // "Purchased at least 2 times" means two distinct occasions, not two rows.
+      if (group.byDay.size < 2) continue;
+      const intervals: number[] = [];
+      for (let i = 1; i < days.length; i++) intervals.push((days[i] - days[i - 1]) / DAY_MS);
+      averageDays = intervals.reduce((n, d) => n + d, 0) / intervals.length;
+      if (averageDays < MIN_CADENCE_DAYS || averageDays > MAX_CADENCE_DAYS) continue;
+    }
 
     const quantities = [...group.byDay.values()];
     const averageQty = quantities.reduce((n, q) => n + q, 0) / quantities.length;
@@ -155,6 +172,7 @@ export async function getRestockPredictions(): Promise<RestockPrediction[]> {
       productVariant: group.product.weight,
       purchaseCount: group.byDay.size,
       averageDays: Math.round(averageDays * 10) / 10,
+      fixedDays: group.fixedDays,
       recommendedQty,
       lastOrderedAt: new Date(lastDay),
       predictedDate: predicted,
@@ -239,7 +257,9 @@ export async function selectDueRestocks(
   const skipped = { outsideWindow: 0, alreadyThisCycle: 0, noEmail: 0, unavailable: 0 };
 
   const inWindow = predictions.filter((p) => {
-    const window = Math.min(lead, Math.floor(p.averageDays / 2));
+    // A fixed cadence means "remind me N days after I ordered" — on the day,
+    // not two weeks early. A learned one leads, capped at half the cycle.
+    const window = p.fixedDays ? 0 : Math.min(lead, Math.floor(p.averageDays / 2));
     if (p.daysUntilPredicted > window || p.daysUntilPredicted < -grace) {
       skipped.outsideWindow += 1;
       return false;

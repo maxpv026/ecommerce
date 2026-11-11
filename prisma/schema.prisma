@@ -163,14 +163,32 @@ model User {
   /// product the user explicitly asked to watch; price drops and regulatory
   /// updates are opt-in, because unrequested marketing mail to EU business
   /// contacts needs prior consent under the ePrivacy rules.
-  notifyBackInStock       Boolean @default(true)
-  notifyPriceDrops        Boolean @default(false)
-  notifyRegulatoryUpdates Boolean @default(false)
+  notifyBackInStock       Boolean   @default(true)
+  notifyPriceDrops        Boolean   @default(false)
+  notifyRegulatoryUpdates Boolean   @default(false)
   /// Predictive replenishment reminders (lib/smartRestock): "you usually
   /// reorder X about now". On by default — it's a service message about the
   /// customer's own buying pattern — with an opt-out in settings and a
   /// one-click unsubscribe in every reminder.
-  notifyRestockReminders  Boolean @default(true)
+  notifyRestockReminders  Boolean   @default(true)
+  /// How often restock reminders come: null = from the customer's own order
+  /// cadence (lib/smartRestock, ≥ 2 purchases), or a fixed 14 / 30 / 60 days
+  /// after their last purchase of a product (works from the first order).
+  reorderReminderDays     Int?
+  /// "Items left in your cart" reminder (lib/cartReminder). A service mail
+  /// about the buyer's own unfinished order; one-click unsubscribe in each.
+  notifyAbandonedCart     Boolean   @default(true)
+  /// 30- and 7-day warnings before the F-Gas certificate lapses. The
+  /// EXPIRED notice itself stays transactional and is not covered by this.
+  notifyFgasExpiry        Boolean   @default(true)
+  /// The fGasExpiresAt each warning was sent for. Comparing against the
+  /// current expiry means a renewed certificate is warned about afresh, with
+  /// no reset step, and an overlapping cron run cannot send one twice.
+  fGasExpiryWarned30For   DateTime?
+  fGasExpiryWarned7For    DateTime?
+  /// "Sign out of all other devices": every session authenticated before
+  /// this is refused (lib/sessionRevocation), like a password change.
+  sessionsRevokedAt       DateTime?
 
   // For future CRM sync (e.g. HubSpot/Salesforce contact id).
   externalId String? @unique
@@ -195,6 +213,7 @@ model User {
   quotes               Quote[]
   favorites            Favorite[]
   chatSessions         ChatSession[]
+  savedCart            SavedCart?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1094,4 +1113,25 @@ model ChatMessage {
   createdAt DateTime    @default(now())
 
   @@index([sessionId, createdAt])
+}
+
+/// Server copy of a signed-in buyer's basket, kept only so an abandoned cart
+/// can be reminded about (lib/cartReminder). The browser cart stays the
+/// source of truth for the UI; this holds SKUs and quantities, never prices
+/// — the reminder reads today's price and stock from Product at send time.
+/// The row is deleted when the basket is emptied or an order is placed.
+model SavedCart {
+  userId           String    @id
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// [{ sku, qty }] — validated against the catalogue on write.
+  items            Json
+  itemCount        Int
+  /// When the CONTENTS last changed. A sync that sends the same basket again
+  /// does not move it, so re-opening a tab can't postpone or re-arm a reminder.
+  contentUpdatedAt DateTime
+  reminderSentAt   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([contentUpdatedAt])
 }

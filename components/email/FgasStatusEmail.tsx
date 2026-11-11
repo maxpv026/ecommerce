@@ -1,4 +1,4 @@
-import { Body, Button, Container, Head, Hr, Html, Preview, Section, Text } from "@react-email/components";
+import { Body, Button, Container, Head, Hr, Html, Link, Preview, Section, Text } from "@react-email/components";
 
 /**
  * F-Gas compliance service message: verified, received for review, refused,
@@ -17,6 +17,8 @@ export interface FgasStatusEmailProps {
   rows: Array<{ label: string; value: string }>;
   cta: { label: string; href: string };
   footer: string;
+  /** Opt-out links — only on the optional expiry warnings, never on status notices. */
+  links?: { preferences: { label: string; href: string }; unsubscribe: { label: string; href: string } } | null;
   sender: { name: string; addressLines: string[] };
 }
 
@@ -73,7 +75,21 @@ export default function FgasStatusEmail(props: FgasStatusEmailProps) {
               {props.cta.label}
             </Button>
             <Hr style={{ borderColor: HAIRLINE, margin: "24px 0 16px" }} />
-            <Text style={{ margin: 0, fontSize: 12, lineHeight: "19px", color: MUTED }}>{props.footer}</Text>
+            <Text style={{ margin: 0, fontSize: 12, lineHeight: "19px", color: MUTED }}>
+              {props.footer}
+              {props.links && (
+                <>
+                  {" "}
+                  <Link href={props.links.preferences.href} style={{ color: BLUE }}>
+                    {props.links.preferences.label}
+                  </Link>{" "}
+                  ·{" "}
+                  <Link href={props.links.unsubscribe.href} style={{ color: BLUE }}>
+                    {props.links.unsubscribe.label}
+                  </Link>
+                </>
+              )}
+            </Text>
           </Section>
           <Section style={{ padding: "16px 8px 0" }}>
             <Text style={{ margin: 0, fontSize: 12, lineHeight: "19px", color: MUTED }}>{[props.sender.name, ...props.sender.addressLines].join(" · ")}</Text>

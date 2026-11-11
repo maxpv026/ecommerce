@@ -3,9 +3,11 @@ import "server-only";
 import { render } from "@react-email/components";
 import prisma from "@/lib/prisma";
 import { sendHtmlEmail } from "@/lib/mail";
+import { tidyDots } from "@/lib/emailTranslator";
 import { sellerDetails } from "@/lib/seller";
 import { absoluteUrl } from "@/lib/siteUrl";
 import { emailTranslator } from "@/lib/emailTranslator";
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 import { escapeMarkdown, notifyAdmin, notifyAdminWithDocument } from "@/lib/telegram";
 import FgasStatusEmail from "@/components/email/FgasStatusEmail";
 import type { FgasCheck, FgasExtraction } from "@/lib/fgas";
@@ -87,6 +89,56 @@ export async function sendFgasStatusEmail(input: {
     await sendHtmlEmail({ to: user.email, subject: subject.replace(/[\r\n]+/g, " "), html, text });
   } catch (error) {
     console.error(`[fgas-notify] ${input.kind} email for user ${input.userId} failed:`, error);
+  }
+}
+
+/**
+ * 30- and 7-day warnings before a certificate lapses (cron fgas-expiry,
+ * lib/fgasLifecycle selects and claims). Unlike the status notices above,
+ * these are optional — gated by User.notifyFgasExpiry and carrying a
+ * one-click unsubscribe — because the EXPIRED notice still goes out either way.
+ */
+export async function sendFgasExpiryWarning(input: { userId: string; expiresAt: Date; certificateNumber?: string | null }): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, name: true, locale: true, notifyFgasExpiry: true } });
+    if (!user?.email || !user.notifyFgasExpiry) return false;
+    const { t, locale } = await emailTranslator(user.locale, "FgasEmail");
+    const days = Math.max(0, Math.ceil((input.expiresAt.getTime() - Date.now()) / 86_400_000));
+    const date = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(input.expiresAt);
+    const subject = t("subject_EXPIRING", { days });
+    const oneClick = unsubscribeUrl(input.userId, "fgasExpiry");
+    const email = FgasStatusEmail({
+      lang: locale,
+      tone: "warning",
+      kicker: t("kicker"),
+      heading: subject,
+      greeting: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName"),
+      paragraphs: [tidyDots(t("body_EXPIRING", { days, date }))],
+      reason: null,
+      rows: [
+        ...(input.certificateNumber ? [{ label: t("fieldNumber"), value: input.certificateNumber }] : []),
+        { label: t("fieldExpiry"), value: date },
+      ],
+      cta: { label: t("ctaRenew"), href: absoluteUrl("/profile?fgas=upload", locale) },
+      footer: t("footerExpiring"),
+      links: {
+        preferences: { label: t("managePreferences"), href: absoluteUrl("/profile/settings", locale) },
+        unsubscribe: { label: t("unsubscribe"), href: oneClick },
+      },
+      sender: sellerDetails(),
+    });
+    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
+    await sendHtmlEmail({
+      to: user.email,
+      subject: subject.replace(/[\r\n]+/g, " "),
+      html,
+      text,
+      headers: { "List-Unsubscribe": `<${oneClick}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+    });
+    return true;
+  } catch (error) {
+    console.error(`[fgas-notify] expiry warning for user ${input.userId} failed:`, error);
+    return false;
   }
 }
 

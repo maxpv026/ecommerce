@@ -101,8 +101,8 @@ export async function GET(request: Request) {
   const startedAt = Date.now();
 
   try {
-    const predictions = await getRestockPredictions();
-    const { due, skipped } = await selectDueRestocks(onlyUser ? predictions.filter((p) => p.userId === onlyUser) : predictions);
+    const predictions = await getRestockPredictions(onlyUser ? { userId: onlyUser } : {});
+    const { due, skipped } = await selectDueRestocks(predictions);
     const { sellable, unavailable } = await filterPurchasable(due);
     const batch = sellable.slice(0, limit);
 
@@ -149,6 +149,8 @@ export async function GET(request: Request) {
           productId: prediction.productId,
           recommendedQty: prediction.recommendedQty,
           averageDays: prediction.averageDays,
+          fixedDays: prediction.fixedDays,
+          lastOrderedAt: prediction.lastOrderedAt,
           predictedDate: prediction.predictedDate,
         });
 

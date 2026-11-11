@@ -255,3 +255,73 @@ export async function expireDueCertificates(now: Date = new Date(), limit = 200)
   if (expired.length) revalidateFgasViews();
   return expired;
 }
+
+// ── Expiry warnings (30 and 7 days ahead) ────────────────────────────────
+
+const DAY_MS = 86_400_000;
+
+export interface ExpiryWarning {
+  userId: string;
+  expiresAt: Date;
+  certificateNumber: string | null;
+  stage: 30 | 7;
+  /** What the claimed column held before, so a failed send can give it back. */
+  previous: Date | null;
+}
+
+/**
+ * Certificates lapsing within 30 days whose holder wants a warning
+ * (notifyFgasExpiry). Each certificate gets at most one 30-day and one
+ * 7-day warning: the column records the expiry it was sent FOR, so a
+ * renewed certificate (new expiry) is warned about afresh with no reset
+ * step. A buyer first seen inside the 7-day window gets only the 7-day one.
+ *
+ * Claims as it selects — an update conditional on the row as read — so two
+ * overlapping runs cannot both send. `dryRun` reports without claiming.
+ */
+export async function claimExpiryWarnings(options: { now?: Date; userId?: string | null; dryRun?: boolean; limit?: number } = {}): Promise<ExpiryWarning[]> {
+  const now = options.now ?? new Date();
+  const rows = await prisma.user.findMany({
+    where: {
+      ...(options.userId ? { id: options.userId } : {}),
+      fGasStatus: "VERIFIED",
+      notifyFgasExpiry: true,
+      email: { not: null },
+      fGasExpiresAt: { gt: now, lte: new Date(now.getTime() + 30 * DAY_MS) },
+    },
+    select: {
+      id: true,
+      fGasExpiresAt: true,
+      fGasExpiryWarned30For: true,
+      fGasExpiryWarned7For: true,
+      certificates: { where: { isActive: true }, select: { certificateNumber: true }, take: 1 },
+    },
+    take: options.limit ?? 200,
+  });
+
+  const claimed: ExpiryWarning[] = [];
+  for (const u of rows) {
+    const expiresAt = u.fGasExpiresAt!;
+    const same = (d: Date | null) => d?.getTime() === expiresAt.getTime();
+    const stage: 30 | 7 = expiresAt.getTime() - now.getTime() <= 7 * DAY_MS ? 7 : 30;
+    if (same(u.fGasExpiryWarned7For) || (stage === 30 && same(u.fGasExpiryWarned30For))) continue;
+
+    const column = stage === 7 ? "fGasExpiryWarned7For" : "fGasExpiryWarned30For";
+    const previous = stage === 7 ? u.fGasExpiryWarned7For : u.fGasExpiryWarned30For;
+    if (!options.dryRun) {
+      const { count } = await prisma.user.updateMany({
+        where: { id: u.id, fGasExpiresAt: expiresAt, [column]: previous },
+        data: { [column]: expiresAt },
+      });
+      if (count === 0) continue;
+    }
+    claimed.push({ userId: u.id, expiresAt, certificateNumber: u.certificates[0]?.certificateNumber ?? null, stage, previous });
+  }
+  return claimed;
+}
+
+/** A warning that was not delivered is released, so tomorrow's run retries it. */
+export async function releaseExpiryWarning(w: ExpiryWarning): Promise<void> {
+  const column = w.stage === 7 ? "fGasExpiryWarned7For" : "fGasExpiryWarned30For";
+  await prisma.user.updateMany({ where: { id: w.userId, [column]: w.expiresAt }, data: { [column]: w.previous } });
+}

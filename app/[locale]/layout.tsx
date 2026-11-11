@@ -12,6 +12,7 @@ import { CartCountProvider } from "@/components/CartCountProvider";
 import AuthProvider from "@/components/AuthProvider";
 import ToastProvider from "@/components/ToastProvider";
 import ThemeSync from "@/components/ThemeSync";
+import CartServerSync from "@/components/cart/CartServerSync";
 import { routing } from "@/i18n/routing";
 import { globalClientMessages } from "@/lib/i18n/clientMessages";
 import "./globals.css";
@@ -84,6 +85,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <ThemeSync />
+            <CartServerSync />
             <CartCountProvider>
               <MobileAppShell>{children}</MobileAppShell>
               <Footer />

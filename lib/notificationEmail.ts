@@ -3,6 +3,7 @@ import "server-only";
 import { render } from "@react-email/components";
 import prisma from "@/lib/prisma";
 import { sendHtmlEmail } from "@/lib/mail";
+import { tidyDots } from "@/lib/emailTranslator";
 import { sellerDetails } from "@/lib/seller";
 import { absoluteUrl } from "@/lib/siteUrl";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
@@ -12,6 +13,7 @@ import PriceDropEmail from "@/components/email/PriceDropEmail";
 import { cylinderGasPrice } from "@/lib/pricing";
 import { LISTED } from "@/lib/productFamily";
 import { isPurchasable } from "@/lib/waitlist";
+import { emailTranslator } from "@/lib/emailTranslator";
 
 /**
  * Preference-gated notification emails.
@@ -132,7 +134,12 @@ export async function sendReplenishmentEmail(input: {
   productId: string;
   recommendedQty: number;
   averageDays: number;
+  /** The customer's fixed cadence, or null when learned from their history. */
+  fixedDays?: number | null;
+  lastOrderedAt?: Date;
   predictedDate: Date;
+  /** The account holder's own test from Settings: marked, sent even if switched off. */
+  test?: boolean;
 }): Promise<NotificationSendResult> {
   const [user, product] = await Promise.all([
     prisma.user.findUnique({
@@ -145,36 +152,54 @@ export async function sendReplenishmentEmail(input: {
     }),
   ]);
   if (!user) return { status: "skipped", reason: "NOT_FOUND" };
-  if (!user.notifyRestockReminders) return { status: "skipped", reason: "OPTED_OUT" };
+  if (!user.notifyRestockReminders && !input.test) return { status: "skipped", reason: "OPTED_OUT" };
   if (!user.email) return { status: "skipped", reason: "NO_EMAIL" };
   if (!product || !isPurchasable(product) || !(product.pricePerKg > 0)) return { status: "skipped", reason: "UNAVAILABLE" };
 
   try {
-    const money = new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" });
+    const { t, locale } = await emailTranslator(user.locale, "ReplenishmentEmail");
+    const money = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" });
+    const date = (d: Date) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(d);
     const deposit = Number(product.cylinderDeposit);
+    const unitPrice = money.format(cylinderGasPrice(product.pricePerKg, product.weightKg));
     const qty = Math.min(99, Math.max(1, input.recommendedQty));
     const oneClick = unsubscribeUrl(input.userId, "restockReminders");
-    const reorder = absoluteUrl(`/cart?reorder=${encodeURIComponent(product.sku)}&qty=${qty}`, user.locale);
+    const label = `${product.name} (${product.sku})`;
+
+    const cadence = input.fixedDays
+      ? t("bodyFixed", { product: label, days: input.fixedDays, lastDate: date(input.lastOrderedAt ?? input.predictedDate) })
+      : t(user.companyName ? "bodyLearnedCompany" : "bodyLearned", {
+          product: label,
+          company: user.companyName ?? "",
+          days: Math.round(input.averageDays),
+          date: date(input.predictedDate),
+        });
+    const price = deposit > 0
+      ? t("bodyPriceDeposit", { price: unitPrice, variant: product.weight, deposit: money.format(deposit), qty })
+      : t("bodyPrice", { price: unitPrice, variant: product.weight, qty });
+
     const email = ReplenishmentEmail({
-      recipientName: user.name,
-      companyName: user.companyName,
+      lang: locale,
+      preview: t("preview", { product: label }),
+      kicker: t("kicker"),
       productName: product.name,
-      sku: product.sku,
-      variant: product.weight,
-      unitPrice: money.format(cylinderGasPrice(product.pricePerKg, product.weightKg)),
-      deposit: deposit > 0 ? money.format(deposit) : null,
-      recommendedQty: qty,
-      everyDays: Math.round(input.averageDays),
-      expectedDate: new Intl.DateTimeFormat("en-GB", { dateStyle: "long", timeZone: "UTC" }).format(input.predictedDate),
-      reorderUrl: reorder,
-      preferencesUrl: absoluteUrl("/profile/settings", user.locale),
-      unsubscribeUrl: oneClick,
+      greeting: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName"),
+      paragraphs: [cadence, price].map(tidyDots),
+      testBanner: input.test ? t("testBanner") : null,
+      meta: `${product.sku} · ${product.weight}`,
+      quantityLine: `${qty} × ${unitPrice}`,
+      cta: { label: t("cta"), href: absoluteUrl(`/cart?reorder=${encodeURIComponent(product.sku)}&qty=${qty}`, locale) },
+      ctaNote: t("ctaNote"),
+      disclaimer: input.fixedDays ? t("disclaimerFixed") : t("disclaimerLearned"),
+      footer: t("footer"),
+      preferences: { label: t("managePreferences"), href: absoluteUrl("/profile/settings", locale) },
+      unsubscribe: { label: t("unsubscribe"), href: oneClick },
       sender: sellerDetails(),
     });
     const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
     const delivery = await sendHtmlEmail({
       to: user.email,
-      subject: cleanHeader(`Restock reminder: ${product.name} (${product.sku})`),
+      subject: cleanHeader((input.test ? "[TEST] " : "") + t("subject", { product: label })),
       html,
       text,
       headers: {

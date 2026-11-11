@@ -26,3 +26,10 @@ export async function emailTranslator(locale: string | null | undefined, namespa
   const t = createTranslator({ locale: loc, messages, namespace } as never) as unknown as (key: string, values?: Record<string, string | number>) => string;
   return { t, locale: loc };
 }
+
+/**
+ * Several locales end a long date with a period ("12 листопада 2026 р."),
+ * so a sentence that ends on a date reads "р..". Collapses exactly two
+ * periods before a space or the end — an ellipsis ("...") is left alone.
+ */
+export const tidyDots = (text: string) => text.replace(/(?<!\.)\.\.(?=\s|$)/g, ".");

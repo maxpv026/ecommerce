@@ -12,7 +12,7 @@ import { NEWS_ITEM_LIMIT, fetchIndustryNews, type MarketAlertData as MarketAlert
 import { SEARCH_SUGGESTION_LIMIT, combineWhere, productSearchWhere } from "@/lib/search";
 import { isPurchasable } from "@/lib/waitlist";
 import type { FgasExtraction } from "@/lib/fgas";
-import type { NotificationPreferences } from "@/lib/notifications";
+import { isReorderCadence, type NotificationPreferences, type ReorderCadence } from "@/lib/notifications";
 import { certificateHref } from "@/lib/fgasStorage";
 import { getFgasSummary } from "@/lib/fgasAccount";
 import type { FgasSummary } from "@/lib/fgas";
@@ -289,6 +289,8 @@ export async function getUserAddresses(userId: string): Promise<UserAddress[]> {
 export interface UserProfileData {
   name: string | null;
   email: string | null;
+  /** The address has been proven (OTP or Google sign-in). */
+  emailVerified: boolean;
   companyName: string | null;
   /** EU VAT id, printed on invoices for cross-border B2B. */
   vatNumber: string | null;
@@ -301,6 +303,8 @@ export interface UserProfileData {
   avatarUrl: string | null;
   /** Email preferences, keyed the way the settings toggles and the action name them. */
   notifications: NotificationPreferences;
+  /** Restock reminder cadence: null = from the order history, else fixed days. */
+  reorderReminderDays: ReorderCadence;
   passwordChangedAt: string | null;
   locale: string;
   /** F-Gas verification flag — true only when fGasStatus is VERIFIED. */
@@ -346,6 +350,7 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
     select: {
       name: true,
       email: true,
+      emailVerified: true,
       companyName: true,
       vatNumber: true,
       jobTitle: true,
@@ -356,6 +361,9 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
       notifyPriceDrops: true,
       notifyRegulatoryUpdates: true,
       notifyRestockReminders: true,
+      notifyAbandonedCart: true,
+      notifyFgasExpiry: true,
+      reorderReminderDays: true,
       locale: true,
       fGasStatus: true,
       fGasRejectionReason: true,
@@ -382,6 +390,7 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
   return {
     name: user.name,
     email: user.email,
+    emailVerified: user.emailVerified !== null,
     companyName: user.companyName,
     vatNumber: user.vatNumber,
     jobTitle: user.jobTitle,
@@ -392,7 +401,10 @@ export async function getUserProfile(userId: string): Promise<UserProfileData | 
       priceDrops: user.notifyPriceDrops,
       regulatory: user.notifyRegulatoryUpdates,
       restockReminders: user.notifyRestockReminders,
+      abandonedCart: user.notifyAbandonedCart,
+      fgasExpiry: user.notifyFgasExpiry,
     },
+    reorderReminderDays: isReorderCadence(user.reorderReminderDays) ? user.reorderReminderDays : null,
     passwordChangedAt: user.passwordChangedAt?.toISOString() ?? null,
     locale: user.locale,
     // Effective (expiry applied): an expired certificate is not "verified" here.

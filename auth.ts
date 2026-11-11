@@ -5,7 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { checkPassword } from "@/lib/loginThrottle";
-import { readRestamp, sessionAnchor, sessionStillValid } from "@/lib/sessionRevocation";
+import { readRestamp, revokedBefore, sessionAnchor, sessionStillValid } from "@/lib/sessionRevocation";
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { ADMIN_LEGAL_NAME, roleForEmail } from "@/lib/rbac";
@@ -215,7 +215,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         });
         if (anchor !== undefined) {
           const restamped = trigger === "update" ? readRestamp((session as { restamp?: unknown } | undefined)?.restamp, token.sub) : null;
-          if (restamped !== null && anchor?.passwordChangedAt?.getTime() === restamped) {
+          if (restamped !== null && revokedBefore(anchor) === restamped) {
             token.authTime = Date.now();
           } else {
             // Tokens minted before authTime existed fall back to iat (seconds).

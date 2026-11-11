@@ -23,6 +23,8 @@ const LABELS: Record<NotificationTopic, string> = {
   priceDrops: "price drop alerts",
   regulatory: "regulatory updates",
   restockReminders: "restock reminders",
+  abandonedCart: "cart reminders",
+  fgasExpiry: "F-Gas certificate expiry warnings",
 };
 
 function page(title: string, body: string, status = 200): Response {
