@@ -458,7 +458,9 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                     </button>
                   </form>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  {/* Hidden while a result is open (~90px back); the close button brings them back. */}
+                  {!calc && (
+                  <div className="mt-4 flex flex-wrap gap-2" data-calc-presets>
                     {CALC_CHIP_KEYS.map((key) => tc(key)).map((c) => (
                       <button
                         key={c}
@@ -473,6 +475,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                       </button>
                     ))}
                   </div>
+                  )}
                   {calcError && (
                     <p role="alert" data-calc-error className="mt-3 text-[12.5px] text-rose-200">
                       {calcError}

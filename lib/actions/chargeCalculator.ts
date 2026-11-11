@@ -16,7 +16,7 @@ import {
   G_PER_OZ,
   KG_PER_LB,
   M_PER_FT,
-  TYPICAL_G_PER_M,
+  autoChargePerMeterG,
   computeCharge,
   type ChargeResult,
   type CylinderOption,
@@ -57,6 +57,8 @@ export interface ChargeCalculation {
   result: ChargeResult;
   /** Purchasable cylinders of this refrigerant, for the cart suggestion. */
   cylinders: CylinderOption[];
+  /** GWP of the refrigerant from the catalog, for the CO₂e line; null when unknown. */
+  gwp: number | null;
 }
 
 export type CalculateChargeResult =
@@ -119,11 +121,14 @@ export async function calculateCharge(rawQuery: string): Promise<CalculateCharge
   const liquidLine = x.liquidLineSize
     ? { size: x.liquidLineSize, source: "stated" as const }
     : { size: DEFAULT_LIQUID_LINE, source: "default" as const };
+  // The same "Auto" rate the card shows (lib/chargeCalc): liquid density ×
+  // bore for the refrigerants it knows, the manual's typical figure otherwise.
+  const autoRate = autoChargePerMeterG(x.refrigerant, liquidLine.size);
   const chargePerMeterG =
     x.chargePerLength !== null
       ? { value: toGPerM(x.chargePerLength), source: "stated" as const }
-      : TYPICAL_G_PER_M[liquidLine.size] !== undefined
-        ? { value: TYPICAL_G_PER_M[liquidLine.size]!, source: "default" as const }
+      : autoRate
+        ? { value: autoRate.value, source: "default" as const }
         : { value: null, source: "missing" as const };
   const factoryChargeKg =
     x.factoryCharge && x.factoryCharge.length > 0
@@ -142,19 +147,26 @@ export async function calculateCharge(rawQuery: string): Promise<CalculateCharge
   // The refrigerant must be one we can name in the catalog to link to it.
   const mark = x.refrigerant ? (GAS_MARKS.find((m) => normalizeMark(m) === normalizeMark(x.refrigerant!)) ?? null) : null;
 
-  const cylinders: CylinderOption[] = mark
-    ? (await prisma.product.findMany({ where: { ...LISTED, category: { in: ["cylinders", "blends"] } } }))
-        .filter((p) => productHasGasMark(p, mark) && isPurchasable(p) && p.pricePerKg > 0)
-        .map((p) => ({
-          id: p.id,
-          sku: p.sku,
-          name: p.name,
-          weightLabel: p.weight,
-          weightKg: p.weightKg,
-          pricePerKg: p.pricePerKg,
-          cylinderDeposit: Number(p.cylinderDeposit),
-        }))
+  const ofGas = mark
+    ? (await prisma.product.findMany({ where: { ...LISTED, category: { in: ["cylinders", "blends"] } } })).filter((p) => productHasGasMark(p, mark))
     : [];
+  const cylinders: CylinderOption[] = ofGas
+    .filter((p) => isPurchasable(p) && p.pricePerKg > 0)
+    .map((p) => ({
+      id: p.id,
+      sku: p.sku,
+      name: p.name,
+      weightLabel: p.weight,
+      weightKg: p.weightKg,
+      pricePerKg: p.pricePerKg,
+      cylinderDeposit: Number(p.cylinderDeposit),
+      // Live on-hand count: a 20-system job must not be offered more
+      // cylinders of a size than the shelf holds (lib/chargeCalc pickCylinders).
+      stock: p.stockQuantity,
+    }));
+  // The catalog's own GWP column for this gas — the card's CO₂e figure.
+  // Null (and no CO₂e shown) when the gas isn't one we stock, e.g. R-290.
+  const gwp = ofGas.find((p) => p.gwp !== null)?.gwp ?? null;
 
   return {
     ok: true,
@@ -176,6 +188,7 @@ export async function calculateCharge(rawQuery: string): Promise<CalculateCharge
         factoryChargeKg: factoryChargeKg.value,
       }),
       cylinders,
+      gwp,
     },
   };
 }
