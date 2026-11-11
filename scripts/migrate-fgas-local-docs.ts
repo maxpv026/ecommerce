@@ -3,11 +3,12 @@
  * disk (.uploads/fgas — the old local driver) into encrypted PostgreSQL
  * storage (FgasDocumentFile), so production can serve them.
  *
- * For every account, certificate or audit entry pointing at a local
+ * For every account or certificate pointing at a local
  * `/api/fgas/document/<uuid>.<ext>` path whose file is present here: encrypt
- * it for the referencing account, repoint every reference, and append a
- * DOCUMENT_MIGRATED audit row. Files that are not referenced are left alone.
- * Idempotent: a second run finds nothing local left to move.
+ * it for the referencing account, repoint those live references, and append a
+ * DOCUMENT_MIGRATED audit row. Audit rows are history and keep their old
+ * paths, so they are not followed. Idempotent: a second run finds no live
+ * local reference left to move.
  *
  *   npx tsx --conditions=react-server --env-file=.env --env-file=.env.local scripts/migrate-fgas-local-docs.ts --dry-run
  *   npx tsx --conditions=react-server --env-file=.env --env-file=.env.local scripts/migrate-fgas-local-docs.ts
@@ -32,16 +33,12 @@ const isLocal = (url: string | null | undefined): url is string =>
   Boolean(url?.startsWith(PREFIX) && LOCAL.test(url.slice(PREFIX.length)));
 
 async function main() {
-  const [users, certs, logs] = await Promise.all([
+  const [users, certs] = await Promise.all([
     prisma.user.findMany({
       where: { fGasDocumentUrl: { startsWith: PREFIX } },
       select: { id: true, fGasDocumentUrl: true },
     }),
     prisma.certificate.findMany({
-      where: { documentUrl: { startsWith: PREFIX } },
-      select: { id: true, userId: true, documentUrl: true },
-    }),
-    prisma.fgasAuditLog.findMany({
       where: { documentUrl: { startsWith: PREFIX } },
       select: { id: true, userId: true, documentUrl: true },
     }),
@@ -53,8 +50,6 @@ async function main() {
     if (isLocal(u.fGasDocumentUrl)) owners.set(u.fGasDocumentUrl, u.id);
   for (const c of certs)
     if (isLocal(c.documentUrl)) owners.set(c.documentUrl, c.userId);
-  for (const l of logs)
-    if (isLocal(l.documentUrl)) owners.set(l.documentUrl, l.userId);
 
   let moved = 0;
   for (const [url, userId] of owners) {
