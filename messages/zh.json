@@ -1249,7 +1249,8 @@
     "handoffNotice": "我已通知我们的团队。专家将审核此内容并在此处回复。",
     "resolvedNotice": "我们的团队已关闭此对话。发送消息以开始新的对话。",
     "expiredNotice": "此对话在一小时无活动后被删除。发送消息以开始新的对话。",
-    "retentionNote": "聊天将在最后一条消息后一小时永久删除。"
+    "retentionNote": "聊天将在最后一条消息后一小时永久删除。",
+    "errorUnavailable": "助手目前不可用。您的消息已保存：请稍后再试，或点击“与人工对话”。"
   },
   "SmartOrder": {
     "launch": "智能批量订单",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "查看您的证书",
     "ctaUpload": "上传证书",
     "footer": "这是一条关于您账户 F-Gas 合规性的服务消息，依据欧盟法规 (EU) 2024/573。无论您的营销偏好如何，您都会收到此消息。"
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "助手目前不可用。请打开下面的官方 SDS PDF，或在紧急情况下拨打 NCEC 电话 +44 1865 407 333。"
+  },
+  "PasswordReset": {
+    "forgotLink": "忘记密码？",
+    "title": "重置您的密码",
+    "close": "关闭",
+    "emailIntro": "输入您用于 My Energy 的电子邮件。如果该电子邮件属于有密码的账户，我们将向您发送一个 6 位数的代码。",
+    "emailLabel": "电子邮件",
+    "sendCode": "发送代码",
+    "codeIntro": "如果 {email} 有账户，6 位数的代码正在发送中。该代码将在 10 分钟后过期。",
+    "codeLabel": "6 位数代码",
+    "verify": "继续",
+    "resend": "发送新代码",
+    "resent": "如果有账户，新代码正在发送中。",
+    "changeEmail": "更改电子邮件",
+    "passwordIntro": "选择一个新密码：至少 8 个字符，包含字母和数字。",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "save": "设置新密码",
+    "doneTitle": "密码已更新",
+    "doneBody": "您已在所有设备上退出。请使用新密码登录。",
+    "backToSignIn": "返回登录",
+    "googleHint": "使用 Google 注册？没有密码需要重置：请使用“继续使用 Google”。",
+    "errorInvalidEmail": "请输入有效的电子邮件地址。",
+    "errorInvalidCode": "该代码无效或已过期。错误 5 次后，您需要新的代码。",
+    "errorRateLimited": "尝试次数过多。请稍等几分钟后再试。",
+    "errorWeak": "请使用至少 8 个字符，包含字母和数字。",
+    "errorMismatch": "密码不匹配。",
+    "errorFailed": "出现问题。请再试一次。"
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} 是您的 My Energy 密码重置代码",
+    "codeKicker": "密码重置",
+    "codeBody": "使用此代码重置您的 My Energy 密码。该代码将在 10 分钟后过期。",
+    "codeFooter": "如果您没有请求重置密码，请忽略此电子邮件：您的密码将保持不变。",
+    "googleSubject": "重置您的 My Energy 密码",
+    "googleKicker": "密码重置",
+    "googleBody": "有人请求重置此地址的密码，但您的账户使用 Google 登录，因此没有密码需要重置。请使用“继续使用 Google”登录。",
+    "googleCta": "登录",
+    "googleFooter": "如果这不是您本人操作，您可以忽略此电子邮件。",
+    "changedSubject": "您的 My Energy 密码已更改",
+    "changedKicker": "安全通知",
+    "changedBody": "您的 My Energy 账户密码刚刚被重置，所有设备已退出。",
+    "changedFooter": "如果这不是您本人操作，请立即联系我们并再次重置您的密码。"
   }
 }

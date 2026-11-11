@@ -1,5 +1,6 @@
 import {
   convertToModelMessages,
+  createUIMessageStreamResponse,
   stepCountIs,
   streamText,
   tool,
@@ -12,6 +13,7 @@ import { cylinderGasPrice } from "@/lib/pricing";
 import { formatContext, retrieveForQuestion } from "@/lib/rag";
 import { LISTED } from "@/lib/productFamily";
 import { boundTranscript } from "@/lib/aiMessages";
+import { ASSISTANT_UNAVAILABLE, CHAT_STREAM_TIMEOUT, timeoutAsUnavailable } from "@/lib/aiTimeout";
 
 /**
  * POST /api/chat-fgas — the F-Gas RAG assistant.
@@ -234,11 +236,18 @@ export async function POST(request: Request) {
     // tool call and never produce prose.)
     stopWhen: stepCountIs(2),
     maxOutputTokens: 900,
+    timeout: CHAT_STREAM_TIMEOUT,
     onError: ({ error }) => console.error("[RAG] stream error:", error),
+    onAbort: () => console.error("[RAG] stream timed out"),
   });
 
-  return result.toUIMessageStreamResponse({
-    // Lets the UI show what the answer was grounded in.
-    messageMetadata: () => ({ sources }),
+  return createUIMessageStreamResponse({
+    stream: timeoutAsUnavailable(
+      result.toUIMessageStream({
+        onError: () => ASSISTANT_UNAVAILABLE,
+        // Lets the UI show what the answer was grounded in.
+        messageMetadata: () => ({ sources }),
+      })
+    ),
   });
 }

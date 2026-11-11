@@ -1076,6 +1076,8 @@ model ChatSession {
   updatedAt DateTime @updatedAt
 
   @@index([status, updatedAt])
+  /// The retention purge filters on updatedAt alone (lib/chatRetention).
+  @@index([updatedAt])
   @@index([userId])
 }
 

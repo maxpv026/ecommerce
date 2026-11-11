@@ -1249,7 +1249,8 @@
     "handoffNotice": "Jag har meddelat vårt team. En expert kommer att granska detta och svara här snart.",
     "resolvedNotice": "Vårt team har avslutat denna konversation. Skicka ett meddelande för att starta en ny.",
     "expiredNotice": "Denna konversation raderades efter en timme utan aktivitet. Skicka ett meddelande för att starta en ny.",
-    "retentionNote": "Chattar raderas permanent en timme efter det senaste meddelandet."
+    "retentionNote": "Chattar raderas permanent en timme efter det senaste meddelandet.",
+    "errorUnavailable": "Assistenten är inte tillgänglig just nu. Ditt meddelande är sparat: försök igen om en stund, eller tryck på “Prata med en person”."
   },
   "SmartOrder": {
     "launch": "Smart Bulk Order",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Visa ditt certifikat",
     "ctaUpload": "Ladda upp ett certifikat",
     "footer": "Detta är ett servicemeddelande om ditt kontos F-gas-efterlevnad enligt förordning (EU) 2024/573. Du får det oavsett dina marknadsföringspreferenser."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Assistenten är inte tillgänglig just nu. Öppna den officiella SDB-PDF:en nedan, eller ring NCEC på +44 1865 407 333 om det är brådskande."
+  },
+  "PasswordReset": {
+    "forgotLink": "Glömt ditt lösenord?",
+    "title": "Återställ ditt lösenord",
+    "close": "Stäng",
+    "emailIntro": "Ange den e-postadress du använder för My Energy. Om den tillhör ett konto med ett lösenord skickar vi en 6-siffrig kod till dig.",
+    "emailLabel": "E-post",
+    "sendCode": "Skicka kod",
+    "codeIntro": "Om ett konto finns för {email}, är en 6-siffrig kod på väg. Den går ut om 10 minuter.",
+    "codeLabel": "6-siffrig kod",
+    "verify": "Fortsätt",
+    "resend": "Skicka en ny kod",
+    "resent": "Om ett konto finns, är en ny kod på väg.",
+    "changeEmail": "Byt e-post",
+    "passwordIntro": "Välj ett nytt lösenord: minst 8 tecken, med en bokstav och en siffra.",
+    "newPassword": "Nytt lösenord",
+    "confirmPassword": "Bekräfta nytt lösenord",
+    "save": "Sätt nytt lösenord",
+    "doneTitle": "Lösenord uppdaterat",
+    "doneBody": "Du har loggats ut på alla enheter. Logga in med ditt nya lösenord.",
+    "backToSignIn": "Tillbaka till inloggning",
+    "googleHint": "Registrerad med Google? Det finns inget lösenord att återställa: använd “Fortsätt med Google”.",
+    "errorInvalidEmail": "Ange en giltig e-postadress.",
+    "errorInvalidCode": "Den koden är inte giltig eller har gått ut. Efter 5 felaktiga försök behöver du en ny kod.",
+    "errorRateLimited": "För många försök. Vänta några minuter och försök igen.",
+    "errorWeak": "Använd minst 8 tecken, med en bokstav och en siffra.",
+    "errorMismatch": "Lösenorden matchar inte.",
+    "errorFailed": "Något gick fel. Försök igen."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} är din My Energy-lösenordsåterställningskod",
+    "codeKicker": "Återställ lösenord",
+    "codeBody": "Använd denna kod för att återställa ditt My Energy-lösenord. Den går ut om 10 minuter.",
+    "codeFooter": "Om du inte begärde att återställa ditt lösenord, ignorera detta e-postmeddelande: ditt lösenord förblir detsamma.",
+    "googleSubject": "Återställning av ditt My Energy-lösenord",
+    "googleKicker": "Återställ lösenord",
+    "googleBody": "Någon begärde att återställa lösenordet för denna adress, men ditt konto loggar in med Google, så det finns inget lösenord att återställa. Använd “Fortsätt med Google” för att logga in.",
+    "googleCta": "Logga in",
+    "googleFooter": "Om detta inte var du, kan du ignorera detta e-postmeddelande.",
+    "changedSubject": "Ditt My Energy-lösenord har ändrats",
+    "changedKicker": "Säkerhetsmeddelande",
+    "changedBody": "Lösenordet för ditt My Energy-konto har just återställts, och alla enheter har loggats ut.",
+    "changedFooter": "Om detta inte var du, kontakta oss omedelbart och återställ ditt lösenord igen."
   }
 }

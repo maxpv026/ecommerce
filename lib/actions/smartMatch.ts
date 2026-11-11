@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
@@ -46,9 +47,10 @@ export async function smartMatch(rawQuery: string): Promise<SmartMatchResult> {
       )
       .join("\n");
 
-    const { object } = await generateObject({
+    const { output: object } = await generateText({
       model: openai("gpt-4o-mini"),
-      schema: MatchSchema,
+      output: Output.object({ schema: MatchSchema }),
+      abortSignal: aiTimeout(),
       prompt: `You match HVAC refrigerant products to a B2B customer's stated requirement.
 
 Requirement: "${parsed.data}"

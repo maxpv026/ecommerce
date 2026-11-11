@@ -1,4 +1,5 @@
-import { convertToModelMessages, streamText } from "ai";
+import { convertToModelMessages, createUIMessageStreamResponse, streamText } from "ai";
+import { ASSISTANT_UNAVAILABLE, CHAT_STREAM_TIMEOUT, timeoutAsUnavailable } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { boundTranscript } from "@/lib/aiMessages";
 import { SDS_DOCUMENTS } from "@/lib/sds";
@@ -73,7 +74,12 @@ export async function POST(req: Request) {
     system: systemPromptFor(gas),
     messages: await convertToModelMessages(messages),
     maxOutputTokens: 700,
+    timeout: CHAT_STREAM_TIMEOUT,
+    onError: ({ error }) => console.error("[chat-sds] stream error:", error),
+    onAbort: () => console.error("[chat-sds] stream timed out"),
   });
 
-  return result.toUIMessageStreamResponse();
+  // A stable code to the browser, never the provider's raw message; the modal
+  // shows its own localized "unavailable — open the PDF / call NCEC" notice.
+  return createUIMessageStreamResponse({ stream: timeoutAsUnavailable(result.toUIMessageStream({ onError: () => ASSISTANT_UNAVAILABLE })) });
 }

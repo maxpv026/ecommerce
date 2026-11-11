@@ -1249,7 +1249,8 @@
     "handoffNotice": "J'ai informé notre équipe. Un expert examinera cela et répondra ici sous peu.",
     "resolvedNotice": "Notre équipe a clôturé cette conversation. Envoyez un message pour en commencer une nouvelle.",
     "expiredNotice": "Cette conversation a été supprimée après une heure sans activité. Envoyez un message pour en démarrer une nouvelle.",
-    "retentionNote": "Les discussions sont définitivement supprimées une heure après le dernier message."
+    "retentionNote": "Les discussions sont définitivement supprimées une heure après le dernier message.",
+    "errorUnavailable": "L'assistant est actuellement indisponible. Votre message est enregistré : réessayez dans un moment, ou appuyez sur « Parler à une personne »."
   },
   "SmartOrder": {
     "launch": "Commande en gros intelligente",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Voir votre certificat",
     "ctaUpload": "Télécharger un certificat",
     "footer": "Ceci est un message de service concernant la conformité F-Gas de votre compte selon le Règlement (UE) 2024/573. Vous le recevez indépendamment de vos préférences marketing."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "L'assistant est actuellement indisponible. Ouvrez le PDF officiel de la FDS ci-dessous, ou appelez le NCEC au +44 1865 407 333 si c'est urgent."
+  },
+  "PasswordReset": {
+    "forgotLink": "Mot de passe oublié ?",
+    "title": "Réinitialiser votre mot de passe",
+    "close": "Fermer",
+    "emailIntro": "Entrez l'email que vous utilisez pour My Energy. S'il appartient à un compte avec un mot de passe, nous vous enverrons un code à 6 chiffres.",
+    "emailLabel": "Email",
+    "sendCode": "Envoyer le code",
+    "codeIntro": "Si un compte existe pour {email}, un code à 6 chiffres est en route. Il expire dans 10 minutes.",
+    "codeLabel": "Code à 6 chiffres",
+    "verify": "Continuer",
+    "resend": "Envoyer un nouveau code",
+    "resent": "Si un compte existe, un nouveau code est en route.",
+    "changeEmail": "Changer d'email",
+    "passwordIntro": "Choisissez un nouveau mot de passe : au moins 8 caractères, avec une lettre et un chiffre.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "save": "Définir le nouveau mot de passe",
+    "doneTitle": "Mot de passe mis à jour",
+    "doneBody": "Vous avez été déconnecté de tous les appareils. Connectez-vous avec votre nouveau mot de passe.",
+    "backToSignIn": "Retour à la connexion",
+    "googleHint": "Inscrit avec Google ? Il n'y a pas de mot de passe à réinitialiser : utilisez « Continuer avec Google ».",
+    "errorInvalidEmail": "Entrez une adresse email valide.",
+    "errorInvalidCode": "Ce code n'est pas valide ou a expiré. Après 5 tentatives incorrectes, vous aurez besoin d'un nouveau code.",
+    "errorRateLimited": "Trop de tentatives. Attendez quelques minutes et réessayez.",
+    "errorWeak": "Utilisez au moins 8 caractères, avec une lettre et un chiffre.",
+    "errorMismatch": "Les mots de passe ne correspondent pas.",
+    "errorFailed": "Une erreur s'est produite. Veuillez réessayer."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} est votre code de réinitialisation de mot de passe My Energy",
+    "codeKicker": "Réinitialisation du mot de passe",
+    "codeBody": "Utilisez ce code pour réinitialiser votre mot de passe My Energy. Il expire dans 10 minutes.",
+    "codeFooter": "Si vous n'avez pas demandé à réinitialiser votre mot de passe, ignorez cet email : votre mot de passe reste inchangé.",
+    "googleSubject": "Réinitialisation de votre mot de passe My Energy",
+    "googleKicker": "Réinitialisation du mot de passe",
+    "googleBody": "Quelqu'un a demandé à réinitialiser le mot de passe pour cette adresse, mais votre compte se connecte avec Google, donc il n'y a pas de mot de passe à réinitialiser. Utilisez « Continuer avec Google » pour vous connecter.",
+    "googleCta": "Se connecter",
+    "googleFooter": "Si ce n'était pas vous, vous pouvez ignorer cet email.",
+    "changedSubject": "Votre mot de passe My Energy a été modifié",
+    "changedKicker": "Avis de sécurité",
+    "changedBody": "Le mot de passe de votre compte My Energy vient d'être réinitialisé, et tous les appareils ont été déconnectés.",
+    "changedFooter": "Si ce n'était pas vous, contactez-nous immédiatement et réinitialisez votre mot de passe à nouveau."
   }
 }

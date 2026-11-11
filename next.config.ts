@@ -12,9 +12,10 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
  *
  * Next gzips static responses, which replaces Content-Length with a chunked
  * transfer — so three's GLTFLoader reports `lengthComputable: false` and the
- * product page's loading ring has no percentage to show. On 22–95 MB models
- * that matters. three checks `X-File-Size` before Content-Length for exactly
- * this situation, so hand it the real size.
+ * product page's loading ring has no percentage to show. The models are
+ * Draco-compressed now (~0.5–0.7 MB each, decoder in public/draco), so this
+ * mostly matters on slow mobile links — three checks `X-File-Size` before
+ * Content-Length for exactly this situation, so hand it the real size.
  */
 function modelSizeHeaders() {
   const dir = path.join(process.cwd(), "public");

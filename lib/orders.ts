@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomInt } from "node:crypto";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { calculateCartTotals, type CartTotals } from "@/lib/cart";
@@ -8,6 +9,7 @@ import { cylinderGasPrice } from "@/lib/pricing";
 import type { ProductModel } from "@/lib/generated/prisma/models";
 import { LISTED } from "@/lib/productFamily";
 import { getEffectiveFgasStatus } from "@/lib/fgas";
+import { expireCatalog } from "@/lib/catalogCache";
 import { basketRequiresFgas } from "@/lib/fgasSubstances";
 
 /**
@@ -113,9 +115,26 @@ export type Result<T> = { ok: true; value: T } | { ok: false; code: OrderErrorCo
 
 const DELIVERY_DAYS = 5;
 
-function generateOrderNumber(): string {
-  // Matches the existing "ORD-8472-EU" format.
-  return `ORD-${Math.floor(1000 + Math.random() * 9000)}-EU`;
+/**
+ * Unambiguous characters only (no 0/O, 1/I/L), so an order number read out
+ * over the phone or copied from a paper delivery note can't be mistyped into
+ * someone else's.
+ */
+const ORDER_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+
+/**
+ * `ORD-20261111-7KQ2MXHD`: the UTC date, then 8 characters from a CSPRNG —
+ * 31^8 ≈ 852 billion values per day. By the birthday bound even 200,000
+ * orders in ONE day has ~2 % odds of a single collision (6 characters would
+ * have given ~22). The old `ORD-1000…9999-EU` had 9,000 values in total, so
+ * collisions grew with every order until checkouts would have failed.
+ * commitOrder still retries on the unique constraint, as a formality.
+ */
+export function generateOrderNumber(now: Date = new Date()): string {
+  const day = now.toISOString().slice(0, 10).replace(/-/g, "");
+  let suffix = "";
+  for (let i = 0; i < 8; i++) suffix += ORDER_ALPHABET[randomInt(ORDER_ALPHABET.length)];
+  return `ORD-${day}-${suffix}`;
 }
 
 /** Thrown inside the order transaction to roll it back and surface OUT_OF_STOCK. */
@@ -335,6 +354,8 @@ export async function commitOrder(
         return order;
       });
 
+      // Stock was reserved: expire the cached catalog so the next buyer sees it.
+      expireCatalog();
       return { ok: true, value: { ...order, totalAmount: Number(order.totalAmount) } };
     } catch (error) {
       if (error instanceof OutOfStockError) return { ok: false, code: "OUT_OF_STOCK" };
@@ -392,5 +413,7 @@ export async function releaseOrder(orderId: string): Promise<boolean> {
       await tx.product.update({ where: { id: item.productId }, data: stockStateForQuantity(after.stockQuantity) });
     }
   });
+  // Stock went back on the shelf: the cached catalog must show it now.
+  expireCatalog();
   return true;
 }

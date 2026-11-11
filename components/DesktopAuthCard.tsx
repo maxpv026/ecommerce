@@ -4,6 +4,9 @@ import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
 import { useAuthFlow } from "@/lib/hooks/useAuthFlow";
 import GoogleGlyph from "./GoogleGlyph";
+import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useState } from "react";
+import { useTranslations as useResetTranslations } from "next-intl";
 
 const inputClasses =
   "h-[50px] w-full rounded-[14px] border border-slate-900/[.12] bg-white px-4 text-[14px] text-slate-900 transition-[border-color,box-shadow] duration-200 focus:outline-none focus:border-blue-700 focus:ring-[3.5px] focus:ring-blue-700/[.12] dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500";
@@ -49,6 +52,8 @@ export default function DesktopAuthCard() {
   } = useAuthFlow(callbackUrl, { initialMode, initialEmail, initialErrorCode: searchParams.get("error"), pendingGoogleTwoFactor: searchParams.get("step") === "google-2fa" });
 
   const isSignIn = mode === "signin";
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const tReset = useResetTranslations("PasswordReset");
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-slate-50 px-6 py-16 dark:bg-slate-950">
@@ -141,6 +146,14 @@ export default function DesktopAuthCard() {
                   />
                 </div>
               </div>
+
+              {isSignIn && (
+                <div className="-mt-1 flex justify-end">
+                  <button type="button" onClick={() => setForgotOpen(true)} data-forgot-open className="text-[12.5px] text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400">
+                    {tReset("forgotLink")}
+                  </button>
+                </div>
+              )}
 
               {!isSignIn && (
                 <div>
@@ -306,6 +319,7 @@ export default function DesktopAuthCard() {
           </>
         )}
       </div>
+      <ForgotPasswordModal open={forgotOpen} initialEmail={email} onClose={() => setForgotOpen(false)} />
     </div>
   );
 }

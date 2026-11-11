@@ -17,9 +17,8 @@ import prisma from "@/lib/prisma";
  *     thread, the admin actions) treats an hour-old session as gone, and
  *     deletes it on the spot;
  *   - by a sweep after every chat request (sweepExpiredChats), and by the
- *     daily cron (app/api/cron/chat-cleanup) as a backstop, for the ones
- *     nobody opened. (Daily because the Vercel Hobby plan rejects any
- *     cron that runs more than once a day; on Pro, make it "0 * * * *".)
+ *     hourly cron (app/api/cron/chat-cleanup, "0 * * * *" in vercel.json)
+ *     for the ones nobody opened.
  * ChatMessage rows go with their session (onDelete: Cascade).
  */
 
@@ -41,10 +40,8 @@ export async function purgeExpiredChats(now = Date.now()): Promise<number> {
 
 /**
  * The sweep, run after chat traffic (inside next/server's after(), so no
- * request waits on it). The Vercel Hobby plan allows cron jobs only once a
- * day, so the scheduled sweep alone could leave an unopened chat in the
- * table for up to 24 hours; sweeping whenever the chat is used keeps that
- * gap to "until the next chat request". Never throws.
+ * request waits on it), so an expired chat is gone by the next chat request
+ * even between the hourly cron runs. Never throws.
  */
 export async function sweepExpiredChats(): Promise<void> {
   try {

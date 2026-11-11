@@ -2,18 +2,11 @@ import { Suspense } from "react";
 import StorePage from "@/components/StorePage";
 import MarketAlertsCard from "@/components/MarketAlertsCard";
 import PageSkeleton from "@/components/PageSkeleton";
-import { auth } from "@/auth";
-import {
-  getFeaturedProducts,
-  getMarketAlerts,
-  getProfileDashboardData,
-  getRecommendedProducts,
-  getUserOrders,
-  getUserProfile,
-  type ProfileDashboardData,
-  type UserOrder,
-  type UserProfileData,
-} from "@/lib/data";
+import { getFeaturedProducts, getMarketAlerts } from "@/lib/data";
+
+// Static, refreshed at most every 5 minutes; catalogue changes expire the
+// featured products immediately (PRODUCTS_TAG, lib/catalogCache).
+export const revalidate = 300;
 
 /**
  * The skeleton this page shows while its data loads used to be
@@ -46,29 +39,18 @@ export default function Home() {
 }
 
 async function HomeContent() {
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  const [recommendedProducts, marketAlerts, dashboard, orders, profile] = await Promise.all([
-    userId ? getRecommendedProducts(userId, 4) : getFeaturedProducts(4),
-    getMarketAlerts(),
-    userId ? getProfileDashboardData(userId) : Promise.resolve<ProfileDashboardData | null>(null),
-    userId ? getUserOrders(userId) : Promise.resolve<UserOrder[]>([]),
-    userId ? getUserProfile(userId) : Promise.resolve<UserProfileData | null>(null),
-  ]);
+  // No auth() here: that one call forced the most-visited page to render on
+  // every request. The shell is the same for everyone; the signed-in parts
+  // come from /api/home/account in the browser (components/StorePage).
+  const [featuredProducts, marketAlerts] = await Promise.all([getFeaturedProducts(4), getMarketAlerts()]);
 
   return (
     <StorePage
-      recommendedProducts={recommendedProducts}
+      featuredProducts={featuredProducts}
       // A server component handed to a client one as a prop: its markup is
       // rendered here and never reaches the browser as JavaScript.
       marketAlertsCard={<MarketAlertsCard />}
       marketAlerts={marketAlerts}
-      dashboard={dashboard}
-      latestOrder={orders[0] ?? null}
-      orders={orders.slice(0, 4)}
-      certificate={profile?.certificate ?? null}
-      jobTitle={profile?.jobTitle ?? null}
     />
   );
 }

@@ -2,6 +2,7 @@ import "server-only";
 
 import { embed } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { Prisma } from "@/lib/generated/prisma/client";
 import prisma from "@/lib/prisma";
 
@@ -48,6 +49,9 @@ export async function embedQuery(text: string): Promise<number[]> {
   const { embedding } = await embed({
     model: openai.textEmbeddingModel(EMBEDDING_MODEL),
     value: text,
+    // Short: the answer still has to stream inside the route's 30 s, and a
+    // failed retrieval already degrades to "not in the knowledge base".
+    abortSignal: aiTimeout(5_000),
   });
   return embedding;
 }

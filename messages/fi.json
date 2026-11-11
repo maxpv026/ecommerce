@@ -1249,7 +1249,8 @@
     "handoffNotice": "Olen ilmoittanut tiimillemme. Asiantuntija tarkistaa tämän ja vastaa täällä pian.",
     "resolvedNotice": "Tiimimme on sulkenut tämän keskustelun. Lähetä viesti aloittaaksesi uuden.",
     "expiredNotice": "Tämä keskustelu poistettiin tunnin kuluttua ilman toimintaa. Lähetä viesti aloittaaksesi uuden.",
-    "retentionNote": "Keskustelut poistetaan pysyvästi tunnin kuluttua viimeisestä viestistä."
+    "retentionNote": "Keskustelut poistetaan pysyvästi tunnin kuluttua viimeisestä viestistä.",
+    "errorUnavailable": "Avustaja ei ole tällä hetkellä käytettävissä. Viestisi on tallennettu: yritä uudelleen hetken kuluttua tai napauta “Puhu henkilölle”."
   },
   "SmartOrder": {
     "launch": "Älykäs tukkutilaus",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Näytä sertifikaattisi",
     "ctaUpload": "Lataa sertifikaatti",
     "footer": "Tämä on palveluviesti tilisi F-kaasuvaatimustenmukaisuudesta asetuksen (EU) 2024/573 mukaisesti. Saat sen riippumatta markkinointiasetuksistasi."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Avustaja ei ole tällä hetkellä käytettävissä. Avaa virallinen KTT PDF alla tai soita NCEC:lle numeroon +44 1865 407 333, jos asia on kiireellinen."
+  },
+  "PasswordReset": {
+    "forgotLink": "Unohditko salasanasi?",
+    "title": "Nollaa salasanasi",
+    "close": "Sulje",
+    "emailIntro": "Anna sähköpostiosoite, jota käytät My Energy -palvelussa. Jos se kuuluu tilille, jolla on salasana, lähetämme sinulle 6-numeroisen koodin.",
+    "emailLabel": "Sähköposti",
+    "sendCode": "Lähetä koodi",
+    "codeIntro": "Jos tilille {email} on olemassa, 6-numeroinen koodi on matkalla. Se vanhenee 10 minuutissa.",
+    "codeLabel": "6-numeroinen koodi",
+    "verify": "Jatka",
+    "resend": "Lähetä uusi koodi",
+    "resent": "Jos tili on olemassa, uusi koodi on matkalla.",
+    "changeEmail": "Vaihda sähköpostiosoite",
+    "passwordIntro": "Valitse uusi salasana: vähintään 8 merkkiä, sisältäen kirjaimen ja numeron.",
+    "newPassword": "Uusi salasana",
+    "confirmPassword": "Vahvista uusi salasana",
+    "save": "Aseta uusi salasana",
+    "doneTitle": "Salasana päivitetty",
+    "doneBody": "Olet kirjautunut ulos kaikilta laitteilta. Kirjaudu sisään uudella salasanallasi.",
+    "backToSignIn": "Takaisin kirjautumiseen",
+    "googleHint": "Rekisteröidyitkö Googlella? Salasanaa ei tarvitse nollata: käytä “Jatka Googlella”.",
+    "errorInvalidEmail": "Anna kelvollinen sähköpostiosoite.",
+    "errorInvalidCode": "Koodi ei ole kelvollinen tai se on vanhentunut. Viiden väärän yrityksen jälkeen tarvitset uuden koodin.",
+    "errorRateLimited": "Liian monta yritystä. Odota muutama minuutti ja yritä uudelleen.",
+    "errorWeak": "Käytä vähintään 8 merkkiä, sisältäen kirjaimen ja numeron.",
+    "errorMismatch": "Salasanat eivät täsmää.",
+    "errorFailed": "Jokin meni pieleen. Yritä uudelleen."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} on My Energy -salasanan nollauskoodisi",
+    "codeKicker": "Salasanan nollaus",
+    "codeBody": "Käytä tätä koodia nollataksesi My Energy -salasanasi. Se vanhenee 10 minuutissa.",
+    "codeFooter": "Jos et pyytänyt salasanan nollausta, jätä tämä sähköposti huomiotta: salasanasi pysyy samana.",
+    "googleSubject": "My Energy -salasanan nollaus",
+    "googleKicker": "Salasanan nollaus",
+    "googleBody": "Joku pyysi nollaamaan tämän osoitteen salasanan, mutta tilisi kirjautuu sisään Googlella, joten salasanaa ei tarvitse nollata. Käytä “Jatka Googlella” kirjautuaksesi sisään.",
+    "googleCta": "Kirjaudu sisään",
+    "googleFooter": "Jos tämä et ollut sinä, voit jättää tämän sähköpostin huomiotta.",
+    "changedSubject": "My Energy -salasanasi on vaihdettu",
+    "changedKicker": "Turvailmoitus",
+    "changedBody": "My Energy -tilisi salasana on juuri nollattu, ja kaikki laitteet on kirjattu ulos.",
+    "changedFooter": "Jos tämä et ollut sinä, ota meihin heti yhteyttä ja nollaa salasanasi uudelleen."
   }
 }

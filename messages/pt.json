@@ -1249,7 +1249,8 @@
     "handoffNotice": "Notifiquei a nossa equipa. Um especialista irá rever isto e responder aqui em breve.",
     "resolvedNotice": "A nossa equipa encerrou esta conversa. Envie uma mensagem para iniciar uma nova.",
     "expiredNotice": "Esta conversa foi eliminada após uma hora sem atividade. Envie uma mensagem para iniciar uma nova.",
-    "retentionNote": "Os chats são eliminados permanentemente uma hora após a última mensagem."
+    "retentionNote": "Os chats são eliminados permanentemente uma hora após a última mensagem.",
+    "errorUnavailable": "O assistente não está disponível neste momento. A sua mensagem foi guardada: tente novamente em breve ou toque em “Falar com uma pessoa”."
   },
   "SmartOrder": {
     "launch": "Encomenda Inteligente em Massa",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Ver o seu certificado",
     "ctaUpload": "Carregar um certificado",
     "footer": "Esta é uma mensagem de serviço sobre a conformidade F-Gas da sua conta sob o Regulamento (UE) 2024/573. Recebe-a independentemente das suas preferências de marketing."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "O assistente não está disponível neste momento. Abra o PDF oficial da FDS abaixo ou ligue para o NCEC no +44 1865 407 333 se for urgente."
+  },
+  "PasswordReset": {
+    "forgotLink": "Esqueceu-se da sua palavra-passe?",
+    "title": "Redefinir a sua palavra-passe",
+    "close": "Fechar",
+    "emailIntro": "Insira o email que utiliza para a My Energy. Se pertencer a uma conta com palavra-passe, enviaremos um código de 6 dígitos.",
+    "emailLabel": "Email",
+    "sendCode": "Enviar código",
+    "codeIntro": "Se existir uma conta para {email}, um código de 6 dígitos está a caminho. Expira em 10 minutos.",
+    "codeLabel": "Código de 6 dígitos",
+    "verify": "Continuar",
+    "resend": "Enviar um novo código",
+    "resent": "Se existir uma conta, um novo código está a caminho.",
+    "changeEmail": "Alterar email",
+    "passwordIntro": "Escolha uma nova palavra-passe: pelo menos 8 caracteres, com uma letra e um número.",
+    "newPassword": "Nova palavra-passe",
+    "confirmPassword": "Confirmar nova palavra-passe",
+    "save": "Definir nova palavra-passe",
+    "doneTitle": "Palavra-passe atualizada",
+    "doneBody": "Foi desconectado de todos os dispositivos. Inicie sessão com a sua nova palavra-passe.",
+    "backToSignIn": "Voltar para iniciar sessão",
+    "googleHint": "Inscreveu-se com o Google? Não há palavra-passe para redefinir: use “Continuar com o Google”.",
+    "errorInvalidEmail": "Insira um endereço de email válido.",
+    "errorInvalidCode": "Esse código não é válido ou expirou. Após 5 tentativas erradas, precisará de um novo código.",
+    "errorRateLimited": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+    "errorWeak": "Use pelo menos 8 caracteres, com uma letra e um número.",
+    "errorMismatch": "As palavras-passe não coincidem.",
+    "errorFailed": "Algo correu mal. Por favor, tente novamente."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} é o seu código de redefinição de palavra-passe da My Energy",
+    "codeKicker": "Redefinição de palavra-passe",
+    "codeBody": "Use este código para redefinir a sua palavra-passe da My Energy. Expira em 10 minutos.",
+    "codeFooter": "Se não pediu para redefinir a sua palavra-passe, ignore este email: a sua palavra-passe permanecerá a mesma.",
+    "googleSubject": "Redefinição da sua palavra-passe da My Energy",
+    "googleKicker": "Redefinição de palavra-passe",
+    "googleBody": "Alguém pediu para redefinir a palavra-passe para este endereço, mas a sua conta inicia sessão com o Google, por isso não há palavra-passe para redefinir. Use “Continuar com o Google” para iniciar sessão.",
+    "googleCta": "Iniciar sessão",
+    "googleFooter": "Se não foi você, pode ignorar este email.",
+    "changedSubject": "A sua palavra-passe da My Energy foi alterada",
+    "changedKicker": "Aviso de segurança",
+    "changedBody": "A palavra-passe da sua conta My Energy foi redefinida e todos os dispositivos foram desconectados.",
+    "changedFooter": "Se não foi você, contacte-nos imediatamente e redefina a sua palavra-passe novamente."
   }
 }

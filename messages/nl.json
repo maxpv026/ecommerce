@@ -1249,7 +1249,8 @@
     "handoffNotice": "Ik heb ons team op de hoogte gebracht. Een expert zal dit bekijken en hier snel antwoorden.",
     "resolvedNotice": "Ons team heeft dit gesprek gesloten. Stuur een bericht om een nieuw gesprek te starten.",
     "expiredNotice": "Dit gesprek is na een uur zonder activiteit verwijderd. Stuur een bericht om een nieuw gesprek te starten.",
-    "retentionNote": "Chats worden één uur na het laatste bericht permanent verwijderd."
+    "retentionNote": "Chats worden één uur na het laatste bericht permanent verwijderd.",
+    "errorUnavailable": "De assistent is momenteel niet beschikbaar. Uw bericht is opgeslagen: probeer het over een moment opnieuw, of tik op \"Praat met een persoon\"."
   },
   "SmartOrder": {
     "launch": "Slimme Bulkbestelling",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Bekijk uw certificaat",
     "ctaUpload": "Upload een certificaat",
     "footer": "Dit is een servicemelding over de F-gas-compliance van uw account onder Verordening (EU) 2024/573. U ontvangt deze ongeacht uw marketingvoorkeuren."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "De assistent is momenteel niet beschikbaar. Open de officiële VIB PDF hieronder, of bel NCEC op +44 1865 407 333 als dit dringend is."
+  },
+  "PasswordReset": {
+    "forgotLink": "Wachtwoord vergeten?",
+    "title": "Reset uw wachtwoord",
+    "close": "Sluiten",
+    "emailIntro": "Voer het e-mailadres in dat u gebruikt voor My Energy. Als het bij een account met een wachtwoord hoort, sturen we u een code van 6 cijfers.",
+    "emailLabel": "E-mail",
+    "sendCode": "Code verzenden",
+    "codeIntro": "Als er een account bestaat voor {email}, is een code van 6 cijfers onderweg. Deze verloopt over 10 minuten.",
+    "codeLabel": "6-cijferige code",
+    "verify": "Doorgaan",
+    "resend": "Nieuwe code verzenden",
+    "resent": "Als er een account bestaat, is een nieuwe code onderweg.",
+    "changeEmail": "E-mail wijzigen",
+    "passwordIntro": "Kies een nieuw wachtwoord: minimaal 8 tekens, met een letter en een cijfer.",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmPassword": "Bevestig nieuw wachtwoord",
+    "save": "Nieuw wachtwoord instellen",
+    "doneTitle": "Wachtwoord bijgewerkt",
+    "doneBody": "U bent op elk apparaat afgemeld. Log in met uw nieuwe wachtwoord.",
+    "backToSignIn": "Terug naar inloggen",
+    "googleHint": "Aangemeld met Google? Er is geen wachtwoord om te resetten: gebruik \"Doorgaan met Google\".",
+    "errorInvalidEmail": "Voer een geldig e-mailadres in.",
+    "errorInvalidCode": "Die code is niet geldig of is verlopen. Na 5 verkeerde pogingen heeft u een nieuwe code nodig.",
+    "errorRateLimited": "Te veel pogingen. Wacht een paar minuten en probeer het opnieuw.",
+    "errorWeak": "Gebruik minimaal 8 tekens, met een letter en een cijfer.",
+    "errorMismatch": "De wachtwoorden komen niet overeen.",
+    "errorFailed": "Er is iets misgegaan. Probeer het opnieuw."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} is uw My Energy-wachtwoordherstecode",
+    "codeKicker": "Wachtwoordherstel",
+    "codeBody": "Gebruik deze code om uw My Energy-wachtwoord te resetten. Deze verloopt over 10 minuten.",
+    "codeFooter": "Als u niet heeft gevraagd om uw wachtwoord te resetten, negeer deze e-mail: uw wachtwoord blijft hetzelfde.",
+    "googleSubject": "Uw My Energy-wachtwoord resetten",
+    "googleKicker": "Wachtwoordherstel",
+    "googleBody": "Iemand heeft gevraagd om het wachtwoord voor dit adres te resetten, maar uw account logt in met Google, dus er is geen wachtwoord om te resetten. Gebruik \"Doorgaan met Google\" om in te loggen.",
+    "googleCta": "Inloggen",
+    "googleFooter": "Als u dit niet was, kunt u deze e-mail negeren.",
+    "changedSubject": "Uw My Energy-wachtwoord is gewijzigd",
+    "changedKicker": "Beveiligingsmelding",
+    "changedBody": "Het wachtwoord voor uw My Energy-account is zojuist gereset en elk apparaat is afgemeld.",
+    "changedFooter": "Als u dit niet was, neem dan onmiddellijk contact met ons op en reset uw wachtwoord opnieuw."
   }
 }

@@ -1248,7 +1248,8 @@
     "handoffNotice": "I've notified our team. An expert will review this and reply here shortly.",
     "resolvedNotice": "Our team closed this conversation. Send a message to start a new one.",
     "expiredNotice": "This conversation was deleted after an hour without activity. Send a message to start a new one.",
-    "retentionNote": "Chats are permanently deleted one hour after the last message."
+    "retentionNote": "Chats are permanently deleted one hour after the last message.",
+    "errorUnavailable": "The assistant is unavailable right now. Your message is saved: try again in a moment, or tap “Talk to a person”."
   },
   "SmartOrder": {
     "launch": "Smart Bulk Order",
@@ -1444,5 +1445,51 @@
     "ctaProfile": "View your certificate",
     "ctaUpload": "Upload a certificate",
     "footer": "This is a service message about your account's F-Gas compliance under Regulation (EU) 2024/573. You receive it regardless of your marketing preferences."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "The assistant is unavailable right now. Open the official SDS PDF below, or call NCEC on +44 1865 407 333 if this is urgent."
+  },
+  "PasswordReset": {
+    "forgotLink": "Forgot your password?",
+    "title": "Reset your password",
+    "close": "Close",
+    "emailIntro": "Enter the email you use for My Energy. If it belongs to an account with a password, we'll send you a 6-digit code.",
+    "emailLabel": "Email",
+    "sendCode": "Send code",
+    "codeIntro": "If an account exists for {email}, a 6-digit code is on its way. It expires in 10 minutes.",
+    "codeLabel": "6-digit code",
+    "verify": "Continue",
+    "resend": "Send a new code",
+    "resent": "If an account exists, a new code is on its way.",
+    "changeEmail": "Change email",
+    "passwordIntro": "Choose a new password: at least 8 characters, with a letter and a number.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "save": "Set new password",
+    "doneTitle": "Password updated",
+    "doneBody": "You've been signed out on every device. Sign in with your new password.",
+    "backToSignIn": "Back to sign in",
+    "googleHint": "Signed up with Google? There's no password to reset: use “Continue with Google”.",
+    "errorInvalidEmail": "Enter a valid email address.",
+    "errorInvalidCode": "That code isn't valid or has expired. After 5 wrong tries you'll need a new code.",
+    "errorRateLimited": "Too many attempts. Wait a few minutes and try again.",
+    "errorWeak": "Use at least 8 characters, with a letter and a number.",
+    "errorMismatch": "The passwords don't match.",
+    "errorFailed": "Something went wrong. Please try again."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} is your My Energy password reset code",
+    "codeKicker": "Password reset",
+    "codeBody": "Use this code to reset your My Energy password. It expires in 10 minutes.",
+    "codeFooter": "If you didn't ask to reset your password, ignore this email: your password stays the same.",
+    "googleSubject": "Resetting your My Energy password",
+    "googleKicker": "Password reset",
+    "googleBody": "Someone asked to reset the password for this address, but your account signs in with Google, so there is no password to reset. Use “Continue with Google” to sign in.",
+    "googleCta": "Sign in",
+    "googleFooter": "If this wasn't you, you can ignore this email.",
+    "changedSubject": "Your My Energy password was changed",
+    "changedKicker": "Security notice",
+    "changedBody": "The password for your My Energy account was just reset, and every device was signed out.",
+    "changedFooter": "If this wasn't you, contact us right away and reset your password again."
   }
 }

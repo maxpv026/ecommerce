@@ -1249,7 +1249,8 @@
     "handoffNotice": "Obavijestio sam naš tim. Stručnjak će ovo pregledati i uskoro odgovoriti ovdje.",
     "resolvedNotice": "Naš tim je zatvorio ovaj razgovor. Pošaljite poruku za početak novog.",
     "expiredNotice": "Ovaj razgovor je izbrisan nakon sat vremena bez aktivnosti. Pošaljite poruku za početak novog.",
-    "retentionNote": "Razgovori se trajno brišu sat vremena nakon posljednje poruke."
+    "retentionNote": "Razgovori se trajno brišu sat vremena nakon posljednje poruke.",
+    "errorUnavailable": "Asistent trenutno nije dostupan. Vaša poruka je spremljena: pokušajte ponovno za trenutak ili dodirnite „Razgovarajte s osobom“."
   },
   "SmartOrder": {
     "launch": "Pametna skupna narudžba",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Pogledajte svoj certifikat",
     "ctaUpload": "Prenesite certifikat",
     "footer": "Ovo je servisna poruka o usklađenosti vašeg računa s F-plinom prema Uredbi (EU) 2024/573. Primate je bez obzira na vaše marketinške postavke."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Asistent trenutno nije dostupan. Otvorite službeni PDF SDS-a u nastavku ili nazovite NCEC na +44 1865 407 333 ako je hitno."
+  },
+  "PasswordReset": {
+    "forgotLink": "Zaboravili ste lozinku?",
+    "title": "Resetirajte lozinku",
+    "close": "Zatvori",
+    "emailIntro": "Unesite email koji koristite za My Energy. Ako pripada računu s lozinkom, poslat ćemo vam 6-znamenkasti kod.",
+    "emailLabel": "Email",
+    "sendCode": "Pošalji kod",
+    "codeIntro": "Ako račun postoji za {email}, 6-znamenkasti kod je na putu. Istječe za 10 minuta.",
+    "codeLabel": "6-znamenkasti kod",
+    "verify": "Nastavi",
+    "resend": "Pošalji novi kod",
+    "resent": "Ako račun postoji, novi kod je na putu.",
+    "changeEmail": "Promijeni email",
+    "passwordIntro": "Odaberite novu lozinku: najmanje 8 znakova, s jednim slovom i brojem.",
+    "newPassword": "Nova lozinka",
+    "confirmPassword": "Potvrdite novu lozinku",
+    "save": "Postavi novu lozinku",
+    "doneTitle": "Lozinka ažurirana",
+    "doneBody": "Odjavljeni ste na svim uređajima. Prijavite se s novom lozinkom.",
+    "backToSignIn": "Natrag na prijavu",
+    "googleHint": "Prijavili ste se s Googleom? Nema lozinke za resetiranje: koristite „Nastavi s Googleom“.",
+    "errorInvalidEmail": "Unesite valjanu email adresu.",
+    "errorInvalidCode": "Taj kod nije valjan ili je istekao. Nakon 5 pogrešnih pokušaja trebat ćete novi kod.",
+    "errorRateLimited": "Previše pokušaja. Pričekajte nekoliko minuta i pokušajte ponovno.",
+    "errorWeak": "Koristite najmanje 8 znakova, s jednim slovom i brojem.",
+    "errorMismatch": "Lozinke se ne podudaraju.",
+    "errorFailed": "Nešto je pošlo po zlu. Molimo pokušajte ponovno."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} je vaš My Energy kod za resetiranje lozinke",
+    "codeKicker": "Resetiranje lozinke",
+    "codeBody": "Koristite ovaj kod za resetiranje lozinke za My Energy. Istječe za 10 minuta.",
+    "codeFooter": "Ako niste zatražili resetiranje lozinke, zanemarite ovaj email: vaša lozinka ostaje ista.",
+    "googleSubject": "Resetiranje lozinke za My Energy",
+    "googleKicker": "Resetiranje lozinke",
+    "googleBody": "Netko je zatražio resetiranje lozinke za ovu adresu, ali vaš račun se prijavljuje s Googleom, tako da nema lozinke za resetiranje. Koristite „Nastavi s Googleom“ za prijavu.",
+    "googleCta": "Prijavite se",
+    "googleFooter": "Ako to niste bili vi, možete zanemariti ovaj email.",
+    "changedSubject": "Vaša My Energy lozinka je promijenjena",
+    "changedKicker": "Sigurnosna obavijest",
+    "changedBody": "Lozinka za vaš My Energy račun je upravo resetirana, a svi uređaji su odjavljeni.",
+    "changedFooter": "Ako to niste bili vi, odmah nas kontaktirajte i ponovno resetirajte lozinku."
   }
 }

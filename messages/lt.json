@@ -1249,7 +1249,8 @@
     "handoffNotice": "Pranešiau mūsų komandai. Ekspertas peržiūrės tai ir netrukus atsakys čia.",
     "resolvedNotice": "Mūsų komanda uždarė šį pokalbį. Siųskite žinutę, kad pradėtumėte naują.",
     "expiredNotice": "Šis pokalbis buvo ištrintas po valandos neveiklumo. Siųskite žinutę, kad pradėtumėte naują.",
-    "retentionNote": "Pokalbiai visam laikui ištrinami praėjus valandai po paskutinės žinutės."
+    "retentionNote": "Pokalbiai visam laikui ištrinami praėjus valandai po paskutinės žinutės.",
+    "errorUnavailable": "Asistentas šiuo metu nepasiekiamas. Jūsų žinutė išsaugota: bandykite dar kartą po akimirkos arba spustelėkite „Kalbėti su asmeniu“."
   },
   "SmartOrder": {
     "launch": "Išmanusis didmeninis užsakymas",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Peržiūrėti savo sertifikatą",
     "ctaUpload": "Įkelti sertifikatą",
     "footer": "Tai yra paslaugos pranešimas apie jūsų paskyros F dujų atitiktį pagal Reglamentą (ES) 2024/573. Jūs jį gaunate nepriklausomai nuo jūsų rinkodaros pasirinkimų."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Asistentas šiuo metu nepasiekiamas. Atidarykite oficialų SDL PDF žemiau arba, jei tai skubu, skambinkite NCEC numeriu +44 1865 407 333."
+  },
+  "PasswordReset": {
+    "forgotLink": "Pamiršote slaptažodį?",
+    "title": "Atstatyti slaptažodį",
+    "close": "Uždaryti",
+    "emailIntro": "Įveskite el. paštą, kurį naudojate My Energy. Jei jis priklauso paskyrai su slaptažodžiu, atsiųsime jums 6 skaitmenų kodą.",
+    "emailLabel": "El. paštas",
+    "sendCode": "Siųsti kodą",
+    "codeIntro": "Jei paskyra egzistuoja {email}, 6 skaitmenų kodas jau pakeliui. Jis galioja 10 minučių.",
+    "codeLabel": "6 skaitmenų kodas",
+    "verify": "Tęsti",
+    "resend": "Siųsti naują kodą",
+    "resent": "Jei paskyra egzistuoja, naujas kodas jau pakeliui.",
+    "changeEmail": "Keisti el. paštą",
+    "passwordIntro": "Pasirinkite naują slaptažodį: bent 8 simboliai, su raide ir skaičiumi.",
+    "newPassword": "Naujas slaptažodis",
+    "confirmPassword": "Patvirtinti naują slaptažodį",
+    "save": "Nustatyti naują slaptažodį",
+    "doneTitle": "Slaptažodis atnaujintas",
+    "doneBody": "Jūs buvote atsijungę visuose įrenginiuose. Prisijunkite su nauju slaptažodžiu.",
+    "backToSignIn": "Grįžti į prisijungimą",
+    "googleHint": "Užsiregistravote su Google? Nėra slaptažodžio, kurį reikėtų atstatyti: naudokite „Tęsti su Google“.",
+    "errorInvalidEmail": "Įveskite galiojantį el. pašto adresą.",
+    "errorInvalidCode": "Tas kodas neteisingas arba pasibaigęs. Po 5 neteisingų bandymų jums reikės naujo kodo.",
+    "errorRateLimited": "Per daug bandymų. Palaukite kelias minutes ir bandykite dar kartą.",
+    "errorWeak": "Naudokite bent 8 simbolius, su raide ir skaičiumi.",
+    "errorMismatch": "Slaptažodžiai nesutampa.",
+    "errorFailed": "Įvyko klaida. Bandykite dar kartą."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} yra jūsų My Energy slaptažodžio atstatymo kodas",
+    "codeKicker": "Slaptažodžio atstatymas",
+    "codeBody": "Naudokite šį kodą, kad atstatytumėte savo My Energy slaptažodį. Jis galioja 10 minučių.",
+    "codeFooter": "Jei neprašėte atstatyti slaptažodžio, ignoruokite šį el. laišką: jūsų slaptažodis liks tas pats.",
+    "googleSubject": "My Energy slaptažodžio atstatymas",
+    "googleKicker": "Slaptažodžio atstatymas",
+    "googleBody": "Kažkas paprašė atstatyti šio adreso slaptažodį, bet jūsų paskyra prisijungia su Google, todėl nėra slaptažodžio, kurį reikėtų atstatyti. Naudokite „Tęsti su Google“ prisijungimui.",
+    "googleCta": "Prisijungti",
+    "googleFooter": "Jei tai nebuvote jūs, galite ignoruoti šį el. laišką.",
+    "changedSubject": "Jūsų My Energy slaptažodis buvo pakeistas",
+    "changedKicker": "Saugumo pranešimas",
+    "changedBody": "Jūsų My Energy paskyros slaptažodis buvo ką tik atstatytas, ir visi įrenginiai buvo atsijungti.",
+    "changedFooter": "Jei tai nebuvote jūs, nedelsdami susisiekite su mumis ir atstatykite slaptažodį dar kartą."
   }
 }

@@ -28,3 +28,10 @@ export const CATALOG_COUNTS_TAG = "catalog-counts";
  * fine; a figure that never moves after a big order is not.
  */
 export const ADMIN_ANALYTICS_TAG = "admin-analytics";
+
+/**
+ * The storefront catalog (lib/data getProducts / getFeaturedProducts /
+ * getGasMarkCounts, and the ISR product pages that read them). Expired by
+ * lib/catalogCache expireCatalog() on every stock, price or variant change.
+ */
+export const PRODUCTS_TAG = "products-catalog";

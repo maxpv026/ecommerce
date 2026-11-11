@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@/auth";
 import { requireAdmin } from "@/lib/fgasReview";
@@ -89,9 +90,10 @@ export async function generateBroadcastDraft(instruction: unknown): Promise<Broa
   if (!process.env.OPENAI_API_KEY) return { ok: false, error: "AI drafting isn't configured (OPENAI_API_KEY is not set)." };
 
   try {
-    const { object } = await generateObject({
+    const { output: object } = await generateText({
       model: openai(MODEL),
-      schema: DraftSchema,
+      output: Output.object({ schema: DraftSchema }),
+      abortSignal: aiTimeout(),
       system: SYSTEM,
       prompt: `Sender's instruction:\n"""\n${parsed.data}\n"""`,
       temperature: 0.3,

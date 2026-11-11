@@ -1249,7 +1249,8 @@
     "handoffNotice": "Olen teavitanud meie meeskonda. Ekspert vaatab selle üle ja vastab siin varsti.",
     "resolvedNotice": "Meie meeskond sulges selle vestluse. Saatke sõnum, et alustada uut vestlust.",
     "expiredNotice": "See vestlus kustutati pärast tund aega tegevusetust. Saatke sõnum, et alustada uut vestlust.",
-    "retentionNote": "Vestlused kustutatakse jäädavalt tund pärast viimast sõnumit."
+    "retentionNote": "Vestlused kustutatakse jäädavalt tund pärast viimast sõnumit.",
+    "errorUnavailable": "Assistent ei ole hetkel saadaval. Teie sõnum on salvestatud: proovige uuesti mõne aja pärast või vajutage „Rääkige inimesega“."
   },
   "SmartOrder": {
     "launch": "Nutikas hulgitellimus",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Vaata oma sertifikaati",
     "ctaUpload": "Laadi üles sertifikaat",
     "footer": "See on teenuse teade teie konto F-gaasi vastavuse kohta vastavalt määrusele (EL) 2024/573. Saate selle olenemata oma turunduseelistustest."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Assistent ei ole hetkel saadaval. Avage allolev ametlik ohutuskaardi PDF või helistage NCEC-le numbril +44 1865 407 333, kui see on kiire."
+  },
+  "PasswordReset": {
+    "forgotLink": "Unustasite oma parooli?",
+    "title": "Lähtestage oma parool",
+    "close": "Sulge",
+    "emailIntro": "Sisestage e-post, mida kasutate My Energy jaoks. Kui see kuulub kontole, millel on parool, saadame teile 6-kohalise koodi.",
+    "emailLabel": "E-post",
+    "sendCode": "Saada kood",
+    "codeIntro": "Kui {email} jaoks on konto olemas, on 6-kohaline kood teel. See aegub 10 minuti pärast.",
+    "codeLabel": "6-kohaline kood",
+    "verify": "Jätka",
+    "resend": "Saada uus kood",
+    "resent": "Kui konto on olemas, on uus kood teel.",
+    "changeEmail": "Muuda e-posti",
+    "passwordIntro": "Valige uus parool: vähemalt 8 tähemärki, sisaldades tähte ja numbrit.",
+    "newPassword": "Uus parool",
+    "confirmPassword": "Kinnitage uus parool",
+    "save": "Määra uus parool",
+    "doneTitle": "Parool uuendatud",
+    "doneBody": "Teid on igast seadmest välja logitud. Logige sisse oma uue parooliga.",
+    "backToSignIn": "Tagasi sisselogimise juurde",
+    "googleHint": "Registreerusite Google'iga? Parooli pole vaja lähtestada: kasutage „Jätka Google'iga“.",
+    "errorInvalidEmail": "Sisestage kehtiv e-posti aadress.",
+    "errorInvalidCode": "See kood ei ole kehtiv või on aegunud. Pärast 5 vale katset vajate uut koodi.",
+    "errorRateLimited": "Liiga palju katseid. Oodake mõni minut ja proovige uuesti.",
+    "errorWeak": "Kasutage vähemalt 8 tähemärki, sisaldades tähte ja numbrit.",
+    "errorMismatch": "Paroolid ei kattu.",
+    "errorFailed": "Midagi läks valesti. Palun proovige uuesti."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} on teie My Energy parooli lähtestamise kood",
+    "codeKicker": "Parooli lähtestamine",
+    "codeBody": "Kasutage seda koodi oma My Energy parooli lähtestamiseks. See aegub 10 minuti pärast.",
+    "codeFooter": "Kui te ei palunud oma parooli lähtestada, ignoreerige seda e-kirja: teie parool jääb samaks.",
+    "googleSubject": "Teie My Energy parooli lähtestamine",
+    "googleKicker": "Parooli lähtestamine",
+    "googleBody": "Keegi palus selle aadressi parooli lähtestada, kuid teie konto sisselogimine toimub Google'iga, seega pole parooli vaja lähtestada. Kasutage sisselogimiseks „Jätka Google'iga“.",
+    "googleCta": "Logi sisse",
+    "googleFooter": "Kui see ei olnud teie, võite selle e-kirja ignoreerida.",
+    "changedSubject": "Teie My Energy parool muudeti",
+    "changedKicker": "Turvateade",
+    "changedBody": "Teie My Energy konto parool just lähtestati ja kõik seadmed logiti välja.",
+    "changedFooter": "Kui see ei olnud teie, võtke meiega kohe ühendust ja lähtestage oma parool uuesti."
   }
 }

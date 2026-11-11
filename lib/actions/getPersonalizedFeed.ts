@@ -2,6 +2,7 @@
 
 import { unstable_cache } from "next/cache";
 import { generateText } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@/auth";
 import {
@@ -308,6 +309,7 @@ const cachedBriefing = unstable_cache(
     const ask = (correction?: string) =>
       generateText({
         model: openai("gpt-4o-mini"),
+        abortSignal: aiTimeout(),
         system: SYSTEM_PROMPT,
         prompt: [
           `DATA:\n${JSON.stringify(data, null, 2)}`,

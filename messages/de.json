@@ -1249,7 +1249,8 @@
     "handoffNotice": "Ich habe unser Team benachrichtigt. Ein Experte wird dies prüfen und hier in Kürze antworten.",
     "resolvedNotice": "Unser Team hat dieses Gespräch geschlossen. Senden Sie eine Nachricht, um ein neues zu starten.",
     "expiredNotice": "Dieses Gespräch wurde nach einer Stunde ohne Aktivität gelöscht. Senden Sie eine Nachricht, um ein neues zu starten.",
-    "retentionNote": "Chats werden eine Stunde nach der letzten Nachricht dauerhaft gelöscht."
+    "retentionNote": "Chats werden eine Stunde nach der letzten Nachricht dauerhaft gelöscht.",
+    "errorUnavailable": "Der Assistent ist derzeit nicht verfügbar. Ihre Nachricht wurde gespeichert: Versuchen Sie es in einem Moment erneut oder tippen Sie auf „Mit einer Person sprechen“."
   },
   "SmartOrder": {
     "launch": "Intelligente Großbestellung",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Ihr Zertifikat anzeigen",
     "ctaUpload": "Ein Zertifikat hochladen",
     "footer": "Dies ist eine Servicenachricht über die F-Gas-Konformität Ihres Kontos gemäß Verordnung (EU) 2024/573. Sie erhalten diese unabhängig von Ihren Marketingpräferenzen."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Der Assistent ist derzeit nicht verfügbar. Öffnen Sie das offizielle SDB-PDF unten oder rufen Sie NCEC unter +44 1865 407 333 an, wenn es dringend ist."
+  },
+  "PasswordReset": {
+    "forgotLink": "Passwort vergessen?",
+    "title": "Passwort zurücksetzen",
+    "close": "Schließen",
+    "emailIntro": "Geben Sie die E-Mail-Adresse ein, die Sie für My Energy verwenden. Wenn sie zu einem Konto mit Passwort gehört, senden wir Ihnen einen 6-stelligen Code.",
+    "emailLabel": "E-Mail",
+    "sendCode": "Code senden",
+    "codeIntro": "Wenn ein Konto für {email} existiert, ist ein 6-stelliger Code auf dem Weg. Er läuft in 10 Minuten ab.",
+    "codeLabel": "6-stelliger Code",
+    "verify": "Weiter",
+    "resend": "Neuen Code senden",
+    "resent": "Wenn ein Konto existiert, ist ein neuer Code auf dem Weg.",
+    "changeEmail": "E-Mail ändern",
+    "passwordIntro": "Wählen Sie ein neues Passwort: mindestens 8 Zeichen, mit einem Buchstaben und einer Zahl.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Neues Passwort bestätigen",
+    "save": "Neues Passwort festlegen",
+    "doneTitle": "Passwort aktualisiert",
+    "doneBody": "Sie wurden auf allen Geräten abgemeldet. Melden Sie sich mit Ihrem neuen Passwort an.",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "googleHint": "Mit Google registriert? Es gibt kein Passwort zum Zurücksetzen: Verwenden Sie „Mit Google fortfahren“.",
+    "errorInvalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein.",
+    "errorInvalidCode": "Dieser Code ist ungültig oder abgelaufen. Nach 5 falschen Versuchen benötigen Sie einen neuen Code.",
+    "errorRateLimited": "Zu viele Versuche. Warten Sie ein paar Minuten und versuchen Sie es erneut.",
+    "errorWeak": "Verwenden Sie mindestens 8 Zeichen, mit einem Buchstaben und einer Zahl.",
+    "errorMismatch": "Die Passwörter stimmen nicht überein.",
+    "errorFailed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} ist Ihr My Energy Passwort-Zurücksetzungscode",
+    "codeKicker": "Passwort zurücksetzen",
+    "codeBody": "Verwenden Sie diesen Code, um Ihr My Energy Passwort zurückzusetzen. Er läuft in 10 Minuten ab.",
+    "codeFooter": "Wenn Sie nicht darum gebeten haben, Ihr Passwort zurückzusetzen, ignorieren Sie diese E-Mail: Ihr Passwort bleibt unverändert.",
+    "googleSubject": "Zurücksetzen Ihres My Energy Passworts",
+    "googleKicker": "Passwort zurücksetzen",
+    "googleBody": "Jemand hat darum gebeten, das Passwort für diese Adresse zurückzusetzen, aber Ihr Konto meldet sich mit Google an, daher gibt es kein Passwort zum Zurücksetzen. Verwenden Sie „Mit Google fortfahren“, um sich anzumelden.",
+    "googleCta": "Anmelden",
+    "googleFooter": "Wenn Sie das nicht waren, können Sie diese E-Mail ignorieren.",
+    "changedSubject": "Ihr My Energy Passwort wurde geändert",
+    "changedKicker": "Sicherheitsbenachrichtigung",
+    "changedBody": "Das Passwort für Ihr My Energy Konto wurde gerade zurückgesetzt und alle Geräte wurden abgemeldet.",
+    "changedFooter": "Wenn Sie das nicht waren, kontaktieren Sie uns sofort und setzen Sie Ihr Passwort erneut zurück."
   }
 }

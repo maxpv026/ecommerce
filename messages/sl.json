@@ -1249,7 +1249,8 @@
     "handoffNotice": "Obvestil sem našo ekipo. Strokovnjak bo to pregledal in kmalu odgovoril tukaj.",
     "resolvedNotice": "Naša ekipa je zaprla ta pogovor. Pošljite sporočilo za začetek novega.",
     "expiredNotice": "Ta pogovor je bil izbrisan po eni uri brez aktivnosti. Pošljite sporočilo za začetek novega.",
-    "retentionNote": "Klepeti so trajno izbrisani eno uro po zadnjem sporočilu."
+    "retentionNote": "Klepeti so trajno izbrisani eno uro po zadnjem sporočilu.",
+    "errorUnavailable": "Pomočnik trenutno ni na voljo. Vaše sporočilo je shranjeno: poskusite znova čez trenutek ali tapnite »Pogovor z osebo«."
   },
   "SmartOrder": {
     "launch": "Pametno naročilo v razsutem stanju",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Ogled vašega potrdila",
     "ctaUpload": "Naloži potrdilo",
     "footer": "To je sporočilo o storitvi glede skladnosti vašega računa z uredbo (EU) 2024/573 o F-Gas. Prejemate ga ne glede na vaše marketinške nastavitve."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Pomočnik trenutno ni na voljo. Odprite uradni PDF varnostnega lista spodaj ali pokličite NCEC na +44 1865 407 333, če je nujno."
+  },
+  "PasswordReset": {
+    "forgotLink": "Ste pozabili geslo?",
+    "title": "Ponastavite geslo",
+    "close": "Zapri",
+    "emailIntro": "Vnesite e-pošto, ki jo uporabljate za My Energy. Če pripada računu z geslom, vam bomo poslali 6-mestno kodo.",
+    "emailLabel": "E-pošta",
+    "sendCode": "Pošlji kodo",
+    "codeIntro": "Če račun obstaja za {email}, je 6-mestna koda na poti. Poteče čez 10 minut.",
+    "codeLabel": "6-mestna koda",
+    "verify": "Nadaljuj",
+    "resend": "Pošlji novo kodo",
+    "resent": "Če račun obstaja, je nova koda na poti.",
+    "changeEmail": "Spremeni e-pošto",
+    "passwordIntro": "Izberite novo geslo: vsaj 8 znakov, z eno črko in eno številko.",
+    "newPassword": "Novo geslo",
+    "confirmPassword": "Potrdite novo geslo",
+    "save": "Nastavi novo geslo",
+    "doneTitle": "Geslo posodobljeno",
+    "doneBody": "Odjavljeni ste bili na vseh napravah. Prijavite se z novim geslom.",
+    "backToSignIn": "Nazaj na prijavo",
+    "googleHint": "Ste se prijavili z Googlom? Gesla ni treba ponastaviti: uporabite »Nadaljuj z Googlom«.",
+    "errorInvalidEmail": "Vnesite veljaven e-poštni naslov.",
+    "errorInvalidCode": "Ta koda ni veljavna ali je potekla. Po 5 napačnih poskusih boste potrebovali novo kodo.",
+    "errorRateLimited": "Preveč poskusov. Počakajte nekaj minut in poskusite znova.",
+    "errorWeak": "Uporabite vsaj 8 znakov, z eno črko in eno številko.",
+    "errorMismatch": "Gesli se ne ujemata.",
+    "errorFailed": "Nekaj je šlo narobe. Poskusite znova."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} je vaša koda za ponastavitev gesla My Energy",
+    "codeKicker": "Ponastavitev gesla",
+    "codeBody": "Uporabite to kodo za ponastavitev gesla My Energy. Poteče čez 10 minut.",
+    "codeFooter": "Če niste zahtevali ponastavitve gesla, ignorirajte to e-pošto: vaše geslo ostane enako.",
+    "googleSubject": "Ponastavitev gesla za My Energy",
+    "googleKicker": "Ponastavitev gesla",
+    "googleBody": "Nekdo je zahteval ponastavitev gesla za ta naslov, vendar se vaš račun prijavi z Googlom, zato gesla ni treba ponastaviti. Uporabite »Nadaljuj z Googlom« za prijavo.",
+    "googleCta": "Prijava",
+    "googleFooter": "Če to niste bili vi, lahko ignorirate to e-pošto.",
+    "changedSubject": "Vaše geslo za My Energy je bilo spremenjeno",
+    "changedKicker": "Varnostno obvestilo",
+    "changedBody": "Geslo za vaš račun My Energy je bilo pravkar ponastavljeno in vse naprave so bile odjavljene.",
+    "changedFooter": "Če to niste bili vi, nas takoj kontaktirajte in ponovno ponastavite geslo."
   }
 }

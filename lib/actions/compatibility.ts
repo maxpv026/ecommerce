@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
@@ -72,9 +73,10 @@ export async function checkCompatibility(rawInput: {
 
     const language = answerLanguage(parsed.data.system, parsed.data.locale);
 
-    const { object } = await generateObject({
+    const { output: object } = await generateText({
       model: openai(COMPAT_MODEL),
-      schema: VerdictSchema,
+      output: Output.object({ schema: VerdictSchema }),
+      abortSignal: aiTimeout(),
       prompt: `Write your entire response in ${language}. Every word of the summary and every chip must be in ${language}, whatever language these instructions or the product data happen to be in.
 
 You are a refrigerant applications expert covering both stationary HVAC/R and automotive mobile air-conditioning (MAC).

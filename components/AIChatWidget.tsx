@@ -67,7 +67,7 @@ export default function AIChatWidget() {
         prepareSendMessagesRequest: ({ messages, body }) => ({ body: { message: messages[messages.length - 1], ...body } }),
       })
   );
-  const { messages, setMessages, sendMessage, status } = useChat<SupportUIMessage>({ transport });
+  const { messages, setMessages, sendMessage, status, error: streamError } = useChat<SupportUIMessage>({ transport });
   const isTyping = status === "submitted" || status === "streaming";
   const fgas = mode === "fgas";
 
@@ -368,6 +368,15 @@ export default function AIChatWidget() {
                 {chatStatus === "EXPIRED" && (
                   <div data-chat-expired className="text-center text-[11.5px] text-muted-foreground">
                     {t("expiredNotice")}
+                  </div>
+                )}
+                {/* A model outage / timeout ends the stream with an error part:
+                    say so plainly instead of the dots just vanishing. The
+                    buyer's message is already saved, and "Talk to a person"
+                    still works. */}
+                {streamError && !isTyping && !escalated && (
+                  <div role="alert" data-chat-error className="rounded-[14px] border border-amber-500/30 bg-amber-500/[.08] px-3.5 py-2.5 text-[12.5px] leading-[1.5] text-amber-800 dark:text-amber-300">
+                    {t("errorUnavailable")}
                   </div>
                 )}
                 {isTyping && !escalated && (

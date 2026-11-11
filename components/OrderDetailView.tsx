@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
-import { ArrowLeft, Building2, Download, MapPin, Package, RotateCcw, Check } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, Package, RotateCcw, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatKg } from "@/lib/pricing";

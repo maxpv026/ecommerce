@@ -1249,7 +1249,8 @@
     "handoffNotice": "He notificado a nuestro equipo. Un experto revisará esto y responderá aquí en breve.",
     "resolvedNotice": "Nuestro equipo cerró esta conversación. Envíe un mensaje para iniciar una nueva.",
     "expiredNotice": "Esta conversación fue eliminada después de una hora sin actividad. Envíe un mensaje para iniciar una nueva.",
-    "retentionNote": "Los chats se eliminan permanentemente una hora después del último mensaje."
+    "retentionNote": "Los chats se eliminan permanentemente una hora después del último mensaje.",
+    "errorUnavailable": "El asistente no está disponible en este momento. Tu mensaje se ha guardado: inténtalo de nuevo en un momento, o pulsa “Hablar con una persona”."
   },
   "SmartOrder": {
     "launch": "Pedido Inteligente a Granel",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Ver su certificado",
     "ctaUpload": "Subir un certificado",
     "footer": "Este es un mensaje de servicio sobre el cumplimiento F-Gas de su cuenta bajo el Reglamento (UE) 2024/573. Lo recibe independientemente de sus preferencias de marketing."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "El asistente no está disponible en este momento. Abre el PDF oficial de FDS a continuación, o llama a NCEC al +44 1865 407 333 si es urgente."
+  },
+  "PasswordReset": {
+    "forgotLink": "¿Olvidaste tu contraseña?",
+    "title": "Restablecer tu contraseña",
+    "close": "Cerrar",
+    "emailIntro": "Introduce el correo electrónico que usas para My Energy. Si pertenece a una cuenta con contraseña, te enviaremos un código de 6 dígitos.",
+    "emailLabel": "Correo electrónico",
+    "sendCode": "Enviar código",
+    "codeIntro": "Si existe una cuenta para {email}, un código de 6 dígitos está en camino. Expira en 10 minutos.",
+    "codeLabel": "Código de 6 dígitos",
+    "verify": "Continuar",
+    "resend": "Enviar un nuevo código",
+    "resent": "Si existe una cuenta, un nuevo código está en camino.",
+    "changeEmail": "Cambiar correo electrónico",
+    "passwordIntro": "Elige una nueva contraseña: al menos 8 caracteres, con una letra y un número.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "save": "Establecer nueva contraseña",
+    "doneTitle": "Contraseña actualizada",
+    "doneBody": "Has sido desconectado de todos los dispositivos. Inicia sesión con tu nueva contraseña.",
+    "backToSignIn": "Volver a iniciar sesión",
+    "googleHint": "¿Te registraste con Google? No hay contraseña para restablecer: usa “Continuar con Google”.",
+    "errorInvalidEmail": "Introduce una dirección de correo electrónico válida.",
+    "errorInvalidCode": "Ese código no es válido o ha expirado. Después de 5 intentos fallidos necesitarás un nuevo código.",
+    "errorRateLimited": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+    "errorWeak": "Usa al menos 8 caracteres, con una letra y un número.",
+    "errorMismatch": "Las contraseñas no coinciden.",
+    "errorFailed": "Algo salió mal. Por favor, inténtalo de nuevo."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} es tu código de restablecimiento de contraseña de My Energy",
+    "codeKicker": "Restablecimiento de contraseña",
+    "codeBody": "Usa este código para restablecer tu contraseña de My Energy. Expira en 10 minutos.",
+    "codeFooter": "Si no solicitaste restablecer tu contraseña, ignora este correo: tu contraseña sigue siendo la misma.",
+    "googleSubject": "Restablecimiento de tu contraseña de My Energy",
+    "googleKicker": "Restablecimiento de contraseña",
+    "googleBody": "Alguien solicitó restablecer la contraseña para esta dirección, pero tu cuenta inicia sesión con Google, por lo que no hay contraseña que restablecer. Usa “Continuar con Google” para iniciar sesión.",
+    "googleCta": "Iniciar sesión",
+    "googleFooter": "Si no fuiste tú, puedes ignorar este correo.",
+    "changedSubject": "Tu contraseña de My Energy fue cambiada",
+    "changedKicker": "Aviso de seguridad",
+    "changedBody": "La contraseña de tu cuenta de My Energy acaba de ser restablecida, y todos los dispositivos fueron desconectados.",
+    "changedFooter": "Si no fuiste tú, contáctanos de inmediato y restablece tu contraseña nuevamente."
   }
 }

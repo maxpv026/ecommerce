@@ -38,7 +38,6 @@ export interface SpendPoint {
 
 // Tech-Luxury on a chart is restraint: ink and one blue, hairline grid, no
 // legend chrome, no default palette.
-const INK = "#0f172a";
 const MUTED = "#94a3b8";
 const GRID = "rgba(15,23,42,.07)";
 const ACCENT = "#1d4ed8";
@@ -53,59 +52,40 @@ function makeMonthLabel(locale: string) {
   };
 }
 
-export default function UserSpendChartCanvas({ data }: { data: SpendPoint[] }) {
+/**
+ * Module-level, not declared inside the chart: a component created during
+ * render is a new type on every render (React Compiler: "Cannot create
+ * components during render"), remounting the tooltip each time. recharts
+ * clones whatever `content` receives into its own tree, so the hooks here
+ * resolve normally.
+ */
+function SpendTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ payload?: SpendPoint }>; label?: string | number }) {
   const t = useTranslations("Analytics");
   const locale = useLocale();
+  if (!active || !payload?.length) return null;
+  const p = payload[0]?.payload;
+  if (!p) return null;
+  const eur0 = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  return (
+    <div className="rounded-[12px] border border-slate-900/[.10] bg-white/95 px-3 py-2.5 shadow-[0_18px_40px_-20px_rgba(2,4,10,.5)] backdrop-blur dark:border-white/[.14] dark:bg-slate-900/95">
+      <div className="text-[10.5px] font-semibold tracking-[.08em] text-slate-400 uppercase dark:text-slate-500">{makeMonthLabel(locale)(String(label))}</div>
+      <div className="mt-1.5 text-[15px] font-semibold tabular-nums tracking-[-.02em]">{eur0.format(p.spend)}</div>
+      {p.orders > 0 ? (
+        <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{t("spendTooltipDetail", { orders: p.orders, cylinders: p.cylinders, co2e: p.co2eTonnes })}</div>
+      ) : (
+        <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{t("spendTooltipNoOrders")}</div>
+      )}
+    </div>
+  );
+}
 
-  const eur0 = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  });
+export default function UserSpendChartCanvas({ data }: { data: SpendPoint[] }) {
+  const locale = useLocale();
+
   /** Axis ticks: the magnitude only. See the YAxis comment for why. */
   const plain = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const monthLabel = makeMonthLabel(locale);
 
-  /* Declared inside the component so it closes over the translator and the
-     locale formatters. recharts clones whatever is passed to `content`, so
-     this is a normal component as far as it is concerned. */
-  const ChartTooltip = ({
-    active,
-    payload,
-    label,
-  }: {
-    active?: boolean;
-    payload?: Array<{ payload?: SpendPoint }>;
-    label?: string | number;
-  }) => {
-    if (!active || !payload?.length) return null;
-    const p = payload[0]?.payload;
-    if (!p) return null;
-
-    return (
-      <div className="rounded-[12px] border border-slate-900/[.10] bg-white/95 px-3 py-2.5 shadow-[0_18px_40px_-20px_rgba(2,4,10,.5)] backdrop-blur dark:border-white/[.14] dark:bg-slate-900/95">
-        <div className="text-[10.5px] font-semibold tracking-[.08em] text-slate-400 uppercase dark:text-slate-500">
-          {monthLabel(String(label))}
-        </div>
-        <div className="mt-1.5 text-[15px] font-semibold tabular-nums tracking-[-.02em]">
-          {eur0.format(p.spend)}
-        </div>
-        {p.orders > 0 ? (
-          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
-            {t("spendTooltipDetail", {
-              orders: p.orders,
-              cylinders: p.cylinders,
-              co2e: p.co2eTonnes,
-            })}
-          </div>
-        ) : (
-          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
-            {t("spendTooltipNoOrders")}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="h-[240px] w-full px-2 pb-4 pt-4">
@@ -148,7 +128,7 @@ export default function UserSpendChartCanvas({ data }: { data: SpendPoint[] }) {
             width={52}
           />
           <Tooltip
-            content={<ChartTooltip />}
+            content={<SpendTooltip />}
             cursor={{ fill: "rgba(15,23,42,.04)" }}
           />
           {/* One series. A stacked spend+volume bar would put euros and

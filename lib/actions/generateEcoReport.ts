@@ -1,6 +1,9 @@
 "use server";
 
 import { generateText } from "ai";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { withinActionLimit } from "@/lib/actionRateLimit";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@/auth";
 import { localizeAiText, resolveLocale } from "@/lib/aiLocalization";
@@ -96,6 +99,15 @@ export async function generateEcoReport(localeInput?: string): Promise<EcoReport
   const session = await auth();
   if (!session?.user?.id) return { ok: false, code: "UNAUTHENTICATED" };
 
+  // Two paid model calls per run (the audit + its translation). Per account
+  // AND per address, so neither a scripted account nor many accounts behind
+  // one machine can drain the budget. Over the limit reads as "unavailable,
+  // try again" in the card, which is the honest message.
+  const perUser = checkRateLimit(`action:eco-report:user:${session.user.id}`, { limit: 4, windowMs: 60_000 });
+  if (!perUser.success || !(await withinActionLimit("eco-report", { limit: 10, windowMs: 60_000 }))) {
+    return { ok: false, code: "UNAVAILABLE" };
+  }
+
   const [footprint, trend, cylinders] = await Promise.all([
     getUserGWPFootprint(),
     getUserSpendTrend(12),
@@ -151,6 +163,7 @@ export async function generateEcoReport(localeInput?: string): Promise<EcoReport
     const ask = (correction?: string) =>
       generateText({
         model: openai("gpt-4o-mini"),
+        abortSignal: aiTimeout(),
         system: SYSTEM_PROMPT,
         prompt: correction
           ? `DATA:\n${JSON.stringify(data, null, 2)}\n\n${correction}`

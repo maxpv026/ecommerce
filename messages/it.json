@@ -1249,7 +1249,8 @@
     "handoffNotice": "Ho avvisato il nostro team. Un esperto esaminerà e risponderà qui a breve.",
     "resolvedNotice": "Il nostro team ha chiuso questa conversazione. Invia un messaggio per iniziarne una nuova.",
     "expiredNotice": "Questa conversazione è stata eliminata dopo un'ora senza attività. Invia un messaggio per iniziarne una nuova.",
-    "retentionNote": "Le chat vengono eliminate definitivamente un'ora dopo l'ultimo messaggio."
+    "retentionNote": "Le chat vengono eliminate definitivamente un'ora dopo l'ultimo messaggio.",
+    "errorUnavailable": "L'assistente non è disponibile in questo momento. Il tuo messaggio è stato salvato: riprova tra un momento o tocca \"Parla con una persona\"."
   },
   "SmartOrder": {
     "launch": "Ordine Smart all'Ingrosso",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Visualizza il tuo certificato",
     "ctaUpload": "Carica un certificato",
     "footer": "Questo è un messaggio di servizio relativo alla conformità F-Gas del tuo account ai sensi del Regolamento (UE) 2024/573. Lo ricevi indipendentemente dalle tue preferenze di marketing."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "L'assistente non è disponibile in questo momento. Apri il PDF ufficiale delle SDS qui sotto o chiama NCEC al numero +44 1865 407 333 se è urgente."
+  },
+  "PasswordReset": {
+    "forgotLink": "Hai dimenticato la password?",
+    "title": "Reimposta la tua password",
+    "close": "Chiudi",
+    "emailIntro": "Inserisci l'email che usi per My Energy. Se appartiene a un account con una password, ti invieremo un codice a 6 cifre.",
+    "emailLabel": "Email",
+    "sendCode": "Invia codice",
+    "codeIntro": "Se esiste un account per {email}, un codice a 6 cifre è in arrivo. Scade in 10 minuti.",
+    "codeLabel": "Codice a 6 cifre",
+    "verify": "Continua",
+    "resend": "Invia un nuovo codice",
+    "resent": "Se esiste un account, un nuovo codice è in arrivo.",
+    "changeEmail": "Cambia email",
+    "passwordIntro": "Scegli una nuova password: almeno 8 caratteri, con una lettera e un numero.",
+    "newPassword": "Nuova password",
+    "confirmPassword": "Conferma nuova password",
+    "save": "Imposta nuova password",
+    "doneTitle": "Password aggiornata",
+    "doneBody": "Sei stato disconnesso su tutti i dispositivi. Accedi con la tua nuova password.",
+    "backToSignIn": "Torna ad accedere",
+    "googleHint": "Iscritto con Google? Non c'è una password da reimpostare: usa \"Continua con Google\".",
+    "errorInvalidEmail": "Inserisci un indirizzo email valido.",
+    "errorInvalidCode": "Questo codice non è valido o è scaduto. Dopo 5 tentativi errati avrai bisogno di un nuovo codice.",
+    "errorRateLimited": "Troppi tentativi. Attendi qualche minuto e riprova.",
+    "errorWeak": "Usa almeno 8 caratteri, con una lettera e un numero.",
+    "errorMismatch": "Le password non corrispondono.",
+    "errorFailed": "Qualcosa è andato storto. Riprova."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} è il tuo codice di reimpostazione della password di My Energy",
+    "codeKicker": "Reimpostazione della password",
+    "codeBody": "Usa questo codice per reimpostare la tua password di My Energy. Scade in 10 minuti.",
+    "codeFooter": "Se non hai richiesto di reimpostare la tua password, ignora questa email: la tua password rimane invariata.",
+    "googleSubject": "Reimpostazione della password di My Energy",
+    "googleKicker": "Reimpostazione della password",
+    "googleBody": "Qualcuno ha richiesto di reimpostare la password per questo indirizzo, ma il tuo account accede con Google, quindi non c'è una password da reimpostare. Usa \"Continua con Google\" per accedere.",
+    "googleCta": "Accedi",
+    "googleFooter": "Se non sei stato tu, puoi ignorare questa email.",
+    "changedSubject": "La tua password di My Energy è stata cambiata",
+    "changedKicker": "Avviso di sicurezza",
+    "changedBody": "La password del tuo account My Energy è stata appena reimpostata e tutti i dispositivi sono stati disconnessi.",
+    "changedFooter": "Se non sei stato tu, contattaci immediatamente e reimposta nuovamente la tua password."
   }
 }

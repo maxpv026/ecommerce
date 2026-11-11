@@ -61,7 +61,7 @@ import "dotenv/config";
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { routing } from "../i18n/routing";
 
@@ -364,9 +364,10 @@ async function translateNamespace(
   // the allowed set for THIS locale as data is what actually fixed it.
   const categories = new Intl.PluralRules(locale).resolvedOptions().pluralCategories;
 
-  const { object } = await generateObject({
+  const { output: object } = await generateText({
     model: openai(MODEL),
-    schema,
+    output: Output.object({ schema }),
+    abortSignal: AbortSignal.timeout(120_000),
     system: SYSTEM_PROMPT,
     prompt: [
       `Target language: ${language} (locale code "${locale}").`,
@@ -458,9 +459,10 @@ async function qaNamespace(
     translation: firstPass.get(key)!,
   }));
 
-  const { object } = await generateObject({
+  const { output: object } = await generateText({
     model: openai(QA_MODEL),
-    schema,
+    output: Output.object({ schema }),
+    abortSignal: AbortSignal.timeout(120_000),
     system: QA_SYSTEM_PROMPT,
     prompt: [
       `Target language: ${language} (locale code "${locale}").`,

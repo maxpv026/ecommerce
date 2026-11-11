@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/chat-cleanup",
-      "schedule": "15 3 * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/fgas-expiry",

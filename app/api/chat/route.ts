@@ -4,6 +4,7 @@ import { createUIMessageStream, createUIMessageStreamResponse, hasToolCall, step
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { ASSISTANT_UNAVAILABLE, CHAT_STREAM_TIMEOUT, timeoutAsUnavailable } from "@/lib/aiTimeout";
 import { getProducts, type StoreProduct } from "@/lib/data";
 import { parseGasMarks } from "@/lib/gasMarks";
 import { isPurchasable } from "@/lib/waitlist";
@@ -161,9 +162,16 @@ export async function POST(req: Request) {
     // Per step. Replies are one or two sentences; this caps what a prompt
     // engineered to make the model ramble can cost.
     maxOutputTokens: 800,
+    timeout: CHAT_STREAM_TIMEOUT,
+    // Logged with the real cause; the browser gets a stable code, never the
+    // provider's raw message (quota, keys, request ids).
+    onError: ({ error }) => console.error("[chat] stream error:", error),
+    onAbort: () => console.error("[chat] stream timed out"),
   });
 
-  return result.toUIMessageStreamResponse({
+  // A timeout ends as the same ASSISTANT_UNAVAILABLE error, not an empty bubble.
+  const stream = result.toUIMessageStream({
+    onError: () => ASSISTANT_UNAVAILABLE,
     messageMetadata: ({ part }) => (part.type === "start" ? { author: "assistant", createdAt: new Date().toISOString() } : undefined),
     onFinish: async ({ responseMessage, isAborted }) => {
       const reply = responseMessage.parts
@@ -183,4 +191,5 @@ export async function POST(req: Request) {
       }
     },
   });
+  return createUIMessageStreamResponse({ stream: timeoutAsUnavailable(stream) });
 }

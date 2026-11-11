@@ -6,9 +6,8 @@ import { purgeExpiredChats } from "@/lib/chatRetention";
  *
  *   Authorization: Bearer {CRON_SECRET}     ← Vercel Cron sends this
  *
- * Daily (vercel.json) — the Vercel Hobby plan rejects any cron that runs
- * more than once a day; on Pro, set the schedule to "0 * * * *". The hour
- * itself is enforced on every read and swept after every chat request
+ * Hourly ("0 * * * *" in vercel.json, Vercel Pro). The hour itself is
+ * enforced on every read and swept after every chat request
  * (lib/chatRetention); this run is the backstop for quiet periods.
  *
  * Responses

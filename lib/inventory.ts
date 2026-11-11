@@ -1,3 +1,4 @@
+import { expireCatalog } from "@/lib/catalogCache";
 import type { PrismaClient } from "./generated/prisma/client";
 import { CYLINDER_DEPOSIT_EUR, cylinderGasPrice } from "./pricing";
 
@@ -99,6 +100,9 @@ export async function applyInventoryUpdate(db: ProductDb, input: InventoryUpdate
     data,
     select: { id: true, sku: true, name: true, weight: true, stockQuantity: true, inStock: true, pricePerKg: true, weightKg: true },
   });
+  // Stock/price/weight changed: the cached catalog must not serve the old row.
+  // (Covers the CRM webhook, the admin inventory editor and the restock tester.)
+  expireCatalog();
 
   // Purchasability needs both flags, so a row left at inStock:true with a
   // zero count still counts as "was unavailable".

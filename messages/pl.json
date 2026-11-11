@@ -1249,7 +1249,8 @@
     "handoffNotice": "Powiadomiłem nasz zespół. Ekspert przeanalizuje to i wkrótce odpowie tutaj.",
     "resolvedNotice": "Nasz zespół zamknął tę rozmowę. Wyślij wiadomość, aby rozpocząć nową.",
     "expiredNotice": "Ta rozmowa została usunięta po godzinie bez aktywności. Wyślij wiadomość, aby rozpocząć nową.",
-    "retentionNote": "Czaty są trwale usuwane godzinę po ostatniej wiadomości."
+    "retentionNote": "Czaty są trwale usuwane godzinę po ostatniej wiadomości.",
+    "errorUnavailable": "Asystent jest teraz niedostępny. Twoja wiadomość została zapisana: spróbuj ponownie za chwilę lub wybierz „Porozmawiaj z osobą”."
   },
   "SmartOrder": {
     "launch": "Inteligentne zamówienie hurtowe",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Zobacz swój certyfikat",
     "ctaUpload": "Prześlij certyfikat",
     "footer": "To jest wiadomość serwisowa dotycząca zgodności Twojego konta z F-Gas zgodnie z Rozporządzeniem (UE) 2024/573. Otrzymujesz ją niezależnie od swoich preferencji marketingowych."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Asystent jest teraz niedostępny. Otwórz oficjalny PDF karty charakterystyki poniżej lub zadzwoń do NCEC pod numer +44 1865 407 333, jeśli to pilne."
+  },
+  "PasswordReset": {
+    "forgotLink": "Zapomniałeś hasła?",
+    "title": "Zresetuj hasło",
+    "close": "Zamknij",
+    "emailIntro": "Wprowadź e-mail, którego używasz w My Energy. Jeśli należy do konta z hasłem, wyślemy Ci 6-cyfrowy kod.",
+    "emailLabel": "E-mail",
+    "sendCode": "Wyślij kod",
+    "codeIntro": "Jeśli istnieje konto dla {email}, 6-cyfrowy kod jest w drodze. Wygasa za 10 minut.",
+    "codeLabel": "6-cyfrowy kod",
+    "verify": "Kontynuuj",
+    "resend": "Wyślij nowy kod",
+    "resent": "Jeśli istnieje konto, nowy kod jest w drodze.",
+    "changeEmail": "Zmień e-mail",
+    "passwordIntro": "Wybierz nowe hasło: co najmniej 8 znaków, z literą i cyfrą.",
+    "newPassword": "Nowe hasło",
+    "confirmPassword": "Potwierdź nowe hasło",
+    "save": "Ustaw nowe hasło",
+    "doneTitle": "Hasło zaktualizowane",
+    "doneBody": "Zostałeś wylogowany na wszystkich urządzeniach. Zaloguj się przy użyciu nowego hasła.",
+    "backToSignIn": "Powrót do logowania",
+    "googleHint": "Zarejestrowano się przez Google? Nie ma hasła do zresetowania: użyj „Kontynuuj z Google”.",
+    "errorInvalidEmail": "Wprowadź prawidłowy adres e-mail.",
+    "errorInvalidCode": "Ten kod jest nieprawidłowy lub wygasł. Po 5 błędnych próbach będziesz potrzebować nowego kodu.",
+    "errorRateLimited": "Zbyt wiele prób. Poczekaj kilka minut i spróbuj ponownie.",
+    "errorWeak": "Użyj co najmniej 8 znaków, z literą i cyfrą.",
+    "errorMismatch": "Hasła nie pasują do siebie.",
+    "errorFailed": "Coś poszło nie tak. Spróbuj ponownie."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} to Twój kod resetowania hasła My Energy",
+    "codeKicker": "Resetowanie hasła",
+    "codeBody": "Użyj tego kodu, aby zresetować hasło do My Energy. Wygasa za 10 minut.",
+    "codeFooter": "Jeśli nie prosiłeś o zresetowanie hasła, zignoruj tę wiadomość: Twoje hasło pozostaje bez zmian.",
+    "googleSubject": "Resetowanie hasła My Energy",
+    "googleKicker": "Resetowanie hasła",
+    "googleBody": "Ktoś poprosił o zresetowanie hasła dla tego adresu, ale Twoje konto loguje się przez Google, więc nie ma hasła do zresetowania. Użyj „Kontynuuj z Google”, aby się zalogować.",
+    "googleCta": "Zaloguj się",
+    "googleFooter": "Jeśli to nie Ty, możesz zignorować tę wiadomość.",
+    "changedSubject": "Twoje hasło do My Energy zostało zmienione",
+    "changedKicker": "Powiadomienie o bezpieczeństwie",
+    "changedBody": "Hasło do Twojego konta My Energy zostało właśnie zresetowane, a wszystkie urządzenia zostały wylogowane.",
+    "changedFooter": "Jeśli to nie Ty, skontaktuj się z nami natychmiast i zresetuj hasło ponownie."
   }
 }

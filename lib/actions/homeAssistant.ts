@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { generateText } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
@@ -49,6 +50,7 @@ export async function askHomeAssistant(rawQuery: string): Promise<HomeAssistantR
 
     const { text } = await generateText({
       model: openai("gpt-4o-mini"),
+      abortSignal: aiTimeout(),
       prompt: `You are My Energy AI, a B2B assistant for HVAC professionals. Answer the question below in AT MOST 40 words, plain text, no markdown. Be concrete and technical. Ground every stock/price claim in the catalog; never invent quantities or prices.
 
 Catalog:

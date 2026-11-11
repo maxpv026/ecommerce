@@ -1,5 +1,7 @@
 import { unstable_cache } from "next/cache";
-import { generateObject } from "ai";
+import { PRODUCTS_TAG } from "@/lib/cacheTags";
+import { generateText, Output } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -139,14 +141,34 @@ export interface ProductQuery {
   search?: string;
 }
 
+/**
+ * Catalog reads are cached (unstable_cache, tag PRODUCTS_TAG) instead of
+ * reading the whole Product table on every cart, checkout, catalogue page and
+ * AI call. Correctness does not rest on the cache: every write that changes
+ * stock, price or sizes expires the tag immediately (lib/catalogCache), the
+ * 5-minute revalidate is only a backstop for writes made outside the app,
+ * and placing an order re-reads stock and prices from the database
+ * (lib/orders prepareOrder / commitOrder) — never from here.
+ */
+const CATALOG_REVALIDATE_SECONDS = 300;
+
+const cachedCatalog = unstable_cache(
+  async (gasMarks: string[], search: string): Promise<StoreProduct[]> => {
+    const products = await prisma.product.findMany({
+      // Marks and free text are ANDed: searching inside a mark selection
+      // narrows, it never widens back to the whole catalog.
+      where: combineWhere(LISTED, gasMarkWhere(gasMarks), productSearchWhere(search)),
+      orderBy: IN_STOCK_FIRST,
+    });
+    return products.map(toStoreProduct);
+  },
+  ["products-catalog", "v1"],
+  { tags: [PRODUCTS_TAG], revalidate: CATALOG_REVALIDATE_SECONDS }
+);
+
 export async function getProducts(query: ProductQuery = {}): Promise<StoreProduct[]> {
-  const products = await prisma.product.findMany({
-    // Marks and free text are ANDed: searching inside a mark selection
-    // narrows, it never widens back to the whole catalog.
-    where: combineWhere(LISTED, gasMarkWhere(query.gasMarks ?? []), productSearchWhere(query.search ?? "")),
-    orderBy: IN_STOCK_FIRST,
-  });
-  return products.map(toStoreProduct);
+  // Normalised so "R32,R410A" and "R410A,R32" share one cache entry.
+  return cachedCatalog([...(query.gasMarks ?? [])].sort(), (query.search ?? "").trim());
 }
 
 /**
@@ -182,14 +204,18 @@ export async function countSearchProducts(term: string): Promise<number> {
  * an already gas-filtered list, every unselected mark would read 0 and the
  * filter could never be widened.
  */
-export async function getGasMarkCounts(): Promise<Record<string, number>> {
-  const products = await prisma.product.findMany({ where: LISTED, select: { name: true, sku: true } });
-  const counts: Record<string, number> = {};
-  for (const mark of GAS_MARKS) {
-    counts[mark] = products.filter((product) => productHasGasMark(product, mark)).length;
-  }
-  return counts;
-}
+export const getGasMarkCounts = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const products = await prisma.product.findMany({ where: LISTED, select: { name: true, sku: true } });
+    const counts: Record<string, number> = {};
+    for (const mark of GAS_MARKS) {
+      counts[mark] = products.filter((product) => productHasGasMark(product, mark)).length;
+    }
+    return counts;
+  },
+  ["gas-mark-counts", "v1"],
+  { tags: [PRODUCTS_TAG], revalidate: CATALOG_REVALIDATE_SECONDS }
+);
 
 /**
  * A buyer's favourites, newest first, as catalog cards. Archived sizes drop
@@ -206,12 +232,16 @@ export async function getFavoriteProducts(userId: string): Promise<StoreProduct[
   return favorites.map((f) => toStoreProduct(f.product));
 }
 
-export async function getFeaturedProducts(limit = 4): Promise<StoreProduct[]> {
-  // Purchasable products first, so a retired legacy tier never headlines
-  // the home page while the CRM-listed cylinders are in stock.
-  const products = await prisma.product.findMany({ where: LISTED, orderBy: IN_STOCK_FIRST, take: limit });
-  return products.map(toStoreProduct);
-}
+export const getFeaturedProducts = unstable_cache(
+  async (limit = 4): Promise<StoreProduct[]> => {
+    // Purchasable products first, so a retired legacy tier never headlines
+    // the home page while the CRM-listed cylinders are in stock.
+    const products = await prisma.product.findMany({ where: LISTED, orderBy: IN_STOCK_FIRST, take: limit });
+    return products.map(toStoreProduct);
+  },
+  ["featured-products", "v1"],
+  { tags: [PRODUCTS_TAG], revalidate: CATALOG_REVALIDATE_SECONDS }
+);
 
 // ---------------------------------------------------------------------------
 // Addresses
@@ -562,9 +592,10 @@ async function computeRecommendedSkus(userId: string, limit: number): Promise<st
     .flatMap((o) => o.items.map((i) => `${i.quantity}x ${i.product.sku} (${i.product.name})`))
     .join("\n");
 
-  const { object } = await generateObject({
+  const { output: object } = await generateText({
     model: openai("gpt-4o-mini"),
-    schema: RecommendationSchema,
+    output: Output.object({ schema: RecommendationSchema }),
+    abortSignal: aiTimeout(),
     prompt: `You are recommending HVAC refrigerant products to a B2B customer based on their order history.
 
 Order history (most recent orders):

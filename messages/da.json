@@ -1249,7 +1249,8 @@
     "handoffNotice": "Jeg har underrettet vores team. En ekspert vil gennemgå dette og svare her snart.",
     "resolvedNotice": "Vores team har afsluttet denne samtale. Send en besked for at starte en ny.",
     "expiredNotice": "Denne samtale blev slettet efter en time uden aktivitet. Send en besked for at starte en ny.",
-    "retentionNote": "Chats slettes permanent en time efter den sidste besked."
+    "retentionNote": "Chats slettes permanent en time efter den sidste besked.",
+    "errorUnavailable": "Assistenten er ikke tilgængelig lige nu. Din besked er gemt: prøv igen om et øjeblik, eller tryk på “Tal med en person”."
   },
   "SmartOrder": {
     "launch": "Smart Bulk Order",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Se dit certifikat",
     "ctaUpload": "Upload et certifikat",
     "footer": "Dette er en servicemeddelelse om din kontos F-gas-compliance under forordning (EU) 2024/573. Du modtager den uanset dine markedsføringspræferencer."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Assistenten er ikke tilgængelig lige nu. Åbn den officielle SDS PDF nedenfor, eller ring til NCEC på +44 1865 407 333, hvis det er akut."
+  },
+  "PasswordReset": {
+    "forgotLink": "Glemt din adgangskode?",
+    "title": "Nulstil din adgangskode",
+    "close": "Luk",
+    "emailIntro": "Indtast den e-mail, du bruger til My Energy. Hvis den tilhører en konto med en adgangskode, sender vi dig en 6-cifret kode.",
+    "emailLabel": "E-mail",
+    "sendCode": "Send kode",
+    "codeIntro": "Hvis der findes en konto for {email}, er en 6-cifret kode på vej. Den udløber om 10 minutter.",
+    "codeLabel": "6-cifret kode",
+    "verify": "Fortsæt",
+    "resend": "Send en ny kode",
+    "resent": "Hvis der findes en konto, er en ny kode på vej.",
+    "changeEmail": "Skift e-mail",
+    "passwordIntro": "Vælg en ny adgangskode: mindst 8 tegn, med et bogstav og et tal.",
+    "newPassword": "Ny adgangskode",
+    "confirmPassword": "Bekræft ny adgangskode",
+    "save": "Indstil ny adgangskode",
+    "doneTitle": "Adgangskode opdateret",
+    "doneBody": "Du er blevet logget ud på alle enheder. Log ind med din nye adgangskode.",
+    "backToSignIn": "Tilbage til log ind",
+    "googleHint": "Tilmeldt med Google? Der er ingen adgangskode at nulstille: brug “Fortsæt med Google”.",
+    "errorInvalidEmail": "Indtast en gyldig e-mailadresse.",
+    "errorInvalidCode": "Den kode er ikke gyldig eller er udløbet. Efter 5 forkerte forsøg skal du bruge en ny kode.",
+    "errorRateLimited": "For mange forsøg. Vent et par minutter og prøv igen.",
+    "errorWeak": "Brug mindst 8 tegn, med et bogstav og et tal.",
+    "errorMismatch": "Adgangskoderne stemmer ikke overens.",
+    "errorFailed": "Noget gik galt. Prøv venligst igen."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} er din My Energy adgangskode nulstillingskode",
+    "codeKicker": "Nulstilling af adgangskode",
+    "codeBody": "Brug denne kode til at nulstille din My Energy adgangskode. Den udløber om 10 minutter.",
+    "codeFooter": "Hvis du ikke bad om at nulstille din adgangskode, skal du ignorere denne e-mail: din adgangskode forbliver den samme.",
+    "googleSubject": "Nulstilling af din My Energy adgangskode",
+    "googleKicker": "Nulstilling af adgangskode",
+    "googleBody": "Nogen bad om at nulstille adgangskoden for denne adresse, men din konto logger ind med Google, så der er ingen adgangskode at nulstille. Brug “Fortsæt med Google” for at logge ind.",
+    "googleCta": "Log ind",
+    "googleFooter": "Hvis det ikke var dig, kan du ignorere denne e-mail.",
+    "changedSubject": "Din My Energy adgangskode blev ændret",
+    "changedKicker": "Sikkerhedsmeddelelse",
+    "changedBody": "Adgangskoden til din My Energy konto blev netop nulstillet, og alle enheder blev logget ud.",
+    "changedFooter": "Hvis det ikke var dig, skal du kontakte os med det samme og nulstille din adgangskode igen."
   }
 }

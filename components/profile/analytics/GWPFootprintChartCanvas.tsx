@@ -29,6 +29,32 @@ const WARN = "#b45309";
 const sliceFill = (s: FootprintSlice, i: number) =>
   s.highGwp ? WARN : INK_RAMP[Math.min(i, INK_RAMP.length - 1)];
 
+/**
+ * Module-level, not declared inside the chart (React Compiler: "Cannot create
+ * components during render" — a new component type each render). recharts
+ * clones `content` into its own tree, so the hooks here resolve normally.
+ */
+function FootprintTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload?: FootprintSlice }> }) {
+  const t = useTranslations("Analytics");
+  const locale = useLocale();
+  if (!active || !payload?.length) return null;
+  const s = payload[0]?.payload;
+  if (!s) return null;
+  const num = new Intl.NumberFormat(locale);
+  const tonnes = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+  const pct = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return (
+    <div className="rounded-[12px] border border-slate-900/[.10] bg-white/95 px-3 py-2.5 shadow-[0_18px_40px_-20px_rgba(2,4,10,.5)] backdrop-blur dark:border-white/[.14] dark:bg-slate-900/95">
+      <div className="text-[12px] font-semibold tracking-[-.01em]">{s.refrigerant}</div>
+      <div className="mt-1 text-[15px] font-semibold tabular-nums tracking-[-.02em]">{t("tonnesShort", { value: tonnes.format(s.co2eTonnes) })}</div>
+      <div className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
+        {t("carbonTooltipDetail", { share: pct.format(s.share), mass: num.format(s.massKg), gwp: s.gwp === null ? "—" : num.format(s.gwp) })}
+      </div>
+      {s.highGwp ? <div className="mt-1 text-[11px] font-semibold text-amber-700 dark:text-amber-500">{t("carbonArt13")}</div> : null}
+    </div>
+  );
+}
+
 export default function GWPFootprintChartCanvas({
   data,
   totalTonnes,
@@ -39,7 +65,6 @@ export default function GWPFootprintChartCanvas({
   const t = useTranslations("Analytics");
   const locale = useLocale();
 
-  const num = new Intl.NumberFormat(locale);
   const tonnes = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const pct = new Intl.NumberFormat(locale, {
     style: "percent",
@@ -47,39 +72,6 @@ export default function GWPFootprintChartCanvas({
     maximumFractionDigits: 1,
   });
 
-  // Declared in scope so it closes over the translator and the locale
-  // formatters; recharts clones whatever `content` receives.
-  const ChartTooltip = ({
-    active,
-    payload,
-  }: {
-    active?: boolean;
-    payload?: Array<{ payload?: FootprintSlice }>;
-  }) => {
-    if (!active || !payload?.length) return null;
-    const s = payload[0]?.payload;
-    if (!s) return null;
-    return (
-      <div className="rounded-[12px] border border-slate-900/[.10] bg-white/95 px-3 py-2.5 shadow-[0_18px_40px_-20px_rgba(2,4,10,.5)] backdrop-blur dark:border-white/[.14] dark:bg-slate-900/95">
-        <div className="text-[12px] font-semibold tracking-[-.01em]">{s.refrigerant}</div>
-        <div className="mt-1 text-[15px] font-semibold tabular-nums tracking-[-.02em]">
-          {t("tonnesShort", { value: tonnes.format(s.co2eTonnes) })}
-        </div>
-        <div className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
-          {t("carbonTooltipDetail", {
-            share: pct.format(s.share),
-            mass: num.format(s.massKg),
-            gwp: s.gwp === null ? "—" : num.format(s.gwp),
-          })}
-        </div>
-        {s.highGwp ? (
-          <div className="mt-1 text-[11px] font-semibold text-amber-700 dark:text-amber-500">
-            {t("carbonArt13")}
-          </div>
-        ) : null}
-      </div>
-    );
-  };
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 pb-5 sm:flex-row sm:items-center sm:gap-6">
@@ -115,7 +107,7 @@ export default function GWPFootprintChartCanvas({
                 Fixing it here rather than by reordering the JSX: the overlay
                 has to stay after the chart to sit on top of the SLICES, which
                 is the whole point of it. */}
-            <Tooltip content={<ChartTooltip />} wrapperStyle={{ zIndex: 100 }} />
+            <Tooltip content={<FootprintTooltip />} wrapperStyle={{ zIndex: 100 }} />
           </PieChart>
         </ResponsiveContainer>
 

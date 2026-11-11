@@ -1249,7 +1249,8 @@
     "handoffNotice": "Tá mé tar éis ár bhfoireann a chur ar an eolas. Déanfaidh saineolaí athbhreithniú air seo agus freagróidh sé anseo go gairid.",
     "resolvedNotice": "Dúnadh an comhrá seo ag ár bhfoireann. Seol teachtaireacht chun ceann nua a thosú.",
     "expiredNotice": "Scriosadh an comhrá seo tar éis uair an chloig gan aon ghníomhaíocht. Seol teachtaireacht chun ceann nua a thosú.",
-    "retentionNote": "Scriostar comhráite go buan uair an chloig tar éis an teachtaireacht dheireanach."
+    "retentionNote": "Scriostar comhráite go buan uair an chloig tar éis an teachtaireacht dheireanach.",
+    "errorUnavailable": "Níl an cúntóir ar fáil faoi láthair. Tá do theachtaireacht sábháilte: bain triail eile as ar ball, nó sconna ar “Labhair le duine”."
   },
   "SmartOrder": {
     "launch": "Ordú Mór Cliste",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Féach ar do dheimhniú",
     "ctaUpload": "Uaslódáil deimhniú",
     "footer": "Is teachtaireacht seirbhíse é seo faoi chomhlíonadh F-Gáis do chuntais faoi Rialachán (AE) 2024/573. Gheobhaidh tú é beag beann ar do roghanna margaíochta."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Níl an cúntóir ar fáil faoi láthair. Oscail an PDF oifigiúil SDS thíos, nó glaoigh ar NCEC ar +44 1865 407 333 má tá sé seo práinneach."
+  },
+  "PasswordReset": {
+    "forgotLink": "Dearmad do phasfhocal?",
+    "title": "Athshocraigh do phasfhocal",
+    "close": "Dún",
+    "emailIntro": "Cuir isteach an ríomhphost a úsáideann tú le haghaidh My Energy. Má bhaineann sé le cuntas le pasfhocal, seolfaimid cód 6 dhigit chugat.",
+    "emailLabel": "Ríomhphost",
+    "sendCode": "Seol cód",
+    "codeIntro": "Má tá cuntas ann do {email}, tá cód 6 dhigit ar an mbealach. Éagfaidh sé i 10 nóiméad.",
+    "codeLabel": "Cód 6 dhigit",
+    "verify": "Lean ar aghaidh",
+    "resend": "Seol cód nua",
+    "resent": "Má tá cuntas ann, tá cód nua ar an mbealach.",
+    "changeEmail": "Athraigh ríomhphost",
+    "passwordIntro": "Roghnaigh pasfhocal nua: ar a laghad 8 gcarachtar, le litir agus uimhir.",
+    "newPassword": "Pasfhocal nua",
+    "confirmPassword": "Deimhnigh pasfhocal nua",
+    "save": "Socraigh pasfhocal nua",
+    "doneTitle": "Pasfhocal nuashonraithe",
+    "doneBody": "Tá tú sínithe amach ar gach gléas. Sínigh isteach le do phasfhocal nua.",
+    "backToSignIn": "Ar ais chun síniú isteach",
+    "googleHint": "Cláraigh le Google? Níl aon phasfhocal le hathshocrú: bain úsáid as “Lean ar aghaidh le Google”.",
+    "errorInvalidEmail": "Cuir isteach seoladh ríomhphoist bailí.",
+    "errorInvalidCode": "Níl an cód sin bailí nó tá sé imithe in éag. Tar éis 5 iarracht mícheart beidh cód nua ag teastáil uait.",
+    "errorRateLimited": "Ró-iomarca iarrachtaí. Fan cúpla nóiméad agus bain triail eile as.",
+    "errorWeak": "Úsáid ar a laghad 8 gcarachtar, le litir agus uimhir.",
+    "errorMismatch": "Níl na pasfhocail ag teacht le chéile.",
+    "errorFailed": "Tharla earráid. Déan iarracht arís le do thoil."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} is é do chód athshocraithe pasfhocal My Energy",
+    "codeKicker": "Athshocrú pasfhocal",
+    "codeBody": "Úsáid an cód seo chun do phasfhocal My Energy a athshocrú. Éagfaidh sé i 10 nóiméad.",
+    "codeFooter": "Mura n-iarr tú do phasfhocal a athshocrú, déan neamhaird ar an ríomhphost seo: fanann do phasfhocal mar an gcéanna.",
+    "googleSubject": "Ag athshocrú do phasfhocal My Energy",
+    "googleKicker": "Athshocrú pasfhocal",
+    "googleBody": "D'iarr duine éigin an pasfhocal don seoladh seo a athshocrú, ach síníonn do chuntas isteach le Google, mar sin níl aon phasfhocal le hathshocrú. Bain úsáid as “Lean ar aghaidh le Google” chun síniú isteach.",
+    "googleCta": "Sínigh isteach",
+    "googleFooter": "Mura tusa a rinne é seo, is féidir leat neamhaird a dhéanamh ar an ríomhphost seo.",
+    "changedSubject": "Athraíodh do phasfhocal My Energy",
+    "changedKicker": "Fógra slándála",
+    "changedBody": "Athshocraíodh pasfhocal do chuntais My Energy díreach anois, agus síníodh amach gach gléas.",
+    "changedFooter": "Mura tusa a rinne é seo, déan teagmháil linn láithreach agus athshocraigh do phasfhocal arís."
   }
 }

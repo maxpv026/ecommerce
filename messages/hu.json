@@ -1249,7 +1249,8 @@
     "handoffNotice": "Értesítettem a csapatunkat. Egy szakértő hamarosan átnézi ezt és válaszol itt.",
     "resolvedNotice": "A csapatunk lezárta ezt a beszélgetést. Küldjön üzenetet egy új indításához.",
     "expiredNotice": "Ez a beszélgetés egy óra inaktivitás után törlésre került. Küldjön üzenetet egy új beszélgetés indításához.",
-    "retentionNote": "A csevegések az utolsó üzenet után egy órával véglegesen törlődnek."
+    "retentionNote": "A csevegések az utolsó üzenet után egy órával véglegesen törlődnek.",
+    "errorUnavailable": "Az asszisztens jelenleg nem elérhető. Az üzenetét elmentettük: próbálja meg újra később, vagy kattintson a „Beszéljen valakivel” lehetőségre."
   },
   "SmartOrder": {
     "launch": "Intelligens tömeges rendelés",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Tanúsítvány megtekintése",
     "ctaUpload": "Tanúsítvány feltöltése",
     "footer": "Ez egy szolgáltatási üzenet a fiókja F-gáz megfelelőségéről az (EU) 2024/573 rendelet alapján. Ezt függetlenül kapja meg a marketing preferenciáitól."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Az asszisztens jelenleg nem elérhető. Nyissa meg az alábbi hivatalos SDS PDF-et, vagy hívja a NCEC-t a +44 1865 407 333 számon, ha sürgős."
+  },
+  "PasswordReset": {
+    "forgotLink": "Elfelejtette a jelszavát?",
+    "title": "Jelszó visszaállítása",
+    "close": "Bezárás",
+    "emailIntro": "Adja meg az e-mail címet, amelyet a My Energy-hez használ. Ha ez egy jelszóval rendelkező fiókhoz tartozik, küldünk egy 6 jegyű kódot.",
+    "emailLabel": "E-mail",
+    "sendCode": "Kód küldése",
+    "codeIntro": "Ha létezik fiók a(z) {email} címhez, egy 6 jegyű kód úton van. 10 perc múlva lejár.",
+    "codeLabel": "6 jegyű kód",
+    "verify": "Folytatás",
+    "resend": "Új kód küldése",
+    "resent": "Ha létezik fiók, egy új kód úton van.",
+    "changeEmail": "E-mail cím módosítása",
+    "passwordIntro": "Válasszon új jelszót: legalább 8 karakter, egy betűvel és egy számmal.",
+    "newPassword": "Új jelszó",
+    "confirmPassword": "Új jelszó megerősítése",
+    "save": "Új jelszó beállítása",
+    "doneTitle": "Jelszó frissítve",
+    "doneBody": "Minden eszközön kijelentkeztettük. Jelentkezzen be az új jelszavával.",
+    "backToSignIn": "Vissza a bejelentkezéshez",
+    "googleHint": "Google-lal regisztrált? Nincs jelszó visszaállításra: használja a „Folytatás Google-lal” lehetőséget.",
+    "errorInvalidEmail": "Adjon meg egy érvényes e-mail címet.",
+    "errorInvalidCode": "Ez a kód nem érvényes vagy lejárt. 5 hibás próbálkozás után új kódra lesz szüksége.",
+    "errorRateLimited": "Túl sok próbálkozás. Várjon néhány percet, majd próbálja újra.",
+    "errorWeak": "Használjon legalább 8 karaktert, egy betűvel és egy számmal.",
+    "errorMismatch": "A jelszavak nem egyeznek.",
+    "errorFailed": "Valami hiba történt. Kérjük, próbálja újra."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} a My Energy jelszó visszaállító kódja",
+    "codeKicker": "Jelszó visszaállítása",
+    "codeBody": "Használja ezt a kódot a My Energy jelszavának visszaállításához. 10 perc múlva lejár.",
+    "codeFooter": "Ha nem kérte a jelszó visszaállítását, hagyja figyelmen kívül ezt az e-mailt: a jelszava változatlan marad.",
+    "googleSubject": "A My Energy jelszó visszaállítása",
+    "googleKicker": "Jelszó visszaállítása",
+    "googleBody": "Valaki kérte a jelszó visszaállítását ehhez a címhez, de a fiókja Google-lal jelentkezik be, így nincs jelszó visszaállításra. Használja a „Folytatás Google-lal” lehetőséget a bejelentkezéshez.",
+    "googleCta": "Bejelentkezés",
+    "googleFooter": "Ha nem Ön volt, hagyja figyelmen kívül ezt az e-mailt.",
+    "changedSubject": "A My Energy jelszava megváltozott",
+    "changedKicker": "Biztonsági értesítés",
+    "changedBody": "A My Energy fiók jelszavát éppen most állították vissza, és minden eszközön kijelentkeztették.",
+    "changedFooter": "Ha nem Ön volt, azonnal lépjen kapcsolatba velünk, és állítsa vissza a jelszavát."
   }
 }

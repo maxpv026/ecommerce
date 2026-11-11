@@ -1249,7 +1249,8 @@
     "handoffNotice": "Es esmu informējis mūsu komandu. Eksperts to pārskatīs un drīz atbildēs šeit.",
     "resolvedNotice": "Mūsu komanda ir aizvērusi šo sarunu. Sūtiet ziņu, lai sāktu jaunu.",
     "expiredNotice": "Šī saruna tika dzēsta pēc stundas bezdarbības. Nosūtiet ziņojumu, lai sāktu jaunu.",
-    "retentionNote": "Sarunas tiek neatgriezeniski dzēstas vienu stundu pēc pēdējās ziņas."
+    "retentionNote": "Sarunas tiek neatgriezeniski dzēstas vienu stundu pēc pēdējās ziņas.",
+    "errorUnavailable": "Palīgs pašlaik nav pieejams. Jūsu ziņojums ir saglabāts: mēģiniet vēlreiz pēc brīža vai pieskarieties “Sazināties ar personu”."
   },
   "SmartOrder": {
     "launch": "Viedā lielapjoma pasūtīšana",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Skatīt savu sertifikātu",
     "ctaUpload": "Augšupielādēt sertifikātu",
     "footer": "Šis ir pakalpojuma ziņojums par jūsu konta F-gāzu atbilstību saskaņā ar Regulu (ES) 2024/573. Jūs to saņemat neatkarīgi no jūsu mārketinga preferencēm."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Palīgs pašlaik nav pieejams. Atveriet oficiālo DDL PDF zemāk vai zvaniet NCEC pa tālruni +44 1865 407 333, ja tas ir steidzami."
+  },
+  "PasswordReset": {
+    "forgotLink": "Aizmirsi paroli?",
+    "title": "Atiestatīt paroli",
+    "close": "Aizvērt",
+    "emailIntro": "Ievadiet e-pastu, kuru izmantojat My Energy. Ja tas pieder kontam ar paroli, mēs nosūtīsim jums 6 ciparu kodu.",
+    "emailLabel": "E-pasts",
+    "sendCode": "Nosūtīt kodu",
+    "codeIntro": "Ja konts pastāv {email}, 6 ciparu kods ir ceļā. Tas derīgs 10 minūtes.",
+    "codeLabel": "6 ciparu kods",
+    "verify": "Turpināt",
+    "resend": "Nosūtīt jaunu kodu",
+    "resent": "Ja konts pastāv, jauns kods ir ceļā.",
+    "changeEmail": "Mainīt e-pastu",
+    "passwordIntro": "Izvēlieties jaunu paroli: vismaz 8 rakstzīmes, ar burtu un ciparu.",
+    "newPassword": "Jauna parole",
+    "confirmPassword": "Apstipriniet jauno paroli",
+    "save": "Iestatīt jaunu paroli",
+    "doneTitle": "Parole atjaunināta",
+    "doneBody": "Jūs esat izrakstījies no visām ierīcēm. Piesakieties ar jauno paroli.",
+    "backToSignIn": "Atpakaļ uz pieteikšanos",
+    "googleHint": "Reģistrējāties ar Google? Nav paroles, ko atiestatīt: izmantojiet “Turpināt ar Google”.",
+    "errorInvalidEmail": "Ievadiet derīgu e-pasta adresi.",
+    "errorInvalidCode": "Šis kods nav derīgs vai ir beidzies. Pēc 5 nepareiziem mēģinājumiem jums būs nepieciešams jauns kods.",
+    "errorRateLimited": "Pārāk daudz mēģinājumu. Pagaidiet dažas minūtes un mēģiniet vēlreiz.",
+    "errorWeak": "Izmantojiet vismaz 8 rakstzīmes, ar burtu un ciparu.",
+    "errorMismatch": "Paroles nesakrīt.",
+    "errorFailed": "Radās kļūda. Lūdzu, mēģiniet vēlreiz."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} ir jūsu My Energy paroles atiestatīšanas kods",
+    "codeKicker": "Paroles atiestatīšana",
+    "codeBody": "Izmantojiet šo kodu, lai atiestatītu savu My Energy paroli. Tas derīgs 10 minūtes.",
+    "codeFooter": "Ja jūs nelūdzāt atiestatīt paroli, ignorējiet šo e-pastu: jūsu parole paliek nemainīta.",
+    "googleSubject": "Jūsu My Energy paroles atiestatīšana",
+    "googleKicker": "Paroles atiestatīšana",
+    "googleBody": "Kāds lūdza atiestatīt šīs adreses paroli, bet jūsu konts piesakās ar Google, tāpēc nav paroles, ko atiestatīt. Izmantojiet “Turpināt ar Google”, lai pieteiktos.",
+    "googleCta": "Pieteikties",
+    "googleFooter": "Ja tas nebijāt jūs, varat ignorēt šo e-pastu.",
+    "changedSubject": "Jūsu My Energy parole tika mainīta",
+    "changedKicker": "Drošības paziņojums",
+    "changedBody": "Jūsu My Energy konta parole tikko tika atiestatīta, un visas ierīces tika izrakstītas.",
+    "changedFooter": "Ja tas nebijāt jūs, sazinieties ar mums nekavējoties un atiestatiet paroli vēlreiz."
   }
 }

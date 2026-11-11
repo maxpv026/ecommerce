@@ -1249,7 +1249,8 @@
     "handoffNotice": "Ekibimize bildirdim. Bir uzman bunu inceleyecek ve kısa süre içinde burada yanıt verecek.",
     "resolvedNotice": "Ekibimiz bu konuşmayı kapattı. Yeni bir tane başlatmak için mesaj gönderin.",
     "expiredNotice": "Bu konuşma, bir saat boyunca etkinlik olmadığında silindi. Yeni bir konuşma başlatmak için bir mesaj gönderin.",
-    "retentionNote": "Sohbetler, son mesajdan bir saat sonra kalıcı olarak silinir."
+    "retentionNote": "Sohbetler, son mesajdan bir saat sonra kalıcı olarak silinir.",
+    "errorUnavailable": "Asistan şu anda kullanılamıyor. Mesajınız kaydedildi: lütfen biraz sonra tekrar deneyin veya “Bir kişiyle konuş”a dokunun."
   },
   "SmartOrder": {
     "launch": "Akıllı Toplu Sipariş",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Sertifikanızı görüntüleyin",
     "ctaUpload": "Bir sertifika yükleyin",
     "footer": "Bu, hesabınızın F-Gas uyumu hakkında Yönetmelik (AB) 2024/573 kapsamında bir hizmet mesajıdır. Pazarlama tercihlerinize bakılmaksızın alırsınız."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Asistan şu anda kullanılamıyor. Aşağıdaki resmi SDS PDF'sini açın veya acilse NCEC'i +44 1865 407 333 numaralı telefondan arayın."
+  },
+  "PasswordReset": {
+    "forgotLink": "Şifrenizi mi unuttunuz?",
+    "title": "Şifrenizi sıfırlayın",
+    "close": "Kapat",
+    "emailIntro": "My Energy için kullandığınız e-posta adresini girin. Eğer bir şifreye sahip bir hesaba aitse, size 6 haneli bir kod göndereceğiz.",
+    "emailLabel": "E-posta",
+    "sendCode": "Kodu gönder",
+    "codeIntro": "{email} için bir hesap varsa, 6 haneli bir kod yolda. 10 dakika içinde süresi dolacak.",
+    "codeLabel": "6 haneli kod",
+    "verify": "Devam et",
+    "resend": "Yeni bir kod gönder",
+    "resent": "Bir hesap varsa, yeni bir kod yolda.",
+    "changeEmail": "E-postayı değiştir",
+    "passwordIntro": "Yeni bir şifre seçin: en az 8 karakter, bir harf ve bir rakam içermelidir.",
+    "newPassword": "Yeni şifre",
+    "confirmPassword": "Yeni şifreyi onayla",
+    "save": "Yeni şifreyi ayarla",
+    "doneTitle": "Şifre güncellendi",
+    "doneBody": "Tüm cihazlardan çıkış yaptınız. Yeni şifrenizle giriş yapın.",
+    "backToSignIn": "Girişe geri dön",
+    "googleHint": "Google ile kaydolduysanız, sıfırlanacak bir şifre yok: “Google ile Devam Et”i kullanın.",
+    "errorInvalidEmail": "Geçerli bir e-posta adresi girin.",
+    "errorInvalidCode": "Bu kod geçerli değil veya süresi dolmuş. 5 yanlış denemeden sonra yeni bir koda ihtiyacınız olacak.",
+    "errorRateLimited": "Çok fazla deneme yapıldı. Birkaç dakika bekleyin ve tekrar deneyin.",
+    "errorWeak": "En az 8 karakter, bir harf ve bir rakam kullanın.",
+    "errorMismatch": "Şifreler eşleşmiyor.",
+    "errorFailed": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} My Energy şifre sıfırlama kodunuzdur",
+    "codeKicker": "Şifre sıfırlama",
+    "codeBody": "My Energy şifrenizi sıfırlamak için bu kodu kullanın. 10 dakika içinde süresi dolacak.",
+    "codeFooter": "Şifrenizi sıfırlamak istemediyseniz, bu e-postayı görmezden gelin: şifreniz aynı kalacaktır.",
+    "googleSubject": "My Energy şifrenizi sıfırlama",
+    "googleKicker": "Şifre sıfırlama",
+    "googleBody": "Birisi bu adresin şifresini sıfırlamak istedi, ancak hesabınız Google ile giriş yapıyor, bu yüzden sıfırlanacak bir şifre yok. Giriş yapmak için “Google ile Devam Et”i kullanın.",
+    "googleCta": "Giriş yap",
+    "googleFooter": "Bu siz değilseniz, bu e-postayı görmezden gelebilirsiniz.",
+    "changedSubject": "My Energy şifreniz değiştirildi",
+    "changedKicker": "Güvenlik bildirimi",
+    "changedBody": "My Energy hesabınızın şifresi yeni sıfırlandı ve tüm cihazlardan çıkış yapıldı.",
+    "changedFooter": "Bu siz değilseniz, hemen bizimle iletişime geçin ve şifrenizi tekrar sıfırlayın."
   }
 }

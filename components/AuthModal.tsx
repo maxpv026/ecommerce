@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Loader2, X } from "lucide-react";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 import { useAuthFlow } from "@/lib/hooks/useAuthFlow";
 
 const ACCENT = "#1d4ed8";
@@ -127,6 +128,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
     resendCode,
     goBackToCredentials,
   } = useAuthFlow(callbackUrl ?? null, { onSuccess: onClose });
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   // Escape closes; body scroll is locked while the modal is open so the
   // page behind the backdrop can't move.
@@ -366,9 +368,9 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
 
               {isSignIn && (
                 <div className="mt-[11px] flex justify-end">
-                  <a href="#" className="text-[12.5px] text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400">
+                  <button type="button" onClick={() => setForgotOpen(true)} data-forgot-open className="text-[12.5px] text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400">
                     {t("forgotPassword")}
-                  </a>
+                  </button>
                 </div>
               )}
 
@@ -416,6 +418,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           </>
         )}
       </div>
+      <ForgotPasswordModal open={forgotOpen} initialEmail={email} onClose={() => setForgotOpen(false)} />
     </div>
   );
 }

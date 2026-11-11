@@ -1249,7 +1249,8 @@
     "handoffNotice": "Innotajt lit-tim tagħna. Espert se jirrevedi dan u jwieġeb hawn dalwaqt.",
     "resolvedNotice": "It-tim tagħna għalaq din il-konversazzjoni. Ibgħat messaġġ biex tibda waħda ġdida.",
     "expiredNotice": "Din il-konversazzjoni tħassret wara siegħa mingħajr attività. Ibgħat messaġġ biex tibda waħda ġdida.",
-    "retentionNote": "Il-konversazzjonijiet jitħassru b'mod permanenti siegħa wara l-aħħar messaġġ."
+    "retentionNote": "Il-konversazzjonijiet jitħassru b'mod permanenti siegħa wara l-aħħar messaġġ.",
+    "errorUnavailable": "L-assistent mhux disponibbli bħalissa. Il-messaġġ tiegħek huwa ssejvjat: erġa' pprova f'mument, jew agħfas “Tkellem ma' persuna”."
   },
   "SmartOrder": {
     "launch": "Ordni Bulk Intelliġenti",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Ara ċ-ċertifikat tiegħek",
     "ctaUpload": "Ittella' ċertifikat",
     "footer": "Dan huwa messaġġ ta' servizz dwar il-konformità F-Gas tal-kont tiegħek taħt ir-Regolament (UE) 2024/573. Tirċevih irrispettivament mill-preferenzi tal-marketing tiegħek."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "L-assistent mhux disponibbli bħalissa. Iftaħ il-PDF uffiċjali SDS hawn taħt, jew ċempel lil NCEC fuq +44 1865 407 333 jekk huwa urġenti."
+  },
+  "PasswordReset": {
+    "forgotLink": "Insejt il-password tiegħek?",
+    "title": "Irrisettja l-password tiegħek",
+    "close": "Agħlaq",
+    "emailIntro": "Daħħal l-email li tuża għal My Energy. Jekk tappartjeni għal kont b'password, nibagħtulek kodiċi ta' 6 ċifri.",
+    "emailLabel": "Email",
+    "sendCode": "Ibgħat kodiċi",
+    "codeIntro": "Jekk jeżisti kont għal {email}, kodiċi ta' 6 ċifri huwa fi triqtu. Jiskadi fi 10 minuti.",
+    "codeLabel": "Kodiċi ta' 6 ċifri",
+    "verify": "Kompli",
+    "resend": "Ibgħat kodiċi ġdid",
+    "resent": "Jekk jeżisti kont, kodiċi ġdid huwa fi triqtu.",
+    "changeEmail": "Ibdel l-email",
+    "passwordIntro": "Agħżel password ġdida: mill-inqas 8 karattri, b'ittra u numru.",
+    "newPassword": "Password ġdida",
+    "confirmPassword": "Ikkonferma password ġdida",
+    "save": "Issettja password ġdida",
+    "doneTitle": "Password aġġornata",
+    "doneBody": "Int ġejt illoggjat barra minn kull apparat. Idħol bil-password il-ġdida tiegħek.",
+    "backToSignIn": "Lura biex tidħol",
+    "googleHint": "Irreġistrajt ma' Google? M'hemmx password x'tirrisettja: uża “Kompli ma' Google”.",
+    "errorInvalidEmail": "Daħħal indirizz email validu.",
+    "errorInvalidCode": "Dak il-kodiċi mhuwiex validu jew skada. Wara 5 tentattivi żbaljati jkollok bżonn kodiċi ġdid.",
+    "errorRateLimited": "Wisq tentattivi. Stenna ftit minuti u erġa' pprova.",
+    "errorWeak": "Uża mill-inqas 8 karattri, b'ittra u numru.",
+    "errorMismatch": "Il-passwords ma jaqblux.",
+    "errorFailed": "Xi ħaġa marret ħażin. Jekk jogħġbok erġa' pprova."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} huwa l-kodiċi ta' reset tal-password tiegħek għal My Energy",
+    "codeKicker": "Reset tal-password",
+    "codeBody": "Uża dan il-kodiċi biex tirrisettja l-password tiegħek għal My Energy. Jiskadi fi 10 minuti.",
+    "codeFooter": "Jekk ma tlabtx biex tirrisettja l-password tiegħek, injora din l-email: il-password tiegħek tibqa' l-istess.",
+    "googleSubject": "Reset tal-password tiegħek għal My Energy",
+    "googleKicker": "Reset tal-password",
+    "googleBody": "Xi ħadd talab biex jirrisettja l-password għal dan l-indirizz, iżda l-kont tiegħek jidħol ma' Google, għalhekk m'hemmx password x'tirrisettja. Uża “Kompli ma' Google” biex tidħol.",
+    "googleCta": "Idħol",
+    "googleFooter": "Jekk dan ma kontx int, tista' tinjora din l-email.",
+    "changedSubject": "Il-password tiegħek għal My Energy inbidlet",
+    "changedKicker": "Avviż ta' sigurtà",
+    "changedBody": "Il-password għall-kont tiegħek ta' My Energy ġiet irrisettjata, u kull apparat ġie illoggjat barra.",
+    "changedFooter": "Jekk dan ma kontx int, ikkuntattjana minnufih u irrisettja l-password tiegħek mill-ġdid."
   }
 }

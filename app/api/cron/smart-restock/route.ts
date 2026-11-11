@@ -1,5 +1,9 @@
 import prisma from "@/lib/prisma";
 import { cronAuthorization } from "@/lib/cronAuth";
+import { inChunks } from "@/lib/concurrency";
+
+/** Reminder emails in flight at once. */
+const SEND_CONCURRENCY = 5;
 import { sendReplenishmentEmail } from "@/lib/notificationEmail";
 import { filterPurchasable, getRestockPredictions, selectDueRestocks, type RestockPrediction } from "@/lib/smartRestock";
 
@@ -129,13 +133,15 @@ export async function GET(request: Request) {
     let raced = 0;
     let skippedAtSend = 0;
 
-    for (const prediction of batch) {
-      // Per-reminder isolation: one bad address must not stop the batch.
+    // Five at a time (lib/concurrency): a serial loop over a large batch can
+    // outlast the function's time limit. Each reminder is isolated — its own
+    // claim, its own try/catch — so one bad address never stops the others.
+    await inChunks(batch, SEND_CONCURRENCY, async (prediction) => {
       try {
         const alertId = await claim(prediction);
         if (!alertId) {
           raced += 1;
-          continue;
+          return;
         }
 
         const result = await sendReplenishmentEmail({
@@ -164,7 +170,7 @@ export async function GET(request: Request) {
         console.error(`[SMART-RESTOCK] failed for ${prediction.productSku}:`, error);
         failed += 1;
       }
-    }
+    });
 
     return json(
       {

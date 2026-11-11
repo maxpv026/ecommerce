@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party build artefacts: three.js's Draco decoder is
+    // shipped as-is (minified emscripten output) and is not our source.
+    "public/draco/**",
+    // Generated Prisma client.
+    "lib/generated/**",
   ]),
 ]);
 

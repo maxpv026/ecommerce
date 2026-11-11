@@ -1,6 +1,7 @@
 import { cronAuthorization } from "@/lib/cronAuth";
 import { expireDueCertificates } from "@/lib/fgasLifecycle";
 import { sendFgasStatusEmail } from "@/lib/fgasNotify";
+import { inChunks } from "@/lib/concurrency";
 
 /**
  * GET /api/cron/fgas-expiry — daily (vercel.json).
@@ -24,9 +25,8 @@ export async function GET(request: Request) {
   if (authz === "denied") return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const expired = await expireDueCertificates();
-  // Sequential: a handful a day, and a mail server doesn't need a burst.
-  for (const e of expired) {
-    await sendFgasStatusEmail({ userId: e.userId, kind: "EXPIRED", certificate: { number: e.certificateNumber, expiresAt: e.expiresAt } });
-  }
+  // Five at a time: never a burst at the mail server, never a long serial
+  // loop against the time limit. sendFgasStatusEmail never throws.
+  await inChunks(expired, 5, (e) => sendFgasStatusEmail({ userId: e.userId, kind: "EXPIRED", certificate: { number: e.certificateNumber, expiresAt: e.expiresAt } }));
   return Response.json({ ok: true, expired: expired.length });
 }

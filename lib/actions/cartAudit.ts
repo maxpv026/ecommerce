@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
@@ -81,9 +82,10 @@ export async function auditCart(rawLines: Array<{ sku: string; qty: number }>): 
         (p.gwp ? ` · GWP ${p.gwp}` : "") + ` · €${p.pricePerKg}/kg (${p.weightKg} kg cylinder)`;
     };
 
-    const { object } = await generateObject({
+    const { output: object } = await generateText({
       model: openai("gpt-4o-mini"),
-      schema: AuditSchema,
+      output: Output.object({ schema: AuditSchema }),
+      abortSignal: aiTimeout(),
       prompt: `You audit a B2B refrigerant order for EU F-Gas compliance and on-site compatibility.
 
 Order lines:

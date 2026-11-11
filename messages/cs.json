@@ -1249,7 +1249,8 @@
     "handoffNotice": "Upozornil jsem náš tým. Odborník to zkontroluje a brzy zde odpoví.",
     "resolvedNotice": "Náš tým tuto konverzaci uzavřel. Pošlete zprávu pro zahájení nové.",
     "expiredNotice": "Tato konverzace byla smazána po hodině neaktivity. Pošlete zprávu pro zahájení nové.",
-    "retentionNote": "Chaty jsou trvale smazány hodinu po poslední zprávě."
+    "retentionNote": "Chaty jsou trvale smazány hodinu po poslední zprávě.",
+    "errorUnavailable": "Asistent je momentálně nedostupný. Vaše zpráva je uložena: zkuste to znovu za chvíli, nebo klepněte na „Mluvit s osobou“."
   },
   "SmartOrder": {
     "launch": "Chytrá hromadná objednávka",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Zobrazit váš certifikát",
     "ctaUpload": "Nahrát certifikát",
     "footer": "Toto je servisní zpráva o shodě vašeho účtu s F-Gas podle nařízení (EU) 2024/573. Obdržíte ji bez ohledu na vaše marketingové preference."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Asistent je momentálně nedostupný. Otevřete oficiální PDF bezpečnostního listu níže, nebo volejte NCEC na +44 1865 407 333, pokud je to naléhavé."
+  },
+  "PasswordReset": {
+    "forgotLink": "Zapomněli jste heslo?",
+    "title": "Obnovit heslo",
+    "close": "Zavřít",
+    "emailIntro": "Zadejte e-mail, který používáte pro My Energy. Pokud patří k účtu s heslem, zašleme vám 6místný kód.",
+    "emailLabel": "E-mail",
+    "sendCode": "Odeslat kód",
+    "codeIntro": "Pokud existuje účet pro {email}, 6místný kód je na cestě. Platnost vyprší za 10 minut.",
+    "codeLabel": "6místný kód",
+    "verify": "Pokračovat",
+    "resend": "Odeslat nový kód",
+    "resent": "Pokud existuje účet, nový kód je na cestě.",
+    "changeEmail": "Změnit e-mail",
+    "passwordIntro": "Vyberte nové heslo: alespoň 8 znaků, s písmenem a číslem.",
+    "newPassword": "Nové heslo",
+    "confirmPassword": "Potvrdit nové heslo",
+    "save": "Nastavit nové heslo",
+    "doneTitle": "Heslo aktualizováno",
+    "doneBody": "Byli jste odhlášeni na všech zařízeních. Přihlaste se s novým heslem.",
+    "backToSignIn": "Zpět k přihlášení",
+    "googleHint": "Zaregistrovali jste se pomocí Google? Není třeba obnovovat heslo: použijte „Pokračovat s Google“.",
+    "errorInvalidEmail": "Zadejte platnou e-mailovou adresu.",
+    "errorInvalidCode": "Tento kód není platný nebo vypršel. Po 5 chybných pokusech budete potřebovat nový kód.",
+    "errorRateLimited": "Příliš mnoho pokusů. Počkejte několik minut a zkuste to znovu.",
+    "errorWeak": "Použijte alespoň 8 znaků, s písmenem a číslem.",
+    "errorMismatch": "Hesla se neshodují.",
+    "errorFailed": "Něco se pokazilo. Zkuste to prosím znovu."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} je váš kód pro obnovení hesla My Energy",
+    "codeKicker": "Obnovení hesla",
+    "codeBody": "Použijte tento kód k obnovení hesla My Energy. Platnost vyprší za 10 minut.",
+    "codeFooter": "Pokud jste nepožádali o obnovení hesla, ignorujte tento e-mail: vaše heslo zůstává stejné.",
+    "googleSubject": "Obnovení hesla My Energy",
+    "googleKicker": "Obnovení hesla",
+    "googleBody": "Někdo požádal o obnovení hesla pro tuto adresu, ale váš účet se přihlašuje pomocí Google, takže není třeba obnovovat heslo. Použijte „Pokračovat s Google“ pro přihlášení.",
+    "googleCta": "Přihlásit se",
+    "googleFooter": "Pokud jste to nebyli vy, můžete tento e-mail ignorovat.",
+    "changedSubject": "Vaše heslo My Energy bylo změněno",
+    "changedKicker": "Bezpečnostní upozornění",
+    "changedBody": "Heslo pro váš účet My Energy bylo právě obnoveno a všechna zařízení byla odhlášena.",
+    "changedFooter": "Pokud jste to nebyli vy, okamžitě nás kontaktujte a obnovte heslo znovu."
   }
 }

@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { expireCatalog } from "@/lib/catalogCache";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/fgasReview";
@@ -66,6 +67,8 @@ function refresh() {
   revalidatePath("/[locale]/products", "page");
   revalidatePath("/[locale]/products/[id]", "page");
   revalidateTag(CATALOG_COUNTS_TAG, "max");
+  // Sizes, prices, families, archive state: the storefront catalog changes now.
+  expireCatalog();
 }
 
 const isUniqueViolation = (error: unknown) =>

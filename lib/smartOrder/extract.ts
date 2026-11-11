@@ -1,6 +1,7 @@
 import "server-only";
 
 import { generateText, Output } from "ai";
+import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { mentionsReclaimed, toKg, type LineRequest } from "@/lib/smartOrder/solver";
@@ -118,6 +119,7 @@ export type ExtractionRaw = z.infer<typeof ExtractionSchema>;
 export async function extractLines(text: string): Promise<ExtractionRaw> {
   const { output } = await generateText({
     model: openai(process.env.SMART_ORDER_MODEL?.trim() || process.env.MAGIC_ORDER_MODEL?.trim() || "gpt-4o"),
+    abortSignal: aiTimeout(),
     system: SYSTEM,
     // The delimiter can't be closed from inside: sanitising removed any tag.
     prompt: `<order_text>\n${text}\n</order_text>`,

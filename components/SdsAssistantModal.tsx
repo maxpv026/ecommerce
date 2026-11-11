@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChat } from "@ai-sdk/react";
+import { useTranslations } from "next-intl";
 import { DefaultChatTransport } from "ai";
 import Markdown from "react-markdown";
 import { ArrowUp, FileText, Sparkles, TriangleAlert, X } from "lucide-react";
@@ -45,6 +46,7 @@ export default function SdsAssistantModal({
 }: SdsAssistantModalProps) {
   const [draft, setDraft] = useState("");
   const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat-sds" }));
+  const tErr = useTranslations("SdsAssistant");
   const { messages, sendMessage, status, error } = useChat({ transport });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -221,8 +223,7 @@ export default function SdsAssistantModal({
                     data-sds-error
                     className="rounded-[14px] border border-red-200 bg-red-50 px-3.5 py-3 text-[12.5px] leading-[1.5] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
                   >
-                    The assistant is unavailable right now. Open the official SDS PDF below, or call
-                    NCEC on +44 1865 407 333 if this is urgent.
+                    {tErr("assistantUnavailable")}
                   </div>
                 )}
               </div>

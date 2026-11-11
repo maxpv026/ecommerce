@@ -1249,7 +1249,8 @@
     "handoffNotice": "Am notificat echipa noastră. Un expert va revizui și va răspunde aici în scurt timp.",
     "resolvedNotice": "Echipa noastră a închis această conversație. Trimiteți un mesaj pentru a începe una nouă.",
     "expiredNotice": "Această conversație a fost ștearsă după o oră fără activitate. Trimiteți un mesaj pentru a începe una nouă.",
-    "retentionNote": "Conversațiile sunt șterse definitiv la o oră după ultimul mesaj."
+    "retentionNote": "Conversațiile sunt șterse definitiv la o oră după ultimul mesaj.",
+    "errorUnavailable": "Asistentul nu este disponibil acum. Mesajul dvs. a fost salvat: încercați din nou în câteva momente sau apăsați „Discutați cu o persoană”."
   },
   "SmartOrder": {
     "launch": "Comandă inteligentă en-gros",
@@ -1445,5 +1446,51 @@
     "ctaProfile": "Vizualizați certificatul dvs.",
     "ctaUpload": "Încărcați un certificat",
     "footer": "Acesta este un mesaj de serviciu despre conformitatea F-Gas a contului dvs. conform Regulamentului (UE) 2024/573. Îl primiți indiferent de preferințele dvs. de marketing."
+  },
+  "SdsAssistant": {
+    "assistantUnavailable": "Asistentul nu este disponibil acum. Deschideți PDF-ul oficial FSS de mai jos sau sunați la NCEC la +44 1865 407 333 dacă este urgent."
+  },
+  "PasswordReset": {
+    "forgotLink": "Ați uitat parola?",
+    "title": "Resetați parola",
+    "close": "Închideți",
+    "emailIntro": "Introduceți emailul pe care îl folosiți pentru My Energy. Dacă aparține unui cont cu parolă, vă vom trimite un cod de 6 cifre.",
+    "emailLabel": "Email",
+    "sendCode": "Trimiteți codul",
+    "codeIntro": "Dacă există un cont pentru {email}, un cod de 6 cifre este pe drum. Expiră în 10 minute.",
+    "codeLabel": "Cod de 6 cifre",
+    "verify": "Continuați",
+    "resend": "Trimiteți un nou cod",
+    "resent": "Dacă există un cont, un nou cod este pe drum.",
+    "changeEmail": "Schimbați emailul",
+    "passwordIntro": "Alegeți o nouă parolă: cel puțin 8 caractere, cu o literă și un număr.",
+    "newPassword": "Parolă nouă",
+    "confirmPassword": "Confirmați parola nouă",
+    "save": "Setați parola nouă",
+    "doneTitle": "Parola a fost actualizată",
+    "doneBody": "Ați fost deconectat de pe toate dispozitivele. Conectați-vă cu noua parolă.",
+    "backToSignIn": "Înapoi la conectare",
+    "googleHint": "V-ați înscris cu Google? Nu există o parolă de resetat: folosiți „Continuați cu Google”.",
+    "errorInvalidEmail": "Introduceți o adresă de email validă.",
+    "errorInvalidCode": "Acest cod nu este valid sau a expirat. După 5 încercări greșite, veți avea nevoie de un nou cod.",
+    "errorRateLimited": "Prea multe încercări. Așteptați câteva minute și încercați din nou.",
+    "errorWeak": "Folosiți cel puțin 8 caractere, cu o literă și un număr.",
+    "errorMismatch": "Parolele nu se potrivesc.",
+    "errorFailed": "Ceva nu a mers bine. Vă rugăm să încercați din nou."
+  },
+  "PasswordResetEmail": {
+    "codeSubject": "{code} este codul dvs. de resetare a parolei My Energy",
+    "codeKicker": "Resetare parolă",
+    "codeBody": "Folosiți acest cod pentru a reseta parola My Energy. Expiră în 10 minute.",
+    "codeFooter": "Dacă nu ați solicitat resetarea parolei, ignorați acest email: parola dvs. rămâne neschimbată.",
+    "googleSubject": "Resetarea parolei My Energy",
+    "googleKicker": "Resetare parolă",
+    "googleBody": "Cineva a solicitat resetarea parolei pentru această adresă, dar contul dvs. se conectează cu Google, deci nu există o parolă de resetat. Folosiți „Continuați cu Google” pentru a vă conecta.",
+    "googleCta": "Conectați-vă",
+    "googleFooter": "Dacă nu ați fost dvs., puteți ignora acest email.",
+    "changedSubject": "Parola contului My Energy a fost schimbată",
+    "changedKicker": "Notificare de securitate",
+    "changedBody": "Parola contului dvs. My Energy tocmai a fost resetată și toate dispozitivele au fost deconectate.",
+    "changedFooter": "Dacă nu ați fost dvs., contactați-ne imediat și resetați parola din nou."
   }
 }
