@@ -30,7 +30,7 @@ export const SERVER_ONLY_NAMESPACES = ["FgasEmail", "PasswordResetEmail", "CartR
 
 /**
  * Read only on the routes that wrap themselves in FullMessagesProvider:
- *   /cart, /checkout, /profile/**, /products/[id], /hub, /admin/**, /compliance/sds
+ *   /cart, /checkout, /profile/**, /notifications, /products/[id], /hub, /admin/**, /compliance/sds
  */
 export const ROUTE_SCOPED_NAMESPACES = [
   "Cart", //            cart, checkout, profile
@@ -39,7 +39,7 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "OrderDetail", //     profile/orders
   "OrderHistory", //    profile/orders
   "AccountProfile", //  profile
-  "AccountSettings", // profile/settings
+  "AccountSettings", // profile/settings, notifications (desktop)
   "ProfileMobile", //   profile
   "FgasProfile", //     profile
   "Profile", //         profile

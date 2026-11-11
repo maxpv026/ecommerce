@@ -18,6 +18,8 @@ interface ChangePasswordFlowProps {
   passwordChangedAt: string | null;
   /** Guests see the static row only. */
   disabled?: boolean;
+  /** Settings list row: smaller type and a pill button; the dashboard keeps the default. */
+  compact?: boolean;
 }
 
 /**
@@ -25,7 +27,7 @@ interface ChangePasswordFlowProps {
  * The OTP is purpose-scoped ("password-change") and only consumed together
  * with the final write (bcrypt cost 12) in the changePassword action.
  */
-export default function ChangePasswordFlow({ email, passwordChangedAt, disabled }: ChangePasswordFlowProps) {
+export default function ChangePasswordFlow({ email, passwordChangedAt, disabled, compact = false }: ChangePasswordFlowProps) {
   const t = useTranslations("ProfileDashboard");
   const tAccount = useTranslations("AccountProfile");
   const tAuth = useTranslations("Auth");
@@ -109,11 +111,13 @@ export default function ChangePasswordFlow({ email, passwordChangedAt, disabled 
   });
 
   return (
-    <div className="pt-[18px]">
+    <div className={compact ? "" : "pt-[18px]"}>
       <div className="flex items-center justify-between gap-5">
         <span className="min-w-0">
-          <span className="block text-[15px] font-semibold tracking-[-.025em]">{tAccount("passwordTitle")}</span>
-          <span className="mt-[5px] block text-[12.5px] text-slate-600 dark:text-ink-muted">{lastChangedLine}</span>
+          <span className={compact ? "block text-[13.5px] font-semibold tracking-[-.015em]" : "block text-[15px] font-semibold tracking-[-.025em]"}>{tAccount("passwordTitle")}</span>
+          <span className={compact ? "mt-0.5 block truncate text-[12px] text-slate-500 dark:text-ink-muted" : "mt-[5px] block text-[12.5px] text-slate-600 dark:text-ink-muted"} data-password-changed>
+            {lastChangedLine}
+          </span>
         </span>
         {step === "idle" && (
           <motion.button
@@ -121,7 +125,12 @@ export default function ChangePasswordFlow({ email, passwordChangedAt, disabled 
             whileTap={{ scale: 0.98 }}
             onClick={start}
             disabled={busy || disabled}
-            className="flex h-11 flex-none items-center justify-center gap-2 rounded-[14px] border border-slate-900/[.14] px-5 text-[13.5px] font-semibold tracking-[-.015em] transition-colors hover:bg-slate-900/[.05] disabled:opacity-50 dark:border-white/10 dark:hover:bg-white/10"
+            data-change-password
+            className={
+              compact
+                ? "inline-flex h-9 flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-slate-900/[.12] bg-white/70 px-3.5 text-[13px] font-semibold tracking-[-.01em] text-slate-800 transition-colors hover:bg-slate-900/[.04] disabled:opacity-50 dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-100 dark:hover:bg-white/[.09]"
+                : "flex h-11 flex-none items-center justify-center gap-2 rounded-[14px] border border-slate-900/[.14] px-5 text-[13.5px] font-semibold tracking-[-.015em] transition-colors hover:bg-slate-900/[.05] disabled:opacity-50 dark:border-white/10 dark:hover:bg-white/10"
+            }
           >
             {busy && <Loader2 size={15} strokeWidth={2.2} className="animate-spin" />}
             {tAccount("changePassword")}
