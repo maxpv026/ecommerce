@@ -348,7 +348,12 @@
     "payCardTitle": "Luotto- / pankkikortti",
     "payCardHint": "Nopea käsittely",
     "paySepaTitle": "Tilisiirto / SEPA",
-    "paySepaHint": "Ihanteellinen suurille B2B-tilauksille"
+    "paySepaHint": "Ihanteellinen suurille B2B-tilauksille",
+    "freightToGo": "{amount} ilmaiseen ADR-rahtiin",
+    "freightProgressAria": "Edistyminen kohti ilmaista ADR-rahtia",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EU 2024/573 VAATIMUSTENMUKAISUUSTARKASTUS",

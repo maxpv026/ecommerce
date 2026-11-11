@@ -348,7 +348,12 @@
     "payCardTitle": "信用卡 / 借记卡",
     "payCardHint": "快速处理",
     "paySepaTitle": "银行转账 / SEPA",
-    "paySepaHint": "适合大额 B2B 订单"
+    "paySepaHint": "适合大额 B2B 订单",
+    "freightToGo": "距离免费 ADR 运输还差 {amount}",
+    "freightProgressAria": "免费 ADR 运输进度",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "符合 EU 2024/573 合规检查",

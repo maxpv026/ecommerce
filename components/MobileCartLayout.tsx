@@ -6,7 +6,6 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   ArrowRight,
-  Award,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -15,6 +14,7 @@ import {
   Loader2,
   Lock,
   Minus,
+  Package,
   Plus,
   RefreshCcw,
   ShoppingCart,
@@ -33,6 +33,7 @@ import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import FgasGateAlert, { FgasVerifiedLine, type FgasGate } from "./FgasGateAlert";
 import type { FgasSummary } from "@/lib/fgas";
 import QuoteCartBanner from "./QuoteCartBanner";
+import ProductThumbnail from "./ProductThumbnail";
 
 const SWIPE_THRESHOLD = 120;
 
@@ -157,10 +158,24 @@ function SwipeLine({
           style={{ background: `radial-gradient(circle,${tint},transparent 68%)` }}
         />
 
-        <div className="relative flex h-[84px] w-[84px] flex-none items-center justify-center overflow-hidden rounded-2xl border border-slate-900/[.07] bg-slate-100 dark:border-hairline dark:bg-surface-3">
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(127,127,140,.06)_0_1px,transparent_1px_9px)]" />
-          <div className="relative h-[60px] w-8 rounded-t-[17px] rounded-b-[4px] border border-dashed border-slate-900/[.22] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.26] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))]" />
-        </div>
+        {/* The cylinder render, as on desktop; a gas-tinted tile when there is none. */}
+        <span
+          className="relative h-16 w-16 flex-none overflow-hidden rounded-2xl border bg-slate-50 dark:bg-surface-3"
+          style={{ borderColor: `${tint}55` }}
+          data-line-thumb
+        >
+          <ProductThumbnail
+            sku={item.sku}
+            name={item.name}
+            sizes="64px"
+            className="absolute inset-1.5"
+            fallback={
+              <span className="flex h-full w-full items-center justify-center rounded-xl" style={{ background: `${tint}1f` }}>
+                <Package size={20} strokeWidth={1.8} style={{ color: tint }} />
+              </span>
+            }
+          />
+        </span>
 
         <div className="relative min-w-0 flex-1">
           <div className="truncate text-sm font-semibold tracking-[-.026em]">{item.name}</div>
@@ -356,12 +371,32 @@ export default function MobileCartLayout({
       >
         {!empty && <QuoteCartBanner className="mx-[18px] mt-3" />}
         {/* real freight badge in the design's tier slot */}
+        {/* Free ADR freight: how far this basket is from it (same rule as desktop). */}
         {!empty && (
-          <div className="px-[18px] pt-3.5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-blue-700/[.32] bg-blue-50 py-2 pl-[11px] pr-3.5 text-[11.5px] font-semibold text-blue-700 dark:bg-blue-600/[.16] dark:text-blue-400">
-              <Award size={14} strokeWidth={2} />
-              {freeFreight ? t("badgeFreightFree") : t("badgeFreightGoal", { amount: eur(FREE_FREIGHT_THRESHOLD) })}
-            </span>
+          <div className="px-[18px] pt-3.5" data-freight-progress={Math.round(Math.min(1, subtotal / FREE_FREIGHT_THRESHOLD) * 100)}>
+            {freeFreight ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 py-2 pl-[11px] pr-3.5 text-[11.5px] font-semibold text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <Check size={14} strokeWidth={2.6} />
+                {t("badgeFreightFree")}
+              </span>
+            ) : (
+              <div className="rounded-[14px] border border-slate-900/[.08] bg-white/70 px-3.5 py-2.5 dark:border-hairline dark:bg-white/[.04]">
+                <div className="flex items-baseline justify-between gap-3 text-[12px]">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">{t("freightToGo", { amount: eur(FREE_FREIGHT_THRESHOLD - subtotal) })}</span>
+                  <span className="flex-none text-[11px] text-slate-400 tabular-nums dark:text-ink-muted">{Math.round((subtotal / FREE_FREIGHT_THRESHOLD) * 100)}%</span>
+                </div>
+                <div
+                  className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-900/[.07] dark:bg-white/[.08]"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round((subtotal / FREE_FREIGHT_THRESHOLD) * 100)}
+                  aria-label={t("freightProgressAria")}
+                >
+                  <span className="block h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={{ width: `${(subtotal / FREE_FREIGHT_THRESHOLD) * 100}%` }} />
+                </div>
+              </div>
+            )}
           </div>
         )}
 

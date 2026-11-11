@@ -348,7 +348,12 @@
     "payCardTitle": "Kredit- / betalkort",
     "payCardHint": "Snabb hantering",
     "paySepaTitle": "Banköverföring / SEPA",
-    "paySepaHint": "Perfekt för stora B2B-order"
+    "paySepaHint": "Perfekt för stora B2B-order",
+    "freightToGo": "{amount} till fri ADR-frakt",
+    "freightProgressAria": "Framsteg mot fri ADR-frakt",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EU 2024/573 EFTERLEVNADSKONTROLL",

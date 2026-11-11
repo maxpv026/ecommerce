@@ -348,7 +348,12 @@
     "payCardTitle": "신용 / 체크카드",
     "payCardHint": "빠른 처리",
     "paySepaTitle": "계좌 이체 / SEPA",
-    "paySepaHint": "대량 B2B 주문에 적합"
+    "paySepaHint": "대량 B2B 주문에 적합",
+    "freightToGo": "무료 ADR 운송까지 {amount}",
+    "freightProgressAria": "무료 ADR 운송을 위한 진행 상황",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EU 2024/573 준수 검사",

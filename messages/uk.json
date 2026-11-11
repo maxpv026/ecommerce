@@ -348,7 +348,12 @@
     "payCardTitle": "Кредитна / дебетова картка",
     "payCardHint": "Швидка обробка",
     "paySepaTitle": "Банківський переказ / SEPA",
-    "paySepaHint": "Ідеально для великих B2B-замовлень"
+    "paySepaHint": "Ідеально для великих B2B-замовлень",
+    "freightToGo": "{amount} до безкоштовної доставки ADR",
+    "freightProgressAria": "Прогрес до безкоштовної доставки ADR",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} т CO₂e",
+    "lineBreakdownShort": "{perKg}/кг × {weight}"
   },
   "FgasModal": {
     "poweredBy": "ПЕРЕВІРКА ВІДПОВІДНОСТІ ЄС 2024/573",

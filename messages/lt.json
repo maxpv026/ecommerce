@@ -348,7 +348,12 @@
     "payCardTitle": "Kredito / debeto kortelė",
     "payCardHint": "Greitas apdorojimas",
     "paySepaTitle": "Banko pavedimas / SEPA",
-    "paySepaHint": "Puikiai tinka didelėms B2B užsakymams"
+    "paySepaHint": "Puikiai tinka didelėms B2B užsakymams",
+    "freightToGo": "{amount} iki nemokamo ADR transporto",
+    "freightProgressAria": "Progresas link nemokamo ADR transporto",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "ES 2024/573 ATITIKTIES PATIKRA",

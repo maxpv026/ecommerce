@@ -348,7 +348,12 @@
     "payCardTitle": "Krediit- / deebetkaart",
     "payCardHint": "Kiire töötlemine",
     "paySepaTitle": "Pangaülekanne / SEPA",
-    "paySepaHint": "Ideaalne suurte B2B-tellimuste jaoks"
+    "paySepaHint": "Ideaalne suurte B2B-tellimuste jaoks",
+    "freightToGo": "{amount} kuni tasuta ADR transport",
+    "freightProgressAria": "Edenemine tasuta ADR transpordi suunas",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EL 2024/573 NÕUETELE VASTAVUSE KONTROLL",

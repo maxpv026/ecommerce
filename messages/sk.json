@@ -348,7 +348,12 @@
     "payCardTitle": "Kreditná / debetná karta",
     "payCardHint": "Rýchle spracovanie",
     "paySepaTitle": "Bankový prevod / SEPA",
-    "paySepaHint": "Ideálne pre veľké B2B objednávky"
+    "paySepaHint": "Ideálne pre veľké B2B objednávky",
+    "freightToGo": "{amount} do bezplatnej ADR prepravy",
+    "freightProgressAria": "Postup k bezplatnej ADR preprave",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "KONTROLA ZHODY PODĽA EÚ 2024/573",

@@ -348,7 +348,12 @@
     "payCardTitle": "Credit- / debetkaart",
     "payCardHint": "Snelle verwerking",
     "paySepaTitle": "Bankoverschrijving / SEPA",
-    "paySepaHint": "Ideaal voor grote B2B-orders"
+    "paySepaHint": "Ideaal voor grote B2B-orders",
+    "freightToGo": "{amount} tot gratis ADR-vracht",
+    "freightProgressAria": "Voortgang naar gratis ADR-vracht",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EU 2024/573 COMPLIANCE CHECK",

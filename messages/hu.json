@@ -348,7 +348,12 @@
     "payCardTitle": "Hitel- / betéti kártya",
     "payCardHint": "Gyors feldolgozás",
     "paySepaTitle": "Banki átutalás / SEPA",
-    "paySepaHint": "Ideális nagy B2B rendelésekhez"
+    "paySepaHint": "Ideális nagy B2B rendelésekhez",
+    "freightToGo": "{amount} az ingyenes ADR fuvarozásig",
+    "freightProgressAria": "Előrehaladás az ingyenes ADR fuvarozás felé",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EU 2024/573 MEGFELELŐSÉGI ELLENŐRZÉS",

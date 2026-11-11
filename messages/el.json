@@ -348,7 +348,12 @@
     "payCardTitle": "Πιστωτική / χρεωστική κάρτα",
     "payCardHint": "Γρήγορη επεξεργασία",
     "paySepaTitle": "Τραπεζικό έμβασμα / SEPA",
-    "paySepaHint": "Ιδανικό για μεγάλες παραγγελίες B2B"
+    "paySepaHint": "Ιδανικό για μεγάλες παραγγελίες B2B",
+    "freightToGo": "{amount} για δωρεάν μεταφορά ADR",
+    "freightProgressAria": "Πρόοδος προς δωρεάν μεταφορά ADR",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "Έλεγχος Συμμόρφωσης ΕΕ 2024/573",

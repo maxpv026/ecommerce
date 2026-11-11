@@ -348,7 +348,12 @@
     "payCardTitle": "Кредитна / дебитна карта",
     "payCardHint": "Бърза обработка",
     "paySepaTitle": "Банков превод / SEPA",
-    "paySepaHint": "Идеално за големи B2B поръчки"
+    "paySepaHint": "Идеално за големи B2B поръчки",
+    "freightToGo": "{amount} до безплатен ADR транспорт",
+    "freightProgressAria": "Напредък към безплатен ADR транспорт",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/кг × {weight}"
   },
   "FgasModal": {
     "poweredBy": "ПРОВЕРКА ЗА СЪОТВЕТСТВИЕ С ЕС 2024/573",

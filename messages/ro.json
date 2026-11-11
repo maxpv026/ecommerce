@@ -348,7 +348,12 @@
     "payCardTitle": "Card de credit / debit",
     "payCardHint": "Procesare rapidă",
     "paySepaTitle": "Transfer bancar / SEPA",
-    "paySepaHint": "Ideal pentru comenzi B2B mari"
+    "paySepaHint": "Ideal pentru comenzi B2B mari",
+    "freightToGo": "{amount} până la transport ADR gratuit",
+    "freightProgressAria": "Progres către transport ADR gratuit",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "VERIFICARE CONFORMITATE EU 2024/573",

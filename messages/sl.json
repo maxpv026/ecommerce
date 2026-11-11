@@ -348,7 +348,12 @@
     "payCardTitle": "Kreditna / debetna kartica",
     "payCardHint": "Hitra obdelava",
     "paySepaTitle": "Bančno nakazilo / SEPA",
-    "paySepaHint": "Idealno za velika B2B naročila"
+    "paySepaHint": "Idealno za velika B2B naročila",
+    "freightToGo": "{amount} do brezplačnega ADR prevoza",
+    "freightProgressAria": "Napredek proti brezplačnemu ADR prevozu",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "PREVERJANJE SKLADNOSTI EU 2024/573",

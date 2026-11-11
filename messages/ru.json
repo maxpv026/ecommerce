@@ -348,7 +348,12 @@
     "payCardTitle": "Кредитная / дебетовая карта",
     "payCardHint": "Быстрая обработка",
     "paySepaTitle": "Банковский перевод / SEPA",
-    "paySepaHint": "Идеально для крупных B2B-заказов"
+    "paySepaHint": "Идеально для крупных B2B-заказов",
+    "freightToGo": "{amount} до бесплатной доставки ADR",
+    "freightProgressAria": "Прогресс к бесплатной доставке ADR",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} т CO₂e",
+    "lineBreakdownShort": "{perKg}/кг × {weight}"
   },
   "FgasModal": {
     "poweredBy": "ПРОВЕРКА СООТВЕТСТВИЯ ЕС 2024/573",

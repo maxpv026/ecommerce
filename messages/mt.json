@@ -348,7 +348,12 @@
     "payCardTitle": "Karta ta' kreditu / debitu",
     "payCardHint": "Ipproċessar mgħaġġel",
     "paySepaTitle": "Trasferiment bankarju / SEPA",
-    "paySepaHint": "Ideali għal ordnijiet B2B kbar"
+    "paySepaHint": "Ideali għal ordnijiet B2B kbar",
+    "freightToGo": "{amount} għal trasport ADR b'xejn",
+    "freightProgressAria": "Progress lejn trasport ADR b'xejn",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "KONTROLL TA' KONFORMITÀ EU 2024/573",

@@ -348,7 +348,12 @@
     "payCardTitle": "Kredit- / betalingskort",
     "payCardHint": "Hurtig behandling",
     "paySepaTitle": "Bankoverførsel / SEPA",
-    "paySepaHint": "Ideel til store B2B-ordrer"
+    "paySepaHint": "Ideel til store B2B-ordrer",
+    "freightToGo": "{amount} til gratis ADR-fragt",
+    "freightProgressAria": "Fremskridt mod gratis ADR-fragt",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "EU 2024/573 OVERHOLDELSESKONTROL",

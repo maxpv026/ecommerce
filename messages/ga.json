@@ -348,7 +348,12 @@
     "payCardTitle": "Cárta creidmheasa / dochair",
     "payCardHint": "Próiseáil thapa",
     "paySepaTitle": "Aistriú bainc / SEPA",
-    "paySepaHint": "Foirfe d'orduithe móra B2B"
+    "paySepaHint": "Foirfe d'orduithe móra B2B",
+    "freightToGo": "{amount} go lasta ADR saor in aisce",
+    "freightProgressAria": "Dul chun cinn i dtreo lasta ADR saor in aisce",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "SEICEÁIL COMHLÍONTA AE 2024/573",

@@ -348,7 +348,12 @@
     "payCardTitle": "Kredītkarte / debetkarte",
     "payCardHint": "Ātra apstrāde",
     "paySepaTitle": "Bankas pārskaitījums / SEPA",
-    "paySepaHint": "Ideāli piemērots lieliem B2B pasūtījumiem"
+    "paySepaHint": "Ideāli piemērots lieliem B2B pasūtījumiem",
+    "freightToGo": "{amount} līdz bezmaksas ADR transportam",
+    "freightProgressAria": "Progress uz bezmaksas ADR transportu",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "ES 2024/573 ATBILSTĪBAS PĀRBAUDE",

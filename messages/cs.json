@@ -348,7 +348,12 @@
     "payCardTitle": "Kreditní / debetní karta",
     "payCardHint": "Rychlé zpracování",
     "paySepaTitle": "Bankovní převod / SEPA",
-    "paySepaHint": "Ideální pro velké B2B objednávky"
+    "paySepaHint": "Ideální pro velké B2B objednávky",
+    "freightToGo": "{amount} do bezplatné ADR přepravy",
+    "freightProgressAria": "Postup k bezplatné ADR přepravě",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "KONTROLA SOULADU EU 2024/573",

@@ -348,7 +348,12 @@
     "payCardTitle": "Kredi / banka kartı",
     "payCardHint": "Hızlı işlem",
     "paySepaTitle": "Banka havalesi / SEPA",
-    "paySepaHint": "Büyük B2B siparişleri için ideal"
+    "paySepaHint": "Büyük B2B siparişleri için ideal",
+    "freightToGo": "Ücretsiz ADR taşıma için {amount}",
+    "freightProgressAria": "Ücretsiz ADR taşıma hedefine ilerleme",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "AB 2024/573 UYUMLULUK KONTROLÜ",

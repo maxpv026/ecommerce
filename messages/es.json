@@ -348,7 +348,12 @@
     "payCardTitle": "Tarjeta de crédito / débito",
     "payCardHint": "Procesamiento rápido",
     "paySepaTitle": "Transferencia bancaria / SEPA",
-    "paySepaHint": "Ideal para grandes pedidos B2B"
+    "paySepaHint": "Ideal para grandes pedidos B2B",
+    "freightToGo": "{amount} para flete ADR gratuito",
+    "freightProgressAria": "Progreso hacia flete ADR gratuito",
+    "skuLine": "{variant} · SKU: {sku}",
+    "co2eTonnes": "{value} t CO₂e",
+    "lineBreakdownShort": "{perKg}/kg × {weight}"
   },
   "FgasModal": {
     "poweredBy": "VERIFICACIÓN DE CUMPLIMIENTO UE 2024/573",

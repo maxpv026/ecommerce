@@ -8,8 +8,8 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
   ArrowRight,
-  Award,
   Check,
+  Package,
   FileText,
   Loader2,
   FlaskConical,
@@ -34,6 +34,7 @@ import { useFgasModal } from "@/lib/fgasModalEvents";
 import { requiresFgasCertificate } from "@/lib/fgasSubstances";
 import type { FgasSummary } from "@/lib/fgas";
 import QuoteCartBanner from "./QuoteCartBanner";
+import ProductThumbnail from "./ProductThumbnail";
 import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
@@ -191,6 +192,9 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
   const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
   const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
+  // Goods subtotal against the free-freight threshold — the same rule
+  // calculateCartTotals applies (deposit and VAT don't count towards it).
+  const freightProgress = Math.min(1, subtotal / FREE_FREIGHT_THRESHOLD);
 
   const runAudit = async () => {
     if (empty || auditPhase === "thinking") return;
@@ -316,50 +320,119 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
             transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
             className="relative mx-auto max-w-[1320px] px-8 pb-[120px] pt-11"
           >
-            {/* head */}
-            <div className="mb-[34px] flex flex-wrap items-end justify-between gap-6">
-              <div>
+            {/* head — on the same 7/5 grid as the content below, so "Clear
+                cart" lands at the right edge of the item column and the
+                freight progress sits over the summary. */}
+            <div className={`mb-[30px] grid grid-cols-1 gap-5 ${empty ? "" : "lg:grid-cols-12"} lg:items-end`}>
+              <div className={empty ? "mx-auto w-full max-w-3xl" : "min-w-0 lg:col-span-7"}>
                 <div className="mb-3 text-xs tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("eyebrow")}</div>
                 <h1 className="m-0 text-[40px] font-semibold leading-[1.05] tracking-[-.045em]">
                   {empty ? t("headEmpty") : t("yourCart")}
                 </h1>
-                <p className="mt-3 text-[14.5px] leading-[1.6] text-slate-600 dark:text-ink-muted">
-                  {empty ? t("sublineEmpty") : t("sublineCount", { count })}
-                </p>
+                <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <p className="m-0 text-[14.5px] leading-[1.6] text-slate-600 dark:text-ink-muted">
+                    {empty ? t("sublineEmpty") : t("sublineCount", { count })}
+                  </p>
+                  {!empty && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clear();
+                        setAuditPhase("idle");
+                        setFindings([]);
+                        setSuggestions([]);
+                      }}
+                      data-clear-cart
+                      className="flex-none text-[13px] font-medium text-slate-500 underline-offset-4 transition-colors hover:text-red-600 hover:underline dark:text-ink-muted dark:hover:text-red-400"
+                    >
+                      {t("clearCart")}
+                    </button>
+                  )}
+                </div>
               </div>
-              <span className="inline-flex flex-none items-center gap-2 rounded-full border border-blue-700/[.28] bg-blue-50 py-[9px] pl-3 pr-[15px] text-xs font-semibold text-blue-700 dark:bg-blue-600/[.18] dark:text-blue-400">
-                <Award size={15} strokeWidth={2} />
-                {freeFreight ? t("badgeFreightFree") : t("badgeFreightGoal", { amount: eur(FREE_FREIGHT_THRESHOLD) })}
-              </span>
+
+              {/* Free ADR freight: how far this basket is from it, or that it applies. */}
+              {!empty && (
+                <div className="min-w-0 lg:col-span-5" data-freight-progress={Math.round(freightProgress * 100)}>
+                  {freeFreight ? (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 py-2 pl-3 pr-4 text-xs font-semibold text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      <Check size={14} strokeWidth={2.6} />
+                      {t("badgeFreightFree")}
+                    </span>
+                  ) : (
+                    <div className="rounded-[16px] border border-slate-900/[.08] bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-hairline dark:bg-glass">
+                      <div className="flex items-baseline justify-between gap-3 text-[12.5px]">
+                        <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                          <Truck size={14} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
+                          {t("freightToGo", { amount: eur(FREE_FREIGHT_THRESHOLD - subtotal) })}
+                        </span>
+                        <span className="flex-none text-[11.5px] text-slate-400 tabular-nums dark:text-ink-muted">
+                          {eur(subtotal)} / {eur(FREE_FREIGHT_THRESHOLD)}
+                        </span>
+                      </div>
+                      <div
+                        className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-900/[.07] dark:bg-white/[.08]"
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(freightProgress * 100)}
+                        aria-label={t("freightProgressAria")}
+                      >
+                        <span className="block h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={{ width: `${freightProgress * 100}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
+            {empty ? (
+              /* Empty: one centred workspace — the way back to the catalogue,
+                 the fast track from a spec / BOM, and what every order comes
+                 with. No summary of zeros, no audit of nothing. */
+              <div className="mx-auto flex max-w-3xl flex-col gap-4" data-cart-empty>
+                <motion.div
+                  initial={{ opacity: 0, y: 18, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  className="rounded-[28px] border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-12 text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
+                >
+                  <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-[28px] border border-slate-900/[.07] bg-slate-100 [animation:hc-bob_6s_ease-in-out_infinite] dark:border-hairline dark:bg-surface-3">
+                    <span className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-50 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
+                    <ShoppingCart size={32} strokeWidth={1.7} className="relative text-blue-700 dark:text-blue-400" />
+                  </span>
+                  <div className="mt-5 text-[23px] font-semibold tracking-[-.04em]">{t("cartEmptyShort")}</div>
+                  <p className="mx-auto mb-6 mt-2.5 max-w-[380px] text-[13.5px] leading-[1.62] text-slate-600 dark:text-ink-muted">{t("emptyBody")}</p>
+                  <Link
+                    href="/products"
+                    className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_var(--glow-700),0_0_30px_-10px_var(--glow-700)] transition-colors hover:bg-blue-800"
+                  >
+                    {t("exploreProducts")}
+                    <ArrowRight size={16} strokeWidth={2} />
+                  </Link>
+                </motion.div>
+                <SmartOrderButton variant="panel" source="cart" />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" data-cart-trust>
+                  {[
+                    { icon: FlaskConical, label: t("assuranceCoa") },
+                    { icon: Truck, label: t("assuranceFreight") },
+                    { icon: Lock, label: t("assuranceFgas") },
+                  ].map(({ icon: Icon, label }) => (
+                    <span
+                      key={label}
+                      className="flex items-center gap-2.5 rounded-[16px] border border-slate-900/[.07] bg-white/60 px-4 py-3 text-[12px] leading-[1.4] text-slate-600 backdrop-blur-xl dark:border-hairline dark:bg-glass dark:text-ink-muted"
+                    >
+                      <Icon size={15} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
               {/* ─── list column ─── */}
               <div className="min-w-0 lg:col-span-7">
-                {empty ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 18, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="rounded-[28px] border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-[72px] text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
-                  >
-                    <span className="relative inline-flex h-24 w-24 items-center justify-center rounded-[32px] border border-slate-900/[.07] bg-slate-100 [animation:hc-bob_6s_ease-in-out_infinite] dark:border-hairline dark:bg-surface-3">
-                      <span className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-50 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
-                      <ShoppingCart size={38} strokeWidth={1.7} className="relative text-blue-700 dark:text-blue-400" />
-                    </span>
-                    <div className="mt-[26px] text-[23px] font-semibold tracking-[-.04em]">{t("cartEmptyShort")}</div>
-                    <p className="mx-auto mb-[26px] mt-3 max-w-[340px] text-[13.5px] leading-[1.62] text-slate-600 dark:text-ink-muted">
-                      {t("emptyBody")}
-                    </p>
-                    <Link
-                      href="/products"
-                      className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_var(--glow-700),0_0_30px_-10px_var(--glow-700)] transition-colors hover:bg-blue-800"
-                    >
-                      {t("exploreProducts")}
-                      <ArrowRight size={16} strokeWidth={2} />
-                    </Link>
-                  </motion.div>
-                ) : (
+                {!empty && (
                   <div className="flex flex-col gap-3.5">
                     <AnimatePresence mode="popLayout">
                       {shownItems.map((item, idx) => {
@@ -371,6 +444,9 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                         const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
                         const on = hovered === item.sku;
                         const trashOn = trashHover === item.sku;
+                        const chips = tagChips(product);
+                        // This line's footprint, from the catalog GWP: net kg × qty × GWP.
+                        const co2eT = product?.gwp && product.pricedPerKg ? (pricing.weightKg * item.qty * product.gwp) / 1000 : null;
                         return (
                           <motion.div
                             key={item.sku}
@@ -389,7 +465,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                             onMouseEnter={() => setHovered(item.sku)}
                             onMouseLeave={() => setHovered(null)}
                             whileHover={{ scale: 1.006 }}
-                            className="relative flex w-full gap-[18px] overflow-hidden rounded-3xl border bg-white/70 p-[18px] backdrop-blur-xl backdrop-saturate-150 transition-[border-color,box-shadow] duration-300 dark:bg-glass"
+                            className="group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl border bg-white/70 p-4 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,box-shadow] duration-300 dark:bg-glass"
                             style={{
                               borderColor: on ? "rgba(96,165,250,.44)" : "var(--hc-cat-border, rgba(15,23,42,.07))",
                               boxShadow: on
@@ -403,92 +479,104 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                               style={{ background: `radial-gradient(circle,${tint},transparent 68%)`, opacity: on ? 0.24 : 0.09 }}
                             />
 
-                            {/* product tile */}
-                            <div className="relative flex h-[104px] w-[104px] flex-none items-center justify-center overflow-hidden rounded-[18px] border border-slate-900/[.07] bg-slate-100 dark:border-hairline dark:bg-surface-3">
-                              <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(127,127,140,.07)_0_1px,transparent_1px_9px)]" />
-                              <div className="relative h-[72px] w-[38px] rounded-t-[20px] rounded-b-[5px] border border-dashed border-slate-900/[.22] bg-[linear-gradient(118deg,rgba(255,255,255,.96),rgba(241,245,249,.7))] dark:border-white/[.26] dark:bg-[linear-gradient(118deg,rgba(255,255,255,.1),rgba(255,255,255,.03))]" />
-                            </div>
+                            {/* thumbnail — the cylinder render; a gas-tinted tile when there is none */}
+                            <span
+                              className="relative h-16 w-16 flex-none overflow-hidden rounded-2xl border bg-slate-50 dark:bg-surface-3"
+                              style={{ borderColor: `${tint}55` }}
+                              data-line-thumb
+                            >
+                              <ProductThumbnail
+                                sku={item.sku}
+                                name={item.name}
+                                sizes="64px"
+                                className="absolute inset-1.5"
+                                fallback={
+                                  <span className="flex h-full w-full items-center justify-center rounded-xl" style={{ background: `${tint}1f` }}>
+                                    <Package size={22} strokeWidth={1.8} style={{ color: tint }} />
+                                  </span>
+                                }
+                              />
+                            </span>
 
+                            {/* name · spec · pills */}
                             <div className="relative min-w-0 flex-1">
-                              <div className="flex items-start justify-between gap-3.5">
-                                <div className="min-w-0">
-                                  <div className="text-[15px] font-semibold tracking-[-.028em]">{item.name}</div>
-                                  <div className="mt-1 text-[11.5px] text-slate-400 dark:text-ink-muted">
-                                    {item.variant} · {item.sku}
-                                  </div>
-                                </div>
-                                <motion.button
-                                  type="button"
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => removeItem(item.sku)}
-                                  onMouseEnter={() => setTrashHover(item.sku)}
-                                  onMouseLeave={() => setTrashHover(null)}
-                                  aria-label={t("removeItemAria", { item: item.name })}
-                                  className={`flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[11px] transition-colors ${
-                                    trashOn ? "bg-red-500/[.14] text-red-500" : "text-slate-400 dark:text-ink-muted"
-                                  }`}
-                                >
-                                  <Trash2 size={15} strokeWidth={2} />
-                                </motion.button>
+                              <div className="truncate text-[15px] font-semibold tracking-[-.028em]">{item.name}</div>
+                              <div className="mt-0.5 truncate text-[11.5px] text-slate-400 dark:text-ink-muted">
+                                {t("skuLine", { variant: item.variant, sku: item.sku })}
                               </div>
-
-                              {tagChips(product).length > 0 && (
-                                <div className="mt-3 flex flex-wrap gap-[7px]">
-                                  {tagChips(product).map((chip) => (
-                                    <span
-                                      key={chip.label}
-                                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10.5px] font-semibold ${toneCls[chip.tone]}`}
-                                    >
+                              {(chips.length > 0 || co2eT !== null) && (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {chips.map((chip) => (
+                                    <span key={chip.label} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10.5px] font-semibold ${toneCls[chip.tone]}`}>
                                       {chip.label}
                                     </span>
                                   ))}
-                                </div>
-                              )}
-
-                              <div className="mt-4 flex flex-wrap items-end justify-between gap-3.5">
-                                <div className="flex h-[42px] items-center gap-0.5 rounded-[14px] border border-slate-900/[.07] bg-slate-100 px-1 dark:border-hairline dark:bg-surface-3">
-                                  <motion.button
-                                    type="button"
-                                    whileHover={{ scale: 1.12 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => decrement(item.sku)}
-                                    aria-label={t("decreaseQtyAria", { item: item.name })}
-                                    className="flex h-9 w-[34px] items-center justify-center rounded-[11px] text-slate-600 dark:text-ink-muted"
-                                  >
-                                    <Minus size={14} strokeWidth={2} />
-                                  </motion.button>
-                                  <span className="min-w-[30px] text-center text-sm font-semibold" data-line-qty>
-                                    {item.qty}
-                                  </span>
-                                  <motion.button
-                                    type="button"
-                                    whileHover={{ scale: 1.12 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => increment(item.sku)}
-                                    aria-label={t("increaseQtyAria", { item: item.name })}
-                                    className="flex h-9 w-[34px] items-center justify-center rounded-[11px] text-slate-600 dark:text-ink-muted"
-                                  >
-                                    <Plus size={14} strokeWidth={2} />
-                                  </motion.button>
-                                </div>
-                                <span className="min-w-0 text-right">
-                                  <span className="block text-lg font-semibold tracking-[-.035em]" data-line-total>
-                                    {eur(unit * item.qty)}
-                                  </span>
-                                  {/* the maths behind the figure: €/kg × net kg = one cylinder, + deposit */}
-                                  <span className="mt-0.5 block text-[11px] leading-[1.5] text-slate-400 dark:text-ink-muted" data-line-breakdown>
-                                    {showBreakdown
-                                      ? t("lineBreakdown", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg), cylinder: eur(unit) })
-                                      : `${eur(unit)} ${t("eachSuffix")}`}
-                                  </span>
-                                  {(pricing.deposit ?? 0) > 0 && (
-                                    <span className="block text-[11px] leading-[1.5] text-emerald-700 dark:text-emerald-300/90" data-line-deposit>
-                                      {t("depositEach", { amount: eur(pricing.deposit ?? 0) })}
+                                  {co2eT !== null && (
+                                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10.5px] font-semibold tabular-nums ${toneCls.muted}`} data-line-co2e>
+                                      {t("co2eTonnes", { value: format.number(co2eT, { maximumFractionDigits: 2 }) })}
                                     </span>
                                   )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* stepper · price · remove */}
+                            <div className="relative flex flex-none items-center gap-4">
+                              <div className="flex h-9 items-center gap-0.5 rounded-[12px] border border-slate-900/[.07] bg-slate-100 px-0.5 dark:border-hairline dark:bg-surface-3">
+                                <motion.button
+                                  type="button"
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => decrement(item.sku)}
+                                  aria-label={t("decreaseQtyAria", { item: item.name })}
+                                  className="flex h-8 w-8 items-center justify-center rounded-[10px] text-slate-600 hover:bg-white dark:text-ink-muted dark:hover:bg-white/10"
+                                >
+                                  <Minus size={13} strokeWidth={2.2} />
+                                </motion.button>
+                                <span className="min-w-[26px] text-center text-sm font-semibold tabular-nums" data-line-qty>
+                                  {item.qty}
                                 </span>
+                                <motion.button
+                                  type="button"
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => increment(item.sku)}
+                                  aria-label={t("increaseQtyAria", { item: item.name })}
+                                  className="flex h-8 w-8 items-center justify-center rounded-[10px] text-slate-600 hover:bg-white dark:text-ink-muted dark:hover:bg-white/10"
+                                >
+                                  <Plus size={13} strokeWidth={2.2} />
+                                </motion.button>
                               </div>
+                              <span className="w-[170px] text-right">
+                                <span className="block text-[17px] font-semibold tracking-[-.035em] tabular-nums" data-line-total>
+                                  {eur(unit * item.qty)}
+                                </span>
+                                {/* the maths behind the figure: €/kg × net kg = one cylinder, + deposit */}
+                                <span className="block truncate text-[11px] leading-[1.45] text-slate-400 dark:text-ink-muted" data-line-breakdown>
+                                  {showBreakdown
+                                    ? t("lineBreakdownShort", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg) })
+                                    : `${eur(unit)} ${t("eachSuffix")}`}
+                                </span>
+                                {(pricing.deposit ?? 0) > 0 && (
+                                  /* Wraps rather than clips: the deposit line runs to ~40 characters in some languages. */
+                                  <span className="block text-[11px] leading-[1.35] text-emerald-700 dark:text-emerald-300/90" data-line-deposit>
+                                    {t("depositEach", { amount: eur(pricing.deposit ?? 0) })}
+                                  </span>
+                                )}
+                              </span>
+                              {/* Revealed on hover/focus; always shown where there is no hover. */}
+                              <motion.button
+                                type="button"
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => removeItem(item.sku)}
+                                onMouseEnter={() => setTrashHover(item.sku)}
+                                onMouseLeave={() => setTrashHover(null)}
+                                aria-label={t("removeItemAria", { item: item.name })}
+                                data-line-remove
+                                className={`flex h-8 w-8 flex-none items-center justify-center rounded-[10px] opacity-0 transition-[opacity,background-color,color] focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100 ${
+                                  trashOn ? "bg-red-500/[.14] text-red-500" : "text-slate-400 dark:text-ink-muted"
+                                }`}
+                              >
+                                <Trash2 size={15} strokeWidth={2} />
+                              </motion.button>
                             </div>
                           </motion.div>
                         );
@@ -746,8 +834,8 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                     </div>
                   </div>
 
-                  <div className="mt-[18px] flex items-end justify-between gap-3.5 border-t border-slate-900/[.08] pt-[18px] dark:border-hairline">
-                    <span className="text-[13px] text-slate-600 dark:text-ink-muted">{t("total")}</span>
+                  <div className="mt-[18px] flex items-baseline justify-between gap-3.5 border-t border-slate-900/[.08] pt-[18px] dark:border-hairline">
+                    <span className="text-[15px] font-semibold tracking-[-.02em]">{t("total")}</span>
                     <span className="text-[30px] font-semibold tracking-[-.045em]" data-summary-total>
                       {eur(total)}
                     </span>
@@ -856,21 +944,6 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                       </button>
                     ))}
 
-                  {!empty && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        clear();
-                        setAuditPhase("idle");
-                        setFindings([]);
-                        setSuggestions([]);
-                      }}
-                      className="mt-2.5 flex h-[46px] w-full items-center justify-center rounded-[15px] border border-slate-900/[.14] text-[13px] font-semibold tracking-[-.015em] text-slate-600 transition-colors hover:bg-slate-900/[.04] dark:border-hairline-strong dark:text-ink-muted dark:hover:bg-white/[.06]"
-                    >
-                      {t("clearCart")}
-                    </button>
-                  )}
-
                   <div className="mt-5 flex flex-col gap-[11px] border-t border-slate-900/[.08] pt-[18px] dark:border-hairline">
                     {[
                       { icon: FlaskConical, label: t("assuranceCoa") },
@@ -886,6 +959,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                 </div>
               </div>
             </div>
+            )}
           </motion.main>
         </div>
       </div>
