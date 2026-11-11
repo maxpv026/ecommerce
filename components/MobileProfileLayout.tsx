@@ -21,6 +21,7 @@ import {
   MapPin,
   Moon,
   Package,
+  Pencil,
   Receipt,
   Heart,
   ShieldCheck,
@@ -210,7 +211,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="px-[18px] pt-3.5"
         >
-          <div className="relative overflow-hidden rounded-[28px] border border-slate-900/[.1] bg-white/70 p-5 shadow-[0_30px_66px_-44px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
+          <div className="relative overflow-hidden rounded-[24px] border border-slate-900/[.1] bg-white/70 p-4 shadow-[0_30px_66px_-44px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
             <span className="pointer-events-none absolute -top-[104%] right-[-28%] h-[280px] w-[280px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_68%)] opacity-[.28] blur-[66px]" />
 
             <div className="relative flex items-center gap-3.5">
@@ -230,9 +231,27 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                 )}
                 <span className="mt-0.5 block truncate text-[11px] text-slate-400 dark:text-ink-muted">{email}</span>
               </span>
+              {/* Edit sits in the corner of the card: it is a secondary
+                  action, and the full-width blue button it replaces was the
+                  loudest thing on the screen. 44px tap target, 36px chrome. */}
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.92 }}
+                onClick={() => setEditOpen(true)}
+                data-edit-profile
+                aria-haspopup="dialog"
+                aria-expanded={editOpen}
+                aria-label={tPd("editProfile")}
+                title={tPd("editProfile")}
+                className="-mr-1 -mt-1 flex h-11 w-11 flex-none items-center justify-center self-start rounded-full outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-900/[.12] bg-white/80 text-slate-700 transition-colors hover:bg-white dark:border-white/[.14] dark:bg-white/[.07] dark:text-slate-200 dark:hover:bg-white/[.12]">
+                  <Pencil size={15} strokeWidth={2} />
+                </span>
+              </motion.button>
             </div>
 
-            <div className="relative mt-[15px] flex flex-wrap gap-[7px]">
+            <div className="relative mt-3 flex flex-wrap gap-[7px] empty:hidden">
               {profile?.fGasStatus === "PENDING_REVIEW" && (
                 <span
                   data-fgas-pending
@@ -270,70 +289,66 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
               )}
             </div>
 
-            <div className="relative mt-4 grid grid-cols-3 gap-2" data-hero-stats>
+            {/* One strip, three cells divided by hairlines — not three boxes. */}
+            <dl className="relative m-0 mt-3 grid grid-cols-3 divide-x divide-slate-900/[.08] overflow-hidden rounded-[14px] border border-slate-900/[.08] bg-slate-900/[.025] dark:divide-white/[.08] dark:border-white/[.08] dark:bg-white/[.03]" data-hero-stats>
               {[
                 { label: t("statOrders"), value: dashboardData?.totalOrders ?? 0 },
                 { label: t("statTransit"), value: dashboardData?.activeShipments ?? 0 },
                 { label: t("statAddresses"), value: dashboardData?.addressCount ?? 0 },
               ].map((stat) => (
-                <span key={stat.label} className="block rounded-[15px] border border-slate-900/[.07] bg-slate-100 p-[11px] dark:border-hairline dark:bg-surface-3">
-                  <span className="block text-[9px] tracking-[.07em] text-slate-400 dark:text-ink-muted">{stat.label}</span>
-                  <span className="mt-1 block text-base font-semibold tracking-[-.035em] tabular-nums">{stat.value}</span>
-                </span>
+                <div key={stat.label} className="min-w-0 px-3 py-2.5">
+                  <dt className="truncate text-[9px] tracking-[.07em] text-slate-400 dark:text-ink-muted">{stat.label}</dt>
+                  <dd className="m-0 mt-0.5 text-[15px] font-semibold leading-tight tracking-[-.035em] tabular-nums">{stat.value}</dd>
+                </div>
               ))}
-            </div>
-
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setEditOpen(true)}
-              data-edit-profile
-              aria-haspopup="dialog"
-              aria-expanded={editOpen}
-              className="relative mt-[15px] flex min-h-[46px] w-full items-center justify-center rounded-[15px] bg-blue-700 text-[13px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_var(--glow-600)] transition-colors hover:bg-blue-800"
-            >
-              {tPd("editProfile")}
-            </motion.button>
+            </dl>
           </div>
         </motion.div>
 
-        {/* tab rail */}
-        <div className="mt-[18px] flex snap-x snap-mandatory gap-2 overflow-x-auto px-[18px] pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {TABS.map(({ id, labelKey, icon: Icon }) => {
-            const on = tab === id;
-            return (
-              <motion.button
-                key={id}
-                type="button"
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setTab(id)}
-                data-profile-tab={id}
-                className={`flex min-h-10 flex-none snap-start items-center gap-[7px] whitespace-nowrap rounded-full border px-3.5 text-[12.5px] font-semibold tracking-[-.015em] transition-colors ${
-                  on
-                    ? "border-transparent bg-blue-700 text-white shadow-[0_14px_28px_-16px_var(--glow-600)]"
-                    : "border-slate-900/[.14] text-slate-500 dark:border-hairline-strong dark:text-ink-muted"
-                }`}
-              >
-                <Icon size={15} strokeWidth={1.9} />
-                {t(labelKey)}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* ── Records & Compliance ──
-            Outside the tab panels on purpose: it is navigation, not a tab's
-            content, so it stays reachable whichever tab is open. It was first
-            placed inside the "company" panel, where it rendered only on a tab
-            nobody lands on by default. `scroll-mt` clears the sticky header
-            when the home quick action lands on /profile#records. */}
-        <div className="scroll-mt-28 px-[18px] pt-[18px]" id="records">
-          <RecordsCard compact />
+        {/* ── Tabs ──
+            A 4-column segmented control inside the page gutter (18px, the
+            same as every card), so no tab can run off either edge — the old
+            horizontally scrolling pills clipped Orders and Settings. Icon
+            over label: four equal columns are ~83px on a 390px phone, and
+            "Einstellungen" / "Vaatimustenmukaisuus" need the full width, so
+            labels may hyphenate onto a second line rather than truncate. */}
+        <div className="px-[18px] pt-4">
+          <div
+            role="tablist"
+            aria-label={t("title")}
+            className="grid grid-cols-4 gap-1 rounded-2xl border border-slate-900/[.08] bg-white/60 p-1 backdrop-blur-xl dark:border-white/[.08] dark:bg-white/[.04]"
+            data-profile-tabs
+          >
+            {TABS.map(({ id, labelKey, icon: Icon }) => {
+              const on = tab === id;
+              return (
+                <motion.button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  aria-controls={`profile-panel-${id}`}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setTab(id)}
+                  data-profile-tab={id}
+                  lang={locale}
+                  className={`flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center text-[11px] font-medium leading-[1.15] tracking-[-.01em] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/70 ${
+                    on
+                      ? "bg-blue-700 text-white shadow-[0_10px_22px_-12px_var(--glow-600)]"
+                      : "text-slate-500 hover:bg-slate-900/[.04] dark:text-ink-muted dark:hover:bg-white/[.05]"
+                  }`}
+                >
+                  <Icon size={16} strokeWidth={1.9} className="flex-none" />
+                  <span className="line-clamp-2 w-full hyphens-auto break-words">{t(labelKey)}</span>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
         {/* ── Orders ── */}
         {tab === "orders" && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-orders>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-4" id="profile-panel-orders" role="tabpanel" data-panel-orders>
             {/* Quotes sit with orders: both are "what I'm buying". */}
             <Link
               href="/profile/quotes"
@@ -487,15 +502,21 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
 
         {/* ── Compliance ── */}
         {tab === "certs" && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-certs>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-4" id="profile-panel-certs" role="tabpanel" data-panel-certs>
             {/* The F-Gas standing, with the action that fits it (upload / replace / renew). */}
             <FgasStatusCard fgas={profile?.fgas ?? null} />
+            {/* The logbook lives here, with the certificate, and nowhere else:
+                above the panels it pushed every other tab's content down.
+                `id` keeps /profile?tab=certs#records landing on it. */}
+            <div className="scroll-mt-28 pt-3" id="records">
+              <RecordsCard compact />
+            </div>
           </motion.div>
         )}
 
         {/* ── Company ── */}
         {tab === "company" && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-company>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-4" id="profile-panel-company" role="tabpanel" data-panel-company>
             <div className="rounded-[22px] border border-slate-900/[.1] bg-white/70 p-[17px] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
               <div className="mb-[13px] text-[9.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("billingEntity")}</div>
               <div className="flex flex-col gap-3">
@@ -562,7 +583,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
 
         {/* ── Settings ── */}
         {tab === "settings" && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-[18px]" data-panel-settings>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-4" id="profile-panel-settings" role="tabpanel" data-panel-settings>
             {/* Admins only — visibility, not access: proxy.ts and guardAdmin
                 still decide who gets into /admin. */}
             {session?.user?.role === "ADMIN" && (
@@ -647,24 +668,24 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                 </Link>
               ))}
             </div>
+            {/* Sign out belongs with the settings, not under every tab. */}
+            <div className="pt-[22px]">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSignOut}
+                disabled={loggingOut}
+                data-sign-out
+                className="flex min-h-[50px] w-full items-center justify-center gap-[9px] rounded-2xl border border-red-500/[.34] bg-red-500/[.08] text-[13.5px] font-semibold tracking-[-.015em] text-red-500 shadow-[0_0_24px_-14px_#ef4444] transition-colors hover:bg-red-500/[.14] dark:text-[#f87171]"
+              >
+                {loggingOut ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <LogOut size={16} strokeWidth={1.9} />}
+                {loggingOut ? tProfile("loggingOut") : tProfile("logout")}
+              </motion.button>
+              <p className="mx-1 mb-0 mt-3 text-center text-[10px] text-slate-400 dark:text-ink-muted">{t("sessionNote")}</p>
+            </div>
           </motion.div>
         )}
 
-        {/* sign out */}
-        <div className="px-[18px] pt-[22px]">
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.95 }}
-            onClick={handleSignOut}
-            disabled={loggingOut}
-            data-sign-out
-            className="flex min-h-[50px] w-full items-center justify-center gap-[9px] rounded-2xl border border-red-500/[.34] bg-red-500/[.08] text-[13.5px] font-semibold tracking-[-.015em] text-red-500 shadow-[0_0_24px_-14px_#ef4444] transition-colors hover:bg-red-500/[.14] dark:text-[#f87171]"
-          >
-            {loggingOut ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <LogOut size={16} strokeWidth={1.9} />}
-            {loggingOut ? tProfile("loggingOut") : tProfile("logout")}
-          </motion.button>
-          <p className="mx-1 mb-0 mt-3 text-center text-[10px] text-slate-400 dark:text-ink-muted">{t("sessionNote")}</p>
-        </div>
       </div>
 
       {/* Deliberately unkeyed: AnimatePresence inside the drawer unmounts

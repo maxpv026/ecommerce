@@ -1,4 +1,5 @@
 import AdminNav from "@/components/admin/AdminNav";
+import FullMessagesProvider from "@/components/i18n/FullMessagesProvider";
 
 /**
  * Shell for every /admin page: the admin navigation beside the page.
@@ -8,11 +9,15 @@ import AdminNav from "@/components/admin/AdminNav";
  * gate. proxy.ts is the outer wall and each page's guardAdmin() (plus
  * requireAdmin() in every action) is the real one.
  */
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  // Admin screens read namespaces the storefront never ships (lib/i18n/clientMessages).
   return (
-    <div className="flex flex-1 flex-col bg-slate-50 md:flex-row dark:bg-canvas" data-admin-shell>
-      <AdminNav />
-      <main className="min-w-0 flex-1">{children}</main>
-    </div>
+    <FullMessagesProvider locale={locale}>
+      <div className="flex flex-1 flex-col bg-slate-50 md:flex-row dark:bg-canvas" data-admin-shell>
+        <AdminNav />
+        <main className="min-w-0 flex-1">{children}</main>
+      </div>
+    </FullMessagesProvider>
   );
 }

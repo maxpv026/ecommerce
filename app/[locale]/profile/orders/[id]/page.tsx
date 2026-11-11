@@ -10,6 +10,8 @@ import { buildOrderTracking } from "@/lib/tracking";
 import { bankTransferDetails } from "@/lib/bankTransfer";
 import { imagePathForProduct } from "@/lib/productMedia";
 import { isPurchasable } from "@/lib/waitlist";
+import { orderBreakdown } from "@/lib/orderTotals";
+import { productDocument } from "@/lib/productDocuments";
 
 export const metadata: Metadata = {
   title: "Order Details — My Energy",
@@ -52,12 +54,24 @@ export default async function OrderPage({ params }: OrderPageProps) {
     status: order.status,
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
+    paidAt: order.paidAt?.toISOString() ?? null,
     createdAt: order.createdAt.toISOString(),
     estimatedDelivery: tracking.estimatedDelivery ?? order.estimatedDelivery.toISOString(),
     totalAmount: Number(order.totalAmount),
     trackingNumber: order.trackingNumber,
     invoiceId: order.invoice?.id ?? null,
     tracking,
+    // Shipping and VAT were charged but never stored as columns: recovered
+    // from the frozen total exactly as the invoice PDF does (lib/orderTotals).
+    breakdown: orderBreakdown(
+      order.items.map((i) => ({ priceAtPurchase: Number(i.priceAtPurchase), quantity: i.quantity, depositAtPurchase: Number(i.depositAtPurchase) })),
+      Number(order.totalAmount)
+    ),
+    // Frozen at checkout (lib/orders); null on orders with no F-Gas line and
+    // on orders placed before the snapshot existed.
+    certificate: order.authorizingCertificateNumber
+      ? { number: order.authorizingCertificateNumber, expiresAt: order.authorizingCertificateExpiresAt?.toISOString() ?? null }
+      : null,
     // The frozen snapshot first. `order.address` is the customer's *current*
     // address-book entry, which they may have edited since — or deleted, in
     // which case the relation is null (onDelete: SetNull) and the old view
@@ -76,6 +90,13 @@ export default async function OrderPage({ params }: OrderPageProps) {
       pricePerKgAtPurchase: item.pricePerKgAtPurchase,
       weightKgAtPurchase: item.weightKgAtPurchase,
       depositAtPurchase: Number(item.depositAtPurchase),
+      // Snapshots, not today's catalog value: an audit must reproduce what
+      // was recorded (OrderItem.gwpAtPurchase / co2eKg).
+      gwpAtPurchase: item.gwpAtPurchase,
+      co2eKg: item.co2eKg,
+      // Same resolver as the PDP's document buttons and /api/documents, so
+      // the link is never offered for a file the route would 404 on.
+      sdsAvailable: productDocument("sds", item.product) !== null,
       imageSrc: imagePathForProduct(item.product),
       // Re-read now, not taken from the order: "order again" must not put a
       // line in the cart that checkout would refuse. The cart and

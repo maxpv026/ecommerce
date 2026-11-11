@@ -6,8 +6,8 @@ import Header from "./Header";
 import DesktopHome from "./DesktopHome";
 import MobileAppLayout from "./MobileAppLayout";
 import AuthModal from "./AuthModal";
-import PageSkeleton from "./PageSkeleton";
 import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, UserProfileData } from "@/lib/data";
+import type { GreetingKey } from "@/lib/greeting";
 
 interface StorePageProps {
   /** The static catalogue picks every visitor sees (cached, tag PRODUCTS_TAG). */
@@ -16,6 +16,8 @@ interface StorePageProps {
   marketAlertsCard: ReactNode;
   /** The same articles as data, for the mobile ticker's marquee. */
   marketAlerts: MarketAlertData[];
+  /** The greeting the server rendered with — hydration must match it (lib/hooks/useGreeting). */
+  greetingKey: GreetingKey;
 }
 
 interface AccountData {
@@ -31,11 +33,16 @@ interface AccountData {
  * The home page shell is static (app/[locale]/page.tsx, ISR) and identical
  * for everyone, so it is served from the CDN instead of waiting on auth() and
  * five queries per request. The signed-in parts arrive from
- * /api/home/account once the session is known. Guests see the shell at once;
- * a signed-in buyer sees the skeleton from the moment their session resolves
- * until their own data is in, never a stranger's empty dashboard.
+ * /api/home/account once the session is known.
+ *
+ * Everyone sees the full page at once. A signed-in buyer's own figures (the
+ * hero stats, the latest-order card) show a placeholder of the same size
+ * while their data loads — never a stranger's numbers, and never the whole
+ * page swapped for a skeleton, which is what it used to do: guest page →
+ * skeleton → page, two full re-renders and ~350 ms of nothing on every
+ * signed-in visit.
  */
-export default function StorePage({ featuredProducts, marketAlertsCard, marketAlerts }: StorePageProps) {
+export default function StorePage({ featuredProducts, marketAlertsCard, marketAlerts, greetingKey }: StorePageProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { status, data: session } = useSession();
   const userId = session?.user?.id ?? null;
@@ -63,7 +70,8 @@ export default function StorePage({ featuredProducts, marketAlertsCard, marketAl
   // Only data fetched for THIS session counts (a sign-out or account switch
   // must not keep showing the previous buyer's dashboard).
   const mine = status === "authenticated" && account?.userId === userId ? account.data : null;
-  const waiting = status === "authenticated" && !mine;
+  // Signed in (or still finding out) and this buyer's data is not here yet.
+  const accountLoading = status === "loading" || (status === "authenticated" && !mine);
   const products = mine?.recommendedProducts.length ? mine.recommendedProducts : featuredProducts;
 
   return (
@@ -71,27 +79,27 @@ export default function StorePage({ featuredProducts, marketAlertsCard, marketAl
       {/* Desktop / tablet — real dashboard-style home */}
       <div className="hidden md:block">
         <Header onSignInClick={() => setIsAuthModalOpen(true)} />
-        {waiting ? (
-          <PageSkeleton rows={3} />
-        ) : (
-          <DesktopHome products={products} marketAlerts={marketAlertsCard} dashboard={mine?.dashboard ?? null} latestOrder={mine?.latestOrder ?? null} />
-        )}
+        <DesktopHome
+          products={products}
+          marketAlerts={marketAlertsCard}
+          dashboard={mine?.dashboard ?? null}
+          latestOrder={mine?.latestOrder ?? null}
+          accountLoading={accountLoading}
+          greetingKey={greetingKey}
+        />
       </div>
 
       {/* Native-app-style mobile home */}
       <div className="block md:hidden">
-        {waiting ? (
-          <PageSkeleton rows={3} />
-        ) : (
-          <MobileAppLayout
-            featuredProducts={products}
-            marketAlerts={marketAlerts}
-            dashboard={mine?.dashboard ?? null}
-            orders={mine?.orders ?? []}
-            certificate={mine?.certificate ?? null}
-            jobTitle={mine?.jobTitle ?? null}
-          />
-        )}
+        <MobileAppLayout
+          featuredProducts={products}
+          marketAlerts={marketAlerts}
+          dashboard={mine?.dashboard ?? null}
+          orders={mine?.orders ?? []}
+          certificate={mine?.certificate ?? null}
+          jobTitle={mine?.jobTitle ?? null}
+          greetingKey={greetingKey}
+        />
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

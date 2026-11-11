@@ -3,6 +3,7 @@ import StorePage from "@/components/StorePage";
 import MarketAlertsCard from "@/components/MarketAlertsCard";
 import PageSkeleton from "@/components/PageSkeleton";
 import { getFeaturedProducts, getMarketAlerts } from "@/lib/data";
+import { getTimeOfDayGreeting } from "@/lib/greeting";
 
 // Static, refreshed at most every 5 minutes; catalogue changes expire the
 // featured products immediately (PRODUCTS_TAG, lib/catalogCache).
@@ -51,6 +52,9 @@ async function HomeContent() {
       // rendered here and never reaches the browser as JavaScript.
       marketAlertsCard={<MarketAlertsCard />}
       marketAlerts={marketAlerts}
+      // Rendered into the static HTML; the browser hydrates against it, then
+      // switches to the visitor's own time of day (lib/hooks/useGreeting).
+      greetingKey={getTimeOfDayGreeting()}
     />
   );
 }

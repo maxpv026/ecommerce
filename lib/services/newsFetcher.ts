@@ -23,7 +23,10 @@ const DEFAULT_FEEDS = [
 ] as const;
 
 /** Give up on a slow feed rather than hold the dashboard render open. */
-const FEED_TIMEOUT_MS = 6000;
+// Per feed, all fetched in parallel. Only ever paid by a cache refresh: the
+// page is static (ISR) and unstable_cache serves the previous batch while it
+// re-fetches, so no visitor waits on a slow feed — but a regeneration does.
+const FEED_TIMEOUT_MS = 3500;
 
 /** How many items the widget can show at most. */
 export const NEWS_ITEM_LIMIT = 4;

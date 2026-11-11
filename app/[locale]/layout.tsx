@@ -13,6 +13,7 @@ import AuthProvider from "@/components/AuthProvider";
 import ToastProvider from "@/components/ToastProvider";
 import ThemeSync from "@/components/ThemeSync";
 import { routing } from "@/i18n/routing";
+import { globalClientMessages } from "@/lib/i18n/clientMessages";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -64,7 +65,10 @@ export default async function RootLayout({
   // line exists.
   setRequestLocale(locale);
 
-  const messages = await getMessages();
+  // Only what every page's client components can read: e-mail and
+  // route-specific namespaces are left out of the HTML here and handed back
+  // by the routes that need them (lib/i18n/clientMessages).
+  const messages = globalClientMessages(await getMessages());
 
   return (
     <html lang={locale} className="h-full antialiased" suppressHydrationWarning>

@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Check, Copy, Landmark } from "lucide-react";
+import { Check, ChevronDown, Copy, Landmark } from "lucide-react";
 import { formatIban, type BankTransferDetails } from "@/lib/bankTransfer";
 
 /**
@@ -27,6 +27,12 @@ interface BankTransferInstructionsProps {
   /** Pre-formatted total, so the caller owns the locale and currency. */
   amount: string;
   className?: string;
+  /**
+   * Below lg, fold the bank address and the beneficiary block behind a
+   * toggle. What it takes to send the transfer — reference, amount, bank,
+   * IBAN, BIC — always stays open; the rest is for checking, not paying.
+   */
+  collapsible?: boolean;
 }
 
 /** Muted label, stark value — the Tech-Luxury pairing used across the app. */
@@ -76,14 +82,14 @@ function CopyButton({
   );
 }
 
-function Row({ name, label, children }: { name: string; label: string; children: ReactNode }) {
+function Row({ name, label, children, className = "" }: { name: string; label: string; children: ReactNode; className?: string }) {
   return (
     <div
       data-bank-row={name}
       // Stacked below sm. Side by side, an IBAN or a bank address competes
       // with its own label for ~200px and either truncates to uselessness
       // or forces the card wider than the screen.
-      className="flex flex-col gap-1 border-t border-slate-200 py-3 first:border-t-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4 dark:border-white/10"
+      className={`flex flex-col gap-1 border-t border-slate-200 py-3 first:border-t-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4 dark:border-white/10 ${className}`}
     >
       <dt className={`${LABEL} flex-none sm:pt-px`}>{label.toUpperCase()}</dt>
       <dd className="m-0 flex min-w-0 items-center gap-2 sm:justify-end">{children}</dd>
@@ -96,9 +102,13 @@ export default function BankTransferInstructions({
   reference,
   amount,
   className = "",
+  collapsible = false,
 }: BankTransferInstructionsProps) {
   const t = useTranslations("Checkout");
   const [copied, setCopied] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  // Hidden only below lg, and only while folded: desktop always shows it all.
+  const foldable = collapsible && !expanded ? "max-lg:hidden" : "";
 
   const copy = async (key: string, value: string) => {
     try {
@@ -204,15 +214,28 @@ export default function BankTransferInstructions({
             </Row>
           )}
 
-          <Row name="bankAddress" label={t("payBankAddress")}>
+          <Row name="bankAddress" label={t("payBankAddress")} className={foldable}>
             <span className="text-left text-[12.5px] leading-[1.5] text-slate-700 sm:text-right dark:text-slate-300">
               {details.bankAddress}
             </span>
           </Row>
         </dl>
 
+        {collapsible && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            data-bank-details-toggle
+            className="mt-1 flex min-h-[44px] w-full items-center justify-between gap-3 border-t border-slate-200 pt-1 text-[12.5px] font-semibold text-cyan-700 lg:hidden dark:border-white/10 dark:text-cyan-300"
+          >
+            {expanded ? t("payHideDetails") : t("payShowDetails")}
+            <ChevronDown size={15} strokeWidth={2.2} className={`transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </button>
+        )}
+
         {/* ── Beneficiary ── */}
-        <div className="mt-5 rounded-[18px] bg-slate-50 p-4 dark:bg-white/[.04]" data-beneficiary-block>
+        <div className={`mt-5 rounded-[18px] bg-slate-50 p-4 dark:bg-white/[.04] ${foldable}`} data-beneficiary-block>
           <div className={`${LABEL} mb-2.5`}>{t("payBeneficiary").toUpperCase()}</div>
           <dl className="m-0 flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-4" data-bank-row="beneficiary">

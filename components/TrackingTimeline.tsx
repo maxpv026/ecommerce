@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { Check, MapPin, Radio } from "lucide-react";
@@ -15,9 +16,11 @@ const STEP_LABEL_KEYS: Record<TimelineStepKey, string> = {
 interface TrackingTimelineProps {
   tracking: OrderTrackingView;
   trackingNumber: string | null;
+  /** Rendered at the foot of the card — the order page puts the delivery address here on mobile. */
+  children?: ReactNode;
 }
 
-export default function TrackingTimeline({ tracking, trackingNumber }: TrackingTimelineProps) {
+export default function TrackingTimeline({ tracking, trackingNumber, children }: TrackingTimelineProps) {
   const t = useTranslations("Checkout");
   const format = useFormatter();
 
@@ -174,6 +177,8 @@ export default function TrackingTimeline({ tracking, trackingNumber }: TrackingT
           </div>
         </div>
       )}
+
+      {children}
     </div>
   );
 }

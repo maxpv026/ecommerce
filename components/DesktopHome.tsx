@@ -4,7 +4,6 @@ import ProductCard from "./ProductCard";
 import StockNotifyModal from "./StockNotifyModal";
 import { isPurchasable } from "@/lib/waitlist";
 import { useRef, useState, useTransition } from "react";
-import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useSession } from "next-auth/react";
 import type { ReactNode } from "react";
@@ -25,12 +24,10 @@ import { useCartStore } from "@/lib/store/cart";
 import { calculateCharge, type ChargeCalculation } from "@/lib/actions/chargeCalculator";
 import CalculatedChargeCard from "./CalculatedChargeCard";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
-import { getTimeOfDayGreeting } from "@/lib/greeting";
+import type { GreetingKey } from "@/lib/greeting";
+import { useGreeting } from "@/lib/hooks/useGreeting";
+import HeroModelGate from "./HeroModelGate";
 import type { ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
-
-// Browser-only: it picks a refrigerant at random on mount, which must not
-// happen during the server render (see components/HeroModelStage.tsx).
-const HeroModelStage = dynamic(() => import("./HeroModelStage"), { ssr: false });
 
 // Whole sentences: one click shows a complete worked calculation, including
 // what happens when the factory charge is or isn't given. Translated, so a
@@ -43,22 +40,41 @@ function RevealSection({
   children,
   className = "",
   id,
+  eager = false,
 }: {
   children: React.ReactNode;
   className?: string;
   id?: string;
+  /**
+   * Above the fold on load (the hero): rendered fully visible in the server
+   * HTML, with no entrance fade. Otherwise its text sat at opacity 0 until
+   * JavaScript hydrated and animated it in — the largest paint on the page
+   * waited ~1.3 s behind a first paint of ~0.2 s. It still fades on the way out.
+   */
+  eager?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const scale = useTransform(scrollYProgress, [0, 0.28, 0.72, 1], [0.9, 1, 1, 0.94]);
-  const opacity = useTransform(scrollYProgress, [0, 0.22, 0.78, 1], [0, 1, 1, 0.15]);
+  // Entry and exit are measured in viewport terms, not as a fraction of the
+  // section's own height: a tall section (the bento) peeking above the fold
+  // must already be fully drawn, not half-faded at whatever fraction of its
+  // height happens to be on screen.
+  //   entry: 0 → 1 as the section's top rises from the viewport bottom to 80%
+  //   exit:  0 → 1 as its bottom rises from 30% to the viewport top
+  const { scrollYProgress: entry } = useScroll({ target: ref, offset: ["start end", "start 80%"] });
+  const { scrollYProgress: exit } = useScroll({ target: ref, offset: ["end 30%", "end start"] });
+  const scale = useTransform([entry, exit], ([i, o]: number[]) => (eager ? 1 : 0.9 + 0.1 * i) - 0.06 * o);
+  const opacity = useTransform([entry, exit], ([i, o]: number[]) => (eager ? 1 : i) * (1 - 0.85 * o));
 
   return (
     <motion.section ref={ref} id={id} style={{ scale, opacity }} className={className}>
       <motion.div
-        initial="hidden"
+        // `false`: start in the "shown" state, so children render visible on the server.
+        initial={eager ? false : "hidden"}
         whileInView="shown"
-        viewport={{ once: false, amount: 0.25 }}
+        // Fires once the section's top is 120 px into the viewport, however
+        // tall the section is (a fractional `amount` never fired for the
+        // bento's above-the-fold peek, leaving an empty band under the hero).
+        viewport={{ once: false, amount: "some", margin: "0px 0px -120px 0px" }}
         variants={{ hidden: {}, shown: { transition: { staggerChildren: 0.11 } } }}
       >
         {children}
@@ -134,9 +150,17 @@ interface DesktopHomeProps {
   marketAlerts: ReactNode;
   dashboard: ProfileDashboardData | null;
   latestOrder: UserOrder | null;
+  /** Signed in, own figures still on the way: placeholders, not a stranger's zeros. */
+  accountLoading: boolean;
+  greetingKey: GreetingKey;
 }
 
-export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder }: DesktopHomeProps) {
+/** A pulsing bar the size of the text it stands in for. */
+const Shimmer = ({ className }: { className: string }) => (
+  <span aria-hidden className={`block animate-pulse rounded-md bg-slate-900/[.07] dark:bg-white/[.08] ${className}`} />
+);
+
+export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder, accountLoading, greetingKey }: DesktopHomeProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
   const tc = useTranslations("ChargeCalc");
@@ -153,7 +177,9 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
   // string (an empty span would leave "Good afternoon," hanging over a
   // stray period).
   const heroName = session?.user?.name?.split(" ")[0] || session?.user?.email || null;
-  const greeting = td(getTimeOfDayGreeting());
+  const greeting = td(useGreeting(greetingKey));
+  // Signed in and this buyer's own figures are still loading.
+  const ownDataLoading = isAuthenticated && accountLoading;
   const formatEur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
   // The calculator: the AI reads the sentence, lib/chargeCalc does the math,
@@ -202,7 +228,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
   return (
     <main className="mx-auto max-w-[1320px] px-6 pb-32 md:px-8">
       {/* Hero */}
-      <RevealSection className="pb-2 pt-16">
+      <RevealSection className="pb-2 pt-10" eager>
         {/* RevealSection wraps {children} in its own unstyled stagger div, so
             the 2-column grid has to live here (a direct child of that
             wrapper) rather than on RevealSection's own className — a grid's
@@ -213,24 +239,35 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
             grid and its two column children, so the column split is
             unaffected. */}
         <HeroBackground>
-        <div className="relative grid min-h-[520px] items-center gap-14 md:grid-cols-[1.02fr_.98fr]">
+        {/* Hero height follows the viewport so the OPERATIONS eyebrow and the
+            top ~160 px of its cards always peek above the fold at scrollY 0:
+            376 px = header 71 + hero top/bottom padding 48 + bento top
+            padding 48 + eyebrow 48 + the 160 px peek. Clamped so short
+            screens keep a usable hero and tall ones don't get a vast one. */}
+        <div className="relative grid min-h-[var(--hero-h)] items-center gap-14 [--hero-h:clamp(440px,calc(100svh-376px),720px)] md:grid-cols-[1.02fr_.98fr]">
         <motion.div variants={stagger}>
+          {/* One fixed-height slot whatever goes in it — the badge, the
+              sign-in link, or (session still resolving / not verified)
+              nothing — so the headline never jumps, and a signed-in buyer
+              never sees "Sign in…" flash while their session loads. */}
+          <div className="mb-6 flex h-[30px] items-center">
           {isAuthenticated && session?.user?.epaVerified ? (
-            <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-green-600/[.24] bg-green-50 py-1.5 pl-2.5 pr-3.5 text-[11.5px] font-semibold text-green-700 dark:border-green-500/25 dark:bg-green-500/10 dark:text-green-400">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-green-600/[.24] bg-green-50 py-1.5 pl-2.5 pr-3.5 text-[11.5px] font-semibold text-green-700 dark:border-green-500/25 dark:bg-green-500/10 dark:text-green-400">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inset-0 animate-ping rounded-full bg-green-600 dark:bg-green-400" />
                 <span className="relative h-1.5 w-1.5 rounded-full bg-green-600 dark:bg-green-400" />
               </span>
               {t("fgasBadge")}
             </div>
-          ) : !isAuthenticated ? (
+          ) : status === "unauthenticated" ? (
             <Link
               href="/auth"
-              className="mb-6 inline-flex items-center gap-2 text-[12.5px] font-medium text-slate-500 hover:text-blue-700 dark:text-ink-muted dark:hover:text-blue-400"
+              className="inline-flex items-center gap-2 text-[12.5px] font-medium text-slate-500 hover:text-blue-700 dark:text-ink-muted dark:hover:text-blue-400"
             >
               {td("signInToViewEpa")}
             </Link>
           ) : null}
+          </div>
 
           <h1 className="text-5xl font-semibold leading-none tracking-[-0.048em] text-balance md:text-[62px]">
             {isAuthenticated && heroName ? (
@@ -263,6 +300,16 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
             </a>
           </div>
 
+          {ownDataLoading && !dashboard && (
+            <div className="mt-11 flex gap-10" data-stats-loading>
+              {[0, 1, 2].map((i) => (
+                <div key={i}>
+                  <Shimmer className="h-[30px] w-12" />
+                  <Shimmer className="mt-1.5 h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          )}
           {dashboard && (
             <div className="mt-11 flex gap-10">
               {[
@@ -280,13 +327,13 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
         </motion.div>
 
         {/* 3D cylinder stage */}
-        <motion.div variants={stagger} className="relative flex h-[520px] items-center justify-center">
+        <motion.div variants={stagger} className="relative flex h-[var(--hero-h)] items-center justify-center">
           {/* Hover-interactive showcase: cylinder + floating spec chips move
               and scale together, independent of the static ambient blobs
               behind them. */}
           <div className="group relative z-[1] h-full w-full cursor-pointer transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105">
             <div className="relative h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.03]">
-              <HeroModelStage className="absolute inset-0" />
+              <HeroModelGate className="absolute inset-0" />
             </div>
 
             <div className="pointer-events-none absolute right-[2%] top-[16%] z-[2] rounded-2xl border border-white/80 bg-white/70 px-4 py-3 shadow-[0_20px_44px_-28px_rgba(15,23,42,.5)] backdrop-blur-lg transition-transform duration-500 ease-out group-hover:-translate-y-1 dark:border-white/10 dark:bg-glass">
@@ -304,7 +351,7 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
       </RevealSection>
 
       {/* Bento */}
-      <RevealSection id="bento" className="pt-16">
+      <RevealSection id="bento" className="pt-12">
         <motion.div variants={stagger} className="mb-5 flex items-baseline justify-between gap-5">
           <h2 className="text-[13px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("operationsEyebrow")}</h2>
         </motion.div>
@@ -450,9 +497,11 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                 </span>
                 <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("trackShipmentLabel")}</div>
                 <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
-                  {latestOrder ? latestOrder.orderNumber : t("noOrdersYet")}
+                  {latestOrder ? latestOrder.orderNumber : ownDataLoading ? <Shimmer className="mt-1 h-3.5 w-36" /> : t("noOrdersYet")}
                 </div>
-                {latestOrder ? (
+                {ownDataLoading && !latestOrder ? (
+                  <Shimmer className="mt-5 h-5 w-40" />
+                ) : latestOrder ? (
                   <div className="mt-4.5 flex items-center gap-2">
                     <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 ring-1 ring-green-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/25">
                       <span className="h-1 w-1 rounded-full bg-green-600 dark:bg-emerald-400" />

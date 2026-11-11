@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { Font, renderToBuffer } from "@react-pdf/renderer";
 import prisma from "@/lib/prisma";
-import { VAT_RATE } from "@/lib/cart";
+import { orderBreakdown } from "@/lib/orderTotals";
 import InvoiceDocument, {
   type InvoiceDocumentData,
   type InvoiceLine,
@@ -134,36 +134,12 @@ export async function buildInvoiceData(orderId: string): Promise<InvoiceDocument
     };
   });
 
-  const subtotal = round(lines.reduce((n, l) => n + l.lineTotal, 0));
-  const deposit = round(
-    order.items.reduce((n, i) => n + Number(i.depositAtPurchase) * i.quantity, 0)
+  // Goods, deposit, freight and VAT recovered from the frozen total — the
+  // same function the order page uses, so the two always agree to the cent.
+  const { subtotal, deposit, depositUnits, shipping, vat, vatRatePercent, total } = orderBreakdown(
+    order.items.map((i) => ({ priceAtPurchase: Number(i.priceAtPurchase), quantity: i.quantity, depositAtPurchase: Number(i.depositAtPurchase) })),
+    Number(order.totalAmount)
   );
-  const depositUnits = order.items.reduce(
-    (n, i) => n + (Number(i.depositAtPurchase) > 0 ? i.quantity : 0),
-    0
-  );
-
-  const total = Number(order.totalAmount);
-  // What the charge contained beyond goods and deposit: shipping plus all VAT.
-  const freightAndTax = round(total - subtotal - deposit);
-
-  // Split it the way checkout composed it. Checkout charges
-  //     vat = VAT_RATE × (subtotal + shipping)          [deposit is exempt]
-  // so  freightAndTax = shipping + VAT_RATE × (subtotal + shipping)
-  //                  = shipping × (1 + VAT_RATE) + VAT_RATE × subtotal
-  // and therefore
-  //     shipping = (freightAndTax − VAT_RATE × subtotal) / (1 + VAT_RATE)
-  //
-  // Dropping that `VAT_RATE × subtotal` term — as a naive
-  // `freightAndTax / (1 + VAT_RATE)` does — puts the VAT on goods into the
-  // shipping line. On the test order it printed €145.02 shipping and €29.00
-  // VAT in place of €0.00 and €174.02: the right total, an invalid tax
-  // document. Clamped at zero because free freight is the common case and
-  // float noise must not surface as a negative shipping line.
-  const shipping = Math.max(0, round((freightAndTax - VAT_RATE * subtotal) / (1 + VAT_RATE)));
-  // VAT takes the remainder, so the invoice reconciles to the cent regardless
-  // of how the pieces rounded.
-  const vat = round(freightAndTax - shipping);
 
   return {
     invoiceNumber: order.invoice.invoiceNumber,
@@ -192,7 +168,7 @@ export async function buildInvoiceData(orderId: string): Promise<InvoiceDocument
     depositUnits,
     shipping,
     vat,
-    vatRatePercent: Math.round(VAT_RATE * 100),
+    vatRatePercent,
     total,
     currency: "EUR",
   };

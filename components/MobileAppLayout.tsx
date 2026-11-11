@@ -30,7 +30,8 @@ import {
   Truck,
 } from "lucide-react";
 import { QUICK_ACTIONS } from "@/lib/mobileHome";
-import { getTimeOfDayGreeting } from "@/lib/greeting";
+import type { GreetingKey } from "@/lib/greeting";
+import { useGreeting } from "@/lib/hooks/useGreeting";
 import { askHomeAssistant, type HomeAssistantResult } from "@/lib/actions/homeAssistant";
 import { useCartStore } from "@/lib/store/cart";
 import type { QuickActionIconKey } from "@/lib/types";
@@ -76,6 +77,8 @@ interface MobileAppLayoutProps {
   orders: UserOrder[];
   certificate: UserProfileData["certificate"];
   jobTitle: string | null;
+  /** The greeting the server rendered with — hydration must match it (lib/hooks/useGreeting). */
+  greetingKey: GreetingKey;
 }
 
 export default function MobileAppLayout({
@@ -85,6 +88,7 @@ export default function MobileAppLayout({
   orders,
   certificate,
   jobTitle,
+  greetingKey,
 }: MobileAppLayoutProps) {
   const t = useTranslations("Dashboard");
   const tm = useTranslations("HomeMobile");
@@ -110,7 +114,7 @@ export default function MobileAppLayout({
 
   const isAuthenticated = status === "authenticated";
   const firstName = (session?.user?.name ?? "").split(" ")[0] || session?.user?.email || "";
-  const greeting = t(getTimeOfDayGreeting());
+  const greeting = t(useGreeting(greetingKey));
   const initials = (session?.user?.name ?? session?.user?.email ?? "")
     .split(/[\s@.]+/)
     .filter(Boolean)
@@ -276,9 +280,12 @@ export default function MobileAppLayout({
       </div>
 
       <div className="relative pb-[calc(120px+env(safe-area-inset-bottom))]">
-        {/* ── greeting glass card with quick actions ── */}
+        {/* ── greeting glass card with quick actions ──
+            Above the fold on load, so it is in the server HTML fully visible
+            (initial={false}) rather than at opacity 0 waiting for hydration
+            to animate it in — it is the page's largest paint. */}
         <motion.div
-          initial={{ opacity: 0, y: 18, scale: 0.97 }}
+          initial={false}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           className="px-[18px] pt-3.5"
@@ -287,7 +294,7 @@ export default function MobileAppLayout({
             <span className="pointer-events-none absolute -top-[110%] right-[-30%] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_68%)] opacity-30 blur-[70px]" />
 
             <div className="relative">
-              <div className="mb-[9px] text-[10.5px] uppercase tracking-[.09em] text-slate-400 dark:text-ink-muted" suppressHydrationWarning>
+              <div className="mb-[9px] text-[10.5px] uppercase tracking-[.09em] text-slate-400 dark:text-ink-muted">
                 {greeting}
               </div>
               <div className="text-[27px] font-semibold leading-[1.1] tracking-[-.045em]" suppressHydrationWarning>
