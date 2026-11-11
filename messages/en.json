@@ -136,7 +136,8 @@
     "tagSupply": "SUPPLY",
     "tagIndustryNews": "INDUSTRY NEWS",
     "recordsLabel": "Carbon record",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# safety data sheet} other {# safety data sheets}}"
   },
   "Profile": {
     "settingsAria": "Settings",
@@ -469,7 +470,9 @@
     "scanNote": "Look up by lot number",
     "popularCylindersEyebrow": "POPULAR CYLINDERS",
     "addToCart": "Add to cart",
-    "added": "Added"
+    "added": "Added",
+    "trackViewOrder": "View order details",
+    "startFirstOrderShort": "Place your first order"
   },
   "Checkout": {
     "errorQuote": "This quote has expired, was already ordered, or no longer matches your cart — your cart now shows today's prices.",

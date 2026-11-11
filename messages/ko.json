@@ -136,7 +136,8 @@
     "tagSupply": "공급",
     "tagIndustryNews": "업계 뉴스",
     "recordsLabel": "탄소 기록",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, other {#개 물질안전보건자료}}"
   },
   "Profile": {
     "settingsAria": "설정",
@@ -469,7 +470,9 @@
     "scanNote": "로트 번호로 조회",
     "popularCylindersEyebrow": "인기 실린더",
     "addToCart": "장바구니 담기",
-    "added": "담김"
+    "added": "담김",
+    "trackViewOrder": "주문 세부 정보 보기",
+    "startFirstOrderShort": "첫 주문하기"
   },
   "Checkout": {
     "errorQuote": "이 견적은 만료되었거나 이미 주문되었거나 장바구니와 더 이상 일치하지 않습니다 — 장바구니에 현재 가격이 표시됩니다.",

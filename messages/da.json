@@ -117,7 +117,8 @@
     "tagSupply": "FORSYNING",
     "tagIndustryNews": "BRANCHENYT",
     "recordsLabel": "CO2-opgørelse",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# sikkerhedsdatablad} other {# sikkerhedsdatablade}}"
   },
   "Profile": {
     "settingsAria": "Indstillinger",
@@ -469,7 +470,9 @@
     "scanNote": "Slå op på partinummer",
     "popularCylindersEyebrow": "POPULÆRE CYLINDRE",
     "addToCart": "Læg i kurv",
-    "added": "Tilføjet"
+    "added": "Tilføjet",
+    "trackViewOrder": "Se ordredetaljer",
+    "startFirstOrderShort": "Afgiv din første ordre"
   },
   "Checkout": {
     "errorQuote": "Dette tilbud er udløbet, blev allerede bestilt, eller matcher ikke længere din kurv — din kurv viser nu dagens priser.",

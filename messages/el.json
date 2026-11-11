@@ -117,7 +117,8 @@
     "tagSupply": "ΕΦΟΔΙΑΣΜΟΣ",
     "tagIndustryNews": "ΝΕΑ ΚΛΑΔΟΥ",
     "recordsLabel": "Αρχείο CO2",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# δελτίο δεδομένων ασφαλείας} other {# δελτία δεδομένων ασφαλείας}}"
   },
   "Profile": {
     "settingsAria": "Ρυθμίσεις",
@@ -469,7 +470,9 @@
     "scanNote": "Αναζήτηση με αριθμό παρτίδας",
     "popularCylindersEyebrow": "ΔΗΜΟΦΙΛΕΙΣ ΦΙΑΛΕΣ",
     "addToCart": "Προσθήκη στο καλάθι",
-    "added": "Προστέθηκε"
+    "added": "Προστέθηκε",
+    "trackViewOrder": "Προβολή λεπτομερειών παραγγελίας",
+    "startFirstOrderShort": "Κάντε την πρώτη σας παραγγελία"
   },
   "Checkout": {
     "errorQuote": "Αυτή η προσφορά έχει λήξει, έχει ήδη παραγγελθεί ή δεν ταιριάζει πλέον με το καλάθι σας — το καλάθι σας τώρα δείχνει τις σημερινές τιμές.",

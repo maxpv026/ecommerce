@@ -117,7 +117,8 @@
     "tagSupply": "OPSKRBA",
     "tagIndustryNews": "VIJESTI IZ INDUSTRIJE",
     "recordsLabel": "Evidencija ugljika",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# sigurnosno-tehnički list} few {# sigurnosno-tehnička lista} other {# sigurnosno-tehničkih listova}}"
   },
   "Profile": {
     "settingsAria": "Postavke",
@@ -469,7 +470,9 @@
     "scanNote": "Pretraži prema broju serije",
     "popularCylindersEyebrow": "POPULARNE BOCE",
     "addToCart": "Dodaj u košaricu",
-    "added": "Dodano"
+    "added": "Dodano",
+    "trackViewOrder": "Prikaži detalje narudžbe",
+    "startFirstOrderShort": "Napravite prvu narudžbu"
   },
   "Checkout": {
     "errorQuote": "Ova ponuda je istekla, već je naručena ili više ne odgovara vašoj košarici — vaša košarica sada prikazuje današnje cijene.",

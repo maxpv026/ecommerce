@@ -95,17 +95,20 @@ function TiltCard({
   max = 10,
   className = "",
   radius = "rounded-3xl",
+  ...data
 }: {
   children: React.ReactNode;
+  /** Degrees of tilt at the edges; 0 turns tilt and glare off. */
   max?: number;
   className?: string;
   radius?: string;
-}) {
+} & { [attr: `data-${string}`]: string | undefined }) {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, on: false });
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (max === 0) return;
     const r = ref.current?.getBoundingClientRect();
     if (!r) return;
     const x = (e.clientX - r.left) / r.width;
@@ -122,16 +125,17 @@ function TiltCard({
         setTilt({ rx: 0, ry: 0 });
         setGlare((g) => ({ ...g, on: false }));
       }}
-      animate={{ rotateX: tilt.rx, rotateY: tilt.ry }}
+      animate={max === 0 ? { rotateX: 0, rotateY: 0 } : { rotateX: tilt.rx, rotateY: tilt.ry }}
       transition={{ type: "spring", stiffness: 180, damping: 18 }}
       style={{ transformStyle: "preserve-3d", perspective: 1100 }}
       className={`relative overflow-hidden ${radius} ${className}`}
+      {...data}
     >
       {children}
       <span
         aria-hidden
         className={`pointer-events-none absolute inset-0 mix-blend-soft-light transition-opacity duration-300 ${
-          glare.on ? "opacity-100" : "opacity-0"
+          glare.on && max !== 0 ? "opacity-100" : "opacity-0"
         }`}
         style={{
           borderRadius: "inherit",
@@ -139,6 +143,28 @@ function TiltCard({
         }}
       />
     </motion.div>
+  );
+}
+
+/** One operations card: a full-height column so the footer action pins to the bottom. */
+const OPS_CARD =
+  "flex flex-1 flex-col border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass";
+
+/**
+ * The card's action, at its foot. Its ::after covers the whole card, so the
+ * card is one big target without wrapping block content in a link.
+ */
+function OpsFooterLink({ href, label }: { href: string; label: string }) {
+  return (
+    <div className="mt-auto border-t border-slate-900/[.06] pt-3 dark:border-hairline" data-ops-footer>
+      <Link
+        href={href}
+        className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 after:absolute after:inset-0 after:content-[''] hover:underline dark:text-blue-400"
+      >
+        {label}
+        <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+      </Link>
+    </div>
   );
 }
 
@@ -153,6 +179,8 @@ interface DesktopHomeProps {
   /** Signed in, own figures still on the way: placeholders, not a stranger's zeros. */
   accountLoading: boolean;
   greetingKey: GreetingKey;
+  /** Safety data sheets in the library — counted on the server (lib/sds). */
+  sdsCount: number;
 }
 
 /** A pulsing bar the size of the text it stands in for. */
@@ -160,7 +188,7 @@ const Shimmer = ({ className }: { className: string }) => (
   <span aria-hidden className={`block animate-pulse rounded-md bg-slate-900/[.07] dark:bg-white/[.08] ${className}`} />
 );
 
-export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder, accountLoading, greetingKey }: DesktopHomeProps) {
+export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder, accountLoading, greetingKey, sdsCount }: DesktopHomeProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
   const tc = useTranslations("ChargeCalc");
@@ -356,10 +384,21 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
           <h2 className="text-[13px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("operationsEyebrow")}</h2>
         </motion.div>
 
-        <div className="grid gap-4 md:grid-cols-12">
-          {/* AI charge calculator — parses the sentence, computes deterministically, renders the worked result below */}
-          <motion.div variants={stagger} className="md:col-span-8 md:row-start-1">
-            <TiltCard max={5} className="bg-[#0b1020] p-8 text-white shadow-[0_40px_80px_-44px_rgba(11,16,32,.85)]">
+        {/* ── Tier 1: intelligence row ──
+            The calculator (8) and Market Alerts (4) share one grid row, so
+            they are always the same height. The alerts card is taken out of
+            the row's height calculation (absolute, inset-0): the CALCULATOR
+            alone decides how tall the row is, and the alerts list scrolls
+            inside whatever that is. Idle, the row's min-height fits ~3 alerts;
+            with a calculation open the row grows with the result and the
+            alerts card grows beside it — no void under it either way. */}
+        <div className="grid items-stretch gap-6 md:grid-cols-12" data-bento-tier="1">
+          <motion.div variants={stagger} className="flex md:col-span-8 md:min-h-[560px]">
+            <TiltCard
+              max={calc ? 0 : 5}
+              className="flex flex-1 flex-col bg-[#0b1020] p-8 text-white shadow-[0_40px_80px_-44px_rgba(11,16,32,.85)]"
+              data-calculator-card={calc ? "result" : "idle"}
+            >
               <div className="pointer-events-none absolute inset-0">
                 <div className="absolute -left-[14%] -top-[40%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),transparent_68%)] opacity-80 blur-[88px]" />
                 <div className="absolute -top-[30%] right-[6%] h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-70 blur-[84px]" />
@@ -367,31 +406,45 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                 <div className="absolute -bottom-[46%] left-1/3 h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,#fb923c,transparent_68%)] opacity-50 blur-[76px]" />
               </div>
 
-              <div className="relative grid items-center gap-7 md:grid-cols-[1.25fr_.75fr]" style={{ transform: "translateZ(30px)" }}>
+              {/* Idle: the full pitch with the orb. With a result: a compact
+                  header (title + the prompt, still usable for the next unit)
+                  and the worked result below it, inside the same card. */}
+              <div
+                className={`relative grid gap-7 ${calc ? "" : "my-auto items-center md:grid-cols-[1.25fr_.75fr]"}`}
+                style={calc ? undefined : { transform: "translateZ(30px)" }}
+              >
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold tracking-[.05em]">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {t("calculatorTag")}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold tracking-[.05em]">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {t("calculatorTag")}
+                    </div>
+                    {calc && <h3 className="m-0 text-[20px] font-semibold tracking-[-0.03em]">{td("chargeCalculatorTitle")}</h3>}
                   </div>
-                  <h3 className="mt-5 text-[34px] font-semibold leading-tight tracking-[-0.04em] text-balance">
-                    {td("chargeCalculatorTitle")}
-                  </h3>
-                  <p className="mt-3.5 max-w-[400px] text-sm leading-relaxed text-white/70 text-pretty">
-                    {td("chargeCalculatorBody")}
-                  </p>
+                  {!calc && (
+                    <>
+                      <h3 className="mt-5 text-[34px] font-semibold leading-tight tracking-[-0.04em] text-balance">
+                        {td("chargeCalculatorTitle")}
+                      </h3>
+                      <p className="mt-3.5 max-w-[400px] text-sm leading-relaxed text-white/70 text-pretty">
+                        {td("chargeCalculatorBody")}
+                      </p>
+                    </>
+                  )}
 
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
                       runCalc(calcQuery);
                     }}
-                    className="mt-6 flex h-14 items-center gap-2.5 rounded-2xl border border-white/20 bg-white/10 pl-4.5 pr-2 backdrop-blur-md"
+                    className={`${calc ? "mt-4" : "mt-6"} flex h-14 items-center gap-2.5 rounded-2xl border border-white/20 bg-white/10 pl-4.5 pr-2 backdrop-blur-md`}
                   >
                     <Search className="h-[17px] w-[17px] shrink-0 text-white/60" />
                     <input
                       value={calcQuery}
                       onChange={(e) => setCalcQuery(e.target.value)}
                       placeholder={t("calculatorPlaceholder")}
+                      data-calc-input
                       className="min-w-0 flex-1 bg-transparent text-sm tracking-tight text-white outline-none placeholder:text-white/45"
                     />
                     <button
@@ -427,128 +480,116 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
                   )}
                 </div>
 
-                <div className="relative flex h-[266px] items-center justify-center">
-                  <div
-                    className="absolute h-[230px] w-[230px] animate-[spin_22s_linear_infinite] rounded-full opacity-85 blur-[30px]"
-                    style={{
-                      background:
-                        "conic-gradient(from 0deg,rgba(37,99,235,.75),rgba(124,58,237,.75),rgba(251,113,133,.7),rgba(37,99,235,.75))",
-                    }}
-                  />
-                  <div
-                    className="relative flex h-[172px] w-[172px] items-center justify-center rounded-full border border-dashed border-white/40 bg-[radial-gradient(circle_at_32%_28%,rgba(255,255,255,.34),rgba(255,255,255,.04)_62%)] backdrop-blur-sm"
-                    style={{ transform: "translateZ(60px)" }}
-                  >
-                    <Sparkles className="h-8 w-8 text-white/70" strokeWidth={1.5} />
+                {!calc && (
+                  <div className="relative flex h-[266px] items-center justify-center">
+                    <div
+                      className="absolute h-[230px] w-[230px] animate-[spin_22s_linear_infinite] rounded-full opacity-85 blur-[30px]"
+                      style={{
+                        background:
+                          "conic-gradient(from 0deg,rgba(37,99,235,.75),rgba(124,58,237,.75),rgba(251,113,133,.7),rgba(37,99,235,.75))",
+                      }}
+                    />
+                    <div
+                      className="relative flex h-[172px] w-[172px] items-center justify-center rounded-full border border-dashed border-white/40 bg-[radial-gradient(circle_at_32%_28%,rgba(255,255,255,.34),rgba(255,255,255,.04)_62%)] backdrop-blur-sm"
+                      style={{ transform: "translateZ(60px)" }}
+                    >
+                      <Sparkles className="h-8 w-8 text-white/70" strokeWidth={1.5} />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
+
+              {/* The worked result, in the card. Tilt is off while it is open
+                  (max 0): a form that leans with the cursor is hard to type in. */}
+              {calc && <CalculatedChargeCard key={calc.query} calc={calc} onClose={() => setCalc(null)} className="mt-6 flex-1" />}
             </TiltCard>
-            {calc && <CalculatedChargeCard key={calc.query} calc={calc} onClose={() => setCalc(null)} />}
           </motion.div>
 
-          {/* Market alerts — live industry news, rendered on the server.
-              Only the stagger wrapper is client-side; the card itself comes
-              in as a slot so none of its markup ships to the browser. */}
-          <motion.div variants={stagger} id="alerts" className="md:col-span-4 md:row-span-2 md:row-start-1">
-            {marketAlerts}
+          {/* Market alerts — live industry news, rendered on the server. Only
+              the stagger wrapper is client-side; the card arrives as a slot.
+              absolute + inset-0: as tall as the calculator, never taller. */}
+          <motion.div variants={stagger} id="alerts" className="relative min-h-[560px] md:col-span-4" data-bento-alerts>
+            <div className="h-full md:absolute md:inset-0">{marketAlerts}</div>
           </motion.div>
+        </div>
 
-          {/* 2×2 quick actions */}
-          <motion.div variants={stagger} className="grid gap-4 sm:grid-cols-2 md:col-span-8 md:row-start-2">
-            <TiltCard
-              max={11}
-              radius="rounded-[24px]"
-              className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
-            >
-              <Link href={latestOrder ? "/profile/orders" : "/products"} className="relative block" style={{ transform: "translateZ(26px)" }}>
-                <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-[0_14px_26px_-14px_rgba(37,99,235,.75)]">
-                  <RotateCw className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("quickReorderLabel")}</div>
-                <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
-                  {lastItem ? `${lastItem.productName} ×${lastItem.quantity}` : t("noOrdersYet")}
-                </div>
-                <div className="mt-4.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
-                  {lastItem ? t("reorderCta", { price: formatEur(lastOrderTotal) }) : t("startFirstOrder")}
-                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
-                </div>
+        {/* ── Tier 2: operations strip ──
+            Four equal cards in one row. Same skeleton in each — icon, title,
+            body, and an action pinned to the foot (mt-auto) — so icons,
+            titles and actions line up across the row. */}
+        <div className="mt-6 grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4" data-bento-tier="2">
+          {/* Quick reorder: two actions, so the card itself is not a link. */}
+          <motion.div variants={stagger} className="flex">
+            <TiltCard max={9} radius="rounded-[24px]" className={OPS_CARD} data-ops-card="reorder">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-[0_14px_26px_-14px_rgba(37,99,235,.75)]">
+                <RotateCw className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("quickReorderLabel")}</div>
+              <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
+                {lastItem ? `${lastItem.productName} ×${lastItem.quantity}` : ownDataLoading ? <Shimmer className="mt-1 h-3.5 w-32" /> : t("noOrdersYet")}
+              </div>
+              <Link
+                href={latestOrder ? "/profile/orders" : "/products"}
+                className="mb-5 mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 hover:underline dark:text-blue-400"
+              >
+                {lastItem ? t("reorderCta", { price: formatEur(lastOrderTotal) }) : t("startFirstOrderShort")}
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
               </Link>
-              {/* A sibling of the Link, not inside it: a button can't live in an anchor. */}
-              <div className="relative mt-3 border-t border-slate-900/[.06] pt-3 dark:border-hairline" style={{ transform: "translateZ(26px)" }}>
+              <div className="mt-auto border-t border-slate-900/[.06] pt-3 dark:border-hairline" data-ops-footer>
                 <SmartOrderButton variant="link" source="dashboard" />
               </div>
             </TiltCard>
+          </motion.div>
 
-            <TiltCard
-              max={11}
-              radius="rounded-[24px]"
-              className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
-            >
-              {/* With no orders yet there is nothing to track — the card's
-                  own CTA says "browse the catalog", so send them there. */}
-              <Link
-                href={latestOrder ? "/profile/orders" : "/products"}
-                className="relative block"
-                style={{ transform: "translateZ(26px)" }}
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-cyan-600 to-cyan-400 text-white shadow-[0_14px_26px_-14px_rgba(8,145,178,.7)]">
-                  <Truck className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("trackShipmentLabel")}</div>
-                <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
-                  {latestOrder ? latestOrder.orderNumber : ownDataLoading ? <Shimmer className="mt-1 h-3.5 w-36" /> : t("noOrdersYet")}
+          {/* Track delivery */}
+          <motion.div variants={stagger} className="flex">
+            <TiltCard max={9} radius="rounded-[24px]" className={OPS_CARD} data-ops-card="track">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-cyan-600 to-cyan-400 text-white shadow-[0_14px_26px_-14px_rgba(8,145,178,.7)]">
+                <Truck className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("trackShipmentLabel")}</div>
+              <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
+                {latestOrder ? latestOrder.orderNumber : ownDataLoading ? <Shimmer className="mt-1 h-3.5 w-36" /> : t("noOrdersYet")}
+              </div>
+              {latestOrder && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 ring-1 ring-green-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/25">
+                    <span className="h-1 w-1 rounded-full bg-green-600 dark:bg-emerald-400" />
+                    {statusLabel}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-ink-muted">{t("etaLabel", { date: eta ?? "" })}</span>
                 </div>
-                {ownDataLoading && !latestOrder ? (
-                  <Shimmer className="mt-5 h-5 w-40" />
-                ) : latestOrder ? (
-                  <div className="mt-4.5 flex items-center gap-2">
-                    <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 ring-1 ring-green-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/25">
-                      <span className="h-1 w-1 rounded-full bg-green-600 dark:bg-emerald-400" />
-                      {statusLabel}
-                    </span>
-                    <span className="text-xs text-slate-400 dark:text-ink-muted">{t("etaLabel", { date: eta ?? "" })}</span>
-                  </div>
-                ) : (
-                  <div className="mt-4.5 text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">{t("startFirstOrder")}</div>
-                )}
-              </Link>
+              )}
+              {ownDataLoading && !latestOrder && <Shimmer className="mt-3 h-5 w-40" />}
+              <OpsFooterLink
+                href={latestOrder ? `/profile/orders/${latestOrder.id}` : "/products"}
+                label={latestOrder ? t("trackViewOrder") : td("exploreProductsCta")}
+              />
             </TiltCard>
+          </motion.div>
 
-            <TiltCard
-              max={11}
-              radius="rounded-[24px]"
-              className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
-            >
-              <Link href="/compliance/sds" className="relative block" style={{ transform: "translateZ(26px)" }}>
-                <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-red-600 to-orange-500 text-white shadow-[0_14px_26px_-14px_rgba(220,38,38,.6)]">
-                  <FileText className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("sdsLibraryLabel")}</div>
-                <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{td("sdsLibraryNote")}</div>
-                <div className="mt-4.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
-                  {t("sdsOpenLibrary")}
-                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
-                </div>
-              </Link>
+          {/* SDS library */}
+          <motion.div variants={stagger} className="flex">
+            <TiltCard max={9} radius="rounded-[24px]" className={OPS_CARD} data-ops-card="sds">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-red-600 to-orange-500 text-white shadow-[0_14px_26px_-14px_rgba(220,38,38,.6)]">
+                <FileText className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("sdsLibraryLabel")}</div>
+              {/* Counted from the SDS catalog, not written into the copy. */}
+              <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{td("sdsLibraryCount", { count: sdsCount })}</div>
+              <OpsFooterLink href="/compliance/sds" label={t("sdsOpenLibrary")} />
             </TiltCard>
+          </motion.div>
 
-            <TiltCard
-              max={11}
-              radius="rounded-[24px]"
-              className="cursor-pointer border border-slate-900/[.06] bg-white/70 p-6 shadow-[0_22px_48px_-38px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
-            >
-              <Link href="/products" className="relative block" style={{ transform: "translateZ(26px)" }}>
-                <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-[0_14px_26px_-14px_rgba(5,150,105,.65)]">
-                  <LayoutGrid className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("exploreProductsLabel")}</div>
-                <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{td("exploreProductsNote")}</div>
-                <div className="mt-4.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
-                  {td("exploreProductsCta")}
-                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
-                </div>
-              </Link>
+          {/* Browse products */}
+          <motion.div variants={stagger} className="flex">
+            <TiltCard max={9} radius="rounded-[24px]" className={OPS_CARD} data-ops-card="browse">
+              <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-gradient-to-br from-emerald-600 to-teal-500 text-white shadow-[0_14px_26px_-14px_rgba(5,150,105,.65)]">
+                <LayoutGrid className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <div className="mt-5 text-[17px] font-semibold tracking-[-0.03em]">{td("exploreProductsLabel")}</div>
+              <div className="mt-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{td("exploreProductsNote")}</div>
+              <OpsFooterLink href="/products" label={td("exploreProductsCta")} />
             </TiltCard>
           </motion.div>
         </div>

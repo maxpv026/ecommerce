@@ -18,6 +18,7 @@ interface StorePageProps {
   marketAlerts: MarketAlertData[];
   /** The greeting the server rendered with — hydration must match it (lib/hooks/useGreeting). */
   greetingKey: GreetingKey;
+  sdsCount: number;
 }
 
 interface AccountData {
@@ -42,7 +43,7 @@ interface AccountData {
  * skeleton → page, two full re-renders and ~350 ms of nothing on every
  * signed-in visit.
  */
-export default function StorePage({ featuredProducts, marketAlertsCard, marketAlerts, greetingKey }: StorePageProps) {
+export default function StorePage({ featuredProducts, marketAlertsCard, marketAlerts, greetingKey, sdsCount }: StorePageProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { status, data: session } = useSession();
   const userId = session?.user?.id ?? null;
@@ -86,6 +87,7 @@ export default function StorePage({ featuredProducts, marketAlertsCard, marketAl
           latestOrder={mine?.latestOrder ?? null}
           accountLoading={accountLoading}
           greetingKey={greetingKey}
+          sdsCount={sdsCount}
         />
       </div>
 

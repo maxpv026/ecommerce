@@ -33,7 +33,16 @@ const num = (s: string) => {
   return s.trim() === "" || !Number.isFinite(v) ? null : v;
 };
 
-export default function CalculatedChargeCard({ calc, onClose }: { calc: ChargeCalculation; onClose: () => void }) {
+export default function CalculatedChargeCard({
+  calc,
+  onClose,
+  className = "mt-4",
+}: {
+  calc: ChargeCalculation;
+  onClose: () => void;
+  /** Spacing from what sits above it (the home page embeds it inside the calculator card). */
+  className?: string;
+}) {
   const t = useTranslations("ChargeCalc");
   const format = useFormatter();
   const addItem = useCartStore((s) => s.addItem);
@@ -128,7 +137,7 @@ export default function CalculatedChargeCard({ calc, onClose }: { calc: ChargeCa
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       data-charge-card
-      className="relative mt-4 overflow-hidden rounded-[24px] bg-card p-6 text-card-foreground shadow-card md:p-7 dark:border dark:border-hairline"
+      className={`relative overflow-hidden rounded-[24px] bg-card p-6 text-card-foreground shadow-card md:p-7 dark:border dark:border-hairline ${className}`}
     >
       {/* Heading + what was understood */}
       <div className="flex items-start gap-3">

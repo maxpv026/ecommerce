@@ -4,6 +4,7 @@ import MarketAlertsCard from "@/components/MarketAlertsCard";
 import PageSkeleton from "@/components/PageSkeleton";
 import { getFeaturedProducts, getMarketAlerts } from "@/lib/data";
 import { getTimeOfDayGreeting } from "@/lib/greeting";
+import { SDS_DOCUMENTS } from "@/lib/sds";
 
 // Static, refreshed at most every 5 minutes; catalogue changes expire the
 // featured products immediately (PRODUCTS_TAG, lib/catalogCache).
@@ -55,6 +56,8 @@ async function HomeContent() {
       // Rendered into the static HTML; the browser hydrates against it, then
       // switches to the visitor's own time of day (lib/hooks/useGreeting).
       greetingKey={getTimeOfDayGreeting()}
+      // A number, not the catalog: the documents themselves stay out of the home bundle.
+      sdsCount={SDS_DOCUMENTS.length}
     />
   );
 }

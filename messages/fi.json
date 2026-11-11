@@ -117,7 +117,8 @@
     "tagSupply": "SAATAVUUS",
     "tagIndustryNews": "ALAN UUTISET",
     "recordsLabel": "Hiilikirjanpito",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# käyttöturvallisuustiedote} other {# käyttöturvallisuustiedotetta}}"
   },
   "Profile": {
     "settingsAria": "Asetukset",
@@ -469,7 +470,9 @@
     "scanNote": "Haku eränumerolla",
     "popularCylindersEyebrow": "SUOSITUT PULLOT",
     "addToCart": "Lisää ostoskoriin",
-    "added": "Lisätty"
+    "added": "Lisätty",
+    "trackViewOrder": "Näytä tilauksen tiedot",
+    "startFirstOrderShort": "Tee ensimmäinen tilauksesi"
   },
   "Checkout": {
     "errorQuote": "Tämä tarjous on vanhentunut, jo tilattu tai ei enää vastaa ostoskoria — ostoskorisi näyttää nyt tämän päivän hinnat.",

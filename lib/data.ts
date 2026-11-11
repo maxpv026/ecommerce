@@ -668,8 +668,10 @@ export type { MarketAlertData, MarketAlertTag } from "@/lib/services/newsFetcher
 // The "v2" key part retires entries cached before fetchIndustryNews learned
 // to throw on a total feed failure: those could hold a timed-out request's
 // [] and kept the widget empty. Vercel's data cache outlives deployments,
-// so changing the code alone would not have cleared them.
-const getCachedMarketAlerts = unstable_cache(() => fetchIndustryNews(NEWS_ITEM_LIMIT), ["market-news", "v2"], {
+// so changing the code alone would not have cleared them. "v3" retires
+// batches cached before the HVAC relevance filter (and the 8-item limit), so
+// an off-topic headline can't outlive the deploy that drops it.
+const getCachedMarketAlerts = unstable_cache(() => fetchIndustryNews(NEWS_ITEM_LIMIT), ["market-news", "v3"], {
   revalidate: 60 * 60,
   tags: ["market-news"],
 });

@@ -117,7 +117,8 @@
     "tagSupply": "OSKRBA",
     "tagIndustryNews": "NOVICE IZ PANOGE",
     "recordsLabel": "Ogljična evidenca",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# varnostni list} two {# varnostna lista} few {# varnostni listi} other {# varnostnih listov}}"
   },
   "Profile": {
     "settingsAria": "Nastavitve",
@@ -469,7 +470,9 @@
     "scanNote": "Iskanje po številki serije",
     "popularCylindersEyebrow": "PRILJUBLJENI CILINDRI",
     "addToCart": "Dodaj v košarico",
-    "added": "Dodano"
+    "added": "Dodano",
+    "trackViewOrder": "Ogled podrobnosti naročila",
+    "startFirstOrderShort": "Oddajte prvo naročilo"
   },
   "Checkout": {
     "errorQuote": "Ta ponudba je potekla, že naročena ali pa ne ustreza več vaši košarici — vaša košarica zdaj prikazuje današnje cene.",

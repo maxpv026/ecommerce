@@ -117,7 +117,8 @@
     "tagSupply": "DODÁVKY",
     "tagIndustryNews": "ZPRÁVY Z OBORU",
     "recordsLabel": "Uhlíková evidence",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# bezpečnostní list} few {# bezpečnostní listy} many {# bezpečnostní listy} other {# bezpečnostních listů}}"
   },
   "Profile": {
     "settingsAria": "Nastavení",
@@ -469,7 +470,9 @@
     "scanNote": "Vyhledat podle čísla šarže",
     "popularCylindersEyebrow": "OBLÍBENÉ LAHVE",
     "addToCart": "Přidat do košíku",
-    "added": "Přidáno"
+    "added": "Přidáno",
+    "trackViewOrder": "Zobrazit podrobnosti objednávky",
+    "startFirstOrderShort": "Zadejte svou první objednávku"
   },
   "Checkout": {
     "errorQuote": "Tato nabídka vypršela, byla již objednána nebo již neodpovídá vašemu košíku — váš košík nyní zobrazuje dnešní ceny.",

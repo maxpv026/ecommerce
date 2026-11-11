@@ -117,7 +117,8 @@
     "tagSupply": "SOLÁTHAR",
     "tagIndustryNews": "NUACHT TIONSCAIL",
     "recordsLabel": "Taifead carbóin",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# bhileog sonraí sábháilteachta} two {# bhileog sonraí sábháilteachta} few {# bhileog sonraí sábháilteachta} many {# mbileog sonraí sábháilteachta} other {# mbileog sonraí sábháilteachta}}"
   },
   "Profile": {
     "settingsAria": "Socruithe",
@@ -469,7 +470,9 @@
     "scanNote": "Cuardaigh de réir uimhir baisce",
     "popularCylindersEyebrow": "SORCÓIRÍ COITEANNA",
     "addToCart": "Cuir sa chairt",
-    "added": "Curtha leis"
+    "added": "Curtha leis",
+    "trackViewOrder": "Féach sonraí an ordaithe",
+    "startFirstOrderShort": "Cuir d’ordú chéad uair"
   },
   "Checkout": {
     "errorQuote": "Tá an luachan seo imithe in éag, ordaithe cheana féin, nó ní oireann sé do do chairt níos mó — taispeánann do chairt praghsanna an lae inniu anois.",

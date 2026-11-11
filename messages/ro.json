@@ -117,7 +117,8 @@
     "tagSupply": "APROVIZIONARE",
     "tagIndustryNews": "ȘTIRI DIN INDUSTRIE",
     "recordsLabel": "Evidență de carbon",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# fișă cu date de securitate} few {# fișe cu date de securitate} other {# de fișe cu date de securitate}}"
   },
   "Profile": {
     "settingsAria": "Setări",
@@ -469,7 +470,9 @@
     "scanNote": "Caută după numărul lotului",
     "popularCylindersEyebrow": "BUTELII POPULARE",
     "addToCart": "Adaugă în coș",
-    "added": "Adăugat"
+    "added": "Adăugat",
+    "trackViewOrder": "Vizualizați detaliile comenzii",
+    "startFirstOrderShort": "Plasați prima comandă"
   },
   "Checkout": {
     "errorQuote": "Această ofertă a expirat, a fost deja comandată sau nu mai corespunde cu coșul dvs. — coșul dvs. afișează acum prețurile de astăzi.",

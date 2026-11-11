@@ -117,7 +117,8 @@
     "tagSupply": "DOSTAWY",
     "tagIndustryNews": "WIADOMOŚCI BRANŻOWE",
     "recordsLabel": "Ewidencja emisji",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# karta charakterystyki} few {# karty charakterystyki} many {# kart charakterystyki} other {# kart charakterystyki}}"
   },
   "Profile": {
     "settingsAria": "Ustawienia",
@@ -469,7 +470,9 @@
     "scanNote": "Wyszukaj po numerze partii",
     "popularCylindersEyebrow": "POPULARNE BUTLE",
     "addToCart": "Dodaj do koszyka",
-    "added": "Dodano"
+    "added": "Dodano",
+    "trackViewOrder": "Zobacz szczegóły zamówienia",
+    "startFirstOrderShort": "Złóż pierwsze zamówienie"
   },
   "Checkout": {
     "errorQuote": "Ta oferta wygasła, została już zamówiona lub nie pasuje już do Twojego koszyka — Twój koszyk pokazuje teraz dzisiejsze ceny.",

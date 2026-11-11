@@ -117,7 +117,8 @@
     "tagSupply": "ELLÁTÁS",
     "tagIndustryNews": "IPARÁGI HÍREK",
     "recordsLabel": "Szén-dioxid-nyilvántartás",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# biztonsági adatlap} other {# biztonsági adatlap}}"
   },
   "Profile": {
     "settingsAria": "Beállítások",
@@ -469,7 +470,9 @@
     "scanNote": "Keresés tételszám alapján",
     "popularCylindersEyebrow": "NÉPSZERŰ PALACKOK",
     "addToCart": "Kosárba",
-    "added": "Hozzáadva"
+    "added": "Hozzáadva",
+    "trackViewOrder": "Rendelési részletek megtekintése",
+    "startFirstOrderShort": "Adja le első rendelését"
   },
   "Checkout": {
     "errorQuote": "Ez az ajánlat lejárt, már megrendelték, vagy már nem felel meg a kosarának — a kosara most a mai árakat mutatja.",

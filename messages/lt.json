@@ -117,7 +117,8 @@
     "tagSupply": "TIEKIMAS",
     "tagIndustryNews": "PRAMONĖS NAUJIENOS",
     "recordsLabel": "Anglies dioksido apskaita",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# saugos duomenų lapas} few {# saugos duomenų lapai} many {# saugos duomenų lapų} other {# saugos duomenų lapų}}"
   },
   "Profile": {
     "settingsAria": "Nustatymai",
@@ -469,7 +470,9 @@
     "scanNote": "Ieškoti pagal partijos numerį",
     "popularCylindersEyebrow": "POPULIARIAUSI BALIONAI",
     "addToCart": "Į krepšelį",
-    "added": "Pridėta"
+    "added": "Pridėta",
+    "trackViewOrder": "Peržiūrėti užsakymo detales",
+    "startFirstOrderShort": "Pateikite pirmą užsakymą"
   },
   "Checkout": {
     "errorQuote": "Šis pasiūlymas pasibaigė, jau buvo užsakytas arba nebeatitinka jūsų krepšelio — jūsų krepšelis dabar rodo šiandienos kainas.",

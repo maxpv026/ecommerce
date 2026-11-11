@@ -117,7 +117,8 @@
     "tagSupply": "ABASTECIMENTO",
     "tagIndustryNews": "NOTÍCIAS DO SETOR",
     "recordsLabel": "Registo de carbono",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# ficha de dados de segurança} many {# fichas de dados de segurança} other {# fichas de dados de segurança}}"
   },
   "Profile": {
     "settingsAria": "Definições",
@@ -469,7 +470,9 @@
     "scanNote": "Pesquisar por número de lote",
     "popularCylindersEyebrow": "CILINDROS POPULARES",
     "addToCart": "Adicionar ao carrinho",
-    "added": "Adicionado"
+    "added": "Adicionado",
+    "trackViewOrder": "Ver detalhes da encomenda",
+    "startFirstOrderShort": "Faça a sua primeira encomenda"
   },
   "Checkout": {
     "errorQuote": "Esta cotação expirou, já foi encomendada ou já não corresponde ao seu carrinho — o seu carrinho agora mostra os preços de hoje.",

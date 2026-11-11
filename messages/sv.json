@@ -117,7 +117,8 @@
     "tagSupply": "FÖRSÖRJNING",
     "tagIndustryNews": "BRANSCHNYHETER",
     "recordsLabel": "Koldioxidredovisning",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# säkerhetsdatablad} other {# säkerhetsdatablad}}"
   },
   "Profile": {
     "settingsAria": "Inställningar",
@@ -469,7 +470,9 @@
     "scanNote": "Sök på partinummer",
     "popularCylindersEyebrow": "POPULÄRA CYLINDRAR",
     "addToCart": "Lägg i varukorgen",
-    "added": "Tillagd"
+    "added": "Tillagd",
+    "trackViewOrder": "Visa orderdetaljer",
+    "startFirstOrderShort": "Gör din första beställning"
   },
   "Checkout": {
     "errorQuote": "Denna offert har gått ut, beställdes redan eller matchar inte längre din kundvagn — din kundvagn visar nu dagens priser.",

@@ -136,7 +136,8 @@
     "tagSupply": "TEDARİK",
     "tagIndustryNews": "SEKTÖR HABERLERİ",
     "recordsLabel": "Karbon kaydı",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# güvenlik bilgi formu} other {# güvenlik bilgi formu}}"
   },
   "Profile": {
     "settingsAria": "Ayarlar",
@@ -469,7 +470,9 @@
     "scanNote": "Parti numarasıyla sorgula",
     "popularCylindersEyebrow": "POPÜLER TÜPLER",
     "addToCart": "Sepete ekle",
-    "added": "Eklendi"
+    "added": "Eklendi",
+    "trackViewOrder": "Sipariş detaylarını görüntüle",
+    "startFirstOrderShort": "İlk siparişinizi verin"
   },
   "Checkout": {
     "errorQuote": "Bu teklif süresi doldu, zaten sipariş edildi veya artık sepetinizle eşleşmiyor — sepetiniz şimdi bugünün fiyatlarını gösteriyor.",

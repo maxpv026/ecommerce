@@ -117,7 +117,8 @@
     "tagSupply": "PIEGĀDE",
     "tagIndustryNews": "NOZARES ZIŅAS",
     "recordsLabel": "Oglekļa uzskaite",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, zero {# drošības datu lapas} one {# drošības datu lapa} other {# drošības datu lapas}}"
   },
   "Profile": {
     "settingsAria": "Iestatījumi",
@@ -469,7 +470,9 @@
     "scanNote": "Meklēt pēc partijas numura",
     "popularCylindersEyebrow": "POPULĀRIE BALONI",
     "addToCart": "Pievienot grozam",
-    "added": "Pievienots"
+    "added": "Pievienots",
+    "trackViewOrder": "Skatīt pasūtījuma detaļas",
+    "startFirstOrderShort": "Veiciet savu pirmo pasūtījumu"
   },
   "Checkout": {
     "errorQuote": "Šis piedāvājums ir beidzies, jau pasūtīts vai vairs neatbilst jūsu grozam — jūsu grozā tagad ir redzamas šodienas cenas.",

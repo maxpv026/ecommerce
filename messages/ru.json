@@ -136,7 +136,8 @@
     "tagSupply": "ПОСТАВКИ",
     "tagIndustryNews": "НОВОСТИ ОТРАСЛИ",
     "recordsLabel": "Углеродный отчёт",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# паспорт безопасности} few {# паспорта безопасности} many {# паспортов безопасности} other {# паспорта безопасности}}"
   },
   "Profile": {
     "settingsAria": "Настройки",
@@ -469,7 +470,9 @@
     "scanNote": "Поиск по номеру партии",
     "popularCylindersEyebrow": "ПОПУЛЯРНЫЕ БАЛЛОНЫ",
     "addToCart": "В корзину",
-    "added": "Добавлено"
+    "added": "Добавлено",
+    "trackViewOrder": "Просмотреть детали заказа",
+    "startFirstOrderShort": "Сделайте первый заказ"
   },
   "Checkout": {
     "errorQuote": "Этот запрос истек, уже был заказан или больше не соответствует вашей корзине — ваша корзина теперь показывает сегодняшние цены.",

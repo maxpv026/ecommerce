@@ -117,7 +117,8 @@
     "tagSupply": "ДОСТАВКИ",
     "tagIndustryNews": "НОВИНИ ОТ БРАНША",
     "recordsLabel": "Въглероден отчет",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# информационен лист за безопасност} other {# информационни листове за безопасност}}"
   },
   "Profile": {
     "settingsAria": "Настройки",
@@ -469,7 +470,9 @@
     "scanNote": "Търсене по номер на партида",
     "popularCylindersEyebrow": "ПОПУЛЯРНИ БУТИЛКИ",
     "addToCart": "Добави в количката",
-    "added": "Добавено"
+    "added": "Добавено",
+    "trackViewOrder": "Вижте детайлите на поръчката",
+    "startFirstOrderShort": "Направете първата си поръчка"
   },
   "Checkout": {
     "errorQuote": "Тази оферта е изтекла, вече е поръчана или вече не съответства на вашата количка — вашата количка сега показва днешните цени.",

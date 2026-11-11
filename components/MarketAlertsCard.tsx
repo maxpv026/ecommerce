@@ -34,7 +34,7 @@ export default async function MarketAlertsCard() {
       data-market-alerts
       className="flex h-full flex-col rounded-[28px] border border-slate-900/[.06] bg-white/[.66] p-6 shadow-[0_26px_56px_-40px_rgba(15,23,42,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass"
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-none items-center justify-between gap-3">
         <span className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-[11px] bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400">
             <TrendingUp className="h-4 w-4" strokeWidth={1.9} />
@@ -44,7 +44,14 @@ export default async function MarketAlertsCard() {
         <span className="text-[11px] text-slate-400 dark:text-ink-muted">{t("liveTag")}</span>
       </div>
 
-      <div className="mt-5 flex flex-1 flex-col gap-3">
+      {/* The card is as tall as the charge calculator beside it (the bento
+          locks the two together), so the list takes whatever height is left
+          and scrolls inside it: ~3 items beside the idle calculator, more as
+          the calculator opens a result. The fade says "there is more". */}
+      <div
+        data-market-alerts-list
+        className="-mx-1 mt-4 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain px-1 pb-3 [mask-image:linear-gradient(to_bottom,#000_calc(100%-28px),transparent)] [scrollbar-width:thin]"
+      >
         {alerts.length > 0 ? (
           alerts.map((alert) => {
             const warning = alert.tone === "warning";
@@ -56,7 +63,7 @@ export default async function MarketAlertsCard() {
                 target="_blank"
                 rel="noopener noreferrer"
                 data-market-alert={alert.tag}
-                className="group block rounded-[18px] border border-slate-900/[.05] bg-white px-4 py-3.5 shadow-sm transition-[background-color,border-color,box-shadow] duration-200 hover:border-blue-600/25 hover:shadow-[0_0_26px_-10px_rgba(37,99,235,.55)] dark:border-white/[.06] dark:bg-surface dark:hover:border-blue-400/30 dark:hover:bg-white/5"
+                className="group block flex-none rounded-[18px] border border-slate-900/[.05] bg-white px-4 py-3 shadow-sm transition-[background-color,border-color,box-shadow] duration-200 hover:border-blue-600/25 hover:shadow-[0_0_26px_-10px_rgba(37,99,235,.55)] dark:border-white/[.06] dark:bg-surface dark:hover:border-blue-400/30 dark:hover:bg-white/5"
               >
                 <span className="flex items-center justify-between gap-2">
                   <span
@@ -73,18 +80,18 @@ export default async function MarketAlertsCard() {
                   />
                 </span>
 
-                <span className="mt-1.5 block text-[13.5px] font-semibold leading-[1.35] tracking-tight group-hover:text-blue-700 dark:group-hover:text-blue-400">
+                <span className="mt-1 block text-[13.5px] font-semibold leading-[1.35] tracking-tight group-hover:text-blue-700 dark:group-hover:text-blue-400">
                   {alert.title}
                 </span>
 
                 {alert.body && (
-                  <span className="mt-1.5 block text-[11.5px] leading-relaxed text-slate-400 dark:text-ink-muted">
+                  <span className="mt-1 line-clamp-2 text-[11.5px] leading-relaxed text-slate-400 dark:text-ink-muted">
                     {alert.body}
                   </span>
                 )}
 
                 {/* Provenance: which publication, and how fresh. */}
-                <span className="mt-2 flex items-center gap-1.5 text-[10.5px] text-slate-400 dark:text-ink-muted">
+                <span className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-slate-400 dark:text-ink-muted">
                   <span className="truncate">{alert.source}</span>
                   {published && (
                     <>
@@ -105,9 +112,10 @@ export default async function MarketAlertsCard() {
         )}
       </div>
 
+      {/* Pinned to the card's foot, whatever the list's length. */}
       <Link
         href="/profile/settings"
-        className="mt-4 flex h-11 items-center justify-center rounded-2xl border border-slate-900/[.12] bg-white text-[13px] font-semibold tracking-tight hover:border-slate-900/30 dark:border-hairline-strong dark:bg-surface dark:hover:border-white/30"
+        className="mt-3 flex h-11 flex-none items-center justify-center rounded-2xl border border-slate-900/[.12] bg-white text-[13px] font-semibold tracking-tight hover:border-slate-900/30 dark:border-hairline-strong dark:bg-surface dark:hover:border-white/30"
       >
         {t("managePriceAlerts")}
       </Link>

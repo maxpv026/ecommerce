@@ -117,7 +117,8 @@
     "tagSupply": "DODÁVKY",
     "tagIndustryNews": "SPRÁVY Z ODVETVIA",
     "recordsLabel": "Uhlíková evidencia",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# karta bezpečnostných údajov} few {# karty bezpečnostných údajov} many {# karty bezpečnostných údajov} other {# kariet bezpečnostných údajov}}"
   },
   "Profile": {
     "settingsAria": "Nastavenia",
@@ -469,7 +470,9 @@
     "scanNote": "Vyhľadať podľa čísla šarže",
     "popularCylindersEyebrow": "OBĽÚBENÉ FĽAŠE",
     "addToCart": "Pridať do košíka",
-    "added": "Pridané"
+    "added": "Pridané",
+    "trackViewOrder": "Zobraziť podrobnosti objednávky",
+    "startFirstOrderShort": "Zadajte svoju prvú objednávku"
   },
   "Checkout": {
     "errorQuote": "Táto ponuka vypršala, bola už objednaná alebo už nezodpovedá vášmu košíku — váš košík teraz zobrazuje dnešné ceny.",

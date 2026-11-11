@@ -28,8 +28,12 @@ const DEFAULT_FEEDS = [
 // re-fetches, so no visitor waits on a slow feed — but a regeneration does.
 const FEED_TIMEOUT_MS = 3500;
 
-/** How many items the widget can show at most. */
-export const NEWS_ITEM_LIMIT = 4;
+/**
+ * How many items the widget can hold. The desktop card shows ~3 and scrolls
+ * the rest; when the charge calculator beside it opens a result, the card
+ * grows with it and fills with the extra items instead of leaving a gap.
+ */
+export const NEWS_ITEM_LIMIT = 8;
 
 /** ~100 characters, as a snippet not an article. */
 const SNIPPET_MAX = 100;
@@ -98,6 +102,38 @@ export function classifyHeadline(
   // A price coming down is not a warning.
   if (tag === "PRICE_TREND" && GOOD_NEWS.test(title)) return { tag, tone: "success" };
   return { tag, tone: "warning" };
+}
+
+/**
+ * Relevance to a refrigerant / HVAC buyer.
+ *
+ * Even a trade feed carries the odd story whose HEADLINE is geopolitics —
+ * Cooling Post's "Iran says French claims are baseless and malicious" is about
+ * cyber attacks on refrigeration systems, but nothing in the card says so, and
+ * a buyer reads it as off-topic world news. So:
+ *
+ *   - an HVAC/refrigerant term in the headline     → keep
+ *   - otherwise, a term in the body or the feed's
+ *     categories, AND a headline that is not
+ *     politics / conflict / cyber                   → keep
+ *   - anything else                                 → drop
+ *
+ * Headline-only matching would be far too strict for trade press, whose
+ * headlines name companies and people ("Daikin Applied buys German
+ * contractor Ganter", "IOR extends training outreach programme") — measured
+ * on the live feed it kept 1 item in 10. The body is where the trade context
+ * lives; the headline is what decides whether it reads as industry news.
+ */
+const INDUSTRY_TERMS =
+  /\b(refrigera\w*|refrigerants?|f[-\s]?gas(es)?|hfcs?|hfos?|hcfcs?|r-?\d{2,4}[a-z]?|gwp|co2|carbon dioxide|ammonia|propane|isobutane|a2l|natural refrigerants?|heat[-\s]?pumps?|chillers?|cooling|air[-\s]?condition\w*|hvacr?|ahri|compressors?|cylinders?|quotas?|pfas|cold[-\s]?(chain|store|room)s?|condens\w+|evaporat\w+|leak[-\s]?(check|test|detect)\w*|ventilation|heating)\b/i;
+
+const OFF_TOPIC_HEADLINE =
+  /\b(iran\w*|israel\w*|gaza|hamas|hezbollah|russia\w*|kremlin|putin|war|wars|warfare|military|missiles?|troops|army|sanctions?|election\w*|president(ial)?|prime minister|parliament|minister|diplomat\w*|cyber\w*|hack(er|ers|ed|ing)?|ransomware|terror\w*|accus\w+|baseless|malicious|protests?|coup)\b/i;
+
+export function isIndustryRelevant(item: { title: string; body?: string; categories?: readonly string[] }): boolean {
+  if (INDUSTRY_TERMS.test(item.title)) return true;
+  if (OFF_TOPIC_HEADLINE.test(item.title)) return false;
+  return INDUSTRY_TERMS.test(item.body ?? "") || (item.categories ?? []).some((category) => INDUSTRY_TERMS.test(category));
 }
 
 /** English fallback labels, mirrored by the Dashboard.tag* message keys. */
@@ -219,8 +255,12 @@ export function toMarketAlert(
   // with no link is a dead end the hover state would be lying about.
   if (!title || !/^https?:\/\//i.test(link)) return null;
 
+  const fullText = stripFeedBoilerplate(toPlainText(item.contentSnippet ?? item.content ?? ""));
+  // Judged on the whole snippet, not the 100-character card excerpt.
+  if (!isIndustryRelevant({ title, body: fullText, categories: item.categories })) return null;
+
   const { tag, tone } = classifyHeadline(title, item.categories ?? []);
-  const snippet = truncate(stripFeedBoilerplate(toPlainText(item.contentSnippet ?? item.content ?? "")));
+  const snippet = truncate(fullText);
 
   return {
     id: link,

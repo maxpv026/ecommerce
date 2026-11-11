@@ -117,7 +117,8 @@
     "tagSupply": "PROVVISTA",
     "tagIndustryNews": "AĦBARIJIET TAL-INDUSTRIJA",
     "recordsLabel": "Rekord tal-karbonju",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# skeda ta' data dwar is-sigurtà} two {# skedi ta' data dwar is-sigurtà} few {# skedi ta' data dwar is-sigurtà} many {# skedi ta' data dwar is-sigurtà} other {# skedi ta' data dwar is-sigurtà}}"
   },
   "Profile": {
     "settingsAria": "Issettjar",
@@ -469,7 +470,9 @@
     "scanNote": "Fittex bin-numru tal-lott",
     "popularCylindersEyebrow": "ĊILINDRI POPOLARI",
     "addToCart": "Żid mal-karrettun",
-    "added": "Miżjud"
+    "added": "Miżjud",
+    "trackViewOrder": "Ara d-dettalji tal-ordni",
+    "startFirstOrderShort": "Agħmel l-ewwel ordni tiegħek"
   },
   "Checkout": {
     "errorQuote": "Din il-kwotazzjoni skadiet, diġà ġiet ordnata, jew ma taqbilx aktar mal-karrettun tiegħek — il-karrettun tiegħek issa juri l-prezzijiet tal-lum.",

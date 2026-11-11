@@ -117,7 +117,8 @@
     "tagSupply": "TARNED",
     "tagIndustryNews": "VALDKONNA UUDISED",
     "recordsLabel": "Süsinikuarvestus",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# ohutuskaart} other {# ohutuskaarti}}"
   },
   "Profile": {
     "settingsAria": "Seaded",
@@ -469,7 +470,9 @@
     "scanNote": "Otsi partii numbri järgi",
     "popularCylindersEyebrow": "POPULAARSED SILINDRID",
     "addToCart": "Lisa ostukorvi",
-    "added": "Lisatud"
+    "added": "Lisatud",
+    "trackViewOrder": "Vaadake tellimuse üksikasju",
+    "startFirstOrderShort": "Esitage oma esimene tellimus"
   },
   "Checkout": {
     "errorQuote": "See pakkumine on aegunud, juba tellitud või ei vasta enam teie ostukorvile — teie ostukorv näitab nüüd tänaseid hindu.",

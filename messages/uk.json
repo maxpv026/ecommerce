@@ -136,7 +136,8 @@
     "tagSupply": "ПОСТАЧАННЯ",
     "tagIndustryNews": "НОВИНИ ГАЛУЗІ",
     "recordsLabel": "Вуглецевий облік",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# паспорт безпеки} few {# паспорти безпеки} many {# паспортів безпеки} other {# паспорта безпеки}}"
   },
   "Profile": {
     "settingsAria": "Налаштування",
@@ -469,7 +470,9 @@
     "scanNote": "Пошук за номером партії",
     "popularCylindersEyebrow": "ПОПУЛЯРНІ БАЛОНИ",
     "addToCart": "До кошика",
-    "added": "Додано"
+    "added": "Додано",
+    "trackViewOrder": "Переглянути деталі замовлення",
+    "startFirstOrderShort": "Зробіть перше замовлення"
   },
   "Checkout": {
     "errorQuote": "Ця пропозиція закінчилася, вже замовлена або більше не відповідає вашому кошику — ваш кошик тепер показує сьогоднішні ціни.",

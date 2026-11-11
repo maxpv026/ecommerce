@@ -117,7 +117,8 @@
     "tagSupply": "VERSORGUNG",
     "tagIndustryNews": "BRANCHEN-NEWS",
     "recordsLabel": "CO2-Bilanz",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# Sicherheitsdatenblatt} other {# Sicherheitsdatenblätter}}"
   },
   "Profile": {
     "settingsAria": "Einstellungen",
@@ -469,7 +470,9 @@
     "scanNote": "Suche nach Chargennummer",
     "popularCylindersEyebrow": "BELIEBTE ZYLINDER",
     "addToCart": "In den Warenkorb",
-    "added": "Hinzugefügt"
+    "added": "Hinzugefügt",
+    "trackViewOrder": "Bestelldetails anzeigen",
+    "startFirstOrderShort": "Erste Bestellung aufgeben"
   },
   "Checkout": {
     "errorQuote": "Dieses Angebot ist abgelaufen, wurde bereits bestellt oder stimmt nicht mehr mit Ihrem Warenkorb überein — Ihr Warenkorb zeigt jetzt die heutigen Preise.",

@@ -117,7 +117,8 @@
     "tagSupply": "FORNITURA",
     "tagIndustryNews": "NOTIZIE DI SETTORE",
     "recordsLabel": "Registro carbonio",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# scheda di sicurezza} many {# schede di sicurezza} other {# schede di sicurezza}}"
   },
   "Profile": {
     "settingsAria": "Impostazioni",
@@ -469,7 +470,9 @@
     "scanNote": "Cerca per numero di lotto",
     "popularCylindersEyebrow": "BOMBOLE POPOLARI",
     "addToCart": "Aggiungi al carrello",
-    "added": "Aggiunto"
+    "added": "Aggiunto",
+    "trackViewOrder": "Visualizza dettagli ordine",
+    "startFirstOrderShort": "Effettua il tuo primo ordine"
   },
   "Checkout": {
     "errorQuote": "Questo preventivo è scaduto, è già stato ordinato o non corrisponde più al tuo carrello — il tuo carrello ora mostra i prezzi di oggi.",

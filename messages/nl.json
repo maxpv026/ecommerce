@@ -117,7 +117,8 @@
     "tagSupply": "BEVOORRADING",
     "tagIndustryNews": "BRANCHENIEUWS",
     "recordsLabel": "CO2-registratie",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# veiligheidsinformatieblad} other {# veiligheidsinformatiebladen}}"
   },
   "Profile": {
     "settingsAria": "Instellingen",
@@ -469,7 +470,9 @@
     "scanNote": "Opzoeken op lotnummer",
     "popularCylindersEyebrow": "POPULAIRE CILINDERS",
     "addToCart": "In winkelwagen",
-    "added": "Toegevoegd"
+    "added": "Toegevoegd",
+    "trackViewOrder": "Bestelgegevens bekijken",
+    "startFirstOrderShort": "Plaats uw eerste bestelling"
   },
   "Checkout": {
     "errorQuote": "Deze offerte is verlopen, al besteld of komt niet meer overeen met je winkelwagen — je winkelwagen toont nu de prijzen van vandaag.",

@@ -117,7 +117,8 @@
     "tagSupply": "APPROVISIONNEMENT",
     "tagIndustryNews": "ACTUALITÉ DU SECTEUR",
     "recordsLabel": "Bilan carbone",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, one {# fiche de données de sécurité} many {# fiches de données de sécurité} other {# fiches de données de sécurité}}"
   },
   "Profile": {
     "settingsAria": "Paramètres",
@@ -469,7 +470,9 @@
     "scanNote": "Rechercher par numéro de lot",
     "popularCylindersEyebrow": "BOUTEILLES POPULAIRES",
     "addToCart": "Ajouter au panier",
-    "added": "Ajouté"
+    "added": "Ajouté",
+    "trackViewOrder": "Voir les détails de la commande",
+    "startFirstOrderShort": "Passez votre première commande"
   },
   "Checkout": {
     "errorQuote": "Ce devis a expiré, a déjà été commandé ou ne correspond plus à votre panier — votre panier affiche maintenant les prix d'aujourd'hui.",

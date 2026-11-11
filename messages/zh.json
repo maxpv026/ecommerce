@@ -136,7 +136,8 @@
     "tagSupply": "供应",
     "tagIndustryNews": "行业新闻",
     "recordsLabel": "碳排放记录",
-    "recordsNote": "CO2e · F-Gas"
+    "recordsNote": "CO2e · F-Gas",
+    "sdsLibraryCount": "{count, plural, other {# 份安全数据表}}"
   },
   "Profile": {
     "settingsAria": "设置",
@@ -469,7 +470,9 @@
     "scanNote": "按批号查询",
     "popularCylindersEyebrow": "热门钢瓶",
     "addToCart": "加入购物车",
-    "added": "已加入"
+    "added": "已加入",
+    "trackViewOrder": "查看订单详情",
+    "startFirstOrderShort": "下您的第一笔订单"
   },
   "Checkout": {
     "errorQuote": "此报价已过期、已下单或不再与您的购物车匹配 — 您的购物车现在显示今天的价格。",
