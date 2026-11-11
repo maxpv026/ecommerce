@@ -38,6 +38,7 @@ const SOLVER_SELECT = {
   category: true,
   containerType: true,
   familyKey: true,
+  gwp: true,
 } as const;
 
 export async function loadSolverCatalog(): Promise<SolverRow[]> {

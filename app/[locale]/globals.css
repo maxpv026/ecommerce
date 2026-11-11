@@ -369,6 +369,12 @@ body {
   }
 }
 
+/* Smart Bulk Order: indeterminate progress while the spec is being read. */
+@keyframes smart-progress {
+  0% { left: -33%; }
+  100% { left: 100%; }
+}
+
 @keyframes hc-sweep {
   to {
     background-position: 300% 50%;

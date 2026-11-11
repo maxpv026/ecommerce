@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type DragEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AlertTriangle, ArrowLeft, Check, FileText, Loader2, Minus, PackageX, Plus, Sparkles, Upload, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, FileText, Loader2, Minus, PackageX, Paperclip, Plus, X } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useCartStore } from "@/lib/store/cart";
 import { useSmartOrderUi } from "@/lib/smartOrderEvents";
@@ -12,7 +12,7 @@ import { formatKg } from "@/lib/pricing";
 import type { LinePick, LineStatus, SolvedLine } from "@/lib/smartOrder/solver";
 
 /**
- * Smart Bulk Order — paste or upload, review, add.
+ * Bulk Order Import — paste or attach a specification, review the ledger, add.
  *
  * The server (POST /api/smart-order) returns solved lines: real products,
  * database prices, a status per line. This component never computes what to
@@ -44,20 +44,26 @@ interface EditLine {
   edited: boolean;
 }
 
+// Semantic only — green: as asked, blue: more than asked, amber: needs a look,
+// red: cannot supply, grey: not ours. No decorative hues.
 const BADGE: Record<LineStatus | "ADJUSTED", string> = {
-  EXACT: "bg-emerald-500/12 text-emerald-700 ring-emerald-600/20 dark:text-emerald-300",
-  BUFFER: "bg-blue-500/10 text-blue-700 ring-blue-600/20 dark:text-blue-300",
-  SUBSTITUTED: "bg-amber-500/12 text-amber-800 ring-amber-600/25 dark:text-amber-300",
-  SIZE_ASSUMED: "bg-amber-500/12 text-amber-800 ring-amber-600/25 dark:text-amber-300",
-  PARTIAL: "bg-amber-500/12 text-amber-800 ring-amber-600/25 dark:text-amber-300",
-  OUT_OF_STOCK: "bg-red-500/10 text-red-700 ring-red-600/20 dark:text-red-300",
-  NOT_CARRIED: "bg-slate-500/10 text-slate-600 ring-slate-500/20 dark:text-slate-300",
-  UNRECOGNIZED: "bg-slate-500/10 text-slate-600 ring-slate-500/20 dark:text-slate-300",
-  NEEDS_REVIEW: "bg-amber-500/12 text-amber-800 ring-amber-600/25 dark:text-amber-300",
-  ADJUSTED: "bg-violet-500/10 text-violet-700 ring-violet-600/20 dark:text-violet-300",
+  EXACT: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+  BUFFER: "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-300 dark:ring-blue-400/20",
+  SUBSTITUTED: "bg-amber-50 text-amber-800 ring-amber-600/25 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
+  SIZE_ASSUMED: "bg-amber-50 text-amber-800 ring-amber-600/25 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
+  PARTIAL: "bg-amber-50 text-amber-800 ring-amber-600/25 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
+  OUT_OF_STOCK: "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-400/10 dark:text-red-300 dark:ring-red-400/20",
+  NOT_CARRIED: "bg-slate-100 text-slate-600 ring-slate-500/20 dark:bg-white/[.06] dark:text-zinc-300 dark:ring-white/10",
+  UNRECOGNIZED: "bg-slate-100 text-slate-600 ring-slate-500/20 dark:bg-white/[.06] dark:text-zinc-300 dark:ring-white/10",
+  NEEDS_REVIEW: "bg-amber-50 text-amber-800 ring-amber-600/25 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
+  ADJUSTED: "bg-slate-100 text-slate-700 ring-slate-500/25 dark:bg-white/[.06] dark:text-zinc-200 dark:ring-white/15",
 };
 /** A grade substitution outranks every other badge: it changes what the gas legally is. */
-const GRADE_BADGE = "bg-orange-500/15 text-orange-800 ring-orange-600/30 dark:text-orange-300";
+const GRADE_BADGE = "bg-orange-50 text-orange-800 ring-orange-600/30 dark:bg-orange-400/10 dark:text-orange-300 dark:ring-orange-400/25";
+
+const FORMATS = "CSV · XLSX · PDF · TXT";
+const PRIMARY_BTN =
+  "inline-flex h-10 flex-none items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-slate-900 px-5 text-[14px] font-medium text-white transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-900 dark:hover:bg-zinc-200 dark:focus-visible:ring-offset-[#0A0D12]";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -224,6 +230,40 @@ export default function SmartBulkOrderModal() {
     return t(`status_${e.line.status}`);
   };
 
+  // Review summary: lines matched, net kg, cylinders and t CO₂e of what is ticked.
+  const reviewStats = useMemo(() => {
+    const all = lines ?? [];
+    const matched = all.filter((e) => e.line.picks.length > 0).length;
+    let kg = 0;
+    let co2eKg = 0;
+    for (const e of chosen) {
+      for (const p of e.line.picks) {
+        const q = e.qty[p.productId] ?? 0;
+        kg += p.weightKg * q;
+        if (p.gwp) co2eKg += p.weightKg * q * p.gwp;
+      }
+    }
+    return { matched, total: all.length, kg: round2(kg), co2eT: co2eKg / 1000 };
+  }, [lines, chosen]);
+
+  const onDragOver = (e: DragEvent) => {
+    if (busy || !Array.from(e.dataTransfer.types).includes("Files")) return;
+    e.preventDefault();
+    setDragging(true);
+  };
+  const onDragLeave = (e: DragEvent) => {
+    // Leaving into a child (the textarea, the toolbar) is not leaving the box.
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+  };
+  const onDrop = (e: DragEvent) => {
+    if (busy) return;
+    e.preventDefault();
+    setDragging(false);
+    pickFile(e.dataTransfer.files?.[0]);
+  };
+
+  const MUTED = "text-slate-500 dark:text-zinc-400";
+
   return (
     <AnimatePresence>
       {open && (
@@ -232,130 +272,157 @@ export default function SmartBulkOrderModal() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.2 } }}
-          className="fixed inset-0 z-[110] flex items-end justify-center bg-[#090A0C]/70 backdrop-blur-md sm:items-center sm:p-4"
+          className="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/60 backdrop-blur-sm sm:items-center sm:p-4"
           onClick={hide}
         >
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16, transition: { duration: 0.2 } }}
-            transition={{ duration: 0.45, ease: EASE }}
+            exit={{ opacity: 0, y: 12, transition: { duration: 0.18 } }}
+            transition={{ duration: 0.35, ease: EASE }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="smart-order-title"
             data-smart-order-modal
+            data-smart-view={lines ? "review" : busy ? "parsing" : "input"}
             onClick={(e) => e.stopPropagation()}
-            className="relative flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white/[.97] shadow-[0_40px_120px_-30px_rgba(4,10,25,.75)] backdrop-blur-2xl sm:max-h-[90vh] sm:w-[920px] sm:max-w-full sm:rounded-[26px] dark:bg-[#141518]/[.97]"
+            className="flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl dark:border-white/[0.08] dark:bg-[#0A0D12] dark:shadow-2xl dark:shadow-black/60"
           >
-            {/* Header */}
-            <div className="flex flex-none items-start gap-3 border-b border-slate-900/[.07] px-5 pb-4 pt-5 sm:px-7 dark:border-hairline">
-              {lines ? (
-                <button
-                  type="button"
-                  onClick={() => setLines(null)}
-                  data-smart-back
-                  aria-label={t("back")}
-                  className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-slate-900/5 text-slate-700 transition-colors hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                >
-                  <ArrowLeft size={17} strokeWidth={2} />
-                </button>
-              ) : (
-                <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-[0_12px_24px_-14px_rgba(37,99,235,.8)]">
-                  <Sparkles size={17} strokeWidth={2} />
-                </span>
-              )}
-              <div className="min-w-0 flex-1 pr-8">
-                <h2 id="smart-order-title" className="m-0 text-[18px] font-semibold leading-[1.25] tracking-[-.03em]">
-                  {lines ? t("reviewTitle") : t("title")}
+            {/* ── Header ── */}
+            <div className="flex flex-none items-start gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 dark:border-white/[0.08]">
+              <div className="min-w-0 flex-1">
+                {lines && (
+                  <button
+                    type="button"
+                    onClick={() => setLines(null)}
+                    data-smart-back
+                    className="-ml-0.5 mb-1.5 inline-flex items-center gap-1 whitespace-nowrap text-xs font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                  >
+                    <ArrowLeft size={13} strokeWidth={2} />
+                    {t("back")}
+                  </button>
+                )}
+                <h2 id="smart-order-title" className="m-0 text-[17px] font-semibold leading-snug tracking-[-.02em] text-slate-900 dark:text-white">
+                  {lines ? t("reviewTitle") : t("importTitle")}
                 </h2>
-                <p className="m-0 mt-1 text-[12.5px] leading-[1.5] text-slate-500 dark:text-ink-muted">{lines ? t("reviewSubtitle") : t("subtitle")}</p>
+                <p className={`m-0 mt-0.5 text-[13px] leading-normal ${MUTED}`}>{lines ? t("reviewSubtitle") : t("importSubtitle")}</p>
               </div>
               <button
                 type="button"
                 onClick={hide}
                 aria-label={t("close")}
                 data-smart-close
-                className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-slate-900/5 text-slate-600 transition-colors hover:bg-slate-900/[.11] dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+                className="-mr-1.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-500 dark:hover:bg-white/[0.06] dark:hover:text-white"
               >
-                <X size={14} strokeWidth={2} />
+                <X size={17} strokeWidth={2} />
               </button>
             </div>
 
-            {/* Body */}
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7">
+            {/* ── Body ── */}
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
               {!lines ? (
-                <div className="flex flex-col gap-4">
-                  <label className="block">
-                    <span className="sr-only">{t("inputLabel")}</span>
-                    <textarea
-                      value={text}
-                      onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
-                      rows={5}
-                      disabled={busy}
-                      data-smart-input
-                      placeholder={t("placeholder")}
-                      className="block min-h-[132px] w-full resize-y rounded-[16px] border border-slate-900/[.12] bg-white px-4 py-3.5 text-[14px] leading-[1.6] text-slate-900 transition-[border-color,box-shadow] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-[3px] focus:ring-blue-700/[.12] disabled:opacity-60 dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
-                    />
-                  </label>
-                  <div className="-mt-2 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:text-slate-500">{t("examplesLabel")}</span>
-                      {(["example1", "example2", "example3"] as const).map((k) => (
-                        <button
-                          key={k}
-                          type="button"
-                          onClick={() => setText(t(k))}
-                          data-smart-example={k}
-                          className="max-w-full truncate rounded-full border border-slate-900/[.1] px-3 py-1.5 text-[12px] text-slate-700 transition-colors hover:border-blue-700/40 hover:bg-blue-700/[.05] dark:border-white/[.12] dark:text-slate-300 dark:hover:border-blue-400/40"
-                        >
-                          {t(k)}
-                        </button>
-                      ))}
-                    </div>
-                    <span className="text-[11px] tabular-nums text-slate-400 dark:text-slate-500">{t("charCount", { count: text.length, max: MAX_CHARS })}</span>
-                  </div>
-
-                  {/* Upload */}
+                <div className="flex flex-col gap-3">
+                  {/* One specification box: type, paste, or drop a file anywhere on it. */}
                   <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setDragging(true);
-                    }}
-                    onDragLeave={() => setDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setDragging(false);
-                      pickFile(e.dataTransfer.files?.[0]);
-                    }}
-                    className={`rounded-[16px] border border-dashed px-4 py-4 transition-colors ${
-                      dragging ? "border-blue-600 bg-blue-600/[.06]" : "border-slate-900/[.16] dark:border-white/[.16]"
+                    onDragOver={onDragOver}
+                    onDragLeave={onDragLeave}
+                    onDrop={onDrop}
+                    data-smart-composer
+                    data-smart-dropzone
+                    data-dragging={dragging ? "1" : undefined}
+                    className={`relative overflow-hidden rounded-xl border bg-slate-50/50 transition-colors focus-within:border-slate-400 dark:bg-white/[0.02] dark:focus-within:border-white/25 ${
+                      dragging ? "border-slate-900 dark:border-white/40" : "border-slate-200 dark:border-white/10"
                     }`}
                   >
-                    {file ? (
-                      <div className="flex items-center gap-3" data-smart-file-chip>
-                        <FileText size={18} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
-                        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{file.name}</span>
-                        <span className="flex-none text-[12px] tabular-nums text-slate-500 dark:text-ink-muted">{format.number(file.size / 1024, { maximumFractionDigits: 0 })} KB</span>
-                        <button
-                          type="button"
-                          onClick={() => setFile(null)}
-                          aria-label={t("removeFile")}
-                          className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-slate-500 hover:bg-slate-900/[.06] dark:hover:bg-white/[.08]"
-                        >
-                          <X size={14} strokeWidth={2} />
-                        </button>
+                    <label className="block">
+                      <span className="sr-only">{t("inputLabel")}</span>
+                      <textarea
+                        value={text}
+                        onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
+                        rows={6}
+                        disabled={busy}
+                        data-smart-input
+                        placeholder={t("placeholder")}
+                        className="block min-h-[150px] w-full resize-none border-0 bg-transparent p-4 font-mono text-sm leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 disabled:opacity-60 dark:text-zinc-100 dark:placeholder:text-zinc-600"
+                      />
+                    </label>
+
+                    {dragging && (
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-1.5 flex items-center justify-center gap-2 rounded-lg border border-dashed border-slate-400 bg-white/90 font-mono text-xs text-slate-700 dark:border-white/30 dark:bg-[#0A0D12]/90 dark:text-zinc-200"
+                      >
+                        <Paperclip size={14} strokeWidth={2} />
+                        {t("dropToAttach")}
                       </div>
-                    ) : (
-                      <button type="button" onClick={() => fileInput.current?.click()} className="flex w-full items-center gap-3 text-left">
-                        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[11px] bg-slate-900/[.05] text-slate-600 dark:bg-white/[.06] dark:text-slate-300">
-                          <Upload size={16} strokeWidth={2} />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-[13px] font-semibold">{t("dropTitle")}</span>
-                          <span className="block text-[12px] text-slate-500 dark:text-ink-muted">{t("dropHint")}</span>
-                        </span>
-                      </button>
                     )}
+
+                    {busy && (
+                      <div className="relative h-px overflow-hidden bg-slate-200 dark:bg-white/10" aria-hidden data-smart-progress>
+                        <span className="absolute inset-y-0 w-1/3 animate-[smart-progress_1.1s_ease-in-out_infinite] bg-slate-900 dark:bg-white" />
+                      </div>
+                    )}
+
+                    {/* Toolbar: attachment on the left, counter on the right. */}
+                    <div className="flex items-center gap-3 border-t border-slate-200/80 bg-white px-3.5 py-2.5 dark:border-white/[0.06] dark:bg-white/[0.01]">
+                      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                        {file ? (
+                          <span
+                            data-smart-file-chip
+                            title={file.name}
+                            className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-md border border-slate-200 bg-slate-50 py-1 pl-2 pr-1 dark:border-white/10 dark:bg-white/[0.04]"
+                          >
+                            <FileText size={13} strokeWidth={2} className="flex-none text-slate-500 dark:text-zinc-400" />
+                            <span className="min-w-0 truncate font-mono text-xs text-slate-800 dark:text-zinc-100">{file.name}</span>
+                            <span className="flex-none font-mono text-[11px] tabular-nums text-slate-400 dark:text-zinc-500">
+                              {format.number(Math.max(1, file.size / 1024), { maximumFractionDigits: 0 })} KB
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setFile(null)}
+                              disabled={busy}
+                              aria-label={t("removeFile")}
+                              data-smart-file-remove
+                              className="flex h-5 w-5 flex-none items-center justify-center rounded text-slate-400 hover:bg-slate-200 hover:text-slate-800 dark:text-zinc-500 dark:hover:bg-white/10 dark:hover:text-white"
+                            >
+                              <X size={12} strokeWidth={2.4} />
+                            </button>
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => fileInput.current?.click()}
+                              disabled={busy}
+                              data-smart-attach
+                              className="inline-flex h-7 flex-none items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 shadow-[0_1px_0_rgba(15,23,42,.04)] transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 dark:shadow-none dark:hover:border-white/20 dark:hover:bg-white/[0.08]"
+                            >
+                              <Paperclip size={13} strokeWidth={2} />
+                              {t("attachFile")}
+                            </button>
+                            <span className="flex flex-wrap gap-x-1 font-mono text-[11px] text-slate-400 dark:text-zinc-500" data-smart-formats>
+                              <span className="whitespace-nowrap">{FORMATS}</span>
+                              <span className="whitespace-nowrap">· {t("maxSize")}</span>
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex flex-none items-center gap-2.5">
+                        <span className="font-mono text-xs tabular-nums text-slate-400 dark:text-zinc-500" data-smart-count>
+                          {t("charCount", { count: format.number(text.length), max: format.number(MAX_CHARS) })}
+                        </span>
+                        {text && !busy && (
+                          <button
+                            type="button"
+                            onClick={() => setText("")}
+                            data-smart-clear
+                            className="text-xs font-medium text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline dark:text-zinc-400 dark:hover:text-white"
+                          >
+                            {t("clearText")}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     <input
                       ref={fileInput}
                       type="file"
@@ -368,161 +435,208 @@ export default function SmartBulkOrderModal() {
                       }}
                     />
                   </div>
+
+                  {/* Samples — full text, they wrap rather than clip. */}
+                  <div className="flex flex-wrap items-center gap-2" data-smart-examples>
+                    <span className={`text-xs ${MUTED}`}>{t("sampleLabel")}</span>
+                    {(["example1", "example2"] as const).map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setText(t(k))}
+                        disabled={busy}
+                        data-smart-example={k}
+                        className="rounded-md border border-slate-200 px-2.5 py-1 text-left font-mono text-xs text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+                      >
+                        {t(k)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
+                  {/* Totals of what is ticked */}
+                  <dl
+                    className="m-0 grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 sm:grid-cols-4 dark:border-white/10 [&>div]:border-slate-200 dark:[&>div]:border-white/[0.08]"
+                    data-smart-stats
+                  >
+                    {[
+                      { label: t("statLines"), value: t("statLinesValue", { matched: reviewStats.matched, total: reviewStats.total }) },
+                      { label: t("statNet"), value: `${format.number(reviewStats.kg, { maximumFractionDigits: 2 })} kg` },
+                      { label: t("statCylinders"), value: format.number(summary.units) },
+                      { label: "CO₂e", value: `${format.number(reviewStats.co2eT, { maximumFractionDigits: 2 })} t` },
+                    ].map((stat, i) => (
+                      <div
+                        key={stat.label}
+                        className={`px-3.5 py-2.5 ${i % 2 === 1 ? "border-l" : ""} ${i >= 2 ? "border-t sm:border-t-0" : ""} ${i === 2 ? "sm:border-l" : ""}`}
+                      >
+                        <dt className={`text-[11px] ${MUTED}`}>{stat.label}</dt>
+                        <dd className="m-0 mt-0.5 font-mono text-[15px] font-medium tabular-nums text-slate-900 dark:text-white">{stat.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+
                   {removedLines > 0 && (
-                    <p className="m-0 flex items-start gap-2 rounded-[12px] bg-amber-500/[.08] px-3.5 py-2.5 text-[12.5px] text-amber-800 dark:text-amber-300" data-smart-removed>
+                    <p className="m-0 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12.5px] text-amber-800 dark:border-amber-400/20 dark:bg-amber-400/[.06] dark:text-amber-300" data-smart-removed>
                       <AlertTriangle size={14} strokeWidth={2.2} className="mt-0.5 flex-none" />
                       {t("removedLines", { count: removedLines })}
                     </p>
                   )}
-                  <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_150px] gap-4 px-4 text-[10.5px] font-semibold uppercase tracking-[.09em] text-slate-400 md:grid dark:text-slate-500">
-                    <span>{t("colRequested")}</span>
-                    <span>{t("colSolution")}</span>
-                    <span className="text-right">{t("colPrice")}</span>
-                  </div>
-                  {lines.map((e) => {
-                    const s = totals(e);
-                    const l = e.line;
-                    const solvable = l.picks.length > 0;
-                    return (
-                      <div
-                        key={l.id}
-                        data-smart-line={l.id}
-                        data-status={l.status}
-                        data-included={e.included ? "1" : "0"}
-                        className={`grid gap-3 rounded-[18px] border p-4 transition-colors md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_150px] md:gap-4 ${
-                          e.included ? "border-blue-700/25 bg-blue-700/[.025] dark:border-blue-400/25" : "border-slate-900/[.08] dark:border-hairline"
-                        }`}
-                      >
-                        {/* Requested */}
-                        <div className="flex min-w-0 items-start gap-3">
-                          <button
-                            type="button"
-                            role="checkbox"
-                            aria-checked={e.included}
-                            aria-label={t("toggleLine")}
-                            disabled={!solvable}
-                            onClick={() => toggle(l.id)}
-                            data-smart-toggle={l.id}
-                            className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-[7px] border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                              e.included ? "border-blue-700 bg-blue-700 text-white" : "border-slate-900/25 dark:border-white/25"
-                            }`}
-                          >
-                            {e.included && <Check size={13} strokeWidth={3} />}
-                          </button>
-                          <div className="min-w-0">
-                            <div className="text-[13.5px] font-semibold tracking-[-.015em]">{requestedLabel(l)}</div>
-                            {l.request.rawText && <div className="mt-0.5 line-clamp-2 text-[12px] italic text-slate-500 dark:text-ink-muted">“{l.request.rawText}”</div>}
-                            <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-[3px] text-[11px] font-semibold ring-1 ${l.gradeSubstituted ? GRADE_BADGE : BADGE[e.edited ? "ADJUSTED" : l.status]}`} data-smart-badge data-grade-substituted={l.gradeSubstituted ? "1" : undefined}>
-                              {statusText(e)}
-                            </span>
-                          </div>
-                        </div>
 
-                        {/* Solution */}
-                        <div className="min-w-0">
-                          {solvable ? (
-                            <>
-                              <ul className="m-0 flex list-none flex-col gap-2 p-0">
-                                {l.picks.map((p) => {
-                                  const q = e.qty[p.productId] ?? 0;
-                                  return (
-                                    <li key={p.productId} data-smart-pick={p.sku} data-qty={q} className="flex items-center gap-2.5">
-                                      <div className="flex flex-none items-center rounded-[11px] border border-slate-900/[.12] dark:border-white/[.14]">
-                                        <button
-                                          type="button"
-                                          onClick={() => setQty(l.id, p, q - 1)}
-                                          disabled={q <= 0}
-                                          aria-label={t("decrease")}
-                                          data-smart-dec={p.sku}
-                                          className="flex h-9 w-9 items-center justify-center text-slate-600 disabled:opacity-30 dark:text-slate-300"
-                                        >
-                                          <Minus size={13} strokeWidth={2.4} />
-                                        </button>
-                                        <span className="w-7 text-center text-[13.5px] font-semibold tabular-nums">{q}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => setQty(l.id, p, q + 1)}
-                                          disabled={q >= p.maxQuantity}
-                                          aria-label={t("increase")}
-                                          data-smart-inc={p.sku}
-                                          className="flex h-9 w-9 items-center justify-center text-slate-600 disabled:opacity-30 dark:text-slate-300"
-                                        >
-                                          <Plus size={13} strokeWidth={2.4} />
-                                        </button>
-                                      </div>
-                                      <div className="min-w-0 text-[13px] leading-[1.4]">
-                                        <div className="truncate font-semibold">
-                                          {p.name} <span className="font-normal text-slate-500 dark:text-ink-muted">· {formatKg(p.weightKg)}</span>
-                                          {p.grade === "RECLAIMED" && (
-                                            <span className="ml-1.5 rounded-full bg-orange-500/12 px-1.5 py-[1px] text-[10.5px] font-semibold text-orange-800 dark:text-orange-300" data-smart-grade="RECLAIMED">
-                                              {t("gradeReclaimed")}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="text-[11.5px] text-slate-500 dark:text-ink-muted">
-                                          {t("each", { price: eur(p.unitPrice) })}
-                                          {p.deposit > 0 ? ` ${t("depositEach", { price: eur(p.deposit) })}` : ""}
-                                        </div>
-                                      </div>
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                              <div className="mt-2.5 text-[12px] font-medium text-slate-600 dark:text-slate-300" data-smart-delivered>
-                                {l.request.kind === "REFRIGERANT" && l.request.requestMode === "BY_TOTAL_WEIGHT_KG" && l.request.targetWeightKg
-                                  ? t("delivered", { delivered: formatKg(s.weight), requested: formatKg(l.request.targetWeightKg) })
-                                  : t("deliveredTotal", { delivered: formatKg(s.weight) })}
+                  {/* Ledger: one row per requested line */}
+                  <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 dark:divide-white/[0.08] dark:border-white/10" data-smart-ledger>
+                    {lines.map((e) => {
+                      const s = totals(e);
+                      const l = e.line;
+                      const solvable = l.picks.length > 0;
+                      return (
+                        <div
+                          key={l.id}
+                          data-smart-line={l.id}
+                          data-status={l.status}
+                          data-included={e.included ? "1" : "0"}
+                          className={`px-4 py-3.5 transition-colors ${e.included ? "bg-white dark:bg-transparent" : "bg-slate-50/70 dark:bg-white/[0.015]"}`}
+                        >
+                          {/* Requested · status · line total */}
+                          <div className="flex items-start gap-3">
+                            <button
+                              type="button"
+                              role="checkbox"
+                              aria-checked={e.included}
+                              aria-label={t("toggleLine")}
+                              disabled={!solvable}
+                              onClick={() => toggle(l.id)}
+                              data-smart-toggle={l.id}
+                              className={`mt-px flex h-[18px] w-[18px] flex-none items-center justify-center rounded-[5px] border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                                e.included
+                                  ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
+                                  : "border-slate-300 bg-white dark:border-white/25 dark:bg-transparent"
+                              }`}
+                            >
+                              {e.included && <Check size={12} strokeWidth={3} />}
+                            </button>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span className={`text-[13.5px] font-medium ${e.included ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-zinc-400"}`}>{requestedLabel(l)}</span>
+                                <span
+                                  className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium ring-1 ring-inset ${l.gradeSubstituted ? GRADE_BADGE : BADGE[e.edited ? "ADJUSTED" : l.status]}`}
+                                  data-smart-badge
+                                  data-grade-substituted={l.gradeSubstituted ? "1" : undefined}
+                                >
+                                  {statusText(e)}
+                                </span>
                               </div>
-                            </>
-                          ) : (
-                            <div className="flex items-start gap-2 text-[12.5px] text-slate-500 dark:text-ink-muted">
-                              <PackageX size={15} strokeWidth={2} className="mt-0.5 flex-none" />
-                              <span>
-                                {l.status === "OUT_OF_STOCK"
-                                  ? t("outOfStockHint")
-                                  : l.status === "NOT_CARRIED"
-                                    ? t("notCarriedHint", { gas: l.refrigerantLabel ?? l.request.productQuery ?? "—" })
-                                    : l.note
-                                      ? t(`note_${l.note}`)
-                                      : t("unrecognizedHint")}
-                              </span>
-                            </div>
-                          )}
-                          {l.gradeSubstituted && (
-                            <p className="m-0 mt-2 flex items-start gap-1.5 text-[12px] font-medium text-orange-800 dark:text-orange-300" data-smart-grade-note>
-                              <AlertTriangle size={13} strokeWidth={2.2} className="mt-0.5 flex-none" />
-                              {t(`note_${gradeKey(l)}`, { gas: l.refrigerantLabel ?? "" })}
-                            </p>
-                          )}
-                          {solvable && l.note && <p className="m-0 mt-2 text-[12px] text-amber-700 dark:text-amber-300">{t(`note_${l.note}`)}</p>}
-                          {l.shortfallKg > 0 && <p className="m-0 mt-2 text-[12px] text-amber-700 dark:text-amber-300">{t("shortfallKg", { kg: formatKg(l.shortfallKg) })}</p>}
-                          {l.shortfallCount > 0 && <p className="m-0 mt-2 text-[12px] text-amber-700 dark:text-amber-300">{t("shortfallCount", { count: l.shortfallCount })}</p>}
-                        </div>
-
-                        {/* Price */}
-                        <div className="flex items-baseline justify-between gap-2 md:block md:text-right">
-                          <span className="text-[11px] uppercase tracking-[.08em] text-slate-400 md:hidden">{t("colPrice")}</span>
-                          {solvable ? (
-                            <div>
-                              <div className="text-[15px] font-semibold tabular-nums" data-smart-line-total>
-                                {eur(s.total)}
-                              </div>
-                              {s.deposits > 0 && (
-                                <div className="text-[11.5px] tabular-nums text-slate-500 dark:text-ink-muted">
-                                  {eur(s.gas)} + {eur(s.deposits)}
+                              {l.request.rawText && (
+                                <div className="mt-0.5 break-words font-mono text-[11.5px] text-slate-400 dark:text-zinc-500" data-smart-raw>
+                                  “{l.request.rawText}”
                                 </div>
                               )}
                             </div>
-                          ) : (
-                            <span className="text-[13px] text-slate-400">—</span>
-                          )}
+                            {solvable && (
+                              <div className="flex-none text-right">
+                                <div className={`font-mono text-[14px] font-medium tabular-nums ${e.included ? "text-slate-900 dark:text-white" : "text-slate-400 line-through dark:text-zinc-500"}`} data-smart-line-total>
+                                  {eur(s.total)}
+                                </div>
+                                {s.deposits > 0 && (
+                                  <div className="font-mono text-[11px] tabular-nums text-slate-400 dark:text-zinc-500">
+                                    {eur(s.gas)} + {eur(s.deposits)}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* What the solver chose */}
+                          <div className="pl-[30px] pt-2.5">
+                            {solvable ? (
+                              <>
+                                <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                                  {l.picks.map((p) => {
+                                    const q = e.qty[p.productId] ?? 0;
+                                    return (
+                                      <li key={p.productId} data-smart-pick={p.sku} data-qty={q} className="flex items-center gap-3">
+                                        <div className="flex h-8 flex-none items-center rounded-md border border-slate-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+                                          <button
+                                            type="button"
+                                            onClick={() => setQty(l.id, p, q - 1)}
+                                            disabled={q <= 0}
+                                            aria-label={t("decrease")}
+                                            data-smart-dec={p.sku}
+                                            className="flex h-full w-8 items-center justify-center rounded-l-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-white"
+                                          >
+                                            <Minus size={12} strokeWidth={2.4} />
+                                          </button>
+                                          <span className="w-7 border-x border-slate-200 text-center font-mono text-[13px] font-medium leading-[30px] tabular-nums text-slate-900 dark:border-white/10 dark:text-white">
+                                            {q}
+                                          </span>
+                                          <button
+                                            type="button"
+                                            onClick={() => setQty(l.id, p, q + 1)}
+                                            disabled={q >= p.maxQuantity}
+                                            aria-label={t("increase")}
+                                            data-smart-inc={p.sku}
+                                            className="flex h-full w-8 items-center justify-center rounded-r-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:text-zinc-400 dark:hover:bg-white/[0.08] dark:hover:text-white"
+                                          >
+                                            <Plus size={12} strokeWidth={2.4} />
+                                          </button>
+                                        </div>
+                                        <div className="min-w-0 flex-1 leading-[1.45]">
+                                          <div className="flex flex-wrap items-baseline gap-x-2 text-[13px]">
+                                            <span className="font-medium text-slate-900 dark:text-white">{p.name}</span>
+                                            <span className="font-mono text-[12px] tabular-nums text-slate-500 dark:text-zinc-400">{formatKg(p.weightKg)}</span>
+                                            <span className="font-mono text-[11px] text-slate-400 dark:text-zinc-500" data-smart-sku>
+                                              {p.sku}
+                                            </span>
+                                            {p.grade === "RECLAIMED" && (
+                                              <span className="rounded-md bg-orange-50 px-1.5 py-[1px] text-[10.5px] font-medium text-orange-800 ring-1 ring-inset ring-orange-600/25 dark:bg-orange-400/10 dark:text-orange-300 dark:ring-orange-400/25" data-smart-grade="RECLAIMED">
+                                                {t("gradeReclaimed")}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="font-mono text-[11.5px] tabular-nums text-slate-500 dark:text-zinc-400">
+                                            {p.pricePerKg > 0 && p.weightKg !== 1 ? `${t("perKg", { price: eur(p.pricePerKg) })} · ` : ""}
+                                            {t("each", { price: eur(p.unitPrice) })}
+                                            {p.deposit > 0 ? ` ${t("depositEach", { price: eur(p.deposit) })}` : ""}
+                                          </div>
+                                        </div>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                                <div className="mt-2 font-mono text-[11.5px] tabular-nums text-slate-500 dark:text-zinc-400" data-smart-delivered>
+                                  {l.request.kind === "REFRIGERANT" && l.request.requestMode === "BY_TOTAL_WEIGHT_KG" && l.request.targetWeightKg
+                                    ? t("delivered", { delivered: formatKg(s.weight), requested: formatKg(l.request.targetWeightKg) })
+                                    : t("deliveredTotal", { delivered: formatKg(s.weight) })}
+                                </div>
+                              </>
+                            ) : (
+                              <div className={`flex items-start gap-2 text-[12.5px] ${MUTED}`}>
+                                <PackageX size={14} strokeWidth={2} className="mt-0.5 flex-none" />
+                                <span>
+                                  {l.status === "OUT_OF_STOCK"
+                                    ? t("outOfStockHint")
+                                    : l.status === "NOT_CARRIED"
+                                      ? t("notCarriedHint", { gas: l.refrigerantLabel ?? l.request.productQuery ?? "—" })
+                                      : l.note
+                                        ? t(`note_${l.note}`)
+                                        : t("unrecognizedHint")}
+                                </span>
+                              </div>
+                            )}
+                            {l.gradeSubstituted && (
+                              <p className="m-0 mt-2 flex items-start gap-1.5 text-[12px] font-medium text-orange-800 dark:text-orange-300" data-smart-grade-note>
+                                <AlertTriangle size={13} strokeWidth={2.2} className="mt-0.5 flex-none" />
+                                {t(`note_${gradeKey(l)}`, { gas: l.refrigerantLabel ?? "" })}
+                              </p>
+                            )}
+                            {solvable && l.note && <p className="m-0 mt-2 text-[12px] text-amber-700 dark:text-amber-300">{t(`note_${l.note}`)}</p>}
+                            {l.shortfallKg > 0 && <p className="m-0 mt-2 text-[12px] text-amber-700 dark:text-amber-300">{t("shortfallKg", { kg: formatKg(l.shortfallKg) })}</p>}
+                            {l.shortfallCount > 0 && <p className="m-0 mt-2 text-[12px] text-amber-700 dark:text-amber-300">{t("shortfallCount", { count: l.shortfallCount })}</p>}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -534,50 +648,38 @@ export default function SmartBulkOrderModal() {
               )}
             </div>
 
-            {/* Footer */}
-            <div className="flex flex-none flex-col gap-3 border-t border-slate-900/[.07] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7 dark:border-hairline">
+            {/* ── Footer ── */}
+            <div className="flex flex-none flex-col gap-3 border-t border-slate-200 bg-white px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-white/[0.08] dark:bg-[#0A0D12]">
               {lines ? (
                 <>
-                  <div className="text-[12.5px] text-slate-600 dark:text-ink-muted" data-smart-summary>
-                    <div className="flex flex-wrap gap-x-4 gap-y-0.5">
-                      <span>
-                        {t("summaryGas")} <strong className="tabular-nums text-slate-900 dark:text-slate-50">{eur(summary.gas)}</strong>
-                      </span>
-                      <span>
-                        {t("summaryDeposits")} <strong className="tabular-nums text-slate-900 dark:text-slate-50">{eur(summary.deposits)}</strong>
-                      </span>
-                      <span>
-                        {t("summaryTotal")}{" "}
-                        <strong className="tabular-nums text-slate-900 dark:text-slate-50" data-smart-grand-total>
-                          {eur(summary.gas + summary.deposits)}
-                        </strong>
-                      </span>
+                  <div className={`text-[11.5px] leading-[1.5] ${MUTED}`} data-smart-summary>
+                    <div className="text-[14px] font-medium text-slate-900 dark:text-white">
+                      {t("summaryTotal")}{" "}
+                      <span className="font-mono font-semibold tabular-nums" data-smart-grand-total>
+                        {eur(summary.gas + summary.deposits)}
+                      </span>{" "}
+                      <span className="text-[11px] font-normal text-slate-400 dark:text-zinc-500">{t("exVat")}</span>
                     </div>
-                    <div className="mt-0.5 text-[11.5px] text-slate-400">{t("summaryNote")}</div>
+                    <div>
+                      {t("summaryGas")} <span className="font-mono tabular-nums text-slate-700 dark:text-zinc-200">{eur(summary.gas)}</span> · {t("summaryDepositsShort")}{" "}
+                      <span className="font-mono tabular-nums text-slate-700 dark:text-zinc-200">{eur(summary.deposits)}</span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={addToCart}
-                    disabled={summary.units === 0}
-                    data-smart-add
-                    className="inline-flex min-h-[46px] flex-none items-center justify-center gap-2 rounded-[14px] bg-blue-700 px-5 text-[14px] font-semibold tracking-[-.01em] text-white transition-[background-color,transform] hover:bg-blue-800 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Check size={15} strokeWidth={2.4} />
-                    {summary.units === 0 ? t("addCtaNone") : t("addCta", { count: summary.units })}
+                  <button type="button" onClick={addToCart} disabled={summary.units === 0} data-smart-add className={PRIMARY_BTN}>
+                    {summary.units === 0 ? t("addCtaNone") : t("addCtaCylinders", { count: summary.units })}
+                    {summary.units > 0 && <ArrowRight size={15} strokeWidth={2} />}
                   </button>
                 </>
               ) : (
                 <>
-                  <span className="hidden text-[12px] text-slate-400 sm:block">{t("dropHint")}</span>
-                  <button
-                    type="button"
-                    onClick={submit}
-                    disabled={busy || (!file && text.trim().length < 3)}
-                    data-smart-submit
-                    className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[14px] bg-blue-700 px-5 text-[14px] font-semibold tracking-[-.01em] text-white transition-[background-color,transform] hover:bg-blue-800 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {busy ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} strokeWidth={2} />}
-                    {busy ? t("submitting") : t("submit")}
+                  <span className={`flex items-center gap-2 text-xs ${MUTED}`} data-smart-stock-note>
+                    <span aria-hidden className="h-1.5 w-1.5 flex-none rounded-full bg-emerald-500" />
+                    {t("stockNote")}
+                  </span>
+                  <button type="button" onClick={submit} disabled={busy || (!file && text.trim().length < 3)} data-smart-submit className={PRIMARY_BTN}>
+                    {busy && <Loader2 size={15} className="animate-spin" />}
+                    {busy ? t("submitting") : t("submitCheck")}
+                    {!busy && <ArrowRight size={15} strokeWidth={2} />}
                   </button>
                 </>
               )}

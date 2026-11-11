@@ -99,6 +99,8 @@ export interface SolverRow {
   category: string;
   containerType: string;
   familyKey?: string | null;
+  /** Catalog GWP, carried through to the review's CO₂e figure. Never used to choose. */
+  gwp?: number | null;
 }
 
 // ── Outputs ──────────────────────────────────────────────────────────────
@@ -138,6 +140,8 @@ export interface LinePick {
   /** Units the solver may still add in the review table. */
   maxQuantity: number;
   grade: Grade;
+  /** GWP of this product's gas from the catalog; null for equipment and unknown gases. */
+  gwp: number | null;
 }
 
 export interface SolvedLine {
@@ -327,6 +331,7 @@ function pickOf(row: SolverRow, quantity: number): LinePick {
     quantity,
     maxQuantity: unitsAvailable(row),
     grade: gradeOfRow(row),
+    gwp: row.gwp ?? null,
   };
 }
 
