@@ -16,10 +16,13 @@ export default function SmartOrderButton({
   variant,
   source,
   className = "",
+  label,
 }: {
   variant: "panel" | "pill" | "link" | "icon";
   source: "cart" | "catalog" | "dashboard";
   className?: string;
+  /** Overrides the pill / link text where the context needs other words. */
+  label?: string;
 }) {
   const t = useTranslations("SmartOrder");
   const show = useSmartOrderUi((s) => s.show);
@@ -31,7 +34,7 @@ export default function SmartOrderButton({
         type="button"
         onClick={open}
         data-smart-order-launch={source}
-        className={`group flex w-full items-center gap-3 rounded-[20px] border border-slate-900/[.08] bg-white/70 p-4 text-left backdrop-blur-xl backdrop-saturate-150 transition-colors hover:border-blue-700/30 hover:bg-white dark:border-hairline dark:bg-glass dark:hover:border-blue-400/30 ${className}`}
+        className={`group flex w-full items-center gap-3 rounded-[20px] border border-slate-900/[.08] bg-white/70 p-4 text-left backdrop-blur-xl backdrop-saturate-150 transition-colors hover:border-blue-700/30 hover:bg-white dark:border-hairline dark:bg-glass dark:hover:border-blue-400/30 dark:hover:bg-white/[.07] ${className}`}
       >
         <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-[0_12px_24px_-14px_rgba(37,99,235,.8)]">
           <FileSpreadsheet size={18} strokeWidth={2} />
@@ -68,7 +71,7 @@ export default function SmartOrderButton({
         className={`inline-flex min-h-[40px] items-center gap-2 rounded-full border border-blue-700/25 bg-blue-700/[.07] px-4 text-[13px] font-semibold tracking-[-.01em] text-blue-800 transition-colors hover:bg-blue-700/[.12] dark:border-blue-400/30 dark:bg-blue-500/[.12] dark:text-blue-200 dark:hover:bg-blue-500/[.2] ${className}`}
       >
         <FileSpreadsheet size={15} strokeWidth={2} />
-        {t("launch")}
+        {label ?? t("launch")}
       </button>
     );
   }
@@ -81,7 +84,7 @@ export default function SmartOrderButton({
       className={`inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-blue-700 hover:underline dark:text-blue-400 ${className}`}
     >
       <FileSpreadsheet size={13} strokeWidth={2.2} />
-      {t("dashboardCta")}
+      {label ?? t("dashboardCta")}
     </button>
   );
 }

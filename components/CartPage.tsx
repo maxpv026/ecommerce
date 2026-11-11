@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
   Package,
@@ -24,6 +25,7 @@ import {
   TriangleAlert,
   Truck,
   Wrench,
+  X,
 } from "lucide-react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
@@ -35,7 +37,7 @@ import { requiresFgasCertificate } from "@/lib/fgasSubstances";
 import type { FgasSummary } from "@/lib/fgas";
 import QuoteCartBanner from "./QuoteCartBanner";
 import ProductThumbnail from "./ProductThumbnail";
-import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
+import { calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
 import { useCartStore } from "@/lib/store/cart";
@@ -44,7 +46,12 @@ import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib
 import { createQuote, type QuoteErrorCode } from "@/lib/actions/quotes";
 import type { StoreProduct } from "@/lib/data";
 
-const ACCENT = "#1d4ed8";
+/** The three assurances: short chip text in the summary, full sentence as its tooltip / empty-state card. */
+const TRUST = [
+  { icon: FlaskConical, short: "trustCoa", long: "assuranceCoa" },
+  { icon: Truck, short: "trustAdr", long: "assuranceFreight" },
+  { icon: Lock, short: "trustFgas", long: "assuranceFgas" },
+] as const;
 
 // Line tint mirrors the PDP brand mapping: A2L emerald, A1 cyan, rest blue.
 const tintFor = (p?: StoreProduct) =>
@@ -80,13 +87,13 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
   // (the gate alert's Log In) stays on the cart so the F-Gas rule can be
   // re-evaluated against the fresh session before anything moves.
   const [authIntent, setAuthIntent] = useState<"checkout" | "inline">("checkout");
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [trashHover, setTrashHover] = useState<string | null>(null);
 
   const [auditPhase, setAuditPhase] = useState<AuditPhase>("idle");
   const [findings, setFindings] = useState<Array<{ tone: "ok" | "warn"; text: string }>>([]);
   const [suggestions, setSuggestions] = useState<CartAuditSuggestion[]>([]);
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
+  // The audit result banner can be dismissed; a new run shows it again.
+  const [auditCollapsed, setAuditCollapsed] = useState(false);
 
   const items = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
@@ -140,14 +147,6 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
     setIsAuthModalOpen(true);
   };
 
-  // Entrance stagger applies to the first paint only; lines added later
-  // (AI suggestions) rise immediately.
-  const [initialStagger, setInitialStagger] = useState(true);
-  useEffect(() => {
-    const id = setTimeout(() => setInitialStagger(false), 900);
-    return () => clearTimeout(id);
-  }, []);
-
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
 
   // ─── 1-click reorder ───
@@ -191,15 +190,29 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
   const quote = hydrated ? cartQuote : null;
   const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
-  const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
-  // Goods subtotal against the free-freight threshold — the same rule
-  // calculateCartTotals applies (deposit and VAT don't count towards it).
-  const freightProgress = Math.min(1, subtotal / FREE_FREIGHT_THRESHOLD);
+
+  // This line's footprint, from the catalog GWP: net kg × qty × GWP.
+  const lineCo2eT = (item: { qty: number }, product?: StoreProduct) =>
+    product?.gwp && product.pricedPerKg ? (product.weightKg * item.qty * product.gwp) / 1000 : null;
+  // Header metadata: items · net kg of gas · t CO₂e — gas lines only for the last two.
+  const netKg = shownItems.reduce((n, i) => {
+    const p = bySku.get(i.sku);
+    return p?.pricedPerKg ? n + p.weightKg * i.qty : n;
+  }, 0);
+  const cartCo2eT = shownItems.reduce((n, i) => n + (lineCo2eT(i, bySku.get(i.sku)) ?? 0), 0);
+  const metaLine = [
+    t("metaItems", { count }),
+    netKg > 0 ? t("metaNetKg", { kg: formatKg(netKg) }) : null,
+    cartCo2eT > 0 ? t("co2eTonnes", { value: format.number(cartCo2eT, { maximumFractionDigits: 2 }) }) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const runAudit = async () => {
     if (empty || auditPhase === "thinking") return;
     setAuditPhase("thinking");
     setSuggestionsDismissed(false);
+    setAuditCollapsed(false);
     let result: CartAuditResult;
     try {
       result = await auditCart(shownItems.map((i) => ({ sku: i.sku, qty: i.qty })));
@@ -309,179 +322,177 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
         <div className="relative overflow-x-clip">
           {/* Ambient glow field from the design: cyan / violet / blue orbs */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -top-[220px] right-[-8%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.26] blur-[120px] [animation:hc-breathe_9s_ease-in-out_infinite]" />
-            <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.22] blur-[120px] [animation:hc-breathe_12s_ease-in-out_infinite_reverse]" />
-            <div className="absolute -bottom-[180px] right-[6%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_68%)] opacity-20 blur-[110px] [animation:hc-float_34s_ease-in-out_infinite]" />
+            <div className="absolute -top-[220px] right-[-8%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.2] blur-[120px]" />
+            <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.16] blur-[120px]" />
           </div>
 
           <motion.main
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className="relative mx-auto max-w-[1320px] px-8 pb-[120px] pt-11"
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="relative mx-auto max-w-7xl px-8 pb-24 pt-9"
           >
-            {/* head — on the same 7/5 grid as the content below, so "Clear
-                cart" lands at the right edge of the item column and the
-                freight progress sits over the summary. */}
-            <div className={`mb-[30px] grid grid-cols-1 gap-5 ${empty ? "" : "lg:grid-cols-12"} lg:items-end`}>
-              <div className={empty ? "mx-auto w-full max-w-3xl" : "min-w-0 lg:col-span-7"}>
-                <div className="mb-3 text-xs tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("eyebrow")}</div>
-                <h1 className="m-0 text-[40px] font-semibold leading-[1.05] tracking-[-.045em]">
-                  {empty ? t("headEmpty") : t("yourCart")}
-                </h1>
-                <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <p className="m-0 text-[14.5px] leading-[1.6] text-slate-600 dark:text-ink-muted">
-                    {empty ? t("sublineEmpty") : t("sublineCount", { count })}
-                  </p>
-                  {!empty && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        clear();
-                        setAuditPhase("idle");
-                        setFindings([]);
-                        setSuggestions([]);
-                      }}
-                      data-clear-cart
-                      className="flex-none text-[13px] font-medium text-slate-500 underline-offset-4 transition-colors hover:text-red-600 hover:underline dark:text-ink-muted dark:hover:text-red-400"
-                    >
-                      {t("clearCart")}
-                    </button>
-                  )}
-                </div>
+            {/* ── Header bar: what is in the cart · the tools that act on it ── */}
+            <div className={`mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 ${empty ? "mx-auto max-w-3xl" : ""}`}>
+              <div className="min-w-0">
+                <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{empty ? t("headEmpty") : t("yourCart")}</h1>
+                <p className="m-0 mt-2 text-[14px] text-slate-500 tabular-nums dark:text-ink-muted" data-cart-meta>
+                  {empty ? t("sublineEmpty") : metaLine}
+                </p>
               </div>
-
-              {/* Free ADR freight: how far this basket is from it, or that it applies. */}
               {!empty && (
-                <div className="min-w-0 lg:col-span-5" data-freight-progress={Math.round(freightProgress * 100)}>
-                  {freeFreight ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 py-2 pl-3 pr-4 text-xs font-semibold text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300">
-                      <Check size={14} strokeWidth={2.6} />
-                      {t("badgeFreightFree")}
-                    </span>
-                  ) : (
-                    <div className="rounded-[16px] border border-slate-900/[.08] bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-hairline dark:bg-glass">
-                      <div className="flex items-baseline justify-between gap-3 text-[12.5px]">
-                        <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-                          <Truck size={14} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
-                          {t("freightToGo", { amount: eur(FREE_FREIGHT_THRESHOLD - subtotal) })}
-                        </span>
-                        <span className="flex-none text-[11.5px] text-slate-400 tabular-nums dark:text-ink-muted">
-                          {eur(subtotal)} / {eur(FREE_FREIGHT_THRESHOLD)}
-                        </span>
-                      </div>
-                      <div
-                        className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-900/[.07] dark:bg-white/[.08]"
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={Math.round(freightProgress * 100)}
-                        aria-label={t("freightProgressAria")}
-                      >
-                        <span className="block h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={{ width: `${freightProgress * 100}%` }} />
-                      </div>
-                    </div>
-                  )}
+                <div className="flex flex-wrap items-center gap-2" data-cart-toolbar>
+                  <SmartOrderButton variant="pill" source="cart" label={t("bulkImport")} className="min-h-[38px] px-3.5" />
+                  <button
+                    type="button"
+                    onClick={runAudit}
+                    disabled={thinking}
+                    data-audit-run
+                    className="inline-flex min-h-[38px] items-center gap-2 rounded-full border border-slate-900/[.12] bg-white/70 px-3.5 text-[13px] font-semibold tracking-[-.01em] text-slate-800 transition-colors hover:bg-slate-900/[.04] disabled:opacity-70 dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-100 dark:hover:bg-white/[.09]"
+                  >
+                    {thinking ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} strokeWidth={2} className="text-violet-600 dark:text-violet-300" />}
+                    {thinking ? t("auditAnalysing") : audited ? t("auditRerun") : t("auditRun")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clear();
+                      setAuditPhase("idle");
+                      setFindings([]);
+                      setSuggestions([]);
+                    }}
+                    data-clear-cart
+                    className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-slate-500 transition-colors hover:bg-red-500/[.08] hover:text-red-600 dark:text-ink-muted dark:hover:text-red-400"
+                  >
+                    <Trash2 size={14} strokeWidth={2} />
+                    {t("clearCart")}
+                  </button>
                 </div>
               )}
             </div>
 
             {empty ? (
-              /* Empty: one centred workspace — the way back to the catalogue,
-                 the fast track from a spec / BOM, and what every order comes
-                 with. No summary of zeros, no audit of nothing. */
+              /* Empty: one centred workspace — back to the catalogue, the fast
+                 track from a spec / BOM, and what every order comes with. */
               <div className="mx-auto flex max-w-3xl flex-col gap-4" data-cart-empty>
                 <motion.div
                   initial={{ opacity: 0, y: 18, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="rounded-[28px] border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-12 text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
+                  className="rounded-[24px] border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-12 text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
                 >
-                  <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-[28px] border border-slate-900/[.07] bg-slate-100 [animation:hc-bob_6s_ease-in-out_infinite] dark:border-hairline dark:bg-surface-3">
-                    <span className="pointer-events-none absolute -inset-[30px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_68%)] opacity-50 blur-[34px] [animation:hc-breathe_5s_ease-in-out_infinite]" />
-                    <ShoppingCart size={32} strokeWidth={1.7} className="relative text-blue-700 dark:text-blue-400" />
+                  <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-[26px] border border-slate-900/[.07] bg-slate-100 dark:border-hairline dark:bg-surface-3">
+                    <ShoppingCart size={32} strokeWidth={1.7} className="text-blue-700 dark:text-blue-400" />
                   </span>
-                  <div className="mt-5 text-[23px] font-semibold tracking-[-.04em]">{t("cartEmptyShort")}</div>
+                  <div className="mt-5 text-[22px] font-semibold tracking-[-.035em]">{t("cartEmptyShort")}</div>
                   <p className="mx-auto mb-6 mt-2.5 max-w-[380px] text-[13.5px] leading-[1.62] text-slate-600 dark:text-ink-muted">{t("emptyBody")}</p>
                   <Link
                     href="/products"
-                    className="inline-flex h-[50px] items-center justify-center gap-2.5 rounded-2xl bg-blue-700 px-[26px] text-[14.5px] font-semibold tracking-[-.02em] text-white shadow-[0_22px_46px_-18px_var(--glow-700),0_0_30px_-10px_var(--glow-700)] transition-colors hover:bg-blue-800"
+                    className="inline-flex h-12 items-center justify-center gap-2.5 rounded-[14px] bg-blue-700 px-6 text-[14.5px] font-semibold tracking-[-.02em] text-white transition-colors hover:bg-blue-800"
                   >
                     {t("exploreProducts")}
                     <ArrowRight size={16} strokeWidth={2} />
                   </Link>
                 </motion.div>
                 <SmartOrderButton variant="panel" source="cart" />
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" data-cart-trust>
-                  {[
-                    { icon: FlaskConical, label: t("assuranceCoa") },
-                    { icon: Truck, label: t("assuranceFreight") },
-                    { icon: Lock, label: t("assuranceFgas") },
-                  ].map(({ icon: Icon, label }) => (
+                <div className="grid grid-cols-3 gap-3" data-cart-trust>
+                  {TRUST.map(({ icon: Icon, short, long }) => (
                     <span
-                      key={label}
-                      className="flex items-center gap-2.5 rounded-[16px] border border-slate-900/[.07] bg-white/60 px-4 py-3 text-[12px] leading-[1.4] text-slate-600 backdrop-blur-xl dark:border-hairline dark:bg-glass dark:text-ink-muted"
+                      key={short}
+                      title={t(long)}
+                      className="flex items-center gap-2.5 rounded-[14px] border border-slate-900/[.07] bg-white/60 px-4 py-3 text-[12px] leading-[1.4] text-slate-600 backdrop-blur-xl dark:border-hairline dark:bg-glass dark:text-ink-muted"
                     >
                       <Icon size={15} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
-                      {label}
+                      {t(long)}
                     </span>
                   ))}
                 </div>
               </div>
             ) : (
-            <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
-              {/* ─── list column ─── */}
-              <div className="min-w-0 lg:col-span-7">
-                {!empty && (
-                  <div className="flex flex-col gap-3.5">
-                    <AnimatePresence mode="popLayout">
-                      {shownItems.map((item, idx) => {
+              <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+                {/* ─── left: the lines ─── */}
+                <div className="min-w-0 lg:col-span-8">
+                  {/* AI audit result — only after a real run, dismissible */}
+                  <AnimatePresence initial={false}>
+                    {(audited || auditPhase === "unavailable") && !auditCollapsed && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6, transition: { duration: 0.2 } }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        data-cart-audit
+                        className={`mb-4 rounded-[18px] border px-4 py-3.5 ${
+                          optimised
+                            ? "border-violet-500/30 bg-violet-500/[.07]"
+                            : auditPhase === "unavailable"
+                              ? "border-slate-900/[.1] bg-white/70 dark:border-white/[.1] dark:bg-white/[.04]"
+                              : "border-emerald-500/30 bg-emerald-500/[.07]"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <Sparkles size={16} strokeWidth={2} className={`mt-0.5 flex-none ${optimised ? "text-violet-600 dark:text-violet-300" : "text-emerald-600 dark:text-emerald-400"}`} />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[13.5px] font-semibold tracking-[-.015em]" data-audit-title>
+                              {optimised
+                                ? t("auditTitleOptimised", { count: suggestions.length })
+                                : auditPhase === "compliant"
+                                  ? t("auditTitleCompliant")
+                                  : t("auditUnavailable")}
+                            </div>
+                            {findings.length > 0 && (
+                              <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0" data-audit-findings>
+                                {findings.map((f) => (
+                                  <li key={f.text} className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-slate-600 dark:text-ink-muted">
+                                    {f.tone === "warn" ? (
+                                      <TriangleAlert size={13} strokeWidth={2} className="mt-[3px] flex-none text-amber-600 dark:text-amber-400" />
+                                    ) : (
+                                      <Check size={13} strokeWidth={2.4} className="mt-[3px] flex-none text-emerald-600 dark:text-emerald-400" />
+                                    )}
+                                    {f.text}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setAuditCollapsed(true)}
+                            aria-label={t("dismiss")}
+                            className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-slate-400 hover:bg-slate-900/[.06] dark:hover:bg-white/10"
+                          >
+                            <X size={14} strokeWidth={2} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* One surface, one row per line: image · identity · quantity · price */}
+                  <div className="overflow-hidden rounded-[22px] border border-slate-900/[.08] bg-white/75 backdrop-blur-xl backdrop-saturate-150 dark:border-white/[.08] dark:bg-white/[.03]" data-cart-lines>
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      {shownItems.map((item) => {
                         const product = bySku.get(item.sku);
                         const tint = tintFor(product);
                         const pricing = pricingLineFor(item, quote ? null : product);
                         const unit = lineUnitPrice(pricing);
                         // Equipment is priced per unit — no "€/kg × kg" story to tell.
                         const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
-                        const on = hovered === item.sku;
-                        const trashOn = trashHover === item.sku;
                         const chips = tagChips(product);
-                        // This line's footprint, from the catalog GWP: net kg × qty × GWP.
-                        const co2eT = product?.gwp && product.pricedPerKg ? (pricing.weightKg * item.qty * product.gwp) / 1000 : null;
+                        const co2eT = lineCo2eT(item, product);
                         return (
                           <motion.div
                             key={item.sku}
                             layout
-                            initial={{ opacity: 0, y: 18, scale: 0.97 }}
-                            animate={{
-                              opacity: 1, y: 0, scale: 1,
-                              transition: {
-                                duration: 0.55,
-                                ease: [0.16, 1, 0.3, 1],
-                                delay: initialStagger ? idx * 0.06 : 0,
-                              },
-                            }}
-                            exit={{ opacity: 0, x: 38, scale: 0.94, transition: { duration: 0.26, ease: [0.4, 0, 1, 1] } }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, x: 30, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }}
+                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                             data-cart-line={item.sku}
-                            onMouseEnter={() => setHovered(item.sku)}
-                            onMouseLeave={() => setHovered(null)}
-                            whileHover={{ scale: 1.006 }}
-                            className="group relative flex w-full items-center gap-4 overflow-hidden rounded-3xl border bg-white/70 p-4 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,box-shadow] duration-300 dark:bg-glass"
-                            style={{
-                              borderColor: on ? "rgba(96,165,250,.44)" : "var(--hc-cat-border, rgba(15,23,42,.07))",
-                              boxShadow: on
-                                ? "0 38px 76px -44px rgba(2,4,10,.62), 0 0 26px -8px rgba(59,130,246,.44)"
-                                : "0 16px 40px -36px rgba(2,4,10,.5)",
-                            }}
+                            className="grid grid-cols-[64px_minmax(0,1fr)_auto_170px_36px] items-center gap-4 border-b border-slate-900/[.06] px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-900/[.02] dark:border-white/[.06] dark:hover:bg-white/[.03]"
                           >
-                            {/* per-line tint aura */}
+                            {/* 1 · visual */}
                             <span
-                              className="pointer-events-none absolute -top-[120%] right-[-14%] h-[300px] w-[300px] rounded-full blur-[66px] transition-opacity duration-300"
-                              style={{ background: `radial-gradient(circle,${tint},transparent 68%)`, opacity: on ? 0.24 : 0.09 }}
-                            />
-
-                            {/* thumbnail — the cylinder render; a gas-tinted tile when there is none */}
-                            <span
-                              className="relative h-16 w-16 flex-none overflow-hidden rounded-2xl border bg-slate-50 dark:bg-surface-3"
+                              className="relative h-16 w-16 overflow-hidden rounded-2xl border bg-slate-50 dark:bg-white/[.04]"
                               style={{ borderColor: `${tint}55` }}
                               data-line-thumb
                             >
@@ -498,21 +509,21 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                               />
                             </span>
 
-                            {/* name · spec · pills */}
-                            <div className="relative min-w-0 flex-1">
-                              <div className="truncate text-[15px] font-semibold tracking-[-.028em]">{item.name}</div>
-                              <div className="mt-0.5 truncate text-[11.5px] text-slate-400 dark:text-ink-muted">
+                            {/* 2 · identity */}
+                            <div className="min-w-0">
+                              <div className="truncate text-[15px] font-semibold tracking-[-.025em]">{item.name}</div>
+                              <div className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-ink-muted">
                                 {t("skuLine", { variant: item.variant, sku: item.sku })}
                               </div>
                               {(chips.length > 0 || co2eT !== null) && (
-                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                <div className="mt-1.5 flex flex-wrap gap-1.5">
                                   {chips.map((chip) => (
-                                    <span key={chip.label} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10.5px] font-semibold ${toneCls[chip.tone]}`}>
+                                    <span key={chip.label} className={`inline-flex items-center rounded-full border px-2 py-px text-[10.5px] font-semibold ${toneCls[chip.tone]}`}>
                                       {chip.label}
                                     </span>
                                   ))}
                                   {co2eT !== null && (
-                                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10.5px] font-semibold tabular-nums ${toneCls.muted}`} data-line-co2e>
+                                    <span className={`inline-flex items-center rounded-full border px-2 py-px text-[10.5px] font-semibold tabular-nums ${toneCls.muted}`} data-line-co2e>
                                       {t("co2eTonnes", { value: format.number(co2eT, { maximumFractionDigits: 2 }) })}
                                     </span>
                                   )}
@@ -520,68 +531,74 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                               )}
                             </div>
 
-                            {/* stepper · price · remove */}
-                            <div className="relative flex flex-none items-center gap-4">
-                              <div className="flex h-9 items-center gap-0.5 rounded-[12px] border border-slate-900/[.07] bg-slate-100 px-0.5 dark:border-hairline dark:bg-surface-3">
-                                <motion.button
-                                  type="button"
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => decrement(item.sku)}
-                                  aria-label={t("decreaseQtyAria", { item: item.name })}
-                                  className="flex h-8 w-8 items-center justify-center rounded-[10px] text-slate-600 hover:bg-white dark:text-ink-muted dark:hover:bg-white/10"
-                                >
-                                  <Minus size={13} strokeWidth={2.2} />
-                                </motion.button>
-                                <span className="min-w-[26px] text-center text-sm font-semibold tabular-nums" data-line-qty>
-                                  {item.qty}
-                                </span>
-                                <motion.button
-                                  type="button"
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => increment(item.sku)}
-                                  aria-label={t("increaseQtyAria", { item: item.name })}
-                                  className="flex h-8 w-8 items-center justify-center rounded-[10px] text-slate-600 hover:bg-white dark:text-ink-muted dark:hover:bg-white/10"
-                                >
-                                  <Plus size={13} strokeWidth={2.2} />
-                                </motion.button>
-                              </div>
-                              <span className="w-[170px] text-right">
-                                <span className="block text-[17px] font-semibold tracking-[-.035em] tabular-nums" data-line-total>
-                                  {eur(unit * item.qty)}
-                                </span>
-                                {/* the maths behind the figure: €/kg × net kg = one cylinder, + deposit */}
-                                <span className="block truncate text-[11px] leading-[1.45] text-slate-400 dark:text-ink-muted" data-line-breakdown>
-                                  {showBreakdown
-                                    ? t("lineBreakdownShort", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg) })
-                                    : `${eur(unit)} ${t("eachSuffix")}`}
-                                </span>
-                                {(pricing.deposit ?? 0) > 0 && (
-                                  /* Wraps rather than clips: the deposit line runs to ~40 characters in some languages. */
-                                  <span className="block text-[11px] leading-[1.35] text-emerald-700 dark:text-emerald-300/90" data-line-deposit>
-                                    {t("depositEach", { amount: eur(pricing.deposit ?? 0) })}
-                                  </span>
-                                )}
-                              </span>
-                              {/* Revealed on hover/focus; always shown where there is no hover. */}
+                            {/* 3 · quantity */}
+                            <div className="flex h-9 items-center gap-0.5 rounded-full border border-slate-900/[.1] bg-slate-50 px-0.5 dark:border-white/[.12] dark:bg-white/[.05]">
                               <motion.button
                                 type="button"
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => removeItem(item.sku)}
-                                onMouseEnter={() => setTrashHover(item.sku)}
-                                onMouseLeave={() => setTrashHover(null)}
-                                aria-label={t("removeItemAria", { item: item.name })}
-                                data-line-remove
-                                className={`flex h-8 w-8 flex-none items-center justify-center rounded-[10px] opacity-0 transition-[opacity,background-color,color] focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100 ${
-                                  trashOn ? "bg-red-500/[.14] text-red-500" : "text-slate-400 dark:text-ink-muted"
-                                }`}
+                                onClick={() => decrement(item.sku)}
+                                aria-label={t("decreaseQtyAria", { item: item.name })}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-900/[.07] dark:text-slate-300 dark:hover:bg-white/10"
                               >
-                                <Trash2 size={15} strokeWidth={2} />
+                                <Minus size={13} strokeWidth={2.2} />
+                              </motion.button>
+                              <span className="min-w-[24px] text-center text-sm font-semibold tabular-nums" data-line-qty>
+                                {item.qty}
+                              </span>
+                              <motion.button
+                                type="button"
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => increment(item.sku)}
+                                aria-label={t("increaseQtyAria", { item: item.name })}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-900/[.07] dark:text-slate-300 dark:hover:bg-white/10"
+                              >
+                                <Plus size={13} strokeWidth={2.2} />
                               </motion.button>
                             </div>
+
+                            {/* 4 · price — the maths behind it, and the deposit */}
+                            <div className="text-right">
+                              <div className="text-[16px] font-semibold tracking-[-.03em] tabular-nums" data-line-total>
+                                {eur(unit * item.qty)}
+                              </div>
+                              <div className="truncate text-[11.5px] leading-[1.45] text-slate-500 dark:text-ink-muted" data-line-breakdown>
+                                {showBreakdown
+                                  ? t("lineBreakdownShort", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg) })
+                                  : `${eur(unit)} ${t("eachSuffix")}`}
+                              </div>
+                              {(pricing.deposit ?? 0) > 0 && (
+                                // Wraps rather than clips: ~40 characters in some languages.
+                                <div className="text-[11.5px] leading-[1.35] text-emerald-700 dark:text-emerald-400" data-line-deposit>
+                                  {t("depositEach", { amount: eur(pricing.deposit ?? 0) })}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* remove — always visible */}
+                            <button
+                              type="button"
+                              onClick={() => removeItem(item.sku)}
+                              aria-label={t("removeItemAria", { item: item.name })}
+                              title={t("removeItemAria", { item: item.name })}
+                              data-line-remove
+                              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-red-500/[.1] hover:text-red-600 dark:text-ink-muted dark:hover:text-red-400"
+                            >
+                              <Trash2 size={15} strokeWidth={2} />
+                            </button>
                           </motion.div>
                         );
                       })}
                     </AnimatePresence>
+
+                    {/* footer: back to the catalogue · bulk import */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-900/[.06] bg-slate-900/[.015] px-5 py-3 dark:border-white/[.06] dark:bg-white/[.02]" data-cart-lines-footer>
+                      <Link href="/products" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-600 hover:text-slate-900 dark:text-ink-muted dark:hover:text-slate-100">
+                        <ArrowLeft size={14} strokeWidth={2} />
+                        {t("continueShopping")}
+                      </Link>
+                      <SmartOrderButton variant="link" source="cart" label={t("bulkFormats")} className="text-[13px]" />
+                    </div>
+                  </div>
 
                     {/* AI suggested additions — populated only by a real audit run */}
                     <AnimatePresence>
@@ -657,191 +674,48 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
-                )}
-
-                {/* Foot of the list column, not a full-width band above it.
-                    It used to sit above the line items on the argument that
-                    pasting a message is how an order starts — but at full
-                    width it pushed the cart itself below the fold, so the
-                    page led with an input instead of with what the buyer came
-                    to check. Here it reads as "add more to this cart", which
-                    is what it actually does, and it inherits the column width
-                    so it lines up with the items above it. */}
-                <div className="mt-5">
-                  <SmartOrderButton variant="panel" source="cart" />
-                </div>
-              </div>
-
-              {/* ─── summary column ─── */}
-              <div className="flex min-w-0 flex-col gap-5 lg:sticky lg:top-[94px] lg:col-span-5">
-                {/* AI compliance & compatibility audit */}
-                <div
-                  data-cart-audit
-                  className="relative w-full overflow-hidden rounded-[26px] p-[1.5px]"
-                  style={
-                    thinking
-                      ? {
-                          background: `linear-gradient(90deg,${ACCENT},#22d3ee,#7c3aed,${ACCENT})`,
-                          backgroundSize: "300% 100%",
-                          animation: "hc-sweep 2.4s linear infinite",
-                        }
-                      : {
-                          background: optimised
-                            ? "rgba(124,58,237,.34)"
-                            : audited
-                              ? "rgba(16,185,129,.3)"
-                              : "var(--hc-cat-border, rgba(15,23,42,.07))",
-                        }
-                  }
-                >
-                  <div className="relative rounded-[24.5px] bg-white/90 p-[22px] backdrop-blur-xl backdrop-saturate-150 dark:bg-[#141518]/90">
-                    <div className="flex items-start gap-[13px]">
-                      <motion.span
-                        animate={thinking ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
-                        transition={thinking ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
-                        className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_14px_28px_-14px_rgba(37,99,235,.7)]"
-                      >
-                        <Sparkles size={19} strokeWidth={2} className="text-white" />
-                      </motion.span>
-                      <span className="min-w-0 flex-1">
-                        <span className="mb-1.5 block text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                          {t("auditKicker")}
-                        </span>
-                        <span className="block text-sm font-semibold leading-[1.35] tracking-[-.025em]" data-audit-title>
-                          {empty
-                            ? t("auditTitleEmpty")
-                            : optimised
-                              ? t("auditTitleOptimised", { count: suggestions.length })
-                              : auditPhase === "compliant"
-                                ? t("auditTitleCompliant")
-                                : auditPhase === "unavailable"
-                                  ? t("auditUnavailable")
-                                  : t("auditTitleIdle")}
-                        </span>
-                      </span>
-                    </div>
-
-                    {/* verdict pill (only after a real run) */}
-                    {audited && !empty && (
-                      <div
-                        className={`mt-4 inline-flex items-center gap-2 rounded-full border py-[7px] pl-2.5 pr-[13px] text-[11.5px] font-semibold ${
-                          optimised
-                            ? "border-[rgba(167,139,250,.36)] bg-[rgba(124,58,237,.16)] text-[#6d28d9] shadow-[0_0_20px_-6px_#7c3aed] dark:text-[#c4b5fd]"
-                            : "border-[rgba(16,185,129,.3)] bg-[rgba(16,185,129,.14)] text-[#047857] shadow-[0_0_20px_-6px_#34d399] dark:text-[#34d399]"
-                        }`}
-                        data-audit-pill
-                      >
-                        <span
-                          className="h-1.5 w-1.5 flex-none rounded-full"
-                          style={{
-                            background: optimised ? "#a78bfa" : "#34d399",
-                            boxShadow: `0 0 8px 1px ${optimised ? "#a78bfa" : "#34d399"}`,
-                          }}
-                        />
-                        {optimised ? t("auditPillOptimised", { count: suggestions.length }) : t("auditPillVerified")}
-                      </div>
-                    )}
-
-                    {/* thinking dots */}
-                    {thinking && (
-                      <div className="mt-4 flex items-center gap-1.5">
-                        {[0, 0.16, 0.32].map((d) => (
-                          <span
-                            key={d}
-                            className="h-[5px] w-[5px] rounded-full bg-blue-700 dark:bg-blue-400"
-                            style={{ animation: `hc-dots 1.2s ease-in-out ${d}s infinite` }}
-                          />
-                        ))}
-                        <span className="ml-1 text-xs text-slate-400 dark:text-ink-muted">{t("auditThinkingNote")}</span>
-                      </div>
-                    )}
-
-                    {/* findings from the live model run */}
-                    {audited && findings.length > 0 && (
-                      <div className="mt-4 flex flex-col gap-2.5" data-audit-findings>
-                        {findings.map((f) => (
-                          <span key={f.text} className="flex items-start gap-[9px]">
-                            {f.tone === "warn" ? (
-                              <TriangleAlert size={14} strokeWidth={2} className="mt-0.5 flex-none text-[#b45309] dark:text-[#fbbf24]" />
-                            ) : (
-                              <Check size={14} strokeWidth={2.4} className="mt-0.5 flex-none text-[#047857] dark:text-[#34d399]" />
-                            )}
-                            <span className="min-w-0 flex-1 text-xs leading-[1.55] text-slate-600 dark:text-ink-muted">
-                              {f.text}
-                            </span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {!empty && (
-                      <motion.button
-                        type="button"
-                        whileTap={{ scale: 0.97 }}
-                        onClick={runAudit}
-                        disabled={thinking}
-                        data-audit-run
-                        className={`mt-[18px] flex h-[46px] w-full items-center justify-center gap-[9px] rounded-[15px] bg-slate-100 text-[13px] font-semibold tracking-[-.015em] transition-colors hover:bg-slate-200 dark:bg-white/[.06] dark:hover:bg-white/10 ${
-                          thinking ? "opacity-70" : ""
-                        }`}
-                      >
-                        <Sparkles size={15} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
-                        {thinking ? t("auditAnalysing") : audited ? t("auditRerun") : t("auditRun")}
-                      </motion.button>
-                    )}
-                  </div>
                 </div>
 
-                {/* order summary */}
-                <div className="relative w-full overflow-hidden rounded-[28px] border border-slate-900/[.14] bg-white/70 p-[26px] shadow-[0_30px_70px_-46px_rgba(2,4,10,.6)] backdrop-blur-xl backdrop-saturate-150 dark:border-hairline-strong dark:bg-glass">
-                  <h2 className="m-0 mb-5 text-[12.5px] font-semibold tracking-[.09em] text-slate-400 dark:text-ink-muted">
-                    {t("orderSummary")}
-                  </h2>
+                {/* ─── right: ONE summary card ─── */}
+                <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4" data-order-summary-card>
+                  <div className="rounded-[22px] border border-slate-900/[.1] bg-white/80 p-5 shadow-[0_24px_60px_-44px_rgba(2,4,10,.55)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/[.1] dark:bg-white/[.04]">
+                    <h2 className="m-0 mb-4 text-[12px] font-semibold tracking-[.08em] text-slate-500 uppercase dark:text-ink-muted">{t("orderSummary")}</h2>
 
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-baseline justify-between gap-3.5">
-                      <span className="text-[13px] text-slate-600 dark:text-ink-muted">{t("subtotal")}</span>
-                      <span className="text-[13.5px] font-semibold tracking-[-.02em]" data-summary-subtotal>
-                        {eur(subtotal)}
-                      </span>
-                    </div>
-                    {/* mandatory cylinder deposit — its own line, never blended into the gas price */}
-                    {deposit > 0 && (
-                      <div className="flex items-baseline justify-between gap-3.5" data-summary-deposit>
-                        <span className="min-w-0 text-[13px] text-slate-600 dark:text-ink-muted">
-                          {t("cylinderDeposit")}
-                          <span className="mt-0.5 block text-[11px] leading-[1.4] text-slate-400 dark:text-ink-muted/80">
-                            {t("cylinderDepositDetail", { count: depositUnits })}
-                          </span>
-                        </span>
-                        <span className="flex-none text-[13.5px] font-semibold tracking-[-.02em]">{eur(deposit)}</span>
+                    {/* 1 · breakdown */}
+                    <dl className="m-0 flex flex-col gap-2.5 text-[13px]">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-slate-600 dark:text-ink-muted">{t("subtotal")}</dt>
+                        <dd className="m-0 font-semibold tabular-nums" data-summary-subtotal>{eur(subtotal)}</dd>
                       </div>
-                    )}
-                    <div className="flex items-baseline justify-between gap-3.5">
-                      <span className="text-[13px] text-slate-600 dark:text-ink-muted">{t("freightAdr")}</span>
-                      <span
-                        className={`text-[13.5px] font-semibold tracking-[-.02em] ${
-                          shipping === 0 && subtotal > 0 ? "text-[#047857] dark:text-[#34d399]" : ""
-                        }`}
-                      >
-                        {shipping === 0 && subtotal > 0 ? t("freightIncluded") : eur(shipping)}
+                      {/* mandatory cylinder deposit — its own line, never blended into the gas price */}
+                      {deposit > 0 && (
+                        <div className="flex items-baseline justify-between gap-3" data-summary-deposit>
+                          <dt className="min-w-0 text-slate-600 dark:text-ink-muted">
+                            {t("cylinderDeposit")}
+                            <span className="ml-1.5 text-[11.5px] text-slate-400 dark:text-ink-muted/80">· {t("depositUnitsShort", { count: depositUnits })}</span>
+                          </dt>
+                          <dd className="m-0 flex-none font-semibold tabular-nums">{eur(deposit)}</dd>
+                        </div>
+                      )}
+                      <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-slate-600 dark:text-ink-muted">{t("freightAdr")}</dt>
+                        <dd className="m-0 font-semibold tabular-nums" data-summary-shipping>{eur(shipping)}</dd>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-slate-600 dark:text-ink-muted">{t("vat20")}</dt>
+                        <dd className="m-0 font-semibold tabular-nums">{eur(vat)}</dd>
+                      </div>
+                    </dl>
+
+                    {/* 2 · total, one baseline */}
+                    <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-slate-900/[.08] pt-4 dark:border-white/[.08]" data-summary-total-row>
+                      <span className="text-[15px] font-semibold tracking-[-.02em]">{t("total")}</span>
+                      <span className="text-[28px] font-semibold tracking-[-.04em] tabular-nums" data-summary-total>
+                        {eur(total)}
                       </span>
                     </div>
-                    <div className="flex items-baseline justify-between gap-3.5">
-                      <span className="text-[13px] text-slate-600 dark:text-ink-muted">{t("vat20")}</span>
-                      <span className="text-[13.5px] font-semibold tracking-[-.02em]">{eur(vat)}</span>
-                    </div>
-                  </div>
 
-                  <div className="mt-[18px] flex items-baseline justify-between gap-3.5 border-t border-slate-900/[.08] pt-[18px] dark:border-hairline">
-                    <span className="text-[15px] font-semibold tracking-[-.02em]">{t("total")}</span>
-                    <span className="text-[30px] font-semibold tracking-[-.045em]" data-summary-total>
-                      {eur(total)}
-                    </span>
-                  </div>
-
-                  <QuoteCartBanner className="mt-[18px]" />
+                    <QuoteCartBanner className="mt-3" />
 
                   {/* A line that went out of stock after it was added blocks checkout */}
                   <AnimatePresence initial={false}>
@@ -853,7 +727,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                         role="alert"
                         data-cart-oos
-                        className="relative mt-[18px] overflow-hidden rounded-[20px] border border-red-500/35 bg-red-500/[.10] p-4 shadow-[0_0_34px_-12px_rgba(239,68,68,.75)] backdrop-blur-xl backdrop-saturate-150"
+                        className="relative mt-3 overflow-hidden rounded-[18px] border border-red-500/35 bg-red-500/[.10] p-4 shadow-[0_0_34px_-12px_rgba(239,68,68,.75)] backdrop-blur-xl backdrop-saturate-150"
                       >
                         <span
                           aria-hidden
@@ -884,50 +758,47 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                     )}
                   </AnimatePresence>
 
-                  {/* F-Gas gate — sits directly under the total */}
-                  <AnimatePresence mode="wait" initial={false}>
-                    {!empty && fgasGate && (
-                      <div key={fgasGate} className="mt-[18px]">
-                        <FgasGateAlert gate={fgasGate} fgas={fgas} onLogIn={() => openAuth("inline")} onUpload={openFgas} />
-                      </div>
-                    )}
-                    {!empty && hasGasLines && fgasCleared && (
-                      <div key="verified" className="mt-[18px]">
-                        <FgasVerifiedLine fgas={fgas} />
-                      </div>
-                    )}
-                  </AnimatePresence>
+                    {/* 3 · F-Gas status — compact */}
+                    <AnimatePresence mode="wait" initial={false}>
+                      {fgasGate && (
+                        <div key={fgasGate} className="mt-3">
+                          <FgasGateAlert gate={fgasGate} fgas={fgas} compact onLogIn={() => openAuth("inline")} onUpload={openFgas} />
+                        </div>
+                      )}
+                      {hasGasLines && fgasCleared && (
+                        <div key="verified" className="mt-3">
+                          <FgasVerifiedLine fgas={fgas} compact />
+                        </div>
+                      )}
+                    </AnimatePresence>
 
-                  <motion.button
-                    type="button"
-                    whileHover={checkoutLocked ? undefined : { y: -1 }}
-                    whileTap={checkoutLocked ? undefined : { scale: 0.97 }}
-                    disabled={checkoutLocked}
-                    aria-disabled={checkoutLocked}
-                    title={checkoutLocked && !empty ? t("fgasLockedAria") : undefined}
-                    onClick={goToCheckout}
-                    data-checkout-cta
-                    data-checkout-locked={checkoutLocked ? "true" : undefined}
-                    className={`mt-[22px] flex h-14 w-full items-center justify-center gap-2.5 rounded-[18px] bg-blue-700 text-[15.5px] font-semibold tracking-[-.022em] text-white transition-[background-color,box-shadow,opacity,filter] duration-300 ${
-                      checkoutLocked
-                        ? "cursor-not-allowed opacity-45 saturate-[.55] shadow-none"
-                        : "shadow-[0_20px_42px_-18px_var(--glow-700)] hover:bg-blue-800 hover:shadow-[0_28px_56px_-18px_var(--glow-700),0_0_36px_-8px_var(--glow-700)]"
-                    }`}
-                  >
-                    {t("proceedToCheckout")}
-                    {checkoutLocked && !empty ? <Lock size={16} strokeWidth={2.2} /> : <ArrowRight size={17} strokeWidth={2} />}
-                  </motion.button>
+                    {/* 4 · actions */}
+                    <motion.button
+                      type="button"
+                      whileTap={checkoutLocked ? undefined : { scale: 0.98 }}
+                      disabled={checkoutLocked}
+                      aria-disabled={checkoutLocked}
+                      title={checkoutLocked ? t("fgasLockedAria") : undefined}
+                      onClick={goToCheckout}
+                      data-checkout-cta
+                      data-checkout-locked={checkoutLocked ? "true" : undefined}
+                      className={`mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-blue-700 text-[15px] font-semibold tracking-[-.02em] text-white transition-[background-color,opacity] ${
+                        checkoutLocked ? "cursor-not-allowed opacity-45 saturate-[.55]" : "hover:bg-blue-800"
+                      }`}
+                    >
+                      {t("proceedToCheckout")}
+                      {checkoutLocked ? <Lock size={16} strokeWidth={2.2} /> : <ArrowRight size={17} strokeWidth={2} />}
+                    </motion.button>
 
-                  {/* Secondary: the same basket as a formal 48-hour quote. A
-                      basket that already is a quote links back to it. */}
-                  {!empty &&
-                    (quote ? (
+                    {/* Secondary: the same basket as a formal 48-hour quote. A
+                        basket that already is a quote links back to it. */}
+                    {quote ? (
                       <Link
                         href={`/profile/quotes/${quote.id}`}
                         data-view-quote
-                        className="mt-2.5 flex h-[46px] w-full items-center justify-center gap-2 rounded-[15px] border border-blue-700/30 text-[13px] font-semibold tracking-[-.015em] text-blue-700 transition-colors hover:bg-blue-700/[.05] dark:border-blue-400/30 dark:text-blue-400"
+                        className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-[12px] border border-slate-900/[.12] text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-900/[.04] dark:border-white/[.14] dark:text-slate-200 dark:hover:bg-white/[.06]"
                       >
-                        <FileText size={15} strokeWidth={2} />
+                        <FileText size={14} strokeWidth={2} />
                         {tQuotes("viewQuote", { number: quote.quoteNumber })}
                       </Link>
                     ) : (
@@ -937,28 +808,27 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                         disabled={quoteLocked || quoting}
                         title={quoteLocked && hasGasLines && !fgasCleared ? tQuotes("lockedFgas") : undefined}
                         data-generate-quote
-                        className="mt-2.5 flex h-[46px] w-full items-center justify-center gap-2 rounded-[15px] border border-blue-700/30 text-[13px] font-semibold tracking-[-.015em] text-blue-700 transition-colors hover:bg-blue-700/[.05] disabled:cursor-not-allowed disabled:opacity-45 dark:border-blue-400/30 dark:text-blue-400"
+                        className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-[12px] border border-slate-900/[.12] text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-900/[.04] disabled:cursor-not-allowed disabled:opacity-45 dark:border-white/[.14] dark:text-slate-200 dark:hover:bg-white/[.06]"
                       >
-                        {quoting ? <Loader2 size={15} className="animate-spin" /> : <FileText size={15} strokeWidth={2} />}
+                        {quoting ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} strokeWidth={2} />}
                         {quoting ? tQuotes("generating") : tQuotes("generate")}
                       </button>
-                    ))}
+                    )}
 
-                  <div className="mt-5 flex flex-col gap-[11px] border-t border-slate-900/[.08] pt-[18px] dark:border-hairline">
-                    {[
-                      { icon: FlaskConical, label: t("assuranceCoa") },
-                      { icon: Truck, label: t("assuranceFreight") },
-                      { icon: Lock, label: t("assuranceFgas") },
-                    ].map(({ icon: Icon, label }) => (
-                      <span key={label} className="flex items-center gap-[9px] text-[11.5px] text-slate-600 dark:text-ink-muted">
-                        <Icon size={14} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
-                        {label}
-                      </span>
-                    ))}
+                    {/* 5 · trust, one row inside the card */}
+                    {/* Three fixed columns: always one row; a long translation takes a
+                        second line inside its own cell instead of pushing a chip down. */}
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-900/[.07] pt-3.5 dark:border-white/[.07]" data-cart-trust-chips>
+                      {TRUST.map(({ icon: Icon, short, long }) => (
+                        <span key={short} title={t(long)} className="flex items-center justify-center gap-1.5 text-center text-[11px] font-medium leading-tight text-slate-500 dark:text-ink-muted">
+                          <Icon size={12} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
+                          {t(short)}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </aside>
               </div>
-            </div>
             )}
           </motion.main>
         </div>

@@ -24,7 +24,8 @@ import { VAT_RATE } from "@/lib/cart";
  * Dropping the `VAT_RATE × subtotal` term — as a naive
  * `freightAndTax / (1 + VAT_RATE)` does — puts the VAT on goods into the
  * shipping line: the right total and an invalid tax document. Shipping is
- * clamped at zero because free freight is the common case and float noise
+ * clamped at zero because orders placed under the old €600 free-freight
+ * rule carry none, and float noise
  * must not surface as a negative line.
  */
 
@@ -48,7 +49,7 @@ export interface OrderBreakdown {
   deposit: number;
   /** How many cylinders carry that deposit. */
   depositUnits: number;
-  /** Freight, net of VAT. 0 when free freight applied. */
+  /** Freight, net of VAT. 0 on orders placed under the withdrawn €600 free-freight rule. */
   shipping: number;
   /** VAT on goods + shipping. */
   vat: number;

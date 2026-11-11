@@ -23,7 +23,7 @@ import {
   TriangleAlert,
   Wrench,
 } from "lucide-react";
-import { FREE_FREIGHT_THRESHOLD, calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
+import { calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
 import { useCartStore, type CartLine } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
@@ -288,7 +288,6 @@ export default function MobileCartLayout({
   const quote = hydrated ? cartQuote : null;
   const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
-  const freeFreight = subtotal >= FREE_FREIGHT_THRESHOLD && subtotal > 0;
 
   const runAudit = async () => {
     if (empty || auditPhase === "thinking") return;
@@ -371,34 +370,7 @@ export default function MobileCartLayout({
       >
         {!empty && <QuoteCartBanner className="mx-[18px] mt-3" />}
         {/* real freight badge in the design's tier slot */}
-        {/* Free ADR freight: how far this basket is from it (same rule as desktop). */}
-        {!empty && (
-          <div className="px-[18px] pt-3.5" data-freight-progress={Math.round(Math.min(1, subtotal / FREE_FREIGHT_THRESHOLD) * 100)}>
-            {freeFreight ? (
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 py-2 pl-[11px] pr-3.5 text-[11.5px] font-semibold text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <Check size={14} strokeWidth={2.6} />
-                {t("badgeFreightFree")}
-              </span>
-            ) : (
-              <div className="rounded-[14px] border border-slate-900/[.08] bg-white/70 px-3.5 py-2.5 dark:border-hairline dark:bg-white/[.04]">
-                <div className="flex items-baseline justify-between gap-3 text-[12px]">
-                  <span className="font-semibold text-slate-700 dark:text-slate-200">{t("freightToGo", { amount: eur(FREE_FREIGHT_THRESHOLD - subtotal) })}</span>
-                  <span className="flex-none text-[11px] text-slate-400 tabular-nums dark:text-ink-muted">{Math.round((subtotal / FREE_FREIGHT_THRESHOLD) * 100)}%</span>
-                </div>
-                <div
-                  className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-900/[.07] dark:bg-white/[.08]"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round((subtotal / FREE_FREIGHT_THRESHOLD) * 100)}
-                  aria-label={t("freightProgressAria")}
-                >
-                  <span className="block h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={{ width: `${(subtotal / FREE_FREIGHT_THRESHOLD) * 100}%` }} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+
 
         {/* empty state */}
         {empty ? (
@@ -567,7 +539,7 @@ export default function MobileCartLayout({
                       shipping === 0 ? "text-[#047857] dark:text-[#34d399]" : ""
                     }`}
                   >
-                    {shipping === 0 ? t("freightIncluded") : eur(shipping)}
+                    {eur(shipping)}
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">

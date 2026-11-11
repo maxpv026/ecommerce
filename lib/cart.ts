@@ -1,7 +1,12 @@
 import { cylinderGasPrice } from "./pricing";
 
-const FREE_FREIGHT_THRESHOLD = 600;
-const FLAT_SHIPPING = 48;
+/**
+ * ADR (dangerous-goods) freight, charged on every order with goods in it.
+ * There is no free-freight threshold: the €600 one was withdrawn, and with it
+ * every "free freight" badge and progress bar. Orders placed while it applied
+ * keep their frozen totals (lib/orderTotals recovers their shipping as 0).
+ */
+export const ADR_SHIPPING_EUR = 48;
 // EU VAT applied at checkout preview. placeOrder() applies the same rate
 // server-side — keep the two in sync via this shared constant.
 export const VAT_RATE = 0.2;
@@ -63,11 +68,10 @@ export function calculateCartTotals(items: CartPricingLine[]): CartTotals {
   const subtotal = items.reduce((n, i) => n + lineUnitPrice(i) * i.qty, 0);
   const depositUnits = items.reduce((n, i) => n + ((i.deposit ?? 0) > 0 ? i.qty : 0), 0);
   const deposit = items.reduce((n, i) => n + (i.deposit ?? 0) * i.qty, 0);
-  const shipping = subtotal === 0 || subtotal >= FREE_FREIGHT_THRESHOLD ? 0 : FLAT_SHIPPING;
+  const shipping = subtotal === 0 ? 0 : ADR_SHIPPING_EUR;
   const vat = (subtotal + shipping + (CYLINDER_DEPOSIT_VATABLE ? deposit : 0)) * VAT_RATE;
   const total = subtotal + deposit + shipping + vat;
 
   return { count, subtotal, depositUnits, deposit, shipping, vat, total };
 }
 
-export { FREE_FREIGHT_THRESHOLD };

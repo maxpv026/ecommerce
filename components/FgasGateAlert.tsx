@@ -98,7 +98,7 @@ export default function FgasGateAlert({
                 type="button"
                 onClick={onUpload}
                 data-fgas-upload
-                className={`${btn} ${gate === "pending" ? "border border-slate-900/[.14] bg-white/70 text-slate-800 hover:bg-white dark:border-white/[.14] dark:bg-white/[.05] dark:text-slate-100" : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900"}`}
+                className={`${btn} ${gate === "pending" ? "border border-slate-900/[.14] bg-white/70 text-slate-800 hover:bg-white dark:border-white/[.14] dark:bg-white/[.05] dark:text-slate-100 dark:hover:bg-white/[.1]" : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900"}`}
               >
                 <Upload size={14} strokeWidth={2.2} />
                 {t(gate === "expired" ? "uploadRenewed" : gate === "unverified" ? "upload" : "uploadAnother")}
