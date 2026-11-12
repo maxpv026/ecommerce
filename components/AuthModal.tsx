@@ -1,5 +1,6 @@
 "use client";
 
+import RecoveryPhraseInput from "@/components/security/RecoveryPhraseInput";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Loader2, X } from "lucide-react";
@@ -116,7 +117,9 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
     recoveryRef,
     phrase,
     setPhrase,
-    phraseRef,
+    phraseChallenge,
+    phraseWords,
+    setPhraseWords,
     setCodeModeTo,
     error,
     submitting,
@@ -233,19 +236,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                   ))}
                 </div>
               ) : codeMode === "phrase" ? (
-                  <input
-                    ref={phraseRef}
-                    value={phrase}
-                    onChange={(e) => setPhrase(e.target.value.slice(0, 200))}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    autoComplete="off"
-                    data-phrase-login-input
-                    aria-label={tAuth("phraseLabel")}
-                    placeholder={tAuth("phrasePlaceholder")}
-                    className="h-[54px] w-full rounded-[14px] border-[1.5px] border-slate-900/[.14] bg-white px-4 font-mono text-[14px] text-slate-900 placeholder:font-sans placeholder:text-[14px] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-[3.5px] focus:ring-blue-700/[.12] dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
-                  />
+                  <RecoveryPhraseInput challenge={phraseChallenge} words={phraseWords} onWords={setPhraseWords} phrase={phrase} onPhrase={setPhrase} />
               ) : (
               <input
                   ref={recoveryRef}

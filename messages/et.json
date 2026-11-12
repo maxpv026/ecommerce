@@ -90,7 +90,8 @@
     "phraseLabel": "Taastamisfraas",
     "phrasePlaceholder": "nt. õun jõgi …",
     "errorIncompletePhrase": "Sisestage täielik taastamisfraas (vähemalt 12 tähemärki).",
-    "errorInvalidPhrase": "See taastamisfraas ei vasta."
+    "errorInvalidPhrase": "See taastamisfraas ei vasta.",
+    "errorIncompleteWords": "Sisestage kõik nõutud sõnad."
   },
   "Dashboard": {
     "greetingMorning": "Tere hommikust",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "ELi KMKR",
     "trustReg": "EL 2024/573",
-    "phraseActiveBadge": "Taastamisfraas on aktiivne",
-    "phraseAddBadge": "Lisage taastamisfraas"
+    "phraseAddBadge": "Lisage taastamisfraas",
+    "phraseBadgeSeed": "Taastamisfraas: 12 sõna",
+    "phraseBadgeCustom": "Taastamisfraas: kohandatud"
   },
   "Theme": {
     "saveFailed": "Teie teemat ei saanud salvestada. See on tagasi lülitatud."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Parool",
     "secretPhrase": "Taastamisfraas",
     "passwordLabel": "Praegune parool",
-    "phraseLabel": "Taastamisfraas",
-    "phraseHint": "Tähtede suurus ja lisatühikud ei ole olulised.",
     "verify": "Kinnita",
     "errSend": "Koodi ei saanud saata. Proovige hetke pärast uuesti.",
     "errLocked": "Liiga palju katseid. Proovige uuesti {minutes} minuti pärast.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Kaheastmeline autentimine on välja lülitatud.",
     "twoFaRotating": "Vana autentimisrakendus eemaldatud — seadistage uus.",
     "phraseTitle": "Sisselogimise taastamisfraas",
-    "phraseActive": "Aktiivne",
     "phraseMissing": "Pole määratud",
     "phraseNoneBody": "Fraas, mida teate ainult teie — 12 genereeritud sõna või teie enda parool. Sisselogimisel võib see asendada autentimiskoodi, kui kaotate oma telefoni.",
     "phraseSetBody": "Määratud {date}. See töötab sisselogimisel autentimiskoodi asemel ja turvamuudatuste kinnitamiseks.",
     "hintShown": "Teie vihje: {hint}",
     "generate": "Genereeri 12 sõna",
-    "regenerate": "Genereeri uued sõnad",
-    "useOwn": "Kasutage minu enda fraasi",
     "removePhrase": "Eemalda",
     "wordsBody": "Kirjutage need 12 sõna üles, järjekorras, ja hoidke neid võrguühenduseta. Need on näidatud ainult nüüd; me salvestame ainult räsi.",
-    "wordsSaved": "Olen fraasi salvestanud",
     "customPhrase": "Teie fraas (vähemalt 12 tähemärki)",
     "confirmPhrase": "Korrake fraasi",
     "showPhrase": "Näita fraasi",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Muuda",
     "addressDeleteConfirm": "Kustuta",
     "addressDefaultSet": "Vaikimisi aadress uuendatud.",
-    "addressDeleted": "Aadress kustutatud."
+    "addressDeleted": "Aadress kustutatud.",
+    "phraseKindSeed": "12 sõna",
+    "phraseKindCustom": "Kohandatud",
+    "modeSeed": "12 sõna (nagu krüptorahakott)",
+    "modeCustom": "Oma salajane fraas vihjega",
+    "seedIntro": "Me genereerime 12 juhuslikku sõna. Kirjutage need üles ja kinnitage 3 neist. Taastamiseks küsitakse teilt 4 juhuslikku sõna 12-st — mitte kunagi kogu fraasi.",
+    "customIntro": "Parool, mida teate ainult teie (vähemalt 12 tähemärki), koos valikulise vihjega, mis kuvatakse, kui seda küsitakse.",
+    "wordsWritten": "Olen need üles kirjutanud — kontrollitud",
+    "confirmBody": "Kinnitage oma varukoopia: sisestage sõnad nendel kolmel positsioonil.",
+    "enterWord": "Sisestage sõna nr {n}",
+    "confirmSave": "Kinnita ja salvesta",
+    "backToWords": "Näita sõnu uuesti",
+    "phraseSeedSetBody": "12-sõnaline fraas määratud {date}. Taastamiseks küsitakse teilt 4 juhuslikku sõna sellest.",
+    "setUpPhrase": "Seadistage taastamisfraas",
+    "replacePhrase": "Asenda fraas",
+    "errWrongWords": "Need sõnad ei klapi. Kontrollige oma kirjalikku koopiat ja proovige uuesti.",
+    "errSetupExpired": "See seadistus aegus. Genereerige uus fraas."
+  },
+  "RecoveryPhrase": {
+    "none": "Sellel kontol pole taastamisfraasi. Kasutage selle asemel oma autentimiskoodi või taastamiskoodi.",
+    "seedPrompt": "Sisestage oma 12-sõnalise fraasi {count} sõna nendel positsioonidel.",
+    "wordNumber": "Sõna nr {n}",
+    "hint": "Vihje: {hint}",
+    "customLabel": "Sisestage oma taastamisfraas",
+    "show": "Näita fraasi",
+    "hide": "Peida fraas"
   }
 }

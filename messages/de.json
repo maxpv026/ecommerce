@@ -90,7 +90,8 @@
     "phraseLabel": "Wiederherstellungsphrase",
     "phrasePlaceholder": "z. B. Apfel Fluss …",
     "errorIncompletePhrase": "Geben Sie Ihre vollständige Wiederherstellungsphrase ein (mindestens 12 Zeichen).",
-    "errorInvalidPhrase": "Diese Wiederherstellungsphrase stimmt nicht überein."
+    "errorInvalidPhrase": "Diese Wiederherstellungsphrase stimmt nicht überein.",
+    "errorIncompleteWords": "Geben Sie jedes angeforderte Wort ein."
   },
   "Dashboard": {
     "greetingMorning": "Guten Morgen",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU-USt-IdNr.",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Wiederherstellungsphrase aktiv",
-    "phraseAddBadge": "Wiederherstellungsphrase hinzufügen"
+    "phraseAddBadge": "Wiederherstellungsphrase hinzufügen",
+    "phraseBadgeSeed": "Wiederherstellungsphrase: 12 Wörter",
+    "phraseBadgeCustom": "Wiederherstellungsphrase: benutzerdefiniert"
   },
   "Theme": {
     "saveFailed": "Ihr Thema konnte nicht gespeichert werden. Es wurde zurückgesetzt."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Passwort",
     "secretPhrase": "Wiederherstellungsphrase",
     "passwordLabel": "Aktuelles Passwort",
-    "phraseLabel": "Wiederherstellungsphrase",
-    "phraseHint": "Groß-/Kleinschreibung und zusätzliche Leerzeichen sind egal.",
     "verify": "Überprüfen",
     "errSend": "Der Code konnte nicht gesendet werden. Versuchen Sie es in einem Moment erneut.",
     "errLocked": "Zu viele Versuche. Versuchen Sie es in {minutes} Min. erneut.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Die Zwei-Faktor-Authentifizierung ist deaktiviert.",
     "twoFaRotating": "Alter Authentifikator entfernt — richten Sie den neuen ein.",
     "phraseTitle": "Wiederherstellungsphrase für die Anmeldung",
-    "phraseActive": "Aktiv",
     "phraseMissing": "Nicht festgelegt",
     "phraseNoneBody": "Eine Phrase, die nur Sie kennen — 12 generierte Wörter oder Ihre eigene Passphrase. Bei der Anmeldung kann sie den Authentifikator-Code ersetzen, wenn Sie Ihr Telefon verlieren.",
     "phraseSetBody": "Am {date} festgelegt. Sie funktioniert bei der Anmeldung anstelle eines Authentifikator-Codes und zur Bestätigung von Sicherheitsänderungen.",
     "hintShown": "Ihr Hinweis: {hint}",
     "generate": "12 Wörter generieren",
-    "regenerate": "Neue Wörter generieren",
-    "useOwn": "Meine eigene Phrase verwenden",
     "removePhrase": "Entfernen",
     "wordsBody": "Schreiben Sie diese 12 Wörter in der richtigen Reihenfolge auf und bewahren Sie sie offline auf. Sie werden nur jetzt angezeigt; wir speichern nur einen Hash.",
-    "wordsSaved": "Ich habe die Phrase gespeichert",
     "customPhrase": "Ihre Phrase (mindestens 12 Zeichen)",
     "confirmPhrase": "Phrase wiederholen",
     "showPhrase": "Phrase anzeigen",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Bearbeiten",
     "addressDeleteConfirm": "Löschen",
     "addressDefaultSet": "Standardadresse aktualisiert.",
-    "addressDeleted": "Adresse gelöscht."
+    "addressDeleted": "Adresse gelöscht.",
+    "phraseKindSeed": "12 Wörter",
+    "phraseKindCustom": "Benutzerdefiniert",
+    "modeSeed": "12 Wörter (wie eine Krypto-Wallet)",
+    "modeCustom": "Eigenes geheimes Passwort mit einem Hinweis",
+    "seedIntro": "Wir generieren 12 zufällige Wörter. Sie schreiben sie auf und bestätigen dann 3 davon. Zur Wiederherstellung werden Sie nach 4 zufälligen Wörtern aus den 12 gefragt — niemals nach der gesamten Phrase.",
+    "customIntro": "Eine Passphrase, die nur Sie kennen (mindestens 12 Zeichen), mit einem optionalen Hinweis, der angezeigt wird, wenn Sie danach gefragt werden.",
+    "wordsWritten": "Ich habe sie aufgeschrieben — prüfen",
+    "confirmBody": "Bestätigen Sie Ihr Backup: Geben Sie die Wörter an diesen drei Positionen ein.",
+    "enterWord": "Geben Sie Wort Nr. {n} ein",
+    "confirmSave": "Bestätigen und speichern",
+    "backToWords": "Wörter erneut anzeigen",
+    "phraseSeedSetBody": "12-Wörter-Phrase am {date} festgelegt. Zur Wiederherstellung werden Sie nach 4 zufälligen Wörtern daraus gefragt.",
+    "setUpPhrase": "Wiederherstellungsphrase einrichten",
+    "replacePhrase": "Phrase ersetzen",
+    "errWrongWords": "Diese Wörter stimmen nicht überein. Überprüfen Sie Ihre schriftliche Kopie und versuchen Sie es erneut.",
+    "errSetupExpired": "Diese Einrichtung ist abgelaufen. Generieren Sie eine neue Phrase."
+  },
+  "RecoveryPhrase": {
+    "none": "Dieses Konto hat keine Wiederherstellungsphrase. Verwenden Sie stattdessen Ihren Authenticator-Code oder einen Wiederherstellungscode.",
+    "seedPrompt": "Geben Sie die {count} Wörter aus Ihrer 12-Wörter-Phrase an diesen Positionen ein.",
+    "wordNumber": "Wort Nr. {n}",
+    "hint": "Hinweis: {hint}",
+    "customLabel": "Geben Sie Ihre Wiederherstellungsphrase ein",
+    "show": "Phrase anzeigen",
+    "hide": "Phrase verbergen"
   }
 }

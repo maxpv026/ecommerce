@@ -8,7 +8,7 @@ import { createOtp, otpRecentlySent, verifyAndConsumeOtp } from "@/lib/otp";
 import { sendOtpEmail } from "@/lib/mail";
 import { checkPassword } from "@/lib/loginThrottle";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
-import { verifyRecoveryPhraseForUser } from "@/lib/recoveryPhrase";
+import { phraseTypeOf, recoveryChallengeFor, verifyRecoveryForUser, type RecoveryChallenge } from "@/lib/recoveryPhrase";
 import { grantStepUp, readStepUp, type StepUpMethod } from "@/lib/stepUp";
 
 /**
@@ -46,6 +46,11 @@ async function caller() {
       twoFactorLockedUntil: true,
       recoveryCodes: true,
       recoveryPhraseHash: true,
+      recoveryPhraseHint: true,
+      recoveryPhraseType: true,
+      recoveryPhraseSalt: true,
+      recoveryWordHashes: true,
+      recoveryLastChallengeAt: true,
     },
   });
   return user ? { user, sid: session?.user?.sessionId } : null;
@@ -58,7 +63,7 @@ export async function getStepUpOptions(): Promise<StepUpOptions | null> {
     totp: c.user.isTwoFactorEnabled && Boolean(c.user.twoFactorSecret),
     email: c.user.email,
     password: Boolean(c.user.password),
-    phrase: Boolean(c.user.recoveryPhraseHash),
+    phrase: phraseTypeOf(c.user) !== null,
     active: await readStepUp(c.user.id, c.sid),
   };
 }
@@ -81,7 +86,8 @@ export async function sendStepUpEmailCode(): Promise<SendStepUpCodeResult> {
   }
 }
 
-const Input = z.object({ method: z.enum(["totp", "email", "password", "phrase"]), secret: z.string().min(1).max(200) });
+// 600: a word-challenge answer carries its signed token (lib/recoveryPhrase).
+const Input = z.object({ method: z.enum(["totp", "email", "password", "phrase"]), secret: z.string().min(1).max(600) });
 
 export type VerifyStepUpResult =
   | { ok: true; method: StepUpMethod; expiresAt: number }
@@ -113,8 +119,8 @@ export async function verifyStepUp(raw: unknown): Promise<VerifyStepUpResult> {
     if (check === "locked") return locked();
     passed = check === "ok";
   } else {
-    if (!user.recoveryPhraseHash) return { ok: false, code: "UNAVAILABLE" };
-    const check = await verifyRecoveryPhraseForUser(prisma, user, secret);
+    if (!phraseTypeOf(user)) return { ok: false, code: "UNAVAILABLE" };
+    const check = await verifyRecoveryForUser(prisma, user, secret, "step-up");
     if (!check.ok && check.reason === "LOCKED") return locked(check.retryAfterMs);
     passed = check.ok;
   }
@@ -122,4 +128,14 @@ export async function verifyStepUp(raw: unknown): Promise<VerifyStepUpResult> {
   if (!passed) return { ok: false, code: "INVALID" };
   const expiresAt = await grantStepUp(user.id, c.sid, method);
   return { ok: true, method, expiresAt };
+}
+
+/**
+ * What the recovery-phrase tab must ask for: 4 random word positions (a
+ * signed, single-use challenge) for a 12-word phrase, or the passphrase with
+ * its hint. Signed-in only — this is step-up, the person is already known.
+ */
+export async function getStepUpPhraseChallenge(): Promise<RecoveryChallenge | null> {
+  const c = await caller();
+  return c ? recoveryChallengeFor(c.user, "step-up") : null;
 }

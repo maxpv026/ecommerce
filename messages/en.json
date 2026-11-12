@@ -90,7 +90,8 @@
     "phraseLabel": "Recovery phrase",
     "phrasePlaceholder": "e.g. apple river …",
     "errorIncompletePhrase": "Enter your full recovery phrase (at least 12 characters).",
-    "errorInvalidPhrase": "That recovery phrase doesn't match."
+    "errorInvalidPhrase": "That recovery phrase doesn't match.",
+    "errorIncompleteWords": "Enter every requested word."
   },
   "AuthModal": {
     "close": "Close",
@@ -982,8 +983,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU VAT ID",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Recovery phrase active",
-    "phraseAddBadge": "Add a recovery phrase"
+    "phraseAddBadge": "Add a recovery phrase",
+    "phraseBadgeSeed": "Recovery phrase: 12 words",
+    "phraseBadgeCustom": "Recovery phrase: custom"
   },
   "Theme": {
     "saveFailed": "Couldn't save your theme. It has been switched back."
@@ -1803,8 +1805,6 @@
     "secretPassword": "Password",
     "secretPhrase": "Recovery phrase",
     "passwordLabel": "Current password",
-    "phraseLabel": "Recovery phrase",
-    "phraseHint": "Case and extra spaces don't matter.",
     "verify": "Verify",
     "errSend": "Couldn't send the code. Try again in a moment.",
     "errLocked": "Too many attempts. Try again in {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Two-factor authentication is off.",
     "twoFaRotating": "Old authenticator removed — set up the new one.",
     "phraseTitle": "Recovery phrase for sign-in",
-    "phraseActive": "Active",
     "phraseMissing": "Not set",
     "phraseNoneBody": "A phrase only you know — 12 generated words, or your own passphrase. At sign-in it can stand in for the authenticator code if you lose your phone.",
     "phraseSetBody": "Set on {date}. It works at sign-in in place of an authenticator code, and for confirming security changes.",
     "hintShown": "Your hint: {hint}",
     "generate": "Generate 12 words",
-    "regenerate": "Generate new words",
-    "useOwn": "Use my own phrase",
     "removePhrase": "Remove",
     "wordsBody": "Write these 12 words down, in order, and keep them offline. They are shown only now; we store just a hash.",
-    "wordsSaved": "I've saved the phrase",
     "customPhrase": "Your phrase (at least 12 characters)",
     "confirmPhrase": "Repeat the phrase",
     "showPhrase": "Show phrase",
@@ -1875,6 +1871,31 @@
     "addressEdit": "Edit",
     "addressDeleteConfirm": "Delete",
     "addressDefaultSet": "Default address updated.",
-    "addressDeleted": "Address deleted."
+    "addressDeleted": "Address deleted.",
+    "phraseKindSeed": "12 words",
+    "phraseKindCustom": "Custom",
+    "modeSeed": "12 words (like a crypto wallet)",
+    "modeCustom": "Own secret phrase with a hint",
+    "seedIntro": "We generate 12 random words. You write them down, then confirm 3 of them. To recover, you'll be asked for 4 random words from the 12 — never the whole phrase.",
+    "customIntro": "A passphrase only you know (at least 12 characters), with an optional hint shown when you're asked for it.",
+    "wordsWritten": "I've written them down — check",
+    "confirmBody": "Confirm your backup: enter the words at these three positions.",
+    "enterWord": "Enter word #{n}",
+    "confirmSave": "Confirm and save",
+    "backToWords": "Show the words again",
+    "phraseSeedSetBody": "12-word phrase set on {date}. To recover, you'll be asked for 4 random words from it.",
+    "setUpPhrase": "Set up a recovery phrase",
+    "replacePhrase": "Replace phrase",
+    "errWrongWords": "Those words don't match. Check your written copy and try again.",
+    "errSetupExpired": "That setup expired. Generate a new phrase."
+  },
+  "RecoveryPhrase": {
+    "none": "This account has no recovery phrase. Use your authenticator code or a recovery code instead.",
+    "seedPrompt": "Enter the {count} words from your 12-word phrase at these positions.",
+    "wordNumber": "Word #{n}",
+    "hint": "Hint: {hint}",
+    "customLabel": "Enter your recovery phrase",
+    "show": "Show phrase",
+    "hide": "Hide phrase"
   }
 }

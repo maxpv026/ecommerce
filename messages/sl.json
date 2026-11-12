@@ -90,7 +90,8 @@
     "phraseLabel": "Obnovitvena fraza",
     "phrasePlaceholder": "npr. jabolko reka …",
     "errorIncompletePhrase": "Vnesite celotno obnovitveno frazo (vsaj 12 znakov).",
-    "errorInvalidPhrase": "Ta obnovitvena fraza se ne ujema."
+    "errorInvalidPhrase": "Ta obnovitvena fraza se ne ujema.",
+    "errorIncompleteWords": "Vnesite vsako zahtevano besedo."
   },
   "Dashboard": {
     "greetingMorning": "Dobro jutro",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU ID za DDV",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Obnovitvena fraza aktivna",
-    "phraseAddBadge": "Dodajte obnovitveno frazo"
+    "phraseAddBadge": "Dodajte obnovitveno frazo",
+    "phraseBadgeSeed": "Obnovitvena fraza: 12 besed",
+    "phraseBadgeCustom": "Obnovitvena fraza: po meri"
   },
   "Theme": {
     "saveFailed": "Ni bilo mogoče shraniti vaše teme. Preklopljeno je nazaj."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Geslo",
     "secretPhrase": "Obnovitvena fraza",
     "passwordLabel": "Trenutno geslo",
-    "phraseLabel": "Obnovitvena fraza",
-    "phraseHint": "Velikost črk in dodatni presledki niso pomembni.",
     "verify": "Preveri",
     "errSend": "Kode ni bilo mogoče poslati. Poskusite znova čez trenutek.",
     "errLocked": "Preveč poskusov. Poskusite znova čez {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Dvofaktorska avtentikacija je izklopljena.",
     "twoFaRotating": "Stari avtentikator odstranjen — nastavite novega.",
     "phraseTitle": "Obnovitvena fraza za prijavo",
-    "phraseActive": "Aktivna",
     "phraseMissing": "Ni nastavljena",
     "phraseNoneBody": "Fraza, ki jo poznate samo vi — 12 generiranih besed ali vaša geslo. Pri prijavi lahko nadomesti kodo avtentikatorja, če izgubite telefon.",
     "phraseSetBody": "Nastavljeno na {date}. Deluje pri prijavi namesto kode avtentikatorja in za potrjevanje varnostnih sprememb.",
     "hintShown": "Vaš namig: {hint}",
     "generate": "Ustvari 12 besed",
-    "regenerate": "Ustvari nove besede",
-    "useOwn": "Uporabite svojo frazo",
     "removePhrase": "Odstrani",
     "wordsBody": "Zapišite teh 12 besed v pravilnem vrstnem redu in jih hranite brez povezave. Prikazane so samo zdaj; shranimo samo hash.",
-    "wordsSaved": "Frazo sem shranil",
     "customPhrase": "Vaša fraza (vsaj 12 znakov)",
     "confirmPhrase": "Ponovite frazo",
     "showPhrase": "Pokaži frazo",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Uredi",
     "addressDeleteConfirm": "Izbriši",
     "addressDefaultSet": "Privzeti naslov posodobljen.",
-    "addressDeleted": "Naslov izbrisan."
+    "addressDeleted": "Naslov izbrisan.",
+    "phraseKindSeed": "12 besed",
+    "phraseKindCustom": "Po meri",
+    "modeSeed": "12 besed (kot kripto denarnica)",
+    "modeCustom": "Lastna skrivna fraza z namigom",
+    "seedIntro": "Generiramo 12 naključnih besed. Zapišite jih, nato potrdite 3 izmed njih. Za obnovitev boste morali vnesti 4 naključne besede izmed 12 — nikoli celotne fraze.",
+    "customIntro": "Geslo, ki ga poznate le vi (vsaj 12 znakov), z opcijskim namigom, ki se prikaže, ko ga zahtevate.",
+    "wordsWritten": "Zapisal sem jih — preveri",
+    "confirmBody": "Potrdite svojo varnostno kopijo: vnesite besede na teh treh mestih.",
+    "enterWord": "Vnesite besedo št. {n}",
+    "confirmSave": "Potrdi in shrani",
+    "backToWords": "Pokaži besede znova",
+    "phraseSeedSetBody": "12-besedna fraza nastavljena na {date}. Za obnovitev boste morali vnesti 4 naključne besede iz nje.",
+    "setUpPhrase": "Nastavite obnovitveno frazo",
+    "replacePhrase": "Zamenjaj frazo",
+    "errWrongWords": "Te besede se ne ujemajo. Preverite svoj zapis in poskusite znova.",
+    "errSetupExpired": "Ta nastavitev je potekla. Ustvarite novo frazo."
+  },
+  "RecoveryPhrase": {
+    "none": "Ta račun nima obnovitvene fraze. Namesto tega uporabite svojo avtentikacijsko kodo ali kodo za obnovitev.",
+    "seedPrompt": "Vnesite {count} besed iz vaše 12-besedne fraze na teh mestih.",
+    "wordNumber": "Beseda št. {n}",
+    "hint": "Namig: {hint}",
+    "customLabel": "Vnesite svojo obnovitveno frazo",
+    "show": "Pokaži frazo",
+    "hide": "Skrij frazo"
   }
 }

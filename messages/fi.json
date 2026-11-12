@@ -90,7 +90,8 @@
     "phraseLabel": "Palautuslause",
     "phrasePlaceholder": "esim. omena joki …",
     "errorIncompletePhrase": "Anna koko palautuslauseesi (vähintään 12 merkkiä).",
-    "errorInvalidPhrase": "Palautuslause ei täsmää."
+    "errorInvalidPhrase": "Palautuslause ei täsmää.",
+    "errorIncompleteWords": "Anna jokainen pyydetty sana."
   },
   "Dashboard": {
     "greetingMorning": "Hyvää huomenta",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU ALV-tunnus",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Palautuslause aktiivinen",
-    "phraseAddBadge": "Lisää palautuslause"
+    "phraseAddBadge": "Lisää palautuslause",
+    "phraseBadgeSeed": "Palautuslauseke: 12 sanaa",
+    "phraseBadgeCustom": "Palautuslauseke: mukautettu"
   },
   "Theme": {
     "saveFailed": "Teemaa ei voitu tallentaa. Se on palautettu ennalleen."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Salasana",
     "secretPhrase": "Palautuslause",
     "passwordLabel": "Nykyinen salasana",
-    "phraseLabel": "Palautuslause",
-    "phraseHint": "Kirjainkoolla ja ylimääräisillä väleillä ei ole merkitystä.",
     "verify": "Vahvista",
     "errSend": "Koodia ei voitu lähettää. Yritä uudelleen hetken kuluttua.",
     "errLocked": "Liian monta yritystä. Yritä uudelleen {minutes} min kuluttua.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Kaksivaiheinen tunnistautuminen on pois käytöstä.",
     "twoFaRotating": "Vanha todennussovellus poistettu — määritä uusi.",
     "phraseTitle": "Palautuslause kirjautumiseen",
-    "phraseActive": "Aktiivinen",
     "phraseMissing": "Ei asetettu",
     "phraseNoneBody": "Lause, jonka vain sinä tiedät — 12 luotua sanaa tai oma salasanasi. Kirjautumisessa se voi korvata todennuskoodin, jos kadotat puhelimesi.",
     "phraseSetBody": "Asetettu {date}. Toimii kirjautumisessa todennuskoodin sijasta ja turvallisuusmuutosten vahvistamiseen.",
     "hintShown": "Vihjeesi: {hint}",
     "generate": "Luo 12 sanaa",
-    "regenerate": "Luo uudet sanat",
-    "useOwn": "Käytä omaa lausettani",
     "removePhrase": "Poista",
     "wordsBody": "Kirjoita nämä 12 sanaa muistiin, oikeassa järjestyksessä, ja säilytä ne offline-tilassa. Ne näytetään vain nyt; tallennamme vain tiivisteen.",
-    "wordsSaved": "Olen tallentanut lauseen",
     "customPhrase": "Oma lauseesi (vähintään 12 merkkiä)",
     "confirmPhrase": "Toista lause",
     "showPhrase": "Näytä lause",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Muokkaa",
     "addressDeleteConfirm": "Poista",
     "addressDefaultSet": "Oletusosoite päivitetty.",
-    "addressDeleted": "Osoite poistettu."
+    "addressDeleted": "Osoite poistettu.",
+    "phraseKindSeed": "12 sanaa",
+    "phraseKindCustom": "Mukautettu",
+    "modeSeed": "12 sanaa (kuten kryptolompakko)",
+    "modeCustom": "Oma salainen lauseke vihjeellä",
+    "seedIntro": "Luomme 12 satunnaista sanaa. Kirjoitat ne ylös ja vahvistat 3 niistä. Palauttaaksesi sinulta kysytään 4 satunnaista sanaa 12:sta — ei koskaan koko lausetta.",
+    "customIntro": "Salasana, jonka vain sinä tiedät (vähintään 12 merkkiä), valinnaisella vihjeellä, joka näytetään, kun sitä kysytään.",
+    "wordsWritten": "Olen kirjoittanut ne ylös — tarkista",
+    "confirmBody": "Vahvista varmuuskopio: anna sanat näissä kolmessa kohdassa.",
+    "enterWord": "Anna sana #{n}",
+    "confirmSave": "Vahvista ja tallenna",
+    "backToWords": "Näytä sanat uudelleen",
+    "phraseSeedSetBody": "12 sanan lauseke asetettu {date}. Palauttaaksesi sinulta kysytään 4 satunnaista sanaa siitä.",
+    "setUpPhrase": "Aseta palautuslauseke",
+    "replacePhrase": "Vaihda lauseke",
+    "errWrongWords": "Nämä sanat eivät täsmää. Tarkista kirjoitettu kopio ja yritä uudelleen.",
+    "errSetupExpired": "Tämä asetus on vanhentunut. Luo uusi lauseke."
+  },
+  "RecoveryPhrase": {
+    "none": "Tällä tilillä ei ole palautuslauseketta. Käytä sen sijaan todennuskoodia tai palautuskoodia.",
+    "seedPrompt": "Anna {count} sanaa 12 sanan lausekkeestasi näissä kohdissa.",
+    "wordNumber": "Sana #{n}",
+    "hint": "Vihje: {hint}",
+    "customLabel": "Anna palautuslausekkeesi",
+    "show": "Näytä lauseke",
+    "hide": "Piilota lauseke"
   }
 }

@@ -90,7 +90,8 @@
     "phraseLabel": "Kurtarma ifadesi",
     "phrasePlaceholder": "ör. elma nehir …",
     "errorIncompletePhrase": "Tam kurtarma ifadenizi girin (en az 12 karakter).",
-    "errorInvalidPhrase": "Bu kurtarma ifadesi eşleşmiyor."
+    "errorInvalidPhrase": "Bu kurtarma ifadesi eşleşmiyor.",
+    "errorIncompleteWords": "İstenen her kelimeyi girin."
   },
   "AuthModal": {
     "close": "Kapat",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "AB KDV No",
     "trustReg": "AB 2024/573",
-    "phraseActiveBadge": "Kurtarma ifadesi aktif",
-    "phraseAddBadge": "Kurtarma ifadesi ekle"
+    "phraseAddBadge": "Kurtarma ifadesi ekle",
+    "phraseBadgeSeed": "Kurtarma ifadesi: 12 kelime",
+    "phraseBadgeCustom": "Kurtarma ifadesi: özel"
   },
   "Theme": {
     "saveFailed": "Temanızı kaydedemedik. Geri alındı."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Şifre",
     "secretPhrase": "Kurtarma ifadesi",
     "passwordLabel": "Mevcut şifre",
-    "phraseLabel": "Kurtarma ifadesi",
-    "phraseHint": "Büyük/küçük harf ve ekstra boşluklar önemli değil.",
     "verify": "Doğrula",
     "errSend": "Kod gönderilemedi. Biraz sonra tekrar deneyin.",
     "errLocked": "Çok fazla deneme. {minutes} dakika sonra tekrar deneyin.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "İki faktörlü kimlik doğrulama kapalı.",
     "twoFaRotating": "Eski kimlik doğrulayıcı kaldırıldı — yenisini ayarlayın.",
     "phraseTitle": "Giriş için kurtarma ifadesi",
-    "phraseActive": "Aktif",
     "phraseMissing": "Ayarlanmadı",
     "phraseNoneBody": "Sadece sizin bildiğiniz bir ifade — 12 üretilmiş kelime veya kendi parolanız. Girişte telefonunuzu kaybederseniz kimlik doğrulayıcı kodu yerine kullanılabilir.",
     "phraseSetBody": "{date} tarihinde ayarlandı. Girişte kimlik doğrulayıcı kodu yerine ve güvenlik değişikliklerini onaylamak için çalışır.",
     "hintShown": "İpucunuz: {hint}",
     "generate": "12 kelime üret",
-    "regenerate": "Yeni kelimeler üret",
-    "useOwn": "Kendi ifademi kullan",
     "removePhrase": "Kaldır",
     "wordsBody": "Bu 12 kelimeyi sırayla yazın ve çevrimdışı saklayın. Şimdi sadece gösteriliyorlar; biz sadece bir hash saklıyoruz.",
-    "wordsSaved": "İfadeyi kaydettim",
     "customPhrase": "İfadeniz (en az 12 karakter)",
     "confirmPhrase": "İfadeyi tekrarlayın",
     "showPhrase": "İfadeyi göster",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Düzenle",
     "addressDeleteConfirm": "Sil",
     "addressDefaultSet": "Varsayılan adres güncellendi.",
-    "addressDeleted": "Adres silindi."
+    "addressDeleted": "Adres silindi.",
+    "phraseKindSeed": "12 kelime",
+    "phraseKindCustom": "Özel",
+    "modeSeed": "12 kelime (kripto cüzdanı gibi)",
+    "modeCustom": "İpucu ile kendi gizli ifadeniz",
+    "seedIntro": "12 rastgele kelime oluşturuyoruz. Bunları yazın, ardından 3 tanesini onaylayın. Kurtarma için, 12 kelimeden 4 rastgele kelime istenecektir — asla tüm ifade değil.",
+    "customIntro": "Sadece sizin bildiğiniz bir parola (en az 12 karakter), istenildiğinde gösterilen isteğe bağlı bir ipucu ile.",
+    "wordsWritten": "Yazdım — kontrol et",
+    "confirmBody": "Yedeklemenizi onaylayın: bu üç pozisyondaki kelimeleri girin.",
+    "enterWord": "Kelimeyi girin #{n}",
+    "confirmSave": "Onayla ve kaydet",
+    "backToWords": "Kelimeyi tekrar göster",
+    "phraseSeedSetBody": "12 kelimelik ifade {date} tarihinde ayarlandı. Kurtarma için, bu ifadeden 4 rastgele kelime istenecektir.",
+    "setUpPhrase": "Kurtarma ifadesi ayarla",
+    "replacePhrase": "İfadeyi değiştir",
+    "errWrongWords": "Bu kelimeler eşleşmiyor. Yazılı kopyanızı kontrol edin ve tekrar deneyin.",
+    "errSetupExpired": "Bu kurulumun süresi doldu. Yeni bir ifade oluşturun."
+  },
+  "RecoveryPhrase": {
+    "none": "Bu hesabın kurtarma ifadesi yok. Bunun yerine kimlik doğrulayıcı kodunuzu veya bir kurtarma kodunu kullanın.",
+    "seedPrompt": "12 kelimelik ifadenizden {count} kelimeyi bu pozisyonlarda girin.",
+    "wordNumber": "Kelime #{n}",
+    "hint": "İpucu: {hint}",
+    "customLabel": "Kurtarma ifadenizi girin",
+    "show": "İfadeyi göster",
+    "hide": "İfadeyi gizle"
   }
 }

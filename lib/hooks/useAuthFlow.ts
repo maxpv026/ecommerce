@@ -9,6 +9,8 @@ import { signIn, getSession } from "next-auth/react";
 import { toast } from "sonner";
 import { requestEmailOtp, type RequestOtpErrorCode } from "@/lib/actions/otp";
 import { cancelGoogleTwoFactor, completeGoogleTwoFactor } from "@/lib/actions/googleTwoFactor";
+import { getLoginRecoveryChallenge } from "@/lib/actions/recoveryChallenge";
+import { recoveryAnswer, type RecoveryChallenge } from "@/lib/recoveryPhraseFormat";
 import { callbackPath } from "@/lib/callbackPath";
 
 export type AuthMode = "signin" | "register";
@@ -22,8 +24,7 @@ export type AuthStep = "credentials" | "code";
  */
 export type CodeMode = "totp" | "recovery" | "phrase";
 
-/** A recovery phrase is 12+ characters (lib/recoveryPhrase MIN_CUSTOM_LENGTH). */
-const MIN_PHRASE_LENGTH = 12;
+
 
 /** Recovery codes are eight hex characters — see RECOVERY_CODE_* in lib/twoFactor. */
 const RECOVERY_CODE_LENGTH = 8;
@@ -117,6 +118,10 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
   const [codeMode, setCodeMode] = useState<CodeMode>("totp");
   const [recoveryCode, setRecoveryCodeState] = useState("");
   const [phrase, setPhrase] = useState("");
+  // The recovery-phrase challenge for this sign-in: word positions to type
+  // (12-word phrase) or the passphrase hint — fetched when the mode opens.
+  const [phraseChallenge, setPhraseChallenge] = useState<RecoveryChallenge | null>(null);
+  const [phraseWords, setPhraseWords] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(() => {
     const code = options.initialErrorCode;
     if (!code) return null;
@@ -164,7 +169,16 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     setDigits(["", "", "", "", "", ""]);
     setRecoveryCodeState("");
     setPhrase("");
+    setPhraseWords([]);
+    setPhraseChallenge(null);
     setCodeMode(next);
+    if (next === "phrase") {
+      // The challenge proves the first factor again (password, or the
+      // paused Google sign-in's cookie) — it reveals nothing otherwise.
+      void getLoginRecoveryChallenge(googlePending ? { google: true } : { email, password })
+        .catch(() => ({ type: "NONE" as const }))
+        .then(setPhraseChallenge);
+    }
     setTimeout(() => (next === "totp" ? boxRefs.current[0] : next === "recovery" ? recoveryRef.current : phraseRef.current)?.focus(), 50);
   };
 
@@ -247,10 +261,11 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     // server needs no flag from us — but sending a half-finished value would
     // spend one of the account's five attempts before the lockout, which is
     // why both lengths are enforced here first.
-    const code = codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? phrase.trim() : digits.join("");
+    const answer = codeMode === "phrase" ? recoveryAnswer(phraseChallenge, phraseWords, phrase) : null;
+    const code = codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? (answer ?? "") : digits.join("");
     if (codeMode === "phrase") {
-      if (code.replace(/\s+/g, " ").length < MIN_PHRASE_LENGTH) {
-        setError(t("errorIncompletePhrase"));
+      if (!answer) {
+        setError(t(phraseChallenge?.type === "SEED_12" ? "errorIncompleteWords" : "errorIncompletePhrase"));
         return;
       }
     } else if (codeMode === "recovery") {
@@ -362,6 +377,9 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     phrase,
     setPhrase,
     phraseRef,
+    phraseChallenge,
+    phraseWords,
+    setPhraseWords,
     setCodeModeTo,
     setRecoveryCode,
     recoveryRef,

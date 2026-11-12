@@ -90,7 +90,8 @@
     "phraseLabel": "Återställningsfras",
     "phrasePlaceholder": "t.ex. äpple flod …",
     "errorIncompletePhrase": "Ange din fullständiga återställningsfras (minst 12 tecken).",
-    "errorInvalidPhrase": "Den återställningsfrasen stämmer inte."
+    "errorInvalidPhrase": "Den återställningsfrasen stämmer inte.",
+    "errorIncompleteWords": "Ange varje efterfrågat ord."
   },
   "Dashboard": {
     "greetingMorning": "God morgon",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU moms-ID",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Återställningsfras aktiv",
-    "phraseAddBadge": "Lägg till en återställningsfras"
+    "phraseAddBadge": "Lägg till en återställningsfras",
+    "phraseBadgeSeed": "Återställningsfras: 12 ord",
+    "phraseBadgeCustom": "Återställningsfras: anpassad"
   },
   "Theme": {
     "saveFailed": "Kunde inte spara ditt tema. Det har återställts."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Lösenord",
     "secretPhrase": "Återställningsfras",
     "passwordLabel": "Nuvarande lösenord",
-    "phraseLabel": "Återställningsfras",
-    "phraseHint": "Versaler och extra mellanslag spelar ingen roll.",
     "verify": "Verifiera",
     "errSend": "Kunde inte skicka koden. Försök igen om en stund.",
     "errLocked": "För många försök. Försök igen om {minutes} min.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Tvåfaktorsautentisering är av.",
     "twoFaRotating": "Gammal autentisering borttagen — ställ in den nya.",
     "phraseTitle": "Återställningsfras för inloggning",
-    "phraseActive": "Aktiv",
     "phraseMissing": "Inte inställd",
     "phraseNoneBody": "En fras som bara du känner till — 12 genererade ord eller din egen lösenfras. Vid inloggning kan den ersätta autentiseringskoden om du förlorar din telefon.",
     "phraseSetBody": "Inställd den {date}. Den fungerar vid inloggning istället för en autentiseringskod och för att bekräfta säkerhetsändringar.",
     "hintShown": "Din ledtråd: {hint}",
     "generate": "Generera 12 ord",
-    "regenerate": "Generera nya ord",
-    "useOwn": "Använd min egen fras",
     "removePhrase": "Ta bort",
     "wordsBody": "Skriv ner dessa 12 ord i ordning och håll dem offline. De visas endast nu; vi lagrar bara en hash.",
-    "wordsSaved": "Jag har sparat frasen",
     "customPhrase": "Din fras (minst 12 tecken)",
     "confirmPhrase": "Upprepa frasen",
     "showPhrase": "Visa fras",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Redigera",
     "addressDeleteConfirm": "Ta bort",
     "addressDefaultSet": "Standardadress uppdaterad.",
-    "addressDeleted": "Adress borttagen."
+    "addressDeleted": "Adress borttagen.",
+    "phraseKindSeed": "12 ord",
+    "phraseKindCustom": "Anpassad",
+    "modeSeed": "12 ord (som en kryptoplånbok)",
+    "modeCustom": "Egen hemlig fras med en ledtråd",
+    "seedIntro": "Vi genererar 12 slumpmässiga ord. Du skriver ner dem och bekräftar sedan 3 av dem. För att återställa kommer du att bli ombedd att ange 4 slumpmässiga ord från de 12 — aldrig hela frasen.",
+    "customIntro": "En lösenfras som bara du känner till (minst 12 tecken), med en valfri ledtråd som visas när du blir ombedd om den.",
+    "wordsWritten": "Jag har skrivit ner dem — kontrollera",
+    "confirmBody": "Bekräfta din säkerhetskopia: ange orden på dessa tre positioner.",
+    "enterWord": "Ange ord #{n}",
+    "confirmSave": "Bekräfta och spara",
+    "backToWords": "Visa orden igen",
+    "phraseSeedSetBody": "12-ordsfras inställd den {date}. För att återställa kommer du att bli ombedd att ange 4 slumpmässiga ord från den.",
+    "setUpPhrase": "Ställ in en återställningsfras",
+    "replacePhrase": "Ersätt fras",
+    "errWrongWords": "De orden stämmer inte. Kontrollera din nedskrivna kopia och försök igen.",
+    "errSetupExpired": "Den inställningen har gått ut. Generera en ny fras."
+  },
+  "RecoveryPhrase": {
+    "none": "Detta konto har ingen återställningsfras. Använd din autentiseringskod eller en återställningskod istället.",
+    "seedPrompt": "Ange de {count} orden från din 12-ordsfras på dessa positioner.",
+    "wordNumber": "Ord #{n}",
+    "hint": "Ledtråd: {hint}",
+    "customLabel": "Ange din återställningsfras",
+    "show": "Visa fras",
+    "hide": "Dölj fras"
   }
 }

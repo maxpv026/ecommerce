@@ -90,7 +90,8 @@
     "phraseLabel": "Frażi ta' rkupru",
     "phrasePlaceholder": "eż. tuffieħ xmara …",
     "errorIncompletePhrase": "Daħħal il-frażi ta' rkupru sħiħa tiegħek (mill-inqas 12-il karattru).",
-    "errorInvalidPhrase": "Dik il-frażi ta' rkupru ma taqbilx."
+    "errorInvalidPhrase": "Dik il-frażi ta' rkupru ma taqbilx.",
+    "errorIncompleteWords": "Daħħal kull kelma mitluba."
   },
   "Dashboard": {
     "greetingMorning": "L-Għodwa t-Tajba",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "Numru tal-VAT tal-UE",
     "trustReg": "UE 2024/573",
-    "phraseActiveBadge": "Frażi ta' rkupru attiva",
-    "phraseAddBadge": "Żid frażi ta' rkupru"
+    "phraseAddBadge": "Żid frażi ta' rkupru",
+    "phraseBadgeSeed": "Frażi ta' rkupru: 12-il kelma",
+    "phraseBadgeCustom": "Frażi ta' rkupru: personalizzata"
   },
   "Theme": {
     "saveFailed": "Ma setax jiġi ffrankat it-tema tiegħek. Ġie mibdul lura."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Password",
     "secretPhrase": "Frażi ta' rkupru",
     "passwordLabel": "Password attwali",
-    "phraseLabel": "Frażi ta' rkupru",
-    "phraseHint": "Il-każ u l-ispazji żejda ma jimpurtawx.",
     "verify": "Ivverifika",
     "errSend": "Ma setax jintbagħat il-kodiċi. Erġa' pprova fi ftit.",
     "errLocked": "Wisq tentattivi. Erġa' pprova fi {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "L-awtentikazzjoni b'żewġ fatturi hija mitfi.",
     "twoFaRotating": "Awtentikatur qadim imneħħi — setup tal-ġdid.",
     "phraseTitle": "Frażi ta' rkupru għad-dħul",
-    "phraseActive": "Attiva",
     "phraseMissing": "Mhux issettjata",
     "phraseNoneBody": "Frażi li taf biss int — 12-il kelma ġġenerati, jew il-passphrase tiegħek stess. Fid-dħul tista' tissostitwixxi l-kodiċi tal-awtentikatur jekk titlef it-telefon tiegħek.",
     "phraseSetBody": "Issettjat fuq {date}. Taħdem fid-dħul minflok kodiċi tal-awtentikatur, u biex tikkonferma bidliet tas-sigurtà.",
     "hintShown": "Il-ħjiel tiegħek: {hint}",
     "generate": "Ġenera 12-il kelma",
-    "regenerate": "Ġenera kelmiet ġodda",
-    "useOwn": "Uża l-frażi tiegħi stess",
     "removePhrase": "Neħħi",
     "wordsBody": "Ikteb dawn it-12-il kelma, fl-ordni, u żommhom offline. Huma jidhru biss issa; aħna naħżnu biss hash.",
-    "wordsSaved": "Ssejvja l-frażi",
     "customPhrase": "Il-frażi tiegħek (mill-inqas 12-il karattru)",
     "confirmPhrase": "Irrepeti l-frażi",
     "showPhrase": "Uri l-frażi",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Ħassar",
     "addressDefaultSet": "Indirizz default aġġornat.",
     "addressDeleted": "Indirizz imħassar.",
+    "phraseKindSeed": "12-il kelma",
+    "phraseKindCustom": "Personalizzata",
+    "modeSeed": "12-il kelma (bħal krypto wallet)",
+    "modeCustom": "Frażi sigrieta tiegħek b'hint",
+    "seedIntro": "Aħna nġeneraw 12-il kelma każwali. Inti tiktebhom, imbagħad tikkonferma 3 minnhom. Biex tirkupra, tintalab għal 4 kelmiet każwali mill-12 — qatt il-frażi kollha.",
+    "customIntro": "Passphrase li taf biss int (mill-inqas 12-il karattru), b'hint fakultattiv li jintwera meta tintalab għalih.",
+    "wordsWritten": "Ktibthom — iċċekkja",
+    "confirmBody": "Ikkonferma l-backup tiegħek: daħħal il-kelmiet f'dawn it-tliet pożizzjonijiet.",
+    "enterWord": "Daħħal kelma #{n}",
+    "confirmSave": "Ikkonferma u salva",
+    "backToWords": "Uri l-kelmiet mill-ġdid",
+    "phraseSeedSetBody": "Frażi ta' 12-il kelma ssettjata fuq {date}. Biex tirkupra, tintalab għal 4 kelmiet każwali minnha.",
+    "setUpPhrase": "Issettja frażi ta' rkupru",
+    "replacePhrase": "Ibdel il-frażi",
+    "errWrongWords": "Dawk il-kelmiet ma jaqblux. Iċċekkja l-kopja miktuba tiegħek u erġa' pprova.",
+    "errSetupExpired": "Dak is-setup skada. Ġenera frażi ġdida.",
     "sessionsCount": "{count, plural, one {# apparat illoggjat} two {# apparati illoggjati} few {# apparati illoggjati} many {# apparati illoggjati} other {# apparati illoggjati}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Dan il-kont m'għandux frażi ta' rkupru. Uża l-kodiċi tal-awtentikatur tiegħek jew kodiċi ta' rkupru minflok.",
+    "seedPrompt": "Daħħal il-{count} kelmiet mill-frażi ta' 12-il kelma tiegħek f'dawn il-pożizzjonijiet.",
+    "wordNumber": "Kelma #{n}",
+    "hint": "Hint: {hint}",
+    "customLabel": "Daħħal il-frażi ta' rkupru tiegħek",
+    "show": "Uri l-frażi",
+    "hide": "Aħbi l-frażi"
   }
 }

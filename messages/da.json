@@ -90,7 +90,8 @@
     "phraseLabel": "Gendannelsessætning",
     "phrasePlaceholder": "f.eks. æble flod …",
     "errorIncompletePhrase": "Indtast din fulde gendannelsessætning (mindst 12 tegn).",
-    "errorInvalidPhrase": "Den gendannelsessætning matcher ikke."
+    "errorInvalidPhrase": "Den gendannelsessætning matcher ikke.",
+    "errorIncompleteWords": "Indtast hvert anmodet ord."
   },
   "Dashboard": {
     "greetingMorning": "Godmorgen",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU momsnummer",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Gendannelsessætning aktiv",
-    "phraseAddBadge": "Tilføj en gendannelsessætning"
+    "phraseAddBadge": "Tilføj en gendannelsessætning",
+    "phraseBadgeSeed": "Gendannelsesfrase: 12 ord",
+    "phraseBadgeCustom": "Gendannelsesfrase: brugerdefineret"
   },
   "Theme": {
     "saveFailed": "Kunne ikke gemme dit tema. Det er blevet ændret tilbage."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Adgangskode",
     "secretPhrase": "Gendannelsessætning",
     "passwordLabel": "Nuværende adgangskode",
-    "phraseLabel": "Gendannelsessætning",
-    "phraseHint": "Store bogstaver og ekstra mellemrum betyder ikke noget.",
     "verify": "Bekræft",
     "errSend": "Kunne ikke sende koden. Prøv igen om et øjeblik.",
     "errLocked": "For mange forsøg. Prøv igen om {minutes} min.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Tofaktorgodkendelse er deaktiveret.",
     "twoFaRotating": "Gammel autentifikator fjernet — opsæt den nye.",
     "phraseTitle": "Gendannelsessætning til login",
-    "phraseActive": "Aktiv",
     "phraseMissing": "Ikke indstillet",
     "phraseNoneBody": "En sætning kun du kender — 12 genererede ord eller din egen adgangssætning. Ved login kan den erstatte autentifikatorkoden, hvis du mister din telefon.",
     "phraseSetBody": "Indstillet den {date}. Den fungerer ved login i stedet for en autentifikatorkode og til bekræftelse af sikkerhedsændringer.",
     "hintShown": "Dit hint: {hint}",
     "generate": "Generér 12 ord",
-    "regenerate": "Generér nye ord",
-    "useOwn": "Brug min egen sætning",
     "removePhrase": "Fjern",
     "wordsBody": "Skriv disse 12 ord ned, i rækkefølge, og opbevar dem offline. De vises kun nu; vi gemmer kun en hash.",
-    "wordsSaved": "Jeg har gemt sætningen",
     "customPhrase": "Din sætning (mindst 12 tegn)",
     "confirmPhrase": "Gentag sætningen",
     "showPhrase": "Vis sætning",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Rediger",
     "addressDeleteConfirm": "Slet",
     "addressDefaultSet": "Standardadresse opdateret.",
-    "addressDeleted": "Adresse slettet."
+    "addressDeleted": "Adresse slettet.",
+    "phraseKindSeed": "12 ord",
+    "phraseKindCustom": "Brugerdefineret",
+    "modeSeed": "12 ord (som en kryptopung)",
+    "modeCustom": "Egen hemmelig frase med et hint",
+    "seedIntro": "Vi genererer 12 tilfældige ord. Du skriver dem ned og bekræfter derefter 3 af dem. For at gendanne bliver du bedt om 4 tilfældige ord fra de 12 — aldrig hele frasen.",
+    "customIntro": "En adgangsfrase kun du kender (mindst 12 tegn), med et valgfrit hint vist, når du bliver bedt om det.",
+    "wordsWritten": "Jeg har skrevet dem ned — tjek",
+    "confirmBody": "Bekræft din backup: indtast ordene på disse tre positioner.",
+    "enterWord": "Indtast ord #{n}",
+    "confirmSave": "Bekræft og gem",
+    "backToWords": "Vis ordene igen",
+    "phraseSeedSetBody": "12-ords frase sat den {date}. For at gendanne bliver du bedt om 4 tilfældige ord fra den.",
+    "setUpPhrase": "Opsæt en gendannelsesfrase",
+    "replacePhrase": "Erstat frase",
+    "errWrongWords": "De ord stemmer ikke overens. Tjek din skriftlige kopi og prøv igen.",
+    "errSetupExpired": "Den opsætning er udløbet. Generer en ny frase."
+  },
+  "RecoveryPhrase": {
+    "none": "Denne konto har ingen gendannelsesfrase. Brug din autentifikatorkode eller en gendannelseskode i stedet.",
+    "seedPrompt": "Indtast de {count} ord fra din 12-ords frase på disse positioner.",
+    "wordNumber": "Ord #{n}",
+    "hint": "Hint: {hint}",
+    "customLabel": "Indtast din gendannelsesfrase",
+    "show": "Vis frase",
+    "hide": "Skjul frase"
   }
 }

@@ -90,7 +90,8 @@
     "phraseLabel": "Herstelzin",
     "phrasePlaceholder": "bijv. appel rivier …",
     "errorIncompletePhrase": "Voer uw volledige herstelzin in (minimaal 12 tekens).",
-    "errorInvalidPhrase": "Die herstelzin komt niet overeen."
+    "errorInvalidPhrase": "Die herstelzin komt niet overeen.",
+    "errorIncompleteWords": "Voer elk gevraagd woord in."
   },
   "Dashboard": {
     "greetingMorning": "Goedemorgen",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU BTW-nummer",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Herstelzin actief",
-    "phraseAddBadge": "Een herstelzin toevoegen"
+    "phraseAddBadge": "Een herstelzin toevoegen",
+    "phraseBadgeSeed": "Herstelzin: 12 woorden",
+    "phraseBadgeCustom": "Herstelzin: aangepast"
   },
   "Theme": {
     "saveFailed": "Kon je thema niet opslaan. Het is teruggezet."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Wachtwoord",
     "secretPhrase": "Herstelzin",
     "passwordLabel": "Huidig wachtwoord",
-    "phraseLabel": "Herstelzin",
-    "phraseHint": "Hoofdletters en extra spaties maken niet uit.",
     "verify": "Verifiëren",
     "errSend": "Kon de code niet verzenden. Probeer het over een ogenblik opnieuw.",
     "errLocked": "Te veel pogingen. Probeer het opnieuw over {minutes} min.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Tweefactorauthenticatie is uitgeschakeld.",
     "twoFaRotating": "Oude authenticator verwijderd — stel de nieuwe in.",
     "phraseTitle": "Herstelzin voor inloggen",
-    "phraseActive": "Actief",
     "phraseMissing": "Niet ingesteld",
     "phraseNoneBody": "Een zin die alleen u kent — 12 gegenereerde woorden of uw eigen wachtwoordzin. Bij inloggen kan het de authenticatorcode vervangen als u uw telefoon kwijtraakt.",
     "phraseSetBody": "Ingesteld op {date}. Het werkt bij inloggen in plaats van een authenticatorcode en voor het bevestigen van beveiligingswijzigingen.",
     "hintShown": "Uw hint: {hint}",
     "generate": "Genereer 12 woorden",
-    "regenerate": "Genereer nieuwe woorden",
-    "useOwn": "Gebruik mijn eigen zin",
     "removePhrase": "Verwijderen",
     "wordsBody": "Schrijf deze 12 woorden op, in volgorde, en bewaar ze offline. Ze worden nu alleen getoond; we slaan alleen een hash op.",
-    "wordsSaved": "Ik heb de zin opgeslagen",
     "customPhrase": "Uw zin (minimaal 12 tekens)",
     "confirmPhrase": "Herhaal de zin",
     "showPhrase": "Toon zin",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Bewerken",
     "addressDeleteConfirm": "Verwijderen",
     "addressDefaultSet": "Standaardadres bijgewerkt.",
-    "addressDeleted": "Adres verwijderd."
+    "addressDeleted": "Adres verwijderd.",
+    "phraseKindSeed": "12 woorden",
+    "phraseKindCustom": "Aangepast",
+    "modeSeed": "12 woorden (zoals een crypto-portemonnee)",
+    "modeCustom": "Eigen geheime zin met een hint",
+    "seedIntro": "We genereren 12 willekeurige woorden. U schrijft ze op en bevestigt vervolgens 3 ervan. Voor herstel wordt u gevraagd om 4 willekeurige woorden uit de 12 — nooit de hele zin.",
+    "customIntro": "Een wachtwoordzin die alleen u kent (minstens 12 tekens), met een optionele hint die wordt getoond wanneer u erom wordt gevraagd.",
+    "wordsWritten": "Ik heb ze opgeschreven — controleer",
+    "confirmBody": "Bevestig uw back-up: voer de woorden in op deze drie posities.",
+    "enterWord": "Voer woord #{n} in",
+    "confirmSave": "Bevestigen en opslaan",
+    "backToWords": "Toon de woorden opnieuw",
+    "phraseSeedSetBody": "12-woorden zin ingesteld op {date}. Voor herstel wordt u gevraagd om 4 willekeurige woorden ervan.",
+    "setUpPhrase": "Stel een herstelzin in",
+    "replacePhrase": "Vervang zin",
+    "errWrongWords": "Die woorden komen niet overeen. Controleer uw geschreven kopie en probeer het opnieuw.",
+    "errSetupExpired": "Die instelling is verlopen. Genereer een nieuwe zin."
+  },
+  "RecoveryPhrase": {
+    "none": "Dit account heeft geen herstelzin. Gebruik in plaats daarvan uw authenticatiecode of een herstelcode.",
+    "seedPrompt": "Voer de {count} woorden van uw 12-woorden zin in op deze posities.",
+    "wordNumber": "Woord #{n}",
+    "hint": "Hint: {hint}",
+    "customLabel": "Voer uw herstelzin in",
+    "show": "Toon zin",
+    "hide": "Verberg zin"
   }
 }

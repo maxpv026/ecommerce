@@ -8,7 +8,7 @@ import { checkPassword } from "@/lib/loginThrottle";
 import { readRestamp, revokedBefore, sessionAnchor, sessionStillValid } from "@/lib/sessionRevocation";
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
-import { looksLikePhrase, verifyRecoveryPhraseForUser } from "@/lib/recoveryPhrase";
+import { looksLikePhrase, verifyRecoveryForUser } from "@/lib/recoveryPhrase";
 import { ADMIN_LEGAL_NAME, roleForEmail } from "@/lib/rbac";
 import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
 import { legacySessionId, registerSession, touchSession } from "@/lib/deviceSessions";
@@ -79,7 +79,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           const totp = usingRecovery
             ? await consumeRecoveryCode(prisma, user, code)
             : looksLikePhrase(code)
-              ? await verifyRecoveryPhraseForUser(prisma, user, code)
+              ? await verifyRecoveryForUser(prisma, user, code, "login")
               : await verifyTotpForUser(prisma, user, code);
           if (totp.ok && usingRecovery) {
             console.warn(
@@ -127,7 +127,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         const check = looksLikeRecoveryCode(code)
           ? await consumeRecoveryCode(prisma, user, code)
           : looksLikePhrase(code)
-            ? await verifyRecoveryPhraseForUser(prisma, user, code)
+            ? await verifyRecoveryForUser(prisma, user, code, "login")
             : await verifyTotpForUser(prisma, user, code);
         if (!check.ok) {
           console.warn(`auth: Google 2FA refused for ${user.email ?? user.id}: ${check.reason}`);

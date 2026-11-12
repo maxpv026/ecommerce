@@ -90,7 +90,8 @@
     "phraseLabel": "Frase di recupero",
     "phrasePlaceholder": "es. mela fiume …",
     "errorIncompletePhrase": "Inserisci la tua frase di recupero completa (almeno 12 caratteri).",
-    "errorInvalidPhrase": "Questa frase di recupero non corrisponde."
+    "errorInvalidPhrase": "Questa frase di recupero non corrisponde.",
+    "errorIncompleteWords": "Inserisci tutte le parole richieste."
   },
   "Dashboard": {
     "greetingMorning": "Buongiorno",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "Partita IVA UE",
     "trustReg": "UE 2024/573",
-    "phraseActiveBadge": "Frase di recupero attiva",
-    "phraseAddBadge": "Aggiungi una frase di recupero"
+    "phraseAddBadge": "Aggiungi una frase di recupero",
+    "phraseBadgeSeed": "Frase di recupero: 12 parole",
+    "phraseBadgeCustom": "Frase di recupero: personalizzata"
   },
   "Theme": {
     "saveFailed": "Impossibile salvare il tuo tema. È stato ripristinato."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Password",
     "secretPhrase": "Frase di recupero",
     "passwordLabel": "Password attuale",
-    "phraseLabel": "Frase di recupero",
-    "phraseHint": "Maiuscole e spazi extra non contano.",
     "verify": "Verifica",
     "errSend": "Impossibile inviare il codice. Riprova tra un momento.",
     "errLocked": "Troppi tentativi. Riprova tra {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Autenticazione a due fattori disattivata.",
     "twoFaRotating": "Vecchio autenticatore rimosso — configura il nuovo.",
     "phraseTitle": "Frase di recupero per l'accesso",
-    "phraseActive": "Attiva",
     "phraseMissing": "Non impostata",
     "phraseNoneBody": "Una frase che solo tu conosci — 12 parole generate o la tua passphrase. All'accesso può sostituire il codice dell'autenticatore se perdi il telefono.",
     "phraseSetBody": "Impostata il {date}. Funziona all'accesso al posto di un codice dell'autenticatore e per confermare le modifiche di sicurezza.",
     "hintShown": "Il tuo suggerimento: {hint}",
     "generate": "Genera 12 parole",
-    "regenerate": "Genera nuove parole",
-    "useOwn": "Usa la mia frase",
     "removePhrase": "Rimuovi",
     "wordsBody": "Scrivi queste 12 parole, in ordine, e conservale offline. Sono mostrate solo ora; conserviamo solo un hash.",
-    "wordsSaved": "Ho salvato la frase",
     "customPhrase": "La tua frase (almeno 12 caratteri)",
     "confirmPhrase": "Ripeti la frase",
     "showPhrase": "Mostra frase",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Elimina",
     "addressDefaultSet": "Indirizzo predefinito aggiornato.",
     "addressDeleted": "Indirizzo eliminato.",
+    "phraseKindSeed": "12 parole",
+    "phraseKindCustom": "Personalizzata",
+    "modeSeed": "12 parole (come un portafoglio crypto)",
+    "modeCustom": "Frase segreta personale con un suggerimento",
+    "seedIntro": "Generiamo 12 parole casuali. Le scrivi, poi ne confermi 3. Per recuperare, ti verranno chieste 4 parole casuali delle 12 — mai l'intera frase.",
+    "customIntro": "Una passphrase che conosci solo tu (almeno 12 caratteri), con un suggerimento opzionale mostrato quando richiesto.",
+    "wordsWritten": "Le ho scritte — verifica",
+    "confirmBody": "Conferma il tuo backup: inserisci le parole in queste tre posizioni.",
+    "enterWord": "Inserisci la parola n. {n}",
+    "confirmSave": "Conferma e salva",
+    "backToWords": "Mostra di nuovo le parole",
+    "phraseSeedSetBody": "Frase di 12 parole impostata il {date}. Per recuperare, ti verranno chieste 4 parole casuali.",
+    "setUpPhrase": "Imposta una frase di recupero",
+    "replacePhrase": "Sostituisci frase",
+    "errWrongWords": "Queste parole non corrispondono. Controlla la tua copia scritta e riprova.",
+    "errSetupExpired": "Questa configurazione è scaduta. Genera una nuova frase.",
     "sessionsCount": "{count, plural, one {# dispositivo connesso} many {# dispositivi connessi} other {# dispositivi connessi}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Questo account non ha una frase di recupero. Usa il tuo codice autenticatore o un codice di recupero.",
+    "seedPrompt": "Inserisci le {count} parole della tua frase di 12 parole in queste posizioni.",
+    "wordNumber": "Parola n. {n}",
+    "hint": "Suggerimento: {hint}",
+    "customLabel": "Inserisci la tua frase di recupero",
+    "show": "Mostra frase",
+    "hide": "Nascondi frase"
   }
 }

@@ -90,7 +90,8 @@
     "phraseLabel": "Atkūrimo frazė",
     "phrasePlaceholder": "pvz., obuolys upė …",
     "errorIncompletePhrase": "Įveskite visą atkūrimo frazę (ne mažiau kaip 12 simbolių).",
-    "errorInvalidPhrase": "Ši atkūrimo frazė neatitinka."
+    "errorInvalidPhrase": "Ši atkūrimo frazė neatitinka.",
+    "errorIncompleteWords": "Įveskite visus prašomus žodžius."
   },
   "Dashboard": {
     "greetingMorning": "Labas rytas",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "ES PVM kodas",
     "trustReg": "ES 2024/573",
-    "phraseActiveBadge": "Atkūrimo frazė aktyvi",
-    "phraseAddBadge": "Pridėti atkūrimo frazę"
+    "phraseAddBadge": "Pridėti atkūrimo frazę",
+    "phraseBadgeSeed": "Atkūrimo frazė: 12 žodžių",
+    "phraseBadgeCustom": "Atkūrimo frazė: pasirinktinė"
   },
   "Theme": {
     "saveFailed": "Nepavyko išsaugoti jūsų temos. Ji buvo pakeista atgal."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Slaptažodis",
     "secretPhrase": "Atkūrimo frazė",
     "passwordLabel": "Dabartinis slaptažodis",
-    "phraseLabel": "Atkūrimo frazė",
-    "phraseHint": "Didžiosios raidės ir papildomi tarpai nesvarbūs.",
     "verify": "Patvirtinti",
     "errSend": "Nepavyko išsiųsti kodo. Bandykite dar kartą po akimirkos.",
     "errLocked": "Per daug bandymų. Bandykite dar kartą po {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Dviejų veiksnių autentifikavimas išjungtas.",
     "twoFaRotating": "Senasis autentifikatorius pašalintas — nustatykite naują.",
     "phraseTitle": "Atkūrimo frazė prisijungimui",
-    "phraseActive": "Aktyvi",
     "phraseMissing": "Nenustatyta",
     "phraseNoneBody": "Frazė, kurią žinote tik jūs — 12 sugeneruotų žodžių arba jūsų pačių slaptažodis. Prisijungiant ji gali pakeisti autentifikatoriaus kodą, jei prarasite telefoną.",
     "phraseSetBody": "Nustatyta {date}. Ji veikia prisijungiant vietoje autentifikatoriaus kodo ir patvirtinant saugumo pakeitimus.",
     "hintShown": "Jūsų užuomina: {hint}",
     "generate": "Sugeneruoti 12 žodžių",
-    "regenerate": "Sugeneruoti naujus žodžius",
-    "useOwn": "Naudoti savo frazę",
     "removePhrase": "Pašalinti",
     "wordsBody": "Užrašykite šiuos 12 žodžių, eilės tvarka, ir laikykite juos neprisijungus. Jie rodomi tik dabar; mes saugome tik maišą.",
-    "wordsSaved": "Aš išsaugojau frazę",
     "customPhrase": "Jūsų frazė (ne mažiau kaip 12 simbolių)",
     "confirmPhrase": "Pakartokite frazę",
     "showPhrase": "Rodyti frazę",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Redaguoti",
     "addressDeleteConfirm": "Ištrinti",
     "addressDefaultSet": "Numatytasis adresas atnaujintas.",
-    "addressDeleted": "Adresas ištrintas."
+    "addressDeleted": "Adresas ištrintas.",
+    "phraseKindSeed": "12 žodžių",
+    "phraseKindCustom": "Pasirinktinė",
+    "modeSeed": "12 žodžių (kaip kriptovaliutos piniginė)",
+    "modeCustom": "Savo slapta frazė su užuomina",
+    "seedIntro": "Mes sugeneruojame 12 atsitiktinių žodžių. Jūs juos užsirašote, tada patvirtinate 3 iš jų. Norint atkurti, bus prašoma 4 atsitiktinių žodžių iš 12 — niekada visos frazės.",
+    "customIntro": "Slaptažodis, kurį žinote tik jūs (bent 12 simbolių), su pasirenkama užuomina, rodoma, kai jos prašoma.",
+    "wordsWritten": "Aš juos užsirašiau — patikrinti",
+    "confirmBody": "Patvirtinkite savo atsarginę kopiją: įveskite žodžius šiose trijose pozicijose.",
+    "enterWord": "Įveskite žodį #{n}",
+    "confirmSave": "Patvirtinti ir išsaugoti",
+    "backToWords": "Rodyti žodžius dar kartą",
+    "phraseSeedSetBody": "12 žodžių frazė nustatyta {date}. Norint atkurti, bus prašoma 4 atsitiktinių žodžių iš jos.",
+    "setUpPhrase": "Nustatyti atkūrimo frazę",
+    "replacePhrase": "Pakeisti frazę",
+    "errWrongWords": "Šie žodžiai nesutampa. Patikrinkite savo užrašytą kopiją ir bandykite dar kartą.",
+    "errSetupExpired": "Šis nustatymas pasibaigė. Sugeneruokite naują frazę."
+  },
+  "RecoveryPhrase": {
+    "none": "Ši paskyra neturi atkūrimo frazės. Vietoj to naudokite autentifikatoriaus kodą arba atkūrimo kodą.",
+    "seedPrompt": "Įveskite {count} žodžius iš savo 12 žodžių frazės šiose pozicijose.",
+    "wordNumber": "Žodis #{n}",
+    "hint": "Užuomina: {hint}",
+    "customLabel": "Įveskite savo atkūrimo frazę",
+    "show": "Rodyti frazę",
+    "hide": "Slėpti frazę"
   }
 }

@@ -90,7 +90,8 @@
     "phraseLabel": "Faza za oporavak",
     "phrasePlaceholder": "npr. jabuka rijeka …",
     "errorIncompletePhrase": "Unesite cijelu frazu za oporavak (najmanje 12 znakova).",
-    "errorInvalidPhrase": "Ta fraza za oporavak se ne podudara."
+    "errorInvalidPhrase": "Ta fraza za oporavak se ne podudara.",
+    "errorIncompleteWords": "Unesite svaku traženu riječ."
   },
   "Dashboard": {
     "greetingMorning": "Dobro jutro",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU PDV ID",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Faza za oporavak aktivna",
-    "phraseAddBadge": "Dodajte frazu za oporavak"
+    "phraseAddBadge": "Dodajte frazu za oporavak",
+    "phraseBadgeSeed": "Fraza za oporavak: 12 riječi",
+    "phraseBadgeCustom": "Fraza za oporavak: prilagođena"
   },
   "Theme": {
     "saveFailed": "Nije moguće spremiti vašu temu. Vraćena je na prethodno stanje."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Lozinka",
     "secretPhrase": "Faza za oporavak",
     "passwordLabel": "Trenutna lozinka",
-    "phraseLabel": "Faza za oporavak",
-    "phraseHint": "Velika slova i dodatni razmaci nisu važni.",
     "verify": "Potvrdi",
     "errSend": "Nije moguće poslati kod. Pokušajte ponovno za trenutak.",
     "errLocked": "Previše pokušaja. Pokušajte ponovno za {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Dvofaktorska autentifikacija je isključena.",
     "twoFaRotating": "Stari autentifikator uklonjen — postavite novi.",
     "phraseTitle": "Faza za oporavak za prijavu",
-    "phraseActive": "Aktivno",
     "phraseMissing": "Nije postavljeno",
     "phraseNoneBody": "Fraza koju znate samo vi — 12 generiranih riječi ili vaša vlastita lozinka. Pri prijavi može zamijeniti autentifikacijski kod ako izgubite telefon.",
     "phraseSetBody": "Postavljeno na {date}. Radi pri prijavi umjesto autentifikacijskog koda i za potvrdu sigurnosnih promjena.",
     "hintShown": "Vaš savjet: {hint}",
     "generate": "Generirajte 12 riječi",
-    "regenerate": "Generirajte nove riječi",
-    "useOwn": "Koristite moju vlastitu frazu",
     "removePhrase": "Ukloni",
     "wordsBody": "Zapišite ovih 12 riječi, redom, i čuvajte ih izvan mreže. Prikazane su samo sada; pohranjujemo samo hash.",
-    "wordsSaved": "Spremio/la sam frazu",
     "customPhrase": "Vaša fraza (najmanje 12 znakova)",
     "confirmPhrase": "Ponovite frazu",
     "showPhrase": "Prikaži frazu",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Uredi",
     "addressDeleteConfirm": "Izbriši",
     "addressDefaultSet": "Zadana adresa ažurirana.",
-    "addressDeleted": "Adresa izbrisana."
+    "addressDeleted": "Adresa izbrisana.",
+    "phraseKindSeed": "12 riječi",
+    "phraseKindCustom": "Prilagođeno",
+    "modeSeed": "12 riječi (kao kripto novčanik)",
+    "modeCustom": "Vlastita tajna fraza s naznakom",
+    "seedIntro": "Generiramo 12 nasumičnih riječi. Zapišite ih, a zatim potvrdite 3 od njih. Za oporavak će se tražiti 4 nasumične riječi od tih 12 — nikada cijela fraza.",
+    "customIntro": "Lozinka koju samo vi znate (najmanje 12 znakova), s opcionalnom naznakom koja se prikazuje kada se zatraži.",
+    "wordsWritten": "Zapisao/la sam ih — provjeri",
+    "confirmBody": "Potvrdite svoju sigurnosnu kopiju: unesite riječi na ovim pozicijama.",
+    "enterWord": "Unesite riječ #{n}",
+    "confirmSave": "Potvrdi i spremi",
+    "backToWords": "Prikaži riječi ponovno",
+    "phraseSeedSetBody": "Fraza od 12 riječi postavljena {date}. Za oporavak će se tražiti 4 nasumične riječi iz nje.",
+    "setUpPhrase": "Postavite frazu za oporavak",
+    "replacePhrase": "Zamijeni frazu",
+    "errWrongWords": "Te riječi se ne podudaraju. Provjerite svoj zapis i pokušajte ponovno.",
+    "errSetupExpired": "Ta postavka je istekla. Generirajte novu frazu."
+  },
+  "RecoveryPhrase": {
+    "none": "Ovaj račun nema frazu za oporavak. Umjesto toga koristite svoj autentifikacijski kod ili kod za oporavak.",
+    "seedPrompt": "Unesite {count} riječi iz svoje fraze od 12 riječi na ovim pozicijama.",
+    "wordNumber": "Riječ #{n}",
+    "hint": "Naznaka: {hint}",
+    "customLabel": "Unesite svoju frazu za oporavak",
+    "show": "Prikaži frazu",
+    "hide": "Sakrij frazu"
   }
 }

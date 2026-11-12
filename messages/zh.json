@@ -90,7 +90,8 @@
     "phraseLabel": "恢复短语",
     "phrasePlaceholder": "例如：苹果 河流 …",
     "errorIncompletePhrase": "请输入完整的恢复短语（至少 12 个字符）。",
-    "errorInvalidPhrase": "该恢复短语不匹配。"
+    "errorInvalidPhrase": "该恢复短语不匹配。",
+    "errorIncompleteWords": "请输入每个请求的单词。"
   },
   "AuthModal": {
     "close": "关闭",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "欧盟增值税号",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "恢复短语已激活",
-    "phraseAddBadge": "添加恢复短语"
+    "phraseAddBadge": "添加恢复短语",
+    "phraseBadgeSeed": "恢复短语：12 个单词",
+    "phraseBadgeCustom": "恢复短语：自定义"
   },
   "Theme": {
     "saveFailed": "无法保存您的主题。已切换回原设置。"
@@ -1804,8 +1806,6 @@
     "secretPassword": "密码",
     "secretPhrase": "恢复短语",
     "passwordLabel": "当前密码",
-    "phraseLabel": "恢复短语",
-    "phraseHint": "大小写和额外空格无关紧要。",
     "verify": "验证",
     "errSend": "无法发送代码。请稍后再试。",
     "errLocked": "尝试次数过多。请 {minutes} 分钟后再试。",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "双因素认证已关闭。",
     "twoFaRotating": "旧认证器已移除 — 设置新认证器。",
     "phraseTitle": "登录恢复短语",
-    "phraseActive": "已激活",
     "phraseMissing": "未设置",
     "phraseNoneBody": "只有您知道的短语 — 12 个生成的单词，或您自己的密码短语。在登录时，如果您丢失手机，它可以替代认证器代码。",
     "phraseSetBody": "设置于 {date}。在登录时可替代认证器代码，并用于确认安全更改。",
     "hintShown": "您的提示：{hint}",
     "generate": "生成 12 个单词",
-    "regenerate": "生成新单词",
-    "useOwn": "使用我自己的短语",
     "removePhrase": "移除",
     "wordsBody": "按顺序写下这 12 个单词，并离线保存。它们仅在此时显示；我们只存储哈希。",
-    "wordsSaved": "我已保存短语",
     "customPhrase": "您的短语（至少 12 个字符）",
     "confirmPhrase": "重复短语",
     "showPhrase": "显示短语",
@@ -1876,6 +1872,31 @@
     "addressEdit": "编辑",
     "addressDeleteConfirm": "删除",
     "addressDefaultSet": "默认地址已更新。",
-    "addressDeleted": "地址已删除。"
+    "addressDeleted": "地址已删除。",
+    "phraseKindSeed": "12 个单词",
+    "phraseKindCustom": "自定义",
+    "modeSeed": "12 个单词（如加密钱包）",
+    "modeCustom": "自定义密语，附提示",
+    "seedIntro": "我们生成 12 个随机单词。请记下它们，然后确认其中 3 个。恢复时，您将被要求提供 12 个中的 4 个随机单词，而不是整个短语。",
+    "customIntro": "只有您知道的密码短语（至少 12 个字符），可选提示在需要时显示。",
+    "wordsWritten": "我已记下 — 请检查",
+    "confirmBody": "确认您的备份：输入这三个位置的单词。",
+    "enterWord": "输入单词 #{n}",
+    "confirmSave": "确认并保存",
+    "backToWords": "再次显示单词",
+    "phraseSeedSetBody": "12 个单词短语已于 {date} 设置。恢复时，您将被要求提供其中的 4 个随机单词。",
+    "setUpPhrase": "设置恢复短语",
+    "replacePhrase": "替换短语",
+    "errWrongWords": "这些单词不匹配。请检查您写下的副本并重试。",
+    "errSetupExpired": "该设置已过期。生成新短语。"
+  },
+  "RecoveryPhrase": {
+    "none": "此账户没有恢复短语。请使用您的身份验证器代码或恢复代码。",
+    "seedPrompt": "在这些位置输入您的 12 个单词短语中的 {count} 个单词。",
+    "wordNumber": "单词 #{n}",
+    "hint": "提示：{hint}",
+    "customLabel": "输入您的恢复短语",
+    "show": "显示短语",
+    "hide": "隐藏短语"
   }
 }

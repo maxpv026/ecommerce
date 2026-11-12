@@ -90,7 +90,8 @@
     "phraseLabel": "Obnovovacia fráza",
     "phrasePlaceholder": "napr. jablko rieka …",
     "errorIncompletePhrase": "Zadajte celú obnovovaciu frázu (minimálne 12 znakov).",
-    "errorInvalidPhrase": "Táto obnovovacia fráza sa nezhoduje."
+    "errorInvalidPhrase": "Táto obnovovacia fráza sa nezhoduje.",
+    "errorIncompleteWords": "Zadajte každé požadované slovo."
   },
   "Dashboard": {
     "greetingMorning": "Dobré ráno",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "IČ DPH EÚ",
     "trustReg": "EÚ 2024/573",
-    "phraseActiveBadge": "Obnovovacia fráza aktívna",
-    "phraseAddBadge": "Pridať obnovovaciu frázu"
+    "phraseAddBadge": "Pridať obnovovaciu frázu",
+    "phraseBadgeSeed": "Obnovovacia fráza: 12 slov",
+    "phraseBadgeCustom": "Obnovovacia fráza: vlastná"
   },
   "Theme": {
     "saveFailed": "Nepodarilo sa uložiť vašu tému. Bola vrátená späť."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Heslo",
     "secretPhrase": "Obnovovacia fráza",
     "passwordLabel": "Aktuálne heslo",
-    "phraseLabel": "Obnovovacia fráza",
-    "phraseHint": "Na veľkosti písmen a medzerách nezáleží.",
     "verify": "Overiť",
     "errSend": "Nepodarilo sa odoslať kód. Skúste to znova o chvíľu.",
     "errLocked": "Príliš veľa pokusov. Skúste to znova za {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Dvojfaktorová autentifikácia je vypnutá.",
     "twoFaRotating": "Starý autentifikátor bol odstránený — nastavte nový.",
     "phraseTitle": "Obnovovacia fráza pre prihlásenie",
-    "phraseActive": "Aktívna",
     "phraseMissing": "Nenastavená",
     "phraseNoneBody": "Fráza, ktorú poznáte len vy — 12 generovaných slov alebo vlastná fráza. Pri prihlásení môže nahradiť autentifikačný kód, ak stratíte telefón.",
     "phraseSetBody": "Nastavené {date}. Funguje pri prihlásení namiesto autentifikačného kódu a na potvrdenie bezpečnostných zmien.",
     "hintShown": "Váš náznak: {hint}",
     "generate": "Generovať 12 slov",
-    "regenerate": "Generovať nové slová",
-    "useOwn": "Použiť vlastnú frázu",
     "removePhrase": "Odstrániť",
     "wordsBody": "Zapíšte si týchto 12 slov v poradí a uchovajte ich offline. Sú zobrazené len teraz; uchovávame len hash.",
-    "wordsSaved": "Uložil som frázu",
     "customPhrase": "Vaša fráza (minimálne 12 znakov)",
     "confirmPhrase": "Zopakujte frázu",
     "showPhrase": "Zobraziť frázu",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Odstrániť",
     "addressDefaultSet": "Predvolená adresa aktualizovaná.",
     "addressDeleted": "Adresa odstránená.",
+    "phraseKindSeed": "12 slov",
+    "phraseKindCustom": "Vlastná",
+    "modeSeed": "12 slov (ako kryptopeňaženka)",
+    "modeCustom": "Vlastná tajná fráza s nápovedou",
+    "seedIntro": "Generujeme 12 náhodných slov. Zapíšete si ich a potom potvrdíte 3 z nich. Na obnovenie budete požiadaní o 4 náhodné slová z tých 12 — nikdy celú frázu.",
+    "customIntro": "Prístupová fráza, ktorú poznáte iba vy (minimálne 12 znakov), s voliteľnou nápovedou, ktorá sa zobrazí, keď o ňu požiadate.",
+    "wordsWritten": "Zapísal som si ich — skontrolovať",
+    "confirmBody": "Potvrďte svoju zálohu: zadajte slová na týchto troch pozíciách.",
+    "enterWord": "Zadajte slovo č. {n}",
+    "confirmSave": "Potvrdiť a uložiť",
+    "backToWords": "Zobraziť slová znova",
+    "phraseSeedSetBody": "12-slovná fráza nastavená {date}. Na obnovenie budete požiadaní o 4 náhodné slová z nej.",
+    "setUpPhrase": "Nastaviť obnovovaciu frázu",
+    "replacePhrase": "Nahradiť frázu",
+    "errWrongWords": "Tieto slová sa nezhodujú. Skontrolujte svoju písomnú kópiu a skúste to znova.",
+    "errSetupExpired": "Táto konfigurácia vypršala. Vygenerujte novú frázu.",
     "sessionsCount": "{count, plural, one {# prihlásené zariadenie} few {# prihlásené zariadenia} many {# prihlásených zariadení} other {# prihlásených zariadení}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Tento účet nemá obnovovaciu frázu. Namiesto toho použite svoj autentifikačný kód alebo obnovovací kód.",
+    "seedPrompt": "Zadajte {count} slov z vašej 12-slovnej frázy na týchto pozíciách.",
+    "wordNumber": "Slovo č. {n}",
+    "hint": "Nápoveda: {hint}",
+    "customLabel": "Zadajte svoju obnovovaciu frázu",
+    "show": "Zobraziť frázu",
+    "hide": "Skryť frázu"
   }
 }

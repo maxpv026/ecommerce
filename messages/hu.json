@@ -90,7 +90,8 @@
     "phraseLabel": "Helyreállítási kifejezés",
     "phrasePlaceholder": "pl. alma folyó …",
     "errorIncompletePhrase": "Adja meg a teljes helyreállítási kifejezést (legalább 12 karakter).",
-    "errorInvalidPhrase": "Ez a helyreállítási kifejezés nem egyezik."
+    "errorInvalidPhrase": "Ez a helyreállítási kifejezés nem egyezik.",
+    "errorIncompleteWords": "Adja meg az összes kért szót."
   },
   "Dashboard": {
     "greetingMorning": "Jó reggelt",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU ÁFA azonosító",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Helyreállítási kifejezés aktív",
-    "phraseAddBadge": "Helyreállítási kifejezés hozzáadása"
+    "phraseAddBadge": "Helyreállítási kifejezés hozzáadása",
+    "phraseBadgeSeed": "Helyreállítási kifejezés: 12 szó",
+    "phraseBadgeCustom": "Helyreállítási kifejezés: egyéni"
   },
   "Theme": {
     "saveFailed": "Nem sikerült menteni a témát. Vissza lett állítva."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Jelszó",
     "secretPhrase": "Helyreállítási kifejezés",
     "passwordLabel": "Jelenlegi jelszó",
-    "phraseLabel": "Helyreállítási kifejezés",
-    "phraseHint": "A kis- és nagybetűk, valamint a felesleges szóközök nem számítanak.",
     "verify": "Ellenőrzés",
     "errSend": "Nem sikerült elküldeni a kódot. Próbálja újra egy pillanat múlva.",
     "errLocked": "Túl sok próbálkozás. Próbálja újra {minutes} perc múlva.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "A kétfaktoros hitelesítés ki van kapcsolva.",
     "twoFaRotating": "Régi autentikátor eltávolítva — állítsa be az újat.",
     "phraseTitle": "Helyreállítási kifejezés a bejelentkezéshez",
-    "phraseActive": "Aktív",
     "phraseMissing": "Nincs beállítva",
     "phraseNoneBody": "Egy kifejezés, amit csak Ön ismer — 12 generált szó, vagy saját jelszó. Bejelentkezéskor helyettesítheti az autentikátor kódot, ha elveszíti a telefonját.",
     "phraseSetBody": "Beállítva {date}. Bejelentkezéskor az autentikátor kód helyett működik, és a biztonsági változtatások megerősítésére is.",
     "hintShown": "Az Ön tippje: {hint}",
     "generate": "12 szó generálása",
-    "regenerate": "Új szavak generálása",
-    "useOwn": "Saját kifejezés használata",
     "removePhrase": "Eltávolítás",
     "wordsBody": "Írja le ezt a 12 szót sorrendben, és tartsa offline. Csak most jelennek meg; csak egy hash-t tárolunk.",
-    "wordsSaved": "Elmentettem a kifejezést",
     "customPhrase": "Az Ön kifejezése (legalább 12 karakter)",
     "confirmPhrase": "Ismételje meg a kifejezést",
     "showPhrase": "Kifejezés megjelenítése",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Szerkesztés",
     "addressDeleteConfirm": "Törlés",
     "addressDefaultSet": "Az alapértelmezett cím frissítve.",
-    "addressDeleted": "A cím törölve."
+    "addressDeleted": "A cím törölve.",
+    "phraseKindSeed": "12 szó",
+    "phraseKindCustom": "Egyéni",
+    "modeSeed": "12 szó (mint egy kriptotárca)",
+    "modeCustom": "Saját titkos kifejezés egy tippel",
+    "seedIntro": "12 véletlenszerű szót generálunk. Írja le őket, majd erősítse meg 3-at közülük. A helyreállításhoz 4 véletlenszerű szót kérünk a 12-ből — soha nem az egész kifejezést.",
+    "customIntro": "Egy jelszó, amit csak Ön ismer (legalább 12 karakter), opcionális tippel, amely megjelenik, amikor kérik.",
+    "wordsWritten": "Leírtam őket — ellenőrizve",
+    "confirmBody": "Erősítse meg a biztonsági mentést: adja meg a szavakat ezeken a pozíciókon.",
+    "enterWord": "Adja meg a(z) #{n} szót",
+    "confirmSave": "Megerősítés és mentés",
+    "backToWords": "Mutassa újra a szavakat",
+    "phraseSeedSetBody": "12 szavas kifejezés beállítva ekkor: {date}. A helyreállításhoz 4 véletlenszerű szót kérünk belőle.",
+    "setUpPhrase": "Helyreállítási kifejezés beállítása",
+    "replacePhrase": "Kifejezés cseréje",
+    "errWrongWords": "Ezek a szavak nem egyeznek. Ellenőrizze a leírt másolatot, és próbálja újra.",
+    "errSetupExpired": "Ez a beállítás lejárt. Generáljon új kifejezést."
+  },
+  "RecoveryPhrase": {
+    "none": "Ehhez a fiókhoz nincs helyreállítási kifejezés. Használja az autentikátor kódját vagy egy helyreállítási kódot.",
+    "seedPrompt": "Adja meg a(z) {count} szót a 12 szavas kifejezéséből ezeken a pozíciókon.",
+    "wordNumber": "#{n} szó",
+    "hint": "Tipp: {hint}",
+    "customLabel": "Adja meg a helyreállítási kifejezését",
+    "show": "Kifejezés megjelenítése",
+    "hide": "Kifejezés elrejtése"
   }
 }

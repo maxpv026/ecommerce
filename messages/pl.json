@@ -90,7 +90,8 @@
     "phraseLabel": "Fraza odzyskiwania",
     "phrasePlaceholder": "np. jabłko rzeka …",
     "errorIncompletePhrase": "Wprowadź pełną frazę odzyskiwania (co najmniej 12 znaków).",
-    "errorInvalidPhrase": "Ta fraza odzyskiwania nie pasuje."
+    "errorInvalidPhrase": "Ta fraza odzyskiwania nie pasuje.",
+    "errorIncompleteWords": "Wprowadź każde wymagane słowo."
   },
   "Dashboard": {
     "greetingMorning": "Dzień dobry",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU NIP",
     "trustReg": "UE 2024/573",
-    "phraseActiveBadge": "Fraza odzyskiwania aktywna",
-    "phraseAddBadge": "Dodaj frazę odzyskiwania"
+    "phraseAddBadge": "Dodaj frazę odzyskiwania",
+    "phraseBadgeSeed": "Fraza odzyskiwania: 12 słów",
+    "phraseBadgeCustom": "Fraza odzyskiwania: niestandardowa"
   },
   "Theme": {
     "saveFailed": "Nie udało się zapisać motywu. Został przywrócony do poprzedniego."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Hasło",
     "secretPhrase": "Fraza odzyskiwania",
     "passwordLabel": "Obecne hasło",
-    "phraseLabel": "Fraza odzyskiwania",
-    "phraseHint": "Wielkość liter i dodatkowe spacje nie mają znaczenia.",
     "verify": "Zweryfikuj",
     "errSend": "Nie można wysłać kodu. Spróbuj ponownie za chwilę.",
     "errLocked": "Zbyt wiele prób. Spróbuj ponownie za {minutes} min.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Uwierzytelnianie dwuskładnikowe jest wyłączone.",
     "twoFaRotating": "Stara aplikacja uwierzytelniająca usunięta — skonfiguruj nową.",
     "phraseTitle": "Fraza odzyskiwania do logowania",
-    "phraseActive": "Aktywna",
     "phraseMissing": "Nie ustawiona",
     "phraseNoneBody": "Fraza znana tylko Tobie — 12 wygenerowanych słów lub własne hasło. Przy logowaniu może zastąpić kod uwierzytelniający, jeśli zgubisz telefon.",
     "phraseSetBody": "Ustawiono {date}. Działa przy logowaniu zamiast kodu uwierzytelniającego i do potwierdzania zmian bezpieczeństwa.",
     "hintShown": "Twoja wskazówka: {hint}",
     "generate": "Wygeneruj 12 słów",
-    "regenerate": "Wygeneruj nowe słowa",
-    "useOwn": "Użyj własnej frazy",
     "removePhrase": "Usuń",
     "wordsBody": "Zapisz te 12 słów w kolejności i przechowuj offline. Są wyświetlane tylko teraz; przechowujemy tylko skrót.",
-    "wordsSaved": "Zapisałem frazę",
     "customPhrase": "Twoja fraza (co najmniej 12 znaków)",
     "confirmPhrase": "Powtórz frazę",
     "showPhrase": "Pokaż frazę",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Edytuj",
     "addressDeleteConfirm": "Usuń",
     "addressDefaultSet": "Domyślny adres zaktualizowany.",
-    "addressDeleted": "Adres usunięty."
+    "addressDeleted": "Adres usunięty.",
+    "phraseKindSeed": "12 słów",
+    "phraseKindCustom": "Niestandardowa",
+    "modeSeed": "12 słów (jak portfel kryptowalutowy)",
+    "modeCustom": "Własna tajna fraza z podpowiedzią",
+    "seedIntro": "Generujemy 12 losowych słów. Zapisujesz je, a następnie potwierdzasz 3 z nich. Aby odzyskać, zostaniesz poproszony o 4 losowe słowa z 12 — nigdy całą frazę.",
+    "customIntro": "Hasło znane tylko Tobie (co najmniej 12 znaków), z opcjonalną podpowiedzią wyświetlaną, gdy zostaniesz o nie poproszony.",
+    "wordsWritten": "Zapisałem je — sprawdź",
+    "confirmBody": "Potwierdź swoją kopię zapasową: wprowadź słowa na tych trzech pozycjach.",
+    "enterWord": "Wprowadź słowo nr {n}",
+    "confirmSave": "Potwierdź i zapisz",
+    "backToWords": "Pokaż słowa ponownie",
+    "phraseSeedSetBody": "Fraza 12-słowna ustawiona {date}. Aby odzyskać, zostaniesz poproszony o 4 losowe słowa z niej.",
+    "setUpPhrase": "Ustaw frazę odzyskiwania",
+    "replacePhrase": "Zastąp frazę",
+    "errWrongWords": "Te słowa nie pasują. Sprawdź swoją zapisaną kopię i spróbuj ponownie.",
+    "errSetupExpired": "To ustawienie wygasło. Wygeneruj nową frazę."
+  },
+  "RecoveryPhrase": {
+    "none": "To konto nie ma frazy odzyskiwania. Użyj kodu uwierzytelniającego lub kodu odzyskiwania.",
+    "seedPrompt": "Wprowadź {count} słów z Twojej 12-słownej frazy na tych pozycjach.",
+    "wordNumber": "Słowo nr {n}",
+    "hint": "Podpowiedź: {hint}",
+    "customLabel": "Wprowadź swoją frazę odzyskiwania",
+    "show": "Pokaż frazę",
+    "hide": "Ukryj frazę"
   }
 }

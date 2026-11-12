@@ -433,8 +433,8 @@ export default function AccountSettingsPage({ profile, security: initialSecurity
                         <span data-twofa-status={twoFa ? "on" : "off"} className={`${CHIP} ${twoFa ? CHIP_OK : CHIP_WARN}`}>
                           {twoFa ? t("twoFaOn") : t("twoFaOff")}
                         </span>
-                        <span data-phrase-status={phraseSet ? "set" : "none"} className={`${CHIP} ${phraseSet ? CHIP_OK : CHIP_WARN}`}>
-                          {phraseSet ? t("phraseActiveBadge") : t("phraseAddBadge")}
+                        <span data-phrase-status={security?.phrase.type ?? "none"} className={`${CHIP} ${phraseSet ? CHIP_OK : CHIP_WARN}`}>
+                          {security?.phrase.type === "SEED_12" ? t("phraseBadgeSeed") : security?.phrase.type === "CUSTOM_PHRASE" ? t("phraseBadgeCustom") : t("phraseAddBadge")}
                         </span>
                       </div>
                       <p className={`m-0 mt-0.5 text-[12px] leading-[1.45] ${MUTED}`}>{t("twoFaSub")}</p>

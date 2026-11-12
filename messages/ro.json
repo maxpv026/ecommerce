@@ -90,7 +90,8 @@
     "phraseLabel": "Fraza de recuperare",
     "phrasePlaceholder": "ex. măr râu …",
     "errorIncompletePhrase": "Introduceți întreaga frază de recuperare (cel puțin 12 caractere).",
-    "errorInvalidPhrase": "Acea frază de recuperare nu se potrivește."
+    "errorInvalidPhrase": "Acea frază de recuperare nu se potrivește.",
+    "errorIncompleteWords": "Introduceți fiecare cuvânt solicitat."
   },
   "Dashboard": {
     "greetingMorning": "Bună dimineața",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "CUI TVA UE",
     "trustReg": "UE 2024/573",
-    "phraseActiveBadge": "Fraza de recuperare activă",
-    "phraseAddBadge": "Adăugați o frază de recuperare"
+    "phraseAddBadge": "Adăugați o frază de recuperare",
+    "phraseBadgeSeed": "Fraza de recuperare: 12 cuvinte",
+    "phraseBadgeCustom": "Fraza de recuperare: personalizată"
   },
   "Theme": {
     "saveFailed": "Nu s-a putut salva tema dvs. A fost resetată."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Parolă",
     "secretPhrase": "Fraza de recuperare",
     "passwordLabel": "Parola curentă",
-    "phraseLabel": "Fraza de recuperare",
-    "phraseHint": "Majusculele și spațiile suplimentare nu contează.",
     "verify": "Verificați",
     "errSend": "Nu s-a putut trimite codul. Încercați din nou în câteva momente.",
     "errLocked": "Prea multe încercări. Încercați din nou în {minutes} min.",
@@ -1835,17 +1835,13 @@
     "twoFaDisabled": "Autentificarea în doi pași este dezactivată.",
     "twoFaRotating": "Autentificatorul vechi a fost eliminat — configurați unul nou.",
     "phraseTitle": "Fraza de recuperare pentru conectare",
-    "phraseActive": "Activă",
     "phraseMissing": "Neconfigurată",
     "phraseNoneBody": "O frază pe care doar dvs. o cunoașteți — 12 cuvinte generate sau propria parolă. La conectare poate înlocui codul de autentificare dacă vă pierdeți telefonul.",
     "phraseSetBody": "Setată la {date}. Funcționează la conectare în locul unui cod de autentificare și pentru confirmarea modificărilor de securitate.",
     "hintShown": "Indiciul dvs.: {hint}",
     "generate": "Generați 12 cuvinte",
-    "regenerate": "Generați cuvinte noi",
-    "useOwn": "Utilizați propria frază",
     "removePhrase": "Eliminați",
     "wordsBody": "Notați aceste 12 cuvinte, în ordine, și păstrați-le offline. Sunt afișate doar acum; stocăm doar un hash.",
-    "wordsSaved": "Am salvat fraza",
     "customPhrase": "Fraza dvs. (cel puțin 12 caractere)",
     "confirmPhrase": "Repetați fraza",
     "showPhrase": "Afișați fraza",
@@ -1876,6 +1872,31 @@
     "addressEdit": "Editează",
     "addressDeleteConfirm": "Șterge",
     "addressDefaultSet": "Adresa implicită a fost actualizată.",
-    "addressDeleted": "Adresa a fost ștearsă."
+    "addressDeleted": "Adresa a fost ștearsă.",
+    "phraseKindSeed": "12 cuvinte",
+    "phraseKindCustom": "Personalizat",
+    "modeSeed": "12 cuvinte (ca un portofel crypto)",
+    "modeCustom": "Fraza secretă proprie cu un indiciu",
+    "seedIntro": "Generăm 12 cuvinte aleatorii. Le notați, apoi confirmați 3 dintre ele. Pentru recuperare, vi se vor cere 4 cuvinte aleatorii din cele 12 — niciodată întreaga frază.",
+    "customIntro": "O parolă pe care doar dvs. o cunoașteți (cel puțin 12 caractere), cu un indiciu opțional afișat când vi se cere.",
+    "wordsWritten": "Le-am notat — verificare",
+    "confirmBody": "Confirmați copia de rezervă: introduceți cuvintele la aceste trei poziții.",
+    "enterWord": "Introduceți cuvântul #{n}",
+    "confirmSave": "Confirmați și salvați",
+    "backToWords": "Afișați din nou cuvintele",
+    "phraseSeedSetBody": "Fraza de 12 cuvinte setată pe {date}. Pentru recuperare, vi se vor cere 4 cuvinte aleatorii din aceasta.",
+    "setUpPhrase": "Configurați o frază de recuperare",
+    "replacePhrase": "Înlocuiți fraza",
+    "errWrongWords": "Aceste cuvinte nu se potrivesc. Verificați copia scrisă și încercați din nou.",
+    "errSetupExpired": "Acea configurare a expirat. Generați o nouă frază."
+  },
+  "RecoveryPhrase": {
+    "none": "Acest cont nu are o frază de recuperare. Folosiți codul de autentificare sau un cod de recuperare în schimb.",
+    "seedPrompt": "Introduceți cele {count} cuvinte din fraza de 12 cuvinte la aceste poziții.",
+    "wordNumber": "Cuvântul #{n}",
+    "hint": "Indiciu: {hint}",
+    "customLabel": "Introduceți fraza de recuperare",
+    "show": "Afișați fraza",
+    "hide": "Ascundeți fraza"
   }
 }

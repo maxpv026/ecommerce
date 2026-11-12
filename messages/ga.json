@@ -90,7 +90,8 @@
     "phraseLabel": "Frása aisghabhála",
     "phrasePlaceholder": "m.sh. úll abhainn …",
     "errorIncompletePhrase": "Iontráil do fhrása aisghabhála iomlán (ar a laghad 12 carachtar).",
-    "errorInvalidPhrase": "Ní hionann an frása aisghabhála sin."
+    "errorInvalidPhrase": "Ní hionann an frása aisghabhála sin.",
+    "errorIncompleteWords": "Iontráil gach focal iarrtha."
   },
   "Dashboard": {
     "greetingMorning": "Maidin mhaith",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "Uimhir CBL an AE",
     "trustReg": "AE 2024/573",
-    "phraseActiveBadge": "Frása aisghabhála gníomhach",
-    "phraseAddBadge": "Cuir frása aisghabhála leis"
+    "phraseAddBadge": "Cuir frása aisghabhála leis",
+    "phraseBadgeSeed": "Frása aisghabhála: 12 fhocal",
+    "phraseBadgeCustom": "Frása aisghabhála: saincheaptha"
   },
   "Theme": {
     "saveFailed": "Níorbh fhéidir do théama a shábháil. Tá sé athraithe ar ais."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Pasfhocal",
     "secretPhrase": "Frása aisghabhála",
     "passwordLabel": "Pasfhocal reatha",
-    "phraseLabel": "Frása aisghabhála",
-    "phraseHint": "Ní ábhar iad cás agus spásanna breise.",
     "verify": "Fíoraigh",
     "errSend": "Níorbh fhéidir an cód a sheoladh. Bain triail eile as ar ball.",
     "errLocked": "Ró-iarrachtaí. Bain triail eile as i {minutes} nóim.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Tá fíordheimhniú dhá fhachtóir as.",
     "twoFaRotating": "Fíordheimhnitheoir seanbhunaithe bainte — socraigh an ceann nua.",
     "phraseTitle": "Frása aisghabhála le haghaidh síniú isteach",
-    "phraseActive": "Gníomhach",
     "phraseMissing": "Gan socrú",
     "phraseNoneBody": "Frása nach bhfuil ar eolas ach agat féin — 12 fhocal ginte, nó do phasfhocal féin. Ag síniú isteach is féidir leis seasamh in áit an chóid fíordheimhnitheora má chailleann tú do ghuthán.",
     "phraseSetBody": "Socraithe ar {date}. Oibríonn sé ag síniú isteach in áit cód fíordheimhnitheora, agus chun athruithe slándála a dhearbhú.",
     "hintShown": "Do leid: {hint}",
     "generate": "Gineann 12 fhocal",
-    "regenerate": "Gineann focail nua",
-    "useOwn": "Úsáid mo fhrása féin",
     "removePhrase": "Bain",
     "wordsBody": "Scríobh síos na 12 fhocal seo, in ord, agus coinnigh iad as líne. Taispeántar iad anois amháin; ní stórálaimid ach hash.",
-    "wordsSaved": "Tá an frása sábháilte agam",
     "customPhrase": "Do fhrása (ar a laghad 12 carachtar)",
     "confirmPhrase": "Déan an frása a athrá",
     "showPhrase": "Taispeáin frása",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Scrios",
     "addressDefaultSet": "Seoladh réamhshocraithe nuashonraithe.",
     "addressDeleted": "Seoladh scriosta.",
+    "phraseKindSeed": "12 fhocal",
+    "phraseKindCustom": "Saincheaptha",
+    "modeSeed": "12 fhocal (cosúil le sparán cripteo)",
+    "modeCustom": "Frása rúnda féin le leid",
+    "seedIntro": "Gineann muid 12 fhocal randamach. Scríobhann tú síos iad, ansin dearbhaigh 3 díobh. Chun aisghabháil, iarrfar ort 4 fhocal randamach as an 12 — ní an frása iomlán riamh.",
+    "customIntro": "Pasfhocal nach bhfuil ar eolas ach agat féin (ar a laghad 12 charachtar), le leid roghnach a thaispeántar nuair a iarrtar ort é.",
+    "wordsWritten": "Tá siad scríofa agam — seiceáil",
+    "confirmBody": "Déan do chúltaca a dhearbhú: iontráil na focail ag na trí shuíomh seo.",
+    "enterWord": "Iontráil focal #{n}",
+    "confirmSave": "Deimhnigh agus sábháil",
+    "backToWords": "Taispeáin na focail arís",
+    "phraseSeedSetBody": "Frása 12 fhocal socraithe ar {date}. Chun aisghabháil, iarrfar ort 4 fhocal randamach as.",
+    "setUpPhrase": "Socraigh frása aisghabhála",
+    "replacePhrase": "Ionadaigh frása",
+    "errWrongWords": "Ní mheaitseálann na focail sin. Seiceáil do chóip scríofa agus bain triail eile as.",
+    "errSetupExpired": "Tá an socrú sin imithe in éag. Gineann frása nua.",
     "sessionsCount": "{count, plural, one {# fheiste sínithe isteach} two {# fheiste sínithe isteach} few {# fheiste sínithe isteach} many {# bhfeiste sínithe isteach} other {# bhfeiste sínithe isteach}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Níl frása aisghabhála ag an gcuntas seo. Úsáid do chód fíordheimhnitheora nó cód aisghabhála ina ionad.",
+    "seedPrompt": "Iontráil na {count} focail as do fhrása 12 fhocal ag na suíomhanna seo.",
+    "wordNumber": "Focal #{n}",
+    "hint": "Leid: {hint}",
+    "customLabel": "Iontráil do fhrása aisghabhála",
+    "show": "Taispeáin frása",
+    "hide": "Folaigh frása"
   }
 }

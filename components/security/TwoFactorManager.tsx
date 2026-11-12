@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Check, Copy, Download, Eye, EyeOff, KeyRound, Loader2, ScrollText, ShieldCheck, X } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { enableTwoFactor, generateTwoFactorSecret } from "@/lib/actions/twoFactor";
-import { disableTwoFactorWithStepUp, removeRecoveryPhrase, setRecoveryPhrase, type SecurityState } from "@/lib/actions/security";
+import { confirmSeedPhrase, disableTwoFactorWithStepUp, removeRecoveryPhrase, setCustomRecoveryPhrase, startSeedPhrase, type SecurityState } from "@/lib/actions/security";
 import { useStepUp } from "./StepUp";
 
 /**
@@ -44,9 +44,13 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [phraseMode, setPhraseMode] = useState<"idle" | "custom">("idle");
-  const [words, setWords] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  // Recovery phrase setup: pick a mode, then either the 12-word flow
+  // (show → confirm 3 random words) or the custom passphrase form.
+  const [phraseFlow, setPhraseFlow] = useState<"idle" | "setup">("idle");
+  const [phraseKind, setPhraseKind] = useState<"SEED_12" | "CUSTOM_PHRASE">(state.phrase.type ?? "SEED_12");
+  const [seed, setSeed] = useState<{ words: string[]; confirm: { indices: number[]; token: string } } | null>(null);
+  const [seedStep, setSeedStep] = useState<"show" | "confirm">("show");
+  const [confirmWords, setConfirmWords] = useState<string[]>([]);
   const [custom, setCustom] = useState({ phrase: "", confirm: "", hint: "" });
   const [show, setShow] = useState(false);
 
@@ -102,13 +106,31 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
   // ── Recovery phrase ──
   const generate = async () => {
     setBusy("generate");
-    const result = await run(() => setRecoveryPhrase({ mode: "generate" }));
+    const result = await run(() => startSeedPhrase());
     setBusy(null);
     if (!result) return;
-    if (!result.ok || !result.phrase) return void toast.error(t("errGeneric"));
-    setWords(result.phrase);
-    setSaved(false);
+    if (!result.ok) return void toast.error(t("errGeneric"));
+    setSeed({ words: result.words, confirm: result.confirm });
+    setSeedStep("show");
+    setConfirmWords([]);
+  };
+
+  const confirmSeed = async () => {
+    if (!seed) return;
+    setBusy("confirm");
+    const result = await confirmSeedPhrase({ token: seed.confirm.token, words: confirmWords }).catch(() => null);
+    setBusy(null);
+    if (!result?.ok) {
+      if (result?.code === "EXPIRED") {
+        setSeed(null);
+        return void toast.error(t("errSetupExpired"));
+      }
+      return void toast.error(result?.code === "WRONG_WORDS" ? t("errWrongWords") : result?.code === "RATE_LIMITED" ? t("errRateLimited") : t("errGeneric"));
+    }
+    setSeed(null);
+    setPhraseFlow("idle");
     onChange(result.state);
+    toast.success(t("phraseSaved"));
   };
 
   const customError =
@@ -116,17 +138,19 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
       ? t("errPhraseShort")
       : custom.confirm.length > 0 && custom.confirm !== custom.phrase
         ? t("errPhraseMismatch")
-        : null;
+        : custom.hint.trim() && custom.phrase.trim() && custom.hint.trim().toLowerCase().includes(custom.phrase.trim().toLowerCase())
+          ? t("errHintReveals")
+          : null;
 
   const saveCustom = async () => {
     if (customError || custom.phrase.trim().length < 12 || custom.confirm !== custom.phrase) return;
     setBusy("custom");
-    const result = await run(() => setRecoveryPhrase({ mode: "custom", phrase: custom.phrase, hint: custom.hint }));
+    const result = await run(() => setCustomRecoveryPhrase({ phrase: custom.phrase, hint: custom.hint }));
     setBusy(null);
     if (!result) return;
     if (!result.ok) return void toast.error(result.code === "HINT_REVEALS" ? t("errHintReveals") : result.code === "INVALID" ? t("errPhraseShape") : t("errGeneric"));
     setCustom({ phrase: "", confirm: "", hint: "" });
-    setPhraseMode("idle");
+    setPhraseFlow("idle");
     onChange(result.state);
     toast.success(t("phraseSaved"));
   };
@@ -252,84 +276,164 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
           <Section
             icon={ScrollText}
             title={t("phraseTitle")}
-            badge={<span className={`${CHIP} ${state.phrase.set ? CHIP_OK : CHIP_WARN}`} data-phrase-state={state.phrase.set ? "set" : "none"}>{state.phrase.set ? t("phraseActive") : t("phraseMissing")}</span>}
+            badge={
+              <span className={`${CHIP} ${state.phrase.set ? CHIP_OK : CHIP_WARN}`} data-phrase-state={state.phrase.type ?? "none"}>
+                {state.phrase.type === "SEED_12" ? t("phraseKindSeed") : state.phrase.type === "CUSTOM_PHRASE" ? t("phraseKindCustom") : t("phraseMissing")}
+              </span>
+            }
           >
-            {words ? (
-              <div data-phrase-words>
-                <p className="m-0 text-[12.5px] text-slate-600 dark:text-ink-muted">{t("wordsBody")}</p>
-                <ol className="m-0 mt-2.5 grid list-none grid-cols-3 gap-1.5 rounded-xl border border-slate-900/[.08] bg-slate-50 p-3 font-mono text-[13px] sm:grid-cols-4 dark:border-white/[.08] dark:bg-white/[.03]">
-                  {words.split(" ").map((w, i) => (
-                    <li key={i} data-phrase-word>
-                      <span className="mr-1.5 text-slate-400">{i + 1}.</span>
-                      {w}
-                    </li>
-                  ))}
-                </ol>
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <button type="button" className={BTN} onClick={() => copy(words)}>
-                    <Copy size={13} /> {t("copy")}
-                  </button>
-                  <button type="button" className={BTN} onClick={() => download(words, "my-energy-recovery-phrase.txt")}>
-                    <Download size={13} /> {t("download")}
-                  </button>
-                  <label className="ml-auto inline-flex items-center gap-2 text-[12.5px] text-slate-600 dark:text-ink-muted">
-                    <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} data-phrase-saved />
-                    {t("wordsSaved")}
-                  </label>
-                  <button type="button" className={PRIMARY} disabled={!saved} onClick={() => setWords(null)} data-phrase-done>
-                    {t("done")}
-                  </button>
-                </div>
-              </div>
-            ) : phraseMode === "custom" ? (
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2" data-phrase-custom>
-                <label className="block sm:col-span-2">
-                  <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("customPhrase")}</span>
-                  <span className="relative block">
-                    <input type={show ? "text" : "password"} value={custom.phrase} onChange={(e) => setCustom((c) => ({ ...c, phrase: e.target.value }))} autoComplete="new-password" spellCheck={false} data-phrase-input className={`${INPUT} pr-10 font-mono`} />
-                    <button type="button" onClick={() => setShow((v) => !v)} aria-label={t("showPhrase")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400">
-                      {show ? <EyeOff size={14} /> : <Eye size={14} />}
+            {seed ? (
+              seedStep === "show" ? (
+                <div data-phrase-words>
+                  <p className="m-0 text-[12.5px] text-slate-600 dark:text-ink-muted">{t("wordsBody")}</p>
+                  <ol className="m-0 mt-2.5 grid list-none grid-cols-3 gap-x-3 gap-y-1.5 rounded-xl border border-slate-900/[.08] bg-slate-50 p-3 font-mono text-[13px] sm:grid-cols-4 dark:border-white/[.08] dark:bg-white/[.03]">
+                    {seed.words.map((w, i) => (
+                      <li key={i} data-phrase-word={i + 1}>
+                        <span className="mr-1.5 text-slate-400">#{i + 1}</span>
+                        {w}
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <button type="button" className={BTN} onClick={() => copy(seed.words.join(" "))}>
+                      <Copy size={13} /> {t("copy")}
                     </button>
-                  </span>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("confirmPhrase")}</span>
-                  <input type={show ? "text" : "password"} value={custom.confirm} onChange={(e) => setCustom((c) => ({ ...c, confirm: e.target.value }))} autoComplete="new-password" spellCheck={false} data-phrase-confirm className={`${INPUT} font-mono`} />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("hintLabel")}</span>
-                  <input value={custom.hint} onChange={(e) => setCustom((c) => ({ ...c, hint: e.target.value.slice(0, 80) }))} placeholder={t("hintPlaceholder")} data-phrase-hint className={INPUT} />
-                </label>
-                {customError && <p className="m-0 text-[12px] text-red-600 sm:col-span-2 dark:text-red-400">{customError}</p>}
-                <div className="flex gap-2 sm:col-span-2">
-                  <button type="button" className={PRIMARY} onClick={saveCustom} disabled={busy !== null || Boolean(customError) || custom.phrase.trim().length < 12 || custom.confirm !== custom.phrase} data-phrase-save>
-                    {busy === "custom" && <Loader2 size={14} className="animate-spin" />}
-                    {t("savePhrase")}
-                  </button>
-                  <button type="button" className={BTN} onClick={() => setPhraseMode("idle")}>
-                    {t("cancel")}
-                  </button>
+                    <button type="button" className={BTN} onClick={() => download(seed.words.map((w, i) => `${i + 1}. ${w}`).join("\n"), "my-energy-recovery-phrase.txt")}>
+                      <Download size={13} /> {t("download")}
+                    </button>
+                    <button type="button" className={`${PRIMARY} ml-auto`} onClick={() => setSeedStep("confirm")} data-phrase-to-confirm>
+                      {t("wordsWritten")}
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <div data-phrase-confirm-step>
+                  <p className="m-0 text-[12.5px] text-slate-600 dark:text-ink-muted">{t("confirmBody")}</p>
+                  <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {seed.confirm.indices.map((n, i) => (
+                      <label key={n} className="block">
+                        <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("enterWord", { n })}</span>
+                        <input
+                          value={confirmWords[i] ?? ""}
+                          onChange={(e) => setConfirmWords((cw) => Object.assign([...cw], { [i]: e.target.value.replace(/\s/g, "").slice(0, 20) }))}
+                          autoFocus={i === 0}
+                          autoCapitalize="none"
+                          autoComplete="off"
+                          spellCheck={false}
+                          data-confirm-word={n}
+                          className={`${INPUT} font-mono`}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className={PRIMARY}
+                      onClick={confirmSeed}
+                      disabled={busy !== null || seed.confirm.indices.some((_, i) => !(confirmWords[i] ?? "").trim())}
+                      data-phrase-confirm-submit
+                    >
+                      {busy === "confirm" && <Loader2 size={14} className="animate-spin" />}
+                      {t("confirmSave")}
+                    </button>
+                    <button type="button" className={BTN} onClick={() => setSeedStep("show")}>
+                      {t("backToWords")}
+                    </button>
+                  </div>
+                </div>
+              )
+            ) : phraseFlow === "setup" ? (
+              <div>
+                <div role="tablist" className="grid grid-cols-1 gap-1 rounded-2xl border border-slate-900/[.1] bg-slate-50 p-1 sm:grid-cols-2 dark:border-white/[.12] dark:bg-white/[.05]">
+                  {(["SEED_12", "CUSTOM_PHRASE"] as const).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      role="tab"
+                      aria-selected={phraseKind === k}
+                      data-phrase-mode={k}
+                      onClick={() => setPhraseKind(k)}
+                      className={`rounded-xl px-3 py-2 text-[12.5px] font-semibold transition-colors ${
+                        phraseKind === k ? "bg-white text-slate-900 shadow-sm dark:bg-white/[.14] dark:text-white" : "text-slate-500 hover:text-slate-900 dark:text-ink-muted dark:hover:text-slate-100"
+                      }`}
+                    >
+                      {k === "SEED_12" ? t("modeSeed") : t("modeCustom")}
+                    </button>
+                  ))}
+                </div>
+                {phraseKind === "SEED_12" ? (
+                  <div className="mt-3">
+                    <p className="m-0 text-[12.5px] leading-[1.5] text-slate-600 dark:text-ink-muted">{t("seedIntro")}</p>
+                    <div className="mt-2.5 flex gap-2">
+                      <button type="button" className={PRIMARY} onClick={generate} disabled={busy !== null} data-phrase-generate>
+                        {busy === "generate" && <Loader2 size={14} className="animate-spin" />}
+                        {t("generate")}
+                      </button>
+                      <button type="button" className={BTN} onClick={() => setPhraseFlow("idle")}>
+                        {t("cancel")}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2" data-phrase-custom>
+                    <p className="m-0 text-[12.5px] leading-[1.5] text-slate-600 sm:col-span-2 dark:text-ink-muted">{t("customIntro")}</p>
+                    <label className="block sm:col-span-2">
+                      <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("customPhrase")}</span>
+                      <span className="relative block">
+                        <input type={show ? "text" : "password"} value={custom.phrase} onChange={(e) => setCustom((c) => ({ ...c, phrase: e.target.value }))} autoComplete="new-password" spellCheck={false} data-phrase-input className={`${INPUT} pr-10 font-mono`} />
+                        <button type="button" onClick={() => setShow((v) => !v)} aria-label={t("showPhrase")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400">
+                          {show ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      </span>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("confirmPhrase")}</span>
+                      <input type={show ? "text" : "password"} value={custom.confirm} onChange={(e) => setCustom((c) => ({ ...c, confirm: e.target.value }))} autoComplete="new-password" spellCheck={false} data-phrase-confirm className={`${INPUT} font-mono`} />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-[11.5px] font-medium text-slate-500 dark:text-ink-muted">{t("hintLabel")}</span>
+                      <input value={custom.hint} onChange={(e) => setCustom((c) => ({ ...c, hint: e.target.value.slice(0, 80) }))} placeholder={t("hintPlaceholder")} data-phrase-hint className={INPUT} />
+                    </label>
+                    {customError && <p className="m-0 text-[12px] text-red-600 sm:col-span-2 dark:text-red-400">{customError}</p>}
+                    <div className="flex gap-2 sm:col-span-2">
+                      <button type="button" className={PRIMARY} onClick={saveCustom} disabled={busy !== null || Boolean(customError) || custom.phrase.trim().length < 12 || custom.confirm !== custom.phrase} data-phrase-save>
+                        {busy === "custom" && <Loader2 size={14} className="animate-spin" />}
+                        {t("savePhrase")}
+                      </button>
+                      <button type="button" className={BTN} onClick={() => setPhraseFlow("idle")}>
+                        {t("cancel")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div>
                 <p className="m-0 text-[12.5px] leading-[1.5] text-slate-600 dark:text-ink-muted">
-                  {state.phrase.set
-                    ? t("phraseSetBody", { date: state.phrase.setAt ? format.dateTime(new Date(state.phrase.setAt), { dateStyle: "medium" }) : "—" })
-                    : t("phraseNoneBody")}
+                  {state.phrase.type === "SEED_12"
+                    ? t("phraseSeedSetBody", { date: state.phrase.setAt ? format.dateTime(new Date(state.phrase.setAt), { dateStyle: "medium" }) : "—" })
+                    : state.phrase.set
+                      ? t("phraseSetBody", { date: state.phrase.setAt ? format.dateTime(new Date(state.phrase.setAt), { dateStyle: "medium" }) : "—" })
+                      : t("phraseNoneBody")}
                 </p>
-                {state.phrase.set && state.phrase.hint && (
+                {state.phrase.type === "CUSTOM_PHRASE" && state.phrase.hint && (
                   <p className="m-0 mt-1 text-[12px] text-slate-500 dark:text-ink-muted" data-phrase-hint-shown>
                     {t("hintShown", { hint: state.phrase.hint })}
                   </p>
                 )}
                 <div className="mt-2.5 flex flex-wrap gap-2">
-                  <button type="button" className={PRIMARY} onClick={generate} disabled={busy !== null} data-phrase-generate>
-                    {busy === "generate" && <Loader2 size={14} className="animate-spin" />}
-                    {state.phrase.set ? t("regenerate") : t("generate")}
-                  </button>
-                  <button type="button" className={BTN} onClick={() => setPhraseMode("custom")} disabled={busy !== null} data-phrase-custom-open>
-                    {t("useOwn")}
+                  <button
+                    type="button"
+                    className={PRIMARY}
+                    onClick={() => {
+                      setPhraseKind(state.phrase.type ?? "SEED_12");
+                      setPhraseFlow("setup");
+                    }}
+                    disabled={busy !== null}
+                    data-phrase-setup
+                  >
+                    {state.phrase.set ? t("replacePhrase") : t("setUpPhrase")}
                   </button>
                   {state.phrase.set && (
                     <button type="button" className={`${BTN} text-red-600 dark:text-red-400`} onClick={remove} disabled={busy !== null} data-phrase-remove>

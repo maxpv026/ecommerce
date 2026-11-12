@@ -125,6 +125,21 @@ model User {
   recoveryPhraseHash      String?
   recoveryPhraseHint      String?
   recoveryPhraseSetAt     DateTime?
+  /// "SEED_12" (generated words, verified word-by-word) or "CUSTOM_PHRASE"
+  /// (the buyer's passphrase, bcrypt in recoveryPhraseHash, with a hint).
+  /// Null with a hash set = a phrase from before types existed: whole-phrase.
+  recoveryPhraseType      String?
+  /// SEED_12: per-user salt and 12 position-bound scrypt hashes, peppered
+  /// with a server secret (lib/recoveryPhrase) — so a random subset of words
+  /// can be challenged without the phrase ever being stored.
+  recoveryPhraseSalt      String?
+  recoveryWordHashes      Json?
+  /// A generated phrase waiting for its 3-word backup confirmation; only
+  /// hashes, never words. Promoted to the fields above when confirmed.
+  recoveryPhrasePending   Json?
+  /// Issue time of the last word challenge that was answered — any
+  /// challenge issued at or before it is refused, so each is single-use.
+  recoveryLastChallengeAt DateTime?
   /// bcrypt hashes of the single-use recovery codes, never the codes.
   /// Stored hashed because this array is the whole second factor for anyone
   /// who has lost their phone — a database leak of plaintext codes would be

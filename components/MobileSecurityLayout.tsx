@@ -42,7 +42,7 @@ export default function MobileSecurityLayout({ security, email, now }: { securit
                 <span className={chip(state.twoFactor)} data-twofa-status={state.twoFactor ? "on" : "off"}>
                   {state.twoFactor ? tA("twoFaOn") : tA("twoFaOff")}
                 </span>
-                <span className={chip(state.phrase.set)}>{state.phrase.set ? tA("phraseActiveBadge") : tA("phraseAddBadge")}</span>
+                <span className={chip(state.phrase.set)}>{state.phrase.type === "SEED_12" ? tA("phraseBadgeSeed") : state.phrase.type === "CUSTOM_PHRASE" ? tA("phraseBadgeCustom") : tA("phraseAddBadge")}</span>
               </span>
             </span>
             <ChevronRight size={16} className="flex-none text-slate-400" />

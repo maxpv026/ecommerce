@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { KeyRound, Loader2, Lock, Mail, ShieldCheck, X } from "lucide-react";
-import { getStepUpOptions, sendStepUpEmailCode, verifyStepUp, type StepUpOptions } from "@/lib/actions/stepUp";
+import { getStepUpOptions, getStepUpPhraseChallenge, sendStepUpEmailCode, verifyStepUp, type StepUpOptions } from "@/lib/actions/stepUp";
+import { recoveryAnswer, type RecoveryChallenge } from "@/lib/recoveryPhraseFormat";
+import RecoveryPhraseInput from "./RecoveryPhraseInput";
 import type { StepUpMethod } from "@/lib/stepUp";
 
 /**
@@ -62,6 +64,8 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [phraseChallenge, setPhraseChallenge] = useState<RecoveryChallenge | null>(null);
+  const [phraseWords, setPhraseWords] = useState<string[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -86,8 +90,23 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
     return () => clearTimeout(id);
   }, [tab, secretKind, sent]);
 
+  const usingPhrase = tab === "secret" && secretKind === "phrase" && Boolean(options?.phrase);
+  // The phrase tab asks the server what to ask: word positions (a signed,
+  // single-use challenge) or the passphrase with its hint.
+  useEffect(() => {
+    if (!usingPhrase || phraseChallenge) return;
+    let alive = true;
+    getStepUpPhraseChallenge()
+      .catch(() => null)
+      .then((c) => alive && setPhraseChallenge(c ?? { type: "NONE" }));
+    return () => {
+      alive = false;
+    };
+  }, [usingPhrase, phraseChallenge]);
+
   const switchTo = (next: { tab?: Tab; kind?: "password" | "phrase" }) => {
     setValue("");
+    setPhraseWords([]);
     setError(null);
     if (next.tab) setTab(next.tab);
     if (next.kind) setSecretKind(next.kind);
@@ -111,11 +130,13 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
     else setError(t("errSend"));
   };
 
+  const secret = method === "phrase" ? recoveryAnswer(phraseChallenge, phraseWords, value) : value.trim() ? value : null;
+
   const submit = async () => {
-    if (!value.trim() || busy) return;
+    if (!secret || busy) return;
     setBusy(true);
     setError(null);
-    const result = await verifyStepUp({ method, secret: value }).catch(() => null);
+    const result = await verifyStepUp({ method, secret }).catch(() => null);
     setBusy(false);
     if (result?.ok) return onVerified();
     setError(
@@ -228,9 +249,13 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
                       ))}
                     </div>
                   )}
-                  <Field label={secretKind === "password" ? t("passwordLabel") : t("phraseLabel")} hint={secretKind === "phrase" ? t("phraseHint") : undefined}>
-                    <input ref={inputRef} type={secretKind === "password" ? "password" : "text"} value={value} onChange={(e) => setValue(e.target.value)} autoComplete={secretKind === "password" ? "current-password" : "off"} spellCheck={false} data-step-up-input className={`${INPUT} ${secretKind === "phrase" ? "font-mono text-[13px]" : ""}`} />
-                  </Field>
+                  {secretKind === "phrase" ? (
+                    <RecoveryPhraseInput challenge={phraseChallenge} words={phraseWords} onWords={setPhraseWords} phrase={value} onPhrase={setValue} />
+                  ) : (
+                    <Field label={t("passwordLabel")}>
+                      <input ref={inputRef} type="password" value={value} onChange={(e) => setValue(e.target.value)} autoComplete="current-password" data-step-up-input className={INPUT} />
+                    </Field>
+                  )}
                 </>
               )}
 
@@ -241,7 +266,7 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
               )}
 
               {(tab !== "email" || sent) && (
-                <button type="submit" disabled={busy || !value.trim()} data-step-up-submit className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-[14px] font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-50">
+                <button type="submit" disabled={busy || !secret} data-step-up-submit className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-[14px] font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-50">
                   {busy && <Loader2 size={15} className="animate-spin" />}
                   {t("verify")}
                 </button>

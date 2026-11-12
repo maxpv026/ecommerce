@@ -90,7 +90,8 @@
     "phraseLabel": "Obnovovací fráze",
     "phrasePlaceholder": "např. jablko řeka …",
     "errorIncompletePhrase": "Zadejte celou obnovovací frázi (alespoň 12 znaků).",
-    "errorInvalidPhrase": "Tato obnovovací fráze nesouhlasí."
+    "errorInvalidPhrase": "Tato obnovovací fráze nesouhlasí.",
+    "errorIncompleteWords": "Zadejte každé požadované slovo."
   },
   "Dashboard": {
     "greetingMorning": "Dobré ráno",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "EU DIČ",
     "trustReg": "EU 2024/573",
-    "phraseActiveBadge": "Obnovovací fráze aktivní",
-    "phraseAddBadge": "Přidat obnovovací frázi"
+    "phraseAddBadge": "Přidat obnovovací frázi",
+    "phraseBadgeSeed": "Obnovovací fráze: 12 slov",
+    "phraseBadgeCustom": "Obnovovací fráze: vlastní"
   },
   "Theme": {
     "saveFailed": "Nelze uložit váš motiv. Byl vrácen zpět."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Heslo",
     "secretPhrase": "Obnovovací fráze",
     "passwordLabel": "Aktuální heslo",
-    "phraseLabel": "Obnovovací fráze",
-    "phraseHint": "Velikost písmen a mezery navíc nevadí.",
     "verify": "Ověřit",
     "errSend": "Nepodařilo se odeslat kód. Zkuste to znovu za chvíli.",
     "errLocked": "Příliš mnoho pokusů. Zkuste to znovu za {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Dvoufaktorové ověřování je vypnuto.",
     "twoFaRotating": "Starý autentizátor odstraněn — nastavte nový.",
     "phraseTitle": "Obnovovací fráze pro přihlášení",
-    "phraseActive": "Aktivní",
     "phraseMissing": "Nenastaveno",
     "phraseNoneBody": "Fráze, kterou znáte pouze vy — 12 generovaných slov nebo vlastní heslo. Při přihlášení může nahradit autentizační kód, pokud ztratíte telefon.",
     "phraseSetBody": "Nastaveno dne {date}. Funguje při přihlášení místo autentizačního kódu a pro potvrzení bezpečnostních změn.",
     "hintShown": "Váš nápověda: {hint}",
     "generate": "Vygenerovat 12 slov",
-    "regenerate": "Vygenerovat nová slova",
-    "useOwn": "Použít vlastní frázi",
     "removePhrase": "Odstranit",
     "wordsBody": "Zapište si těchto 12 slov v pořadí a uchovejte je offline. Jsou zobrazeny pouze nyní; ukládáme pouze hash.",
-    "wordsSaved": "Frázi jsem si uložil",
     "customPhrase": "Vaše fráze (alespoň 12 znaků)",
     "confirmPhrase": "Zopakujte frázi",
     "showPhrase": "Zobrazit frázi",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Smazat",
     "addressDefaultSet": "Výchozí adresa aktualizována.",
     "addressDeleted": "Adresa smazána.",
+    "phraseKindSeed": "12 slov",
+    "phraseKindCustom": "Vlastní",
+    "modeSeed": "12 slov (jako kryptopeněženka)",
+    "modeCustom": "Vlastní tajná fráze s nápovědou",
+    "seedIntro": "Vygenerujeme 12 náhodných slov. Zapíšete si je a poté potvrdíte 3 z nich. Pro obnovení budete požádáni o 4 náhodná slova z těchto 12 — nikdy celou frázi.",
+    "customIntro": "Heslo, které znáte jen vy (alespoň 12 znaků), s volitelnou nápovědou, která se zobrazí, když o ni budete požádáni.",
+    "wordsWritten": "Zapsal jsem si je — zkontrolovat",
+    "confirmBody": "Potvrďte svou zálohu: zadejte slova na těchto třech pozicích.",
+    "enterWord": "Zadejte slovo č. {n}",
+    "confirmSave": "Potvrdit a uložit",
+    "backToWords": "Zobrazit slova znovu",
+    "phraseSeedSetBody": "12slovná fráze nastavena dne {date}. Pro obnovení budete požádáni o 4 náhodná slova z ní.",
+    "setUpPhrase": "Nastavit obnovovací frázi",
+    "replacePhrase": "Nahradit frázi",
+    "errWrongWords": "Tato slova nesouhlasí. Zkontrolujte svůj písemný záznam a zkuste to znovu.",
+    "errSetupExpired": "Toto nastavení vypršelo. Vygenerujte novou frázi.",
     "sessionsCount": "{count, plural, one {# přihlášené zařízení} few {# přihlášená zařízení} many {# přihlášených zařízení} other {# přihlášeného zařízení}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Tento účet nemá obnovovací frázi. Místo toho použijte svůj autentizační kód nebo kód pro obnovení.",
+    "seedPrompt": "Zadejte {count} slov z vaší 12slovné fráze na těchto pozicích.",
+    "wordNumber": "Slovo č. {n}",
+    "hint": "Nápověda: {hint}",
+    "customLabel": "Zadejte svou obnovovací frázi",
+    "show": "Zobrazit frázi",
+    "hide": "Skrýt frázi"
   }
 }

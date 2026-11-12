@@ -90,7 +90,8 @@
     "phraseLabel": "Atkopšanas frāze",
     "phrasePlaceholder": "piem., ābols upe …",
     "errorIncompletePhrase": "Ievadiet pilnu atkopšanas frāzi (vismaz 12 rakstzīmes).",
-    "errorInvalidPhrase": "Šī atkopšanas frāze nesakrīt."
+    "errorInvalidPhrase": "Šī atkopšanas frāze nesakrīt.",
+    "errorIncompleteWords": "Ievadiet katru pieprasīto vārdu."
   },
   "Dashboard": {
     "greetingMorning": "Labrīt",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "ES PVN numurs",
     "trustReg": "ES 2024/573",
-    "phraseActiveBadge": "Atkopšanas frāze aktīva",
-    "phraseAddBadge": "Pievienot atkopšanas frāzi"
+    "phraseAddBadge": "Pievienot atkopšanas frāzi",
+    "phraseBadgeSeed": "Atkopšanas frāze: 12 vārdi",
+    "phraseBadgeCustom": "Atkopšanas frāze: pielāgota"
   },
   "Theme": {
     "saveFailed": "Neizdevās saglabāt jūsu tēmu. Tā ir atgriezta atpakaļ."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Parole",
     "secretPhrase": "Atkopšanas frāze",
     "passwordLabel": "Pašreizējā parole",
-    "phraseLabel": "Atkopšanas frāze",
-    "phraseHint": "Lielie burti un papildu atstarpes nav svarīgas.",
     "verify": "Pārbaudīt",
     "errSend": "Neizdevās nosūtīt kodu. Mēģiniet vēlreiz pēc brīža.",
     "errLocked": "Pārāk daudz mēģinājumu. Mēģiniet vēlreiz pēc {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "Divu faktoru autentifikācija ir izslēgta.",
     "twoFaRotating": "Vecais autentifikators noņemts — iestatiet jauno.",
     "phraseTitle": "Atkopšanas frāze pieteikšanās",
-    "phraseActive": "Aktīva",
     "phraseMissing": "Nav iestatīta",
     "phraseNoneBody": "Frāze, ko zināt tikai jūs — 12 ģenerēti vārdi vai jūsu paša parole. Pieteikšanās laikā tā var aizstāt autentifikatora kodu, ja pazaudējat tālruni.",
     "phraseSetBody": "Iestatīts {date}. Tas darbojas pieteikšanās laikā autentifikatora koda vietā un drošības izmaiņu apstiprināšanai.",
     "hintShown": "Jūsu norāde: {hint}",
     "generate": "Ģenerēt 12 vārdus",
-    "regenerate": "Ģenerēt jaunus vārdus",
-    "useOwn": "Izmantot manu pašu frāzi",
     "removePhrase": "Noņemt",
     "wordsBody": "Pierakstiet šos 12 vārdus, secībā, un glabājiet tos bezsaistē. Tie tiek rādīti tikai tagad; mēs glabājam tikai hash.",
-    "wordsSaved": "Es esmu saglabājis frāzi",
     "customPhrase": "Jūsu frāze (vismaz 12 rakstzīmes)",
     "confirmPhrase": "Atkārtojiet frāzi",
     "showPhrase": "Rādīt frāzi",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Dzēst",
     "addressDefaultSet": "Noklusējuma adrese atjaunināta.",
     "addressDeleted": "Adrese dzēsta.",
+    "phraseKindSeed": "12 vārdi",
+    "phraseKindCustom": "Pielāgota",
+    "modeSeed": "12 vārdi (kā kripto makā)",
+    "modeCustom": "Paša slepenā frāze ar mājienu",
+    "seedIntro": "Mēs ģenerējam 12 nejaušus vārdus. Jūs tos pierakstāt un pēc tam apstiprināt 3 no tiem. Lai atgūtu, jums tiks prasīti 4 nejauši vārdi no 12 — nekad visa frāze.",
+    "customIntro": "Parole, ko zināt tikai jūs (vismaz 12 rakstzīmes), ar izvēles mājienu, kas tiek parādīts, kad to pieprasa.",
+    "wordsWritten": "Es tos esmu pierakstījis — pārbaudīt",
+    "confirmBody": "Apstipriniet savu rezerves kopiju: ievadiet vārdus šajās trīs pozīcijās.",
+    "enterWord": "Ievadiet vārdu #{n}",
+    "confirmSave": "Apstiprināt un saglabāt",
+    "backToWords": "Parādīt vārdus vēlreiz",
+    "phraseSeedSetBody": "12 vārdu frāze iestatīta {date}. Lai atgūtu, jums tiks prasīti 4 nejauši vārdi no tās.",
+    "setUpPhrase": "Iestatīt atkopšanas frāzi",
+    "replacePhrase": "Aizstāt frāzi",
+    "errWrongWords": "Šie vārdi nesakrīt. Pārbaudiet savu pierakstīto kopiju un mēģiniet vēlreiz.",
+    "errSetupExpired": "Šī iestatīšana ir beigusies. Ģenerējiet jaunu frāzi.",
     "sessionsCount": "{count, plural, zero {# pieslēgtas ierīces} one {# pieslēgta ierīce} other {# pieslēgtas ierīces}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Šim kontam nav atkopšanas frāzes. Tā vietā izmantojiet savu autentifikatora kodu vai atkopšanas kodu.",
+    "seedPrompt": "Ievadiet {count} vārdus no savas 12 vārdu frāzes šajās pozīcijās.",
+    "wordNumber": "Vārds #{n}",
+    "hint": "Mājiens: {hint}",
+    "customLabel": "Ievadiet savu atkopšanas frāzi",
+    "show": "Parādīt frāzi",
+    "hide": "Paslēpt frāzi"
   }
 }

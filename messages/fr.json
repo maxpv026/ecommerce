@@ -90,7 +90,8 @@
     "phraseLabel": "Phrase de récupération",
     "phrasePlaceholder": "ex. pomme rivière …",
     "errorIncompletePhrase": "Entrez votre phrase de récupération complète (au moins 12 caractères).",
-    "errorInvalidPhrase": "Cette phrase de récupération ne correspond pas."
+    "errorInvalidPhrase": "Cette phrase de récupération ne correspond pas.",
+    "errorIncompleteWords": "Entrez chaque mot demandé."
   },
   "Dashboard": {
     "greetingMorning": "Bonjour",
@@ -983,8 +984,9 @@
     "trust2fa": "2FA TOTP",
     "trustVat": "ID TVA UE",
     "trustReg": "UE 2024/573",
-    "phraseActiveBadge": "Phrase de récupération active",
-    "phraseAddBadge": "Ajouter une phrase de récupération"
+    "phraseAddBadge": "Ajouter une phrase de récupération",
+    "phraseBadgeSeed": "Phrase de récupération : 12 mots",
+    "phraseBadgeCustom": "Phrase de récupération : personnalisée"
   },
   "Theme": {
     "saveFailed": "Impossible de sauvegarder votre thème. Il a été réinitialisé."
@@ -1804,8 +1806,6 @@
     "secretPassword": "Mot de passe",
     "secretPhrase": "Phrase de récupération",
     "passwordLabel": "Mot de passe actuel",
-    "phraseLabel": "Phrase de récupération",
-    "phraseHint": "La casse et les espaces supplémentaires n'ont pas d'importance.",
     "verify": "Vérifier",
     "errSend": "Impossible d'envoyer le code. Réessayez dans un instant.",
     "errLocked": "Trop de tentatives. Réessayez dans {minutes} min.",
@@ -1834,17 +1834,13 @@
     "twoFaDisabled": "L'authentification à deux facteurs est désactivée.",
     "twoFaRotating": "Ancien authentificateur supprimé — configurez le nouveau.",
     "phraseTitle": "Phrase de récupération pour la connexion",
-    "phraseActive": "Active",
     "phraseMissing": "Non définie",
     "phraseNoneBody": "Une phrase que vous seul connaissez — 12 mots générés, ou votre propre phrase secrète. Lors de la connexion, elle peut remplacer le code d'authentification si vous perdez votre téléphone.",
     "phraseSetBody": "Définie le {date}. Elle fonctionne à la connexion à la place d'un code d'authentification, et pour confirmer les changements de sécurité.",
     "hintShown": "Votre indice : {hint}",
     "generate": "Générer 12 mots",
-    "regenerate": "Générer de nouveaux mots",
-    "useOwn": "Utiliser ma propre phrase",
     "removePhrase": "Supprimer",
     "wordsBody": "Notez ces 12 mots dans l'ordre et gardez-les hors ligne. Ils ne sont affichés que maintenant ; nous ne stockons qu'un hachage.",
-    "wordsSaved": "J'ai sauvegardé la phrase",
     "customPhrase": "Votre phrase (au moins 12 caractères)",
     "confirmPhrase": "Répétez la phrase",
     "showPhrase": "Afficher la phrase",
@@ -1876,6 +1872,31 @@
     "addressDeleteConfirm": "Supprimer",
     "addressDefaultSet": "Adresse par défaut mise à jour.",
     "addressDeleted": "Adresse supprimée.",
+    "phraseKindSeed": "12 mots",
+    "phraseKindCustom": "Personnalisée",
+    "modeSeed": "12 mots (comme un portefeuille crypto)",
+    "modeCustom": "Phrase secrète personnelle avec un indice",
+    "seedIntro": "Nous générons 12 mots aléatoires. Vous les notez, puis confirmez 3 d'entre eux. Pour récupérer, il vous sera demandé 4 mots aléatoires parmi les 12 — jamais la phrase entière.",
+    "customIntro": "Une phrase secrète que vous seul connaissez (au moins 12 caractères), avec un indice optionnel affiché lorsque vous en avez besoin.",
+    "wordsWritten": "Je les ai notés — vérifier",
+    "confirmBody": "Confirmez votre sauvegarde : entrez les mots à ces trois positions.",
+    "enterWord": "Entrez le mot n°{n}",
+    "confirmSave": "Confirmer et enregistrer",
+    "backToWords": "Afficher les mots à nouveau",
+    "phraseSeedSetBody": "Phrase de 12 mots définie le {date}. Pour récupérer, il vous sera demandé 4 mots aléatoires parmi ceux-ci.",
+    "setUpPhrase": "Configurer une phrase de récupération",
+    "replacePhrase": "Remplacer la phrase",
+    "errWrongWords": "Ces mots ne correspondent pas. Vérifiez votre copie écrite et réessayez.",
+    "errSetupExpired": "Cette configuration a expiré. Générez une nouvelle phrase.",
     "sessionsCount": "{count, plural, one {# appareil connecté} many {# appareils connectés} other {# appareils connectés}}"
+  },
+  "RecoveryPhrase": {
+    "none": "Ce compte n'a pas de phrase de récupération. Utilisez votre code d'authentification ou un code de récupération à la place.",
+    "seedPrompt": "Entrez les {count} mots de votre phrase de 12 mots à ces positions.",
+    "wordNumber": "Mot n°{n}",
+    "hint": "Indice : {hint}",
+    "customLabel": "Entrez votre phrase de récupération",
+    "show": "Afficher la phrase",
+    "hide": "Masquer la phrase"
   }
 }
