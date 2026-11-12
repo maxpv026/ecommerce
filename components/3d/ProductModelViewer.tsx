@@ -38,7 +38,7 @@ import { clearModelProgress, reportModelProgress, useModelProgress } from "./mod
  */
 
 /** Longest axis of the fitted model, in world units. The camera frames this. */
-const FIT_SIZE = 2.2;
+export const FIT_SIZE = 2.2;
 
 /**
  * Studio HDRI, self-hosted.
@@ -48,7 +48,7 @@ const FIT_SIZE = 2.2;
  * rate-limited and outside our control. Same asset (Poly Haven, CC0),
  * served from our own origin.
  */
-const STUDIO_HDRI = "/hdri/studio_small_03_1k.hdr";
+export const STUDIO_HDRI = "/hdri/studio_small_03_1k.hdr";
 
 /**
  * Draco decoder, self-hosted for the same reason as the HDRI — drei's
@@ -61,7 +61,7 @@ const DRACO_DECODER_PATH = "/draco/";
 
 let dracoLoader: DRACOLoader | null = null;
 
-function configureLoader(loader: GLTFLoader) {
+export function configureLoader(loader: GLTFLoader) {
   if (!dracoLoader) {
     dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
@@ -79,7 +79,7 @@ interface FittedModelProps {
   onReady: () => void;
 }
 
-function FittedModel({ src, onReady }: FittedModelProps) {
+export function FittedModel({ src, onReady }: FittedModelProps) {
   const handleProgress = useCallback(
     (event: ProgressEvent<EventTarget>) => {
       if (event.lengthComputable) reportModelProgress(src, event.loaded, event.total);
@@ -140,7 +140,7 @@ function FittedModel({ src, onReady }: FittedModelProps) {
 }
 
 /** Sleek loading state: a progress ring over the stage's own backdrop. */
-function StageLoader({ src }: { src: string }) {
+export function StageLoader({ src }: { src: string }) {
   // Isolated in its own component so progress ticks re-render the ring and
   // nothing else — in particular, not the Canvas.
   const { loaded, total } = useModelProgress(src);
@@ -186,7 +186,7 @@ function subscribeToReducedMotion(onChange: () => void) {
  * `prefers-reduced-motion` exists for. Read as an external store rather than
  * effect-then-setState, so there's no spin-then-stop flash on first paint.
  */
-function usePrefersReducedMotion() {
+export function usePrefersReducedMotion() {
   return useSyncExternalStore(
     subscribeToReducedMotion,
     () => window.matchMedia(REDUCED_MOTION_QUERY).matches,

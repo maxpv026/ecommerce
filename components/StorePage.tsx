@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Header from "./Header";
 import DesktopHome from "./DesktopHome";
 import MobileAppLayout from "./MobileAppLayout";
 import AuthModal from "./AuthModal";
 import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, UserProfileData } from "@/lib/data";
+import type { FgasSummary } from "@/lib/fgas";
 import type { GreetingKey } from "@/lib/greeting";
 
 interface StorePageProps {
   /** The static catalogue picks every visitor sees (cached, tag PRODUCTS_TAG). */
   featuredProducts: StoreProduct[];
-  /** Server-rendered market-alerts card for the desktop grid. */
-  marketAlertsCard: ReactNode;
-  /** The same articles as data, for the mobile ticker's marquee. */
+  /** A larger pick for the desktop Popular grid and its category tabs. */
+  popularProducts: StoreProduct[];
+  /** One catalog cylinder per hero gas (lib/data getHomeShowcase). */
+  showcase: Array<{ mark: string; product: StoreProduct | null }>;
+  /** Industry articles: the mobile ticker and the desktop summary card. */
   marketAlerts: MarketAlertData[];
   /** The greeting the server rendered with — hydration must match it (lib/hooks/useGreeting). */
   greetingKey: GreetingKey;
@@ -28,6 +31,7 @@ interface AccountData {
   orders: UserOrder[];
   certificate: UserProfileData["certificate"];
   jobTitle: string | null;
+  fgas?: FgasSummary | null;
 }
 
 /**
@@ -43,7 +47,7 @@ interface AccountData {
  * skeleton → page, two full re-renders and ~350 ms of nothing on every
  * signed-in visit.
  */
-export default function StorePage({ featuredProducts, marketAlertsCard, marketAlerts, greetingKey, sdsCount }: StorePageProps) {
+export default function StorePage({ featuredProducts, popularProducts, showcase, marketAlerts, greetingKey, sdsCount }: StorePageProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { status, data: session } = useSession();
   const userId = session?.user?.id ?? null;
@@ -74,6 +78,8 @@ export default function StorePage({ featuredProducts, marketAlertsCard, marketAl
   // Signed in (or still finding out) and this buyer's data is not here yet.
   const accountLoading = status === "loading" || (status === "authenticated" && !mine);
   const products = mine?.recommendedProducts.length ? mine.recommendedProducts : featuredProducts;
+  // Desktop grid: this buyer's recommendations first, then the wider pick.
+  const popular = [...(mine?.recommendedProducts ?? []), ...popularProducts].filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i);
 
   return (
     <div className="flex-1 bg-canvas">
@@ -81,10 +87,12 @@ export default function StorePage({ featuredProducts, marketAlertsCard, marketAl
       <div className="hidden md:block">
         <Header onSignInClick={() => setIsAuthModalOpen(true)} />
         <DesktopHome
-          products={products}
-          marketAlerts={marketAlertsCard}
+          products={popular}
+          showcase={showcase}
+          alerts={marketAlerts}
           dashboard={mine?.dashboard ?? null}
           latestOrder={mine?.latestOrder ?? null}
+          fgas={mine?.fgas ?? null}
           accountLoading={accountLoading}
           greetingKey={greetingKey}
           sdsCount={sdsCount}

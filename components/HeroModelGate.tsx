@@ -36,7 +36,7 @@ function subscribeToDesktop(onChange: () => void) {
 /** How long hydration may keep the main thread before the 3D starts anyway. */
 const IDLE_TIMEOUT_MS = 2500;
 
-export default function HeroModelGate({ className = "absolute inset-0" }: { className?: string }) {
+export default function HeroModelGate({ mark, marks, className = "absolute inset-0" }: { mark: string; marks: readonly string[]; className?: string }) {
   // False on the server and during hydration, so the markup always matches.
   const isDesktop = useSyncExternalStore(
     subscribeToDesktop,
@@ -63,7 +63,7 @@ export default function HeroModelGate({ className = "absolute inset-0" }: { clas
       <span aria-hidden data-hero-model-placeholder className={`${className} pointer-events-none grid place-items-center`}>
         <span className="h-[62%] w-[46%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,.28),rgba(99,102,241,.14)_45%,transparent_72%)] blur-2xl" />
       </span>
-      {isDesktop && idle && <HeroModelStage className={className} />}
+      {isDesktop && idle && <HeroModelStage mark={mark} marks={marks} className={className} />}
     </>
   );
 }

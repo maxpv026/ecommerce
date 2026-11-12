@@ -29,6 +29,8 @@ export async function GET() {
       latestOrder: orders[0] ?? null,
       orders: orders.slice(0, 4),
       certificate: profile?.certificate ?? null,
+      // Effective F-Gas standing for the home summary card (lib/fgasAccount).
+      fgas: profile?.fgas ?? null,
       jobTitle: profile?.jobTitle ?? null,
     },
     { headers: { "Cache-Control": "private, no-store" } }

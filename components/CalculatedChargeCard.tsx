@@ -36,8 +36,8 @@ import type { ChargeCalculation, Provenance } from "@/lib/actions/chargeCalculat
  * length). The nameplate charge is never estimated: without it the full-
  * system figure simply waits for it, in its own card, in one place.
  *
- * Styled as a dark glass console in both themes: it sits inside the dark
- * calculator card, and a white sheet there was a box-in-box clash in light mode.
+ * Theme-aware: it sits inside the home Operations surface (components/home),
+ * which follows the light/dark theme like the cart — so the console does too.
  */
 
 const num = (s: string) => {
@@ -49,8 +49,8 @@ const MAX_SYSTEMS = 50;
 type Mode = "topup" | "full";
 
 const FIELD =
-  "flex h-10 items-center rounded-[11px] border border-white/12 bg-white/[.06] pr-2.5 focus-within:border-white/30 focus-within:ring-[3px] focus-within:ring-white/10";
-const LABEL = "mb-1 flex items-center gap-1.5 text-[11px] font-medium text-white/55";
+  "flex h-10 items-center rounded-[11px] border border-slate-900/[.09] dark:border-white/12 bg-slate-900/[.03] dark:bg-white/[.06] pr-2.5 focus-within:border-blue-600/50 dark:focus-within:border-white/30 focus-within:ring-[3px] focus-within:ring-blue-600/15 dark:focus-within:ring-white/10";
+const LABEL = "mb-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-white/55";
 
 export default function CalculatedChargeCard({
   calc,
@@ -202,19 +202,19 @@ export default function CalculatedChargeCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       data-charge-card
-      className={`relative overflow-hidden rounded-[22px] border border-white/10 bg-white/[.05] p-5 text-white backdrop-blur-md md:p-6 ${className}`}
+      className={`relative overflow-hidden rounded-[18px] border border-slate-900/[.09] bg-slate-50/80 p-5 text-slate-900 dark:border-white/10 dark:bg-white/[.04] dark:text-white md:p-6 ${className}`}
     >
       {/* ── Header: what was understood · close ── */}
       <div className="flex items-start gap-3">
-        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-white/10 text-white">
+        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-slate-900/[.06] dark:bg-white/10 text-slate-900 dark:text-white">
           <Calculator size={18} strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-semibold tracking-[.09em] text-white/50 uppercase">{t("eyebrow")}</div>
+          <div className="text-[11px] font-semibold tracking-[.09em] text-slate-500 dark:text-white/50 uppercase">{t("eyebrow")}</div>
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] font-semibold tracking-[-.02em]" data-charge-summary>
             {summary.map((part, i) => (
               <span key={i} className="flex items-center gap-2">
-                {i > 0 && <span className="text-white/35">•</span>}
+                {i > 0 && <span className="text-slate-400 dark:text-white/35">•</span>}
                 {part}
                 {part === gasLabel && calc.refrigerant.source === "inferred" && <Tag tone="warn">{t("srcInferred")}</Tag>}
               </span>
@@ -225,7 +225,7 @@ export default function CalculatedChargeCard({
           type="button"
           onClick={onClose}
           aria-label={t("close")}
-          className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+          className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-slate-500 dark:text-white/60 hover:bg-slate-900/[.06] dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
         >
           <X size={16} strokeWidth={2} />
         </button>
@@ -233,7 +233,7 @@ export default function CalculatedChargeCard({
 
       {/* ── Toolbar: mode · systems ── */}
       <div className="mt-4 flex flex-wrap items-center gap-3" data-charge-toolbar>
-        <div role="radiogroup" aria-label={t("modeLabel")} className="inline-flex rounded-full bg-white/[.07] p-1 ring-1 ring-white/10">
+        <div role="radiogroup" aria-label={t("modeLabel")} className="inline-flex rounded-full bg-slate-900/[.03] dark:bg-white/[.07] p-1 ring-1 ring-slate-900/[.08] dark:ring-white/10">
           {(["topup", "full"] as const).map((value) => (
             <button
               key={value}
@@ -247,7 +247,7 @@ export default function CalculatedChargeCard({
               data-charge-mode={value}
               title={value === "topup" ? t("modeTopupHint") : t("modeFullHint")}
               className={`h-8 whitespace-nowrap rounded-full px-3.5 text-[12.5px] font-semibold transition-colors ${
-                mode === value ? "bg-white text-[#0b1020]" : "text-white/70 hover:text-white"
+                mode === value ? "bg-slate-900 text-white dark:bg-white dark:text-[#0b1020]" : "text-slate-700 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               {value === "topup" ? t("modeTopup") : t("modeFull")}
@@ -255,8 +255,8 @@ export default function CalculatedChargeCard({
           ))}
         </div>
 
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-white/[.07] py-1 pl-3 pr-1 ring-1 ring-white/10" data-charge-systems>
-          <span className="whitespace-nowrap text-[12px] font-medium text-white/60">{t("systemsLabel")}</span>
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/[.03] dark:bg-white/[.07] py-1 pl-3 pr-1 ring-1 ring-slate-900/[.08] dark:ring-white/10" data-charge-systems>
+          <span className="whitespace-nowrap text-[12px] font-medium text-slate-500 dark:text-white/60">{t("systemsLabel")}</span>
           <button
             type="button"
             onClick={() => {
@@ -266,7 +266,7 @@ export default function CalculatedChargeCard({
             disabled={systems <= 1}
             aria-label={t("systemsLess")}
             data-charge-systems-minus
-            className="flex h-7 w-7 items-center justify-center rounded-full text-white/80 hover:bg-white/10 disabled:opacity-30"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 dark:text-white/80 hover:bg-slate-900/[.06] dark:hover:bg-white/10 disabled:opacity-30"
           >
             <Minus size={13} strokeWidth={2.4} />
           </button>
@@ -280,7 +280,7 @@ export default function CalculatedChargeCard({
             }}
             aria-label={t("systemsLabel")}
             data-charge-field="systems"
-            className="h-7 w-10 rounded-md bg-transparent text-center text-[13px] font-semibold tabular-nums outline-none focus:bg-white/10"
+            className="h-7 w-10 rounded-md bg-transparent text-center text-[13px] font-semibold tabular-nums outline-none focus:bg-slate-900/[.05] dark:focus:bg-white/10"
           />
           <button
             type="button"
@@ -291,7 +291,7 @@ export default function CalculatedChargeCard({
             disabled={systems >= MAX_SYSTEMS}
             aria-label={t("systemsMore")}
             data-charge-systems-plus
-            className="flex h-7 w-7 items-center justify-center rounded-full text-white/80 hover:bg-white/10 disabled:opacity-30"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 dark:text-white/80 hover:bg-slate-900/[.06] dark:hover:bg-white/10 disabled:opacity-30"
           >
             <Plus size={13} strokeWidth={2.4} />
           </button>
@@ -303,11 +303,11 @@ export default function CalculatedChargeCard({
         <div className="min-w-0">
           {/* Line-set bar */}
           <div data-charge-lineset>
-            <div className="flex h-2.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-slate-900/[.06] dark:bg-white/10" aria-hidden>
               <span className="h-full bg-emerald-400" style={{ width: `${factoryPct}%` }} />
               {extraSeg > 0 && <span className="h-full bg-blue-500" style={{ width: `${100 - factoryPct}%` }} />}
             </div>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-white/65">
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-slate-500 dark:text-white/65">
               <span className="flex items-center gap-1.5 whitespace-nowrap">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 {t("segFactory", { length: m(factorySeg) })}
@@ -320,7 +320,7 @@ export default function CalculatedChargeCard({
                     : t("segExtraNoRate", { length: m(extraSeg) })}
                 </span>
               ) : (
-                <span className="text-white/50">{t("nothingToAdd")}</span>
+                <span className="text-slate-500 dark:text-white/50">{t("nothingToAdd")}</span>
               )}
             </div>
           </div>
@@ -361,7 +361,7 @@ export default function CalculatedChargeCard({
                   resetAdded();
                 }}
                 data-charge-field="line"
-                className="h-10 w-full rounded-[11px] border border-white/12 bg-white/[.06] px-2.5 text-[13px] text-white outline-none focus:ring-[3px] focus:ring-white/10 [&>option]:text-slate-900"
+                className="h-10 w-full rounded-[11px] border border-slate-900/[.09] dark:border-white/12 bg-slate-900/[.03] dark:bg-white/[.06] px-2.5 text-[13px] text-slate-900 dark:text-white outline-none focus:ring-[3px] focus:ring-blue-600/15 dark:focus:ring-white/10 [&>option]:text-slate-900"
               >
                 {LIQUID_LINE_SIZES.map((s) => (
                   <option key={s} value={s}>
@@ -409,32 +409,32 @@ export default function CalculatedChargeCard({
 
           {/* The two answers — the nameplate charge is entered in the second, and nowhere else */}
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className={`rounded-[16px] px-4 py-3.5 ${mode === "topup" ? "bg-blue-500/15 ring-1 ring-blue-400/35" : "bg-white/[.06]"}`} data-charge-answer="add">
-              <div className="text-[11px] font-semibold tracking-[.08em] text-white/55 uppercase">{t("addOnSite")}</div>
+            <div className={`rounded-[16px] px-4 py-3.5 ${mode === "topup" ? "bg-blue-600/[.08] dark:bg-blue-500/15 ring-1 ring-blue-600/30 dark:ring-blue-400/35" : "bg-slate-900/[.03] dark:bg-white/[.06]"}`} data-charge-answer="add">
+              <div className="text-[11px] font-semibold tracking-[.08em] text-slate-500 dark:text-white/55 uppercase">{t("addOnSite")}</div>
               {extraKg !== null ? (
                 <div className="mt-1.5 flex items-baseline gap-2">
                   <span className="text-[24px] font-bold tracking-[-.035em] tabular-nums" data-charge-value="add">{kg(extraKg)}</span>
-                  <span className="text-[13px] font-semibold text-white/55 tabular-nums">{g(extraKg)}</span>
+                  <span className="text-[13px] font-semibold text-slate-500 dark:text-white/55 tabular-nums">{g(extraKg)}</span>
                 </div>
               ) : (
-                <div className="mt-1.5 text-[24px] font-bold text-white/35">—</div>
+                <div className="mt-1.5 text-[24px] font-bold text-slate-400 dark:text-white/35">—</div>
               )}
-              <div className="mt-1 text-[11.5px] leading-[1.45] text-white/55">{t("perSystemNote")}</div>
+              <div className="mt-1 text-[11.5px] leading-[1.45] text-slate-500 dark:text-white/55">{t("perSystemNote")}</div>
             </div>
 
-            <div className={`rounded-[16px] px-4 py-3.5 ${mode === "full" ? "bg-blue-500/15 ring-1 ring-blue-400/35" : "bg-white/[.06]"}`} data-charge-answer="total">
-              <div className="text-[11px] font-semibold tracking-[.08em] text-white/55 uppercase">{t("totalCharge")}</div>
+            <div className={`rounded-[16px] px-4 py-3.5 ${mode === "full" ? "bg-blue-600/[.08] dark:bg-blue-500/15 ring-1 ring-blue-600/30 dark:ring-blue-400/35" : "bg-slate-900/[.03] dark:bg-white/[.06]"}`} data-charge-answer="total">
+              <div className="text-[11px] font-semibold tracking-[.08em] text-slate-500 dark:text-white/55 uppercase">{t("totalCharge")}</div>
               {totalKg !== null ? (
                 <div className="mt-1.5 flex items-baseline gap-2">
                   <span className="text-[24px] font-bold tracking-[-.035em] tabular-nums" data-charge-value="total">{kg(totalKg)}</span>
-                  <span className="text-[13px] font-semibold text-white/55 tabular-nums">{g(totalKg)}</span>
+                  <span className="text-[13px] font-semibold text-slate-500 dark:text-white/55 tabular-nums">{g(totalKg)}</span>
                 </div>
               ) : (
-                <div className="mt-1.5 text-[24px] font-bold text-white/35">—</div>
+                <div className="mt-1.5 text-[24px] font-bold text-slate-400 dark:text-white/35">—</div>
               )}
               {/* Label above the field: beside it, a long translation squeezed the input to nothing. */}
               <label className="mt-2 block">
-                <span className="mb-1 block text-[11px] font-medium text-white/55">{t("nameplate")}</span>
+                <span className="mb-1 block text-[11px] font-medium text-slate-500 dark:text-white/55">{t("nameplate")}</span>
                 <span className={`${FIELD} h-8 ${inputs.factoryChargeKg === null ? "border-amber-400/50" : ""}`}>
                   <input
                     inputMode="decimal"
@@ -446,21 +446,21 @@ export default function CalculatedChargeCard({
                       resetAdded();
                     }}
                     data-charge-field="factory"
-                    className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-[13px] text-white tabular-nums outline-none placeholder:text-white/35"
+                    className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-[13px] text-slate-900 dark:text-white tabular-nums outline-none placeholder:text-slate-400 dark:placeholder:text-white/35"
                   />
-                  <span className="text-[11px] text-white/50">kg</span>
+                  <span className="text-[11px] text-slate-500 dark:text-white/50">kg</span>
                 </span>
               </label>
             </div>
           </div>
-          {!valid && <p className="m-0 mt-3 text-[12px] text-rose-300">{t("invalidInputs")}</p>}
+          {!valid && <p className="m-0 mt-3 text-[12px] text-rose-600 dark:text-rose-300">{t("invalidInputs")}</p>}
         </div>
 
         {/* ── Right: what to buy ── */}
-        <div className="flex min-w-0 flex-col rounded-[16px] border border-white/10 bg-white/[.04] p-4" data-charge-buy>
+        <div className="flex min-w-0 flex-col rounded-[16px] border border-slate-900/[.09] dark:border-white/10 bg-slate-900/[.03] dark:bg-white/[.04] p-4" data-charge-buy>
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-[11px] font-semibold tracking-[.08em] text-white/55 uppercase">{t("needLabel")}</span>
-            <span className="whitespace-nowrap text-[12px] text-white/55 tabular-nums">
+            <span className="text-[11px] font-semibold tracking-[.08em] text-slate-500 dark:text-white/55 uppercase">{t("needLabel")}</span>
+            <span className="whitespace-nowrap text-[12px] text-slate-500 dark:text-white/55 tabular-nums">
               {mode === "full" ? t("modeFull") : t("modeTopup")} × {systems}
             </span>
           </div>
@@ -470,48 +470,48 @@ export default function CalculatedChargeCard({
 
           <div className="mt-3 flex-1">
             {!calc.refrigerant.mark ? (
-              <p className="m-0 text-[13px] text-white/60">{t("noRefrigerant")}</p>
+              <p className="m-0 text-[13px] text-slate-500 dark:text-white/60">{t("noRefrigerant")}</p>
             ) : mode === "full" && totalKg === null ? (
-              <p className="m-0 text-[13px] text-amber-200" data-charge-needs-factory>
+              <p className="m-0 text-[13px] text-amber-700 dark:text-amber-200" data-charge-needs-factory>
                 {t("fullNeedsFactory")}
               </p>
             ) : neededKg === null ? (
-              <p className="m-0 text-[13px] text-white/60">{t("needRatePerMetre")}</p>
+              <p className="m-0 text-[13px] text-slate-500 dark:text-white/60">{t("needRatePerMetre")}</p>
             ) : neededKg <= 0 ? (
-              <p className="m-0 text-[13px] text-white/60">{t("nothingToAdd")}</p>
+              <p className="m-0 text-[13px] text-slate-500 dark:text-white/60">{t("nothingToAdd")}</p>
             ) : pick ? (
               <>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5" data-charge-pick>
                   <span className="text-[15px] font-semibold">
                     {pick.qty} × {pick.option.name} · {pick.option.weightLabel}
                   </span>
-                  <span className="whitespace-nowrap text-[13px] font-medium text-white/60 tabular-nums" data-charge-price>
+                  <span className="whitespace-nowrap text-[13px] font-medium text-slate-500 dark:text-white/60 tabular-nums" data-charge-price>
                     {eur(pick.qty * cylinderPrice)} {t("exVat")}
                   </span>
                 </div>
                 {/* How much of what is bought the job uses, and what goes back on the van */}
                 <div className="mt-3" data-charge-fill>
-                  <div className="flex h-2 overflow-hidden rounded-full bg-white/10" aria-hidden>
+                  <div className="flex h-2 overflow-hidden rounded-full bg-slate-900/[.06] dark:bg-white/10" aria-hidden>
                     <span className="h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width: `${Math.min(100, (neededKg / boughtKg) * 100)}%` }} />
                   </div>
-                  <div className="mt-1.5 flex flex-wrap justify-between gap-x-3 text-[11.5px] leading-[1.45] text-white/65" data-charge-leftover>
+                  <div className="mt-1.5 flex flex-wrap justify-between gap-x-3 text-[11.5px] leading-[1.45] text-slate-500 dark:text-white/65" data-charge-leftover>
                     <span>{t("usage", { used: kg(neededKg), bought: kg(boughtKg) })}</span>
-                    <span className="text-white/80">{t("leftover", { kg: kg(leftoverKg) })}</span>
+                    <span className="text-slate-700 dark:text-white/80">{t("leftover", { kg: kg(leftoverKg) })}</span>
                   </div>
                   {co2eT !== null && (
-                    <div className="mt-1 text-[11.5px] text-white/65" data-charge-co2e>
+                    <div className="mt-1 text-[11.5px] text-slate-500 dark:text-white/65" data-charge-co2e>
                       {t("co2e", { tonnes: format.number(co2eT, { maximumFractionDigits: 3 }), gwp: format.number(calc.gwp!) })}
                     </div>
                   )}
                   {pick.shortBy > 0 && (
-                    <div className="mt-1 text-[11.5px] font-medium text-amber-200" data-charge-short>
+                    <div className="mt-1 text-[11.5px] font-medium text-amber-700 dark:text-amber-200" data-charge-short>
                       {t("shortStock", { count: pick.shortBy })}
                     </div>
                   )}
                 </div>
               </>
             ) : (
-              <p className="m-0 text-[13px] text-white/60">{t("noStock", { gas: gasLabel })}</p>
+              <p className="m-0 text-[13px] text-slate-500 dark:text-white/60">{t("noStock", { gas: gasLabel })}</p>
             )}
           </div>
 
@@ -522,7 +522,7 @@ export default function CalculatedChargeCard({
               disabled={!valid}
               data-charge-add
               className={`mt-4 flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-[14px] font-semibold transition-colors disabled:opacity-50 ${
-                added ? "bg-emerald-500 text-white" : "bg-blue-500 text-white hover:bg-blue-400"
+                added ? "bg-emerald-600 text-white" : "bg-blue-700 text-white hover:bg-blue-800"
               }`}
             >
               {added ? <Check size={16} strokeWidth={2.4} className="flex-none" /> : <ShoppingCart size={16} strokeWidth={2} className="flex-none" />}
@@ -534,7 +534,7 @@ export default function CalculatedChargeCard({
               <Link
                 href={{ pathname: "/products", query: { gasType: calc.refrigerant.mark } }}
                 data-charge-find
-                className="flex h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-full border border-white/20 px-3 text-[12.5px] font-semibold text-white/85 hover:border-white/40"
+                className="flex h-10 min-w-0 items-center justify-center whitespace-nowrap rounded-full border border-slate-900/[.14] dark:border-white/20 px-3 text-[12.5px] font-semibold text-slate-700 dark:text-white/85 hover:border-slate-900/30 dark:hover:border-white/40"
               >
                 <span className="truncate">{t("findCylinders", { gas: gasLabel })}</span>
               </Link>
@@ -543,7 +543,7 @@ export default function CalculatedChargeCard({
               type="button"
               onClick={copySpec}
               data-charge-copy
-              className="flex h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-white/20 px-3 text-[12.5px] font-semibold text-white/85 hover:border-white/40"
+              className="flex h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-slate-900/[.14] dark:border-white/20 px-3 text-[12.5px] font-semibold text-slate-700 dark:text-white/85 hover:border-slate-900/30 dark:hover:border-white/40"
             >
               {copied ? <Check size={14} strokeWidth={2.4} className="flex-none" /> : <ClipboardCopy size={14} strokeWidth={2} className="flex-none" />}
               <span className="truncate">{copied ? t("copied") : t("copySpec")}</span>
@@ -553,15 +553,15 @@ export default function CalculatedChargeCard({
       </div>
 
       {/* ── One line: assumptions + the disclaimer, expandable ── */}
-      <details className="group mt-4 rounded-[12px] bg-white/[.05] px-3.5 py-2.5 text-[12px] text-white/65" data-charge-info>
+      <details className="group mt-4 rounded-[12px] bg-slate-900/[.03] dark:bg-white/[.05] px-3.5 py-2.5 text-[12px] text-slate-500 dark:text-white/65" data-charge-info>
         <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
-          <Info size={14} strokeWidth={2} className={`flex-none ${assumptions.length ? "text-amber-300" : "text-white/50"}`} />
+          <Info size={14} strokeWidth={2} className={`flex-none ${assumptions.length ? "text-amber-600 dark:text-amber-300" : "text-slate-500 dark:text-white/50"}`} />
           <span className="min-w-0 flex-1 truncate">
             {/* Short enough for one line at every width; the full text is inside. */}
             {assumptions.length ? t("assumptionsCount", { count: assumptions.length }) : t("checkManual")}
           </span>
-          <span className="flex-none text-[11px] font-semibold text-white/50 group-open:hidden">{t("showMore")}</span>
-          <span className="hidden flex-none text-[11px] font-semibold text-white/50 group-open:inline">{t("showLess")}</span>
+          <span className="flex-none text-[11px] font-semibold text-slate-500 dark:text-white/50 group-open:hidden">{t("showMore")}</span>
+          <span className="hidden flex-none text-[11px] font-semibold text-slate-500 dark:text-white/50 group-open:inline">{t("showLess")}</span>
         </summary>
         <div className="mt-2 space-y-1.5 leading-[1.55]">
           {assumptions.length > 0 && (
@@ -579,9 +579,9 @@ export default function CalculatedChargeCard({
 function Tag({ children, tone }: { children: React.ReactNode; tone: "ok" | "warn" | "muted" | "bad" | "auto" }) {
   const cls = {
     ok: "bg-emerald-400/15 text-emerald-300",
-    warn: "bg-amber-400/15 text-amber-200",
-    muted: "bg-white/10 text-white/60",
-    bad: "bg-rose-400/15 text-rose-300",
+    warn: "bg-amber-400/15 text-amber-700 dark:text-amber-200",
+    muted: "bg-slate-900/[.06] dark:bg-white/10 text-slate-500 dark:text-white/60",
+    bad: "bg-rose-400/15 text-rose-600 dark:text-rose-300",
     auto: "bg-cyan-400/15 text-cyan-200",
   }[tone];
   return <span className={`inline-flex whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold ${cls}`}>{children}</span>;
@@ -624,9 +624,9 @@ function Field({
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
           data-charge-field={name}
-          className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-[13px] text-white tabular-nums outline-none placeholder:text-white/35"
+          className="h-full min-w-0 flex-1 bg-transparent px-2.5 text-[13px] text-slate-900 dark:text-white tabular-nums outline-none placeholder:text-slate-400 dark:placeholder:text-white/35"
         />
-        <span className="text-[11px] text-white/50">{suffix}</span>
+        <span className="text-[11px] text-slate-500 dark:text-white/50">{suffix}</span>
       </span>
     </label>
   );

@@ -20,6 +20,7 @@ import { certificateHref } from "@/lib/fgasStorage";
 import { getFgasSummary } from "@/lib/fgasAccount";
 import type { FgasSummary } from "@/lib/fgas";
 import { LISTED, refrigerantTypeOf, resolveFamily, sizeLabel } from "@/lib/productFamily";
+import { gasMarkForProduct } from "@/lib/productMedia";
 
 // ---------------------------------------------------------------------------
 // Products
@@ -243,6 +244,43 @@ export const getFeaturedProducts = unstable_cache(
     return products.map(toStoreProduct);
   },
   ["featured-products", "v1"],
+  { tags: [PRODUCTS_TAG], revalidate: CATALOG_REVALIDATE_SECONDS }
+);
+
+/**
+ * The gases the home hero can show, in dock order. Each has a 3D model in
+ * public/ and at least one catalog row; a gas we neither model nor stock is
+ * not offered (no R-290 today: no product, no model).
+ */
+export const HOME_SHOWCASE_MARKS = ["R32", "R134a", "R410A", "R404A", "R407C", "R125A"] as const;
+export type HomeShowcaseMark = (typeof HOME_SHOWCASE_MARKS)[number];
+
+/** Heavier than this is a drum or tank, not a cylinder a buyer adds from the home page. */
+const SHOWCASE_MAX_KG = 60;
+
+/**
+ * One representative cylinder per showcase gas, from the live catalog: the
+ * purchasable one first, then one with a price, then a cylinder (not a
+ * drum), then the lowest €/kg. Null when the gas has no listed row at all.
+ * Every figure on the home hero, price index and workbench comes from these
+ * rows — nothing is typed into the page.
+ */
+export const getHomeShowcase = unstable_cache(
+  async (): Promise<Array<{ mark: HomeShowcaseMark; product: StoreProduct | null }>> => {
+    const rows = await prisma.product.findMany({ where: { ...LISTED, category: "cylinders" }, orderBy: IN_STOCK_FIRST });
+    const products = rows.map(toStoreProduct);
+    const rank = (p: StoreProduct) => [isPurchasable(p) ? 0 : 1, p.pricePerKg > 0 ? 0 : 1, p.weightKg <= SHOWCASE_MAX_KG ? 0 : 1, p.pricePerKg];
+    const better = (a: StoreProduct, b: StoreProduct) => {
+      const [ra, rb] = [rank(a), rank(b)];
+      for (let i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return ra[i] - rb[i];
+      return 0;
+    };
+    return HOME_SHOWCASE_MARKS.map((mark) => ({
+      mark,
+      product: products.filter((p) => gasMarkForProduct(p) === mark).sort(better)[0] ?? null,
+    }));
+  },
+  ["home-showcase", "v1"],
   { tags: [PRODUCTS_TAG], revalidate: CATALOG_REVALIDATE_SECONDS }
 );
 

@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import StorePage from "@/components/StorePage";
-import MarketAlertsCard from "@/components/MarketAlertsCard";
 import PageSkeleton from "@/components/PageSkeleton";
-import { getFeaturedProducts, getMarketAlerts } from "@/lib/data";
+import { getFeaturedProducts, getHomeShowcase, getMarketAlerts } from "@/lib/data";
 import { getTimeOfDayGreeting } from "@/lib/greeting";
 import { SDS_DOCUMENTS } from "@/lib/sds";
 
@@ -44,14 +43,19 @@ async function HomeContent() {
   // No auth() here: that one call forced the most-visited page to render on
   // every request. The shell is the same for everyone; the signed-in parts
   // come from /api/home/account in the browser (components/StorePage).
-  const [featuredProducts, marketAlerts] = await Promise.all([getFeaturedProducts(4), getMarketAlerts()]);
+  const [featuredProducts, popularProducts, marketAlerts, showcase] = await Promise.all([
+    getFeaturedProducts(4),
+    // The desktop Popular grid filters by category tabs, so it needs more than four.
+    getFeaturedProducts(12),
+    getMarketAlerts(),
+    getHomeShowcase(),
+  ]);
 
   return (
     <StorePage
       featuredProducts={featuredProducts}
-      // A server component handed to a client one as a prop: its markup is
-      // rendered here and never reaches the browser as JavaScript.
-      marketAlertsCard={<MarketAlertsCard />}
+      popularProducts={popularProducts}
+      showcase={showcase}
       marketAlerts={marketAlerts}
       // Rendered into the static HTML; the browser hydrates against it, then
       // switches to the visitor's own time of day (lib/hooks/useGreeting).
