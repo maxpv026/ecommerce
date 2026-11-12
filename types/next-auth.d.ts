@@ -29,6 +29,8 @@ declare module "next-auth" {
       theme?: ThemePreference;
       /** RBAC role — "ADMIN" only for the ADMIN_EMAIL account. */
       role?: "USER" | "ADMIN";
+      /** This device's UserSession.sessionTokenId — an identifier, not a credential. */
+      sessionId?: string;
     };
   }
 }
@@ -44,5 +46,7 @@ declare module "next-auth/jwt" {
     theme?: ThemePreference;
     /** Epoch ms of the holder's last sign-in (or password-change re-stamp); see lib/sessionRevocation. */
     authTime?: number;
+    /** UserSession.sessionTokenId of this device (lib/deviceSessions). */
+    sid?: string;
   }
 }

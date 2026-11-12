@@ -12,7 +12,7 @@ const MAX_ATTEMPTS = 5;
 export const OTP_RESEND_INTERVAL_MS = 30 * 1000;
 
 /** What a code is allowed to authorize — enforced at both mint and verify. */
-export type OtpPurpose = "signin" | "password-change" | "password-reset";
+export type OtpPurpose = "signin" | "password-change" | "password-reset" | "step-up";
 
 // A CSPRNG, not Math.random(): V8's xorshift state can be recovered from a
 // handful of outputs, which would make the next code predictable.

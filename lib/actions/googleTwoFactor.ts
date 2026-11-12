@@ -25,7 +25,7 @@ export async function completeGoogleTwoFactor(code: unknown): Promise<GoogleTwoF
     jar.delete(GOOGLE_2FA_COOKIE);
     return { ok: false, code: "EXPIRED" };
   }
-  if (typeof code !== "string" || code.trim().length < 6 || code.length > 32) return { ok: false, code: "INVALID" };
+  if (typeof code !== "string" || code.trim().length < 6 || code.length > 200) return { ok: false, code: "INVALID" };
 
   try {
     await signIn("google-2fa", { challenge, code: code.trim(), redirect: false });

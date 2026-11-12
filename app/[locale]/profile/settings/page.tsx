@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import AccountSettingsPage from "@/components/AccountSettingsPage";
-import { auth } from "@/auth";
-import { getUserProfile } from "@/lib/data";
+import { loadAccountSettings } from "@/lib/accountSettings";
 import MobileSettingsRedirect from "@/components/MobileSettingsRedirect";
 
 export const metadata: Metadata = {
@@ -25,15 +24,14 @@ export const metadata: Metadata = {
  * what actually decides which UI exists.
  */
 export default async function SettingsPage() {
-  const session = await auth();
   // proxy.ts gates /profile/settings, so a visitor always has a session by
-  // the time this runs; the fallback only covers a session race.
-  const profile = session?.user?.id ? await getUserProfile(session.user.id) : null;
+  // the time this runs; the loader's null fallback only covers a session race.
+  const data = await loadAccountSettings();
 
   return (
     <>
       <div className="hidden md:block">
-        <AccountSettingsPage profile={profile} />
+        <AccountSettingsPage {...data} />
       </div>
       <div className="block md:hidden">
         <MobileSettingsRedirect />

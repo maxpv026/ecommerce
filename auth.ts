@@ -8,8 +8,11 @@ import { checkPassword } from "@/lib/loginThrottle";
 import { readRestamp, revokedBefore, sessionAnchor, sessionStillValid } from "@/lib/sessionRevocation";
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
+import { looksLikePhrase, verifyRecoveryPhraseForUser } from "@/lib/recoveryPhrase";
 import { ADMIN_LEGAL_NAME, roleForEmail } from "@/lib/rbac";
 import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
+import { legacySessionId, registerSession, touchSession } from "@/lib/deviceSessions";
+import { randomUUID } from "node:crypto";
 import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
@@ -70,10 +73,14 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           // Either factor is accepted: six digits is the authenticator,
           // eight hex characters is a printed recovery code. They cannot be
           // confused — the lengths do not overlap.
+          // …and a recovery phrase (lib/recoveryPhrase) is anything else of 12+
+          // characters — a passphrase can't be mistaken for either.
           const usingRecovery = looksLikeRecoveryCode(code);
           const totp = usingRecovery
             ? await consumeRecoveryCode(prisma, user, code)
-            : await verifyTotpForUser(prisma, user, code);
+            : looksLikePhrase(code)
+              ? await verifyRecoveryPhraseForUser(prisma, user, code)
+              : await verifyTotpForUser(prisma, user, code);
           if (totp.ok && usingRecovery) {
             console.warn(
               `auth: ${email} signed in with a RECOVERY CODE; ${"remaining" in totp ? totp.remaining : "?"} left.`
@@ -119,7 +126,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
         const check = looksLikeRecoveryCode(code)
           ? await consumeRecoveryCode(prisma, user, code)
-          : await verifyTotpForUser(prisma, user, code);
+          : looksLikePhrase(code)
+            ? await verifyRecoveryPhraseForUser(prisma, user, code)
+            : await verifyTotpForUser(prisma, user, code);
         if (!check.ok) {
           console.warn(`auth: Google 2FA refused for ${user.email ?? user.id}: ${check.reason}`);
           return null;
@@ -201,13 +210,29 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // When this holder last proved who they are. Compared against
         // passwordChangedAt on every later read (lib/sessionRevocation).
         token.authTime = Date.now();
+        // This device's session row (lib/deviceSessions): what "Active
+        // sessions" lists and what revoking one device switches off.
+        const sid = randomUUID();
+        token.sid = sid;
+        if (user.id) {
+          await registerSession(user.id, sid).catch((error) => console.error("auth: could not register the device session:", error));
+        }
       } else if (token.sub) {
+        // A token from before device sessions gets a stable derived sid, so
+        // the same cookie maps to one row even where the cookie can't be
+        // rewritten (server components). Set before any re-stamp below
+        // changes authTime.
+        if (typeof token.sid !== "string") {
+          const minted = typeof token.authTime === "number" ? token.authTime : typeof token.iat === "number" ? token.iat * 1000 : 0;
+          token.sid = legacySessionId(token.sub, minted);
+        }
+        const sid = token.sid as string;
         // ── Revocation on password change ──
         // The device that just changed the password re-stamps its own
         // session (lib/actions/password → unstable_update) with a stamp only
         // the server can mint; every other token issued before the change is
         // refused, and returning null makes Auth.js clear its cookie.
-        const anchor = await sessionAnchor(token.sub).catch((error) => {
+        const anchor = await sessionAnchor(token.sub, sid).catch((error) => {
           // A transient database error must not sign everyone out (null
           // deletes the cookie): fail open for this one read, loudly.
           console.error("auth: could not check the session against the account:", error);
@@ -221,6 +246,14 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             // Tokens minted before authTime existed fall back to iat (seconds).
             const authTime = typeof token.authTime === "number" ? token.authTime : typeof token.iat === "number" ? token.iat * 1000 : 0;
             if (!sessionStillValid(anchor, authTime)) return null;
+          }
+          // ── Revocation of this one device ──
+          const device = anchor?.deviceSessions?.[0];
+          if (device?.revokedAt) return null;
+          if (anchor && !device) {
+            await registerSession(token.sub, sid).catch((error) => console.error("auth: could not register the device session:", error));
+          } else if (device) {
+            await touchSession(sid, device.lastActiveAt).catch(() => undefined);
           }
         }
       }
@@ -352,6 +385,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // Absent role (pre-RBAC session tokens) fails closed to USER.
         session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled === true;
+        session.user.sessionId = typeof token.sid === "string" ? token.sid : undefined;
       }
       return session;
     },

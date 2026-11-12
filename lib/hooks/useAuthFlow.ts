@@ -20,7 +20,10 @@ export type AuthStep = "credentials" | "code";
  * has no recovery codes behind it, so showing the switch there would promise
  * something that cannot work.
  */
-export type CodeMode = "totp" | "recovery";
+export type CodeMode = "totp" | "recovery" | "phrase";
+
+/** A recovery phrase is 12+ characters (lib/recoveryPhrase MIN_CUSTOM_LENGTH). */
+const MIN_PHRASE_LENGTH = 12;
 
 /** Recovery codes are eight hex characters — see RECOVERY_CODE_* in lib/twoFactor. */
 const RECOVERY_CODE_LENGTH = 8;
@@ -113,6 +116,7 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [codeMode, setCodeMode] = useState<CodeMode>("totp");
   const [recoveryCode, setRecoveryCodeState] = useState("");
+  const [phrase, setPhrase] = useState("");
   const [error, setError] = useState<string | null>(() => {
     const code = options.initialErrorCode;
     if (!code) return null;
@@ -123,6 +127,7 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
   const [googleLoading, setGoogleLoading] = useState(false);
   const boxRefs = useRef<Array<HTMLInputElement | null>>([]);
   const recoveryRef = useRef<HTMLInputElement | null>(null);
+  const phraseRef = useRef<HTMLInputElement | null>(null);
 
   /** Only authenticator accounts have recovery codes to fall back to. */
   const canUseRecoveryCode = factor === "totp";
@@ -147,6 +152,20 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
       }
       return next;
     });
+  };
+
+  /**
+   * Picks one of the three second-factor inputs directly — the recovery
+   * phrase sits beside the recovery code — clearing the others for the
+   * same reason toggleCodeMode does.
+   */
+  const setCodeModeTo = (next: CodeMode) => {
+    setError(null);
+    setDigits(["", "", "", "", "", ""]);
+    setRecoveryCodeState("");
+    setPhrase("");
+    setCodeMode(next);
+    setTimeout(() => (next === "totp" ? boxRefs.current[0] : next === "recovery" ? recoveryRef.current : phraseRef.current)?.focus(), 50);
   };
 
   const setMode = (next: AuthMode) => {
@@ -228,8 +247,13 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     // server needs no flag from us — but sending a half-finished value would
     // spend one of the account's five attempts before the lockout, which is
     // why both lengths are enforced here first.
-    const code = codeMode === "recovery" ? recoveryCode : digits.join("");
-    if (codeMode === "recovery") {
+    const code = codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? phrase.trim() : digits.join("");
+    if (codeMode === "phrase") {
+      if (code.replace(/\s+/g, " ").length < MIN_PHRASE_LENGTH) {
+        setError(t("errorIncompletePhrase"));
+        return;
+      }
+    } else if (codeMode === "recovery") {
       if (code.length !== RECOVERY_CODE_LENGTH) {
         setError(t("errorIncompleteRecoveryCode"));
         return;
@@ -255,7 +279,7 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
         const message =
           result?.code === "LOCKED"
             ? t("errorTwoFactorLockedMinutes", { minutes: result.retryAfterMinutes ?? 15 })
-            : t(codeMode === "recovery" ? "errorInvalidRecoveryCode" : "errorInvalidCode");
+            : t(codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode");
         setError(message);
         toast.error(message);
         return;
@@ -265,7 +289,7 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
       const result = await signIn("credentials", { email, password, code, redirect: false });
       if (result?.error) {
         setVerifying(false);
-        const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : "errorInvalidCode";
+        const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode";
         setError(t(key));
         toast.error(t(key));
         return;
@@ -335,6 +359,10 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     canUseRecoveryCode,
     toggleCodeMode,
     recoveryCode,
+    phrase,
+    setPhrase,
+    phraseRef,
+    setCodeModeTo,
     setRecoveryCode,
     recoveryRef,
     error,

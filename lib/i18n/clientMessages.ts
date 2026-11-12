@@ -52,6 +52,7 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "AdminInventory", //  admin/inventory
   "SdsAssistant", //    compliance/sds
   "FgasGate", //        cart
+  "SecurityCenter", //  profile/**, notifications (settings + security)
 ] as const;
 
 type Messages = Record<string, unknown>;

@@ -117,6 +117,14 @@ model User {
   loginFailedAttempts     Int       @default(0)
   /// Set when loginFailedAttempts reaches the ceiling (lib/loginThrottle).
   loginLockedUntil        DateTime?
+  /// Recovery phrase (Settings → Security): a generated 12-word phrase or the
+  /// buyer's own passphrase (≥ 12 characters), bcrypt-hashed after
+  /// normalising case and spacing. Accepted wherever an authenticator code is
+  /// — at sign-in and for step-up — so losing the phone is not losing the
+  /// account. The hint is the buyer's own words, shown back in Settings.
+  recoveryPhraseHash      String?
+  recoveryPhraseHint      String?
+  recoveryPhraseSetAt     DateTime?
   /// bcrypt hashes of the single-use recovery codes, never the codes.
   /// Stored hashed because this array is the whole second factor for anyone
   /// who has lost their phone — a database leak of plaintext codes would be
@@ -214,6 +222,7 @@ model User {
   favorites            Favorite[]
   chatSessions         ChatSession[]
   savedCart            SavedCart?
+  deviceSessions       UserSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1134,4 +1143,29 @@ model SavedCart {
   updatedAt        DateTime  @updatedAt
 
   @@index([contentUpdatedAt])
+}
+
+/// One signed-in device. Sessions are stateless JWTs; each token carries a
+/// `sid` (sessionTokenId) and auth.ts refuses a token whose row is revoked.
+/// Rows are never deleted on sign-out-everywhere — revokedAt is the record —
+/// and a row is created on first sight of a token that predates this table.
+model UserSession {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionTokenId String    @unique
+  /// "Chrome · macOS" — parsed from the User-Agent (lib/deviceSessions).
+  deviceName     String
+  browser        String?
+  os             String?
+  /// desktop | mobile | tablet
+  deviceType     String?
+  ipAddress      String?
+  city           String?
+  country        String?
+  createdAt      DateTime  @default(now())
+  lastActiveAt   DateTime  @default(now())
+  revokedAt      DateTime?
+
+  @@index([userId, revokedAt])
 }

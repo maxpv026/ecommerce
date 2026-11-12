@@ -33,10 +33,13 @@ export default function MobileAuthLayout() {
     boxRefs,
     codeMode,
     canUseRecoveryCode,
-    toggleCodeMode,
     recoveryCode,
     setRecoveryCode,
     recoveryRef,
+    phrase,
+    setPhrase,
+    phraseRef,
+    setCodeModeTo,
     error,
     submitting,
     verifying,
@@ -73,14 +76,18 @@ export default function MobileAuthLayout() {
           ) : (
             <>
               <h1 className="m-0 text-[24px] font-semibold tracking-[-.035em]">
-              {codeMode === "recovery"
+              {codeMode === "phrase"
+                ? t("phraseTitle")
+                : codeMode === "recovery"
                 ? t("recoveryTitle")
                 : factor === "totp"
                   ? t("authenticatorTitle")
                   : t("checkEmailTitle")}
             </h1>
               <p className="mt-2 max-w-[280px] text-[13.5px] leading-[1.5] text-slate-500 dark:text-slate-400">
-              {codeMode === "recovery" ? (
+              {codeMode === "phrase" ? (
+                t("phraseSubtitle")
+              ) : codeMode === "recovery" ? (
                 t("recoverySubtitle")
               ) : factor === "totp" ? (
                 t("authenticatorSubtitle")
@@ -256,6 +263,20 @@ export default function MobileAuthLayout() {
                   />
                 ))}
               </div>
+            ) : codeMode === "phrase" ? (
+                <input
+                  ref={phraseRef}
+                  value={phrase}
+                  onChange={(e) => setPhrase(e.target.value.slice(0, 200))}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoComplete="off"
+                  data-phrase-login-input
+                  aria-label={t("phraseLabel")}
+                  placeholder={t("phrasePlaceholder")}
+                  className="h-[54px] w-full rounded-[14px] border-[1.5px] border-slate-900/[.14] bg-white px-4 font-mono text-[14px] text-slate-900 placeholder:font-sans placeholder:text-[14px] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-[3.5px] focus:ring-blue-700/[.12] dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
+                />
             ) : (
             <input
                 ref={recoveryRef}
@@ -274,14 +295,24 @@ export default function MobileAuthLayout() {
             {error && <p className="text-center text-[12.5px] font-medium text-red-600 dark:text-red-400">{error}</p>}
 
             {canUseRecoveryCode && (
+              <>
               <button
                 type="button"
-                onClick={toggleCodeMode}
+                onClick={() => setCodeModeTo(codeMode === "recovery" ? "totp" : "recovery")}
                 data-recovery-toggle
                 className="mx-auto -mt-1 text-[12.5px] font-semibold text-blue-700 underline-offset-4 transition-colors hover:underline dark:text-blue-400"
               >
-                {codeMode === "totp" ? t("useRecoveryCode") : t("useAuthenticatorApp")}
+                {codeMode === "recovery" ? t("useAuthenticatorApp") : t("useRecoveryCode")}
               </button>
+              <button
+                type="button"
+                onClick={() => setCodeModeTo(codeMode === "phrase" ? "totp" : "phrase")}
+                data-phrase-toggle
+                className="mx-auto -mt-3 text-[12.5px] font-semibold text-blue-700 underline-offset-4 transition-colors hover:underline dark:text-blue-400"
+              >
+                {codeMode === "phrase" ? t("useAuthenticatorApp") : t("usePhrase")}
+              </button>
+              </>
             )}
 
             <button

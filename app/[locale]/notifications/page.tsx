@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { auth } from "@/auth";
-import { getUserProfile } from "@/lib/data";
+import { loadAccountSettings } from "@/lib/accountSettings";
 import AccountSettingsPage from "@/components/AccountSettingsPage";
 import MobileNotificationsLayout from "@/components/MobileNotificationsLayout";
 import FullMessagesProvider from "@/components/i18n/FullMessagesProvider";
@@ -22,13 +21,12 @@ export const metadata: Metadata = {
  */
 export default async function NotificationsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const session = await auth();
-  const profile = session?.user?.id ? await getUserProfile(session.user.id) : null;
+  const data = await loadAccountSettings();
 
   return (
     <FullMessagesProvider locale={locale}>
       <div className="hidden md:block">
-        <AccountSettingsPage profile={profile} />
+        <AccountSettingsPage {...data} />
       </div>
       <div className="md:hidden">
         <MobileNotificationsLayout />

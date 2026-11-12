@@ -111,10 +111,13 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
     boxRefs,
     codeMode,
     canUseRecoveryCode,
-    toggleCodeMode,
     recoveryCode,
     setRecoveryCode,
     recoveryRef,
+    phrase,
+    setPhrase,
+    phraseRef,
+    setCodeModeTo,
     error,
     submitting,
     verifying,
@@ -181,14 +184,18 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           /* ---- Step 2: enter the emailed verification code, in place ---- */
           <>
             <h2 className="m-0 text-[25px] font-semibold tracking-[-.035em]">
-              {codeMode === "recovery"
+              {codeMode === "phrase"
+                ? tAuth("phraseTitle")
+                : codeMode === "recovery"
                 ? tAuth("recoveryTitle")
                 : factor === "totp"
                   ? tAuth("authenticatorTitle")
                   : tAuth("checkEmailTitle")}
             </h2>
             <p className="mb-[26px] mt-[7px] text-[13.5px] leading-[1.5] text-slate-500 dark:text-slate-400">
-              {codeMode === "recovery" ? (
+              {codeMode === "phrase" ? (
+                tAuth("phraseSubtitle")
+              ) : codeMode === "recovery" ? (
                 tAuth("recoverySubtitle")
               ) : factor === "totp" ? (
                 tAuth("authenticatorSubtitle")
@@ -225,6 +232,20 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                     />
                   ))}
                 </div>
+              ) : codeMode === "phrase" ? (
+                  <input
+                    ref={phraseRef}
+                    value={phrase}
+                    onChange={(e) => setPhrase(e.target.value.slice(0, 200))}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoComplete="off"
+                    data-phrase-login-input
+                    aria-label={tAuth("phraseLabel")}
+                    placeholder={tAuth("phrasePlaceholder")}
+                    className="h-[54px] w-full rounded-[14px] border-[1.5px] border-slate-900/[.14] bg-white px-4 font-mono text-[14px] text-slate-900 placeholder:font-sans placeholder:text-[14px] placeholder:text-slate-400 focus:border-blue-700 focus:outline-none focus:ring-[3.5px] focus:ring-blue-700/[.12] dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
+                  />
               ) : (
               <input
                   ref={recoveryRef}
@@ -249,14 +270,24 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
               )}
 
               {canUseRecoveryCode && (
+                <>
                 <button
                   type="button"
-                  onClick={toggleCodeMode}
+                  onClick={() => setCodeModeTo(codeMode === "recovery" ? "totp" : "recovery")}
                   data-recovery-toggle
                   className="mx-auto -mt-1 text-[12.5px] font-semibold text-blue-700 underline-offset-4 transition-colors hover:underline dark:text-blue-400"
                 >
-                  {codeMode === "totp" ? tAuth("useRecoveryCode") : tAuth("useAuthenticatorApp")}
+                  {codeMode === "recovery" ? tAuth("useAuthenticatorApp") : tAuth("useRecoveryCode")}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setCodeModeTo(codeMode === "phrase" ? "totp" : "phrase")}
+                  data-phrase-toggle
+                  className="mx-auto -mt-3 text-[12.5px] font-semibold text-blue-700 underline-offset-4 transition-colors hover:underline dark:text-blue-400"
+                >
+                  {codeMode === "phrase" ? tAuth("useAuthenticatorApp") : tAuth("usePhrase")}
+                </button>
+                </>
               )}
 
               <button

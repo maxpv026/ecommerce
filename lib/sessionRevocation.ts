@@ -67,8 +67,16 @@ export function readRestamp(stamp: unknown, userId: string): number | null {
  * The row facts a session depends on. Cached per request (React cache), so
  * a render that calls auth() several times reads the row once.
  */
-export const sessionAnchor = cache(async (userId: string) =>
-  prisma.user.findUnique({ where: { id: userId }, select: { passwordChangedAt: true, sessionsRevokedAt: true } })
+export const sessionAnchor = cache(async (userId: string, sid?: string | null) =>
+  prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      passwordChangedAt: true,
+      sessionsRevokedAt: true,
+      // This device's row (lib/deviceSessions) — same query, no extra round trip.
+      deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true }, take: 1 } : false,
+    },
+  })
 );
 
 type Anchor = { passwordChangedAt: Date | null; sessionsRevokedAt?: Date | null };

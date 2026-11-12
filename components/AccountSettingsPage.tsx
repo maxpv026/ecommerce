@@ -15,7 +15,6 @@ import {
   FileBadge2,
   KeyRound,
   Landmark,
-  Laptop,
   Loader2,
   Lock,
   MapPin,
@@ -33,11 +32,14 @@ import Header from "./Header";
 import AuthModal from "./AuthModal";
 import ToggleSwitch from "./ToggleSwitch";
 import ChangePasswordFlow from "./ChangePasswordFlow";
-import type { UserProfileData } from "@/lib/data";
 import { updateNotificationPreferences, updateReorderCadence } from "@/lib/actions/notifications";
 import { sendTestNotification, type TestNotificationKind } from "@/lib/actions/notificationTest";
 import { updateProfile } from "@/lib/actions/profile";
-import { signOutOtherDevices } from "@/lib/actions/sessions";
+import type { AccountSettingsData } from "@/lib/accountSettings";
+import type { SecurityState } from "@/lib/actions/security";
+import DeviceSessions from "./security/DeviceSessions";
+import TwoFactorManager from "./security/TwoFactorManager";
+import AddressesManager from "./security/AddressesManager";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   ESSENTIAL_TOPICS,
@@ -100,9 +102,9 @@ const TILE_ON = {
   emerald: "border-emerald-600/20 bg-emerald-600/[.07] text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/[.1] dark:text-emerald-300",
 };
 const TILE_OFF = "border-slate-900/[.08] bg-slate-50 text-slate-400 dark:border-white/[.08] dark:bg-white/[.03] dark:text-slate-500";
-const ROW = "flex items-center gap-4 px-5 py-2.5 transition-colors hover:bg-slate-900/[.015] dark:hover:bg-white/[.02]";
+const ROW = "flex items-center gap-4 px-5 py-2 transition-colors hover:bg-slate-900/[.015] dark:hover:bg-white/[.02]";
 const SECTION_BAR =
-  "flex items-center justify-between gap-3 bg-slate-900/[.015] px-5 py-2 text-[11px] font-semibold tracking-[.08em] text-slate-500 uppercase dark:bg-white/[.02] dark:text-ink-muted";
+  "flex items-center justify-between gap-3 bg-slate-900/[.015] px-5 py-1.5 text-[11px] font-semibold tracking-[.08em] text-slate-500 uppercase dark:bg-white/[.02] dark:text-ink-muted";
 
 /** Which rows offer "send a test", and the action kind behind it. */
 const TESTABLE: Partial<Record<NotificationTopic, TestNotificationKind>> = { abandonedCart: "abandonedCart", restockReminders: "restockReminders" };
@@ -116,7 +118,7 @@ const THEMES: Array<{ value: ThemeChoice; icon: typeof Sun; labelKey: string }> 
   { value: "system", icon: Monitor, labelKey: "themeAuto" },
 ];
 
-export default function AccountSettingsPage({ profile }: { profile: UserProfileData | null }) {
+export default function AccountSettingsPage({ profile, security: initialSecurity, addresses, now, focus }: AccountSettingsData & { focus?: "security" }) {
   const t = useTranslations("AccountSettings");
   const router = useRouter();
   const { update } = useSession();
@@ -218,22 +220,22 @@ export default function AccountSettingsPage({ profile }: { profile: UserProfileD
   const { choice, setChoice } = useThemeChoice();
   const { activeLocale, switchLocale, isPending } = useSwitchLocale();
 
-  // ── Sessions ──
-  const [confirming, setConfirming] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
-  const confirmRef = useRef<HTMLButtonElement>(null);
+  // ── Security: real sessions, 2FA, recovery phrase ──
+  const [security, setSecurity] = useState<SecurityState | null>(initialSecurity);
+  const [managing2fa, setManaging2fa] = useState(false);
+  const [managingAddresses, setManagingAddresses] = useState(false);
+  const twoFa = security ? security.twoFactor : Boolean(profile?.isTwoFactorEnabled);
+  const phraseSet = Boolean(security?.phrase.set);
+  const securityRef = useRef<HTMLDivElement>(null);
+  // Arriving from "Manage 2FA" elsewhere (/profile/security → #security):
+  // bring the section into view and mark it for a moment.
   useEffect(() => {
-    if (confirming) confirmRef.current?.focus();
-  }, [confirming]);
-  const signOutOthers = async () => {
-    setSigningOut(true);
-    const result = await signOutOtherDevices().catch(() => null);
-    setSigningOut(false);
-    setConfirming(false);
-    if (result?.ok) toast.success(t("signedOutOthers"));
-    else toast.error(t("signOutFailed"));
-  };
-  const twoFa = Boolean(profile?.isTwoFactorEnabled);
+    if ((window.location.hash !== "#security" && focus !== "security") || !securityRef.current) return;
+    securityRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    securityRef.current.dataset.highlight = "1";
+    const id = setTimeout(() => securityRef.current && delete securityRef.current.dataset.highlight, 2200);
+    return () => clearTimeout(id);
+  }, [focus]);
 
   const metaLine = [
     profile?.email,
@@ -402,12 +404,17 @@ export default function AccountSettingsPage({ profile }: { profile: UserProfileD
                 </div>
 
                 {/* Security & access — same surface, under its own bar */}
-                <div className="divide-y divide-slate-900/[.06] border-t border-slate-900/[.06] dark:divide-white/[.06] dark:border-white/[.06]" data-security>
+                <div
+                  ref={securityRef}
+                  id="security"
+                  className="scroll-mt-24 divide-y divide-slate-900/[.06] border-t border-slate-900/[.06] transition-colors duration-700 data-[highlight]:bg-blue-600/[.05] dark:divide-white/[.06] dark:border-white/[.06]"
+                  data-security
+                >
                   <div className={SECTION_BAR}>
                     <h2 className="m-0 text-[11px] font-semibold tracking-[.08em]">{t("securityHeading")}</h2>
                   </div>
 
-                  <div className="flex items-start gap-4 px-5 py-2.5" data-password-row>
+                  <div className="flex items-start gap-4 px-5 py-2" data-password-row>
                     <span className={`${TILE} ${TILE_OFF}`}>
                       <Lock size={17} strokeWidth={2} />
                     </span>
@@ -426,46 +433,19 @@ export default function AccountSettingsPage({ profile }: { profile: UserProfileD
                         <span data-twofa-status={twoFa ? "on" : "off"} className={`${CHIP} ${twoFa ? CHIP_OK : CHIP_WARN}`}>
                           {twoFa ? t("twoFaOn") : t("twoFaOff")}
                         </span>
+                        <span data-phrase-status={phraseSet ? "set" : "none"} className={`${CHIP} ${phraseSet ? CHIP_OK : CHIP_WARN}`}>
+                          {phraseSet ? t("phraseActiveBadge") : t("phraseAddBadge")}
+                        </span>
                       </div>
                       <p className={`m-0 mt-0.5 text-[12px] leading-[1.45] ${MUTED}`}>{t("twoFaSub")}</p>
                     </div>
-                    <Link href="/profile/security" data-twofa-manage className={ROW_BTN}>
+                    <button type="button" onClick={() => setManaging2fa(true)} disabled={!security} data-twofa-manage className={ROW_BTN}>
                       {t("twoFaManage")}
                       <ArrowRight size={13} strokeWidth={2} />
-                    </Link>
+                    </button>
                   </div>
 
-                  <div className={ROW} data-sessions>
-                    <span className={`${TILE} ${TILE_OFF}`}>
-                      <Laptop size={17} strokeWidth={2} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[13.5px] font-semibold tracking-[-.015em]">{t("sessionsTitleShort")}</span>
-                      <p className={`m-0 mt-0.5 text-[12px] leading-[1.45] ${MUTED}`}>{t("sessionsSub")}</p>
-                    </div>
-                    {confirming ? (
-                      <div className="flex flex-none items-center gap-2">
-                        <button type="button" onClick={() => setConfirming(false)} disabled={signingOut} className="h-9 rounded-full px-3 text-[13px] font-medium text-slate-500 hover:text-slate-900 dark:text-ink-muted dark:hover:text-slate-100">
-                          {t("cancel")}
-                        </button>
-                        <button
-                          ref={confirmRef}
-                          type="button"
-                          data-sign-out-confirm
-                          onClick={signOutOthers}
-                          disabled={signingOut}
-                          className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-red-600 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-50"
-                        >
-                          {signingOut && <Loader2 size={13} className="animate-spin" />}
-                          {t("signOutConfirm")}
-                        </button>
-                      </div>
-                    ) : (
-                      <button type="button" data-sign-out-others onClick={() => setConfirming(true)} disabled={!profile} className={ROW_BTN}>
-                        {t("signOutOthersShort")}
-                      </button>
-                    )}
-                  </div>
+                  {security && <DeviceSessions sessions={security.sessions} now={now} onChange={setSecurity} />}
                 </div>
 
                 {/* footer: back to the dashboard · what is always sent */}
@@ -588,14 +568,17 @@ export default function AccountSettingsPage({ profile }: { profile: UserProfileD
                   {saving ? t("saving") : t("save")}
                   {!saving && <ArrowRight size={16} strokeWidth={2} />}
                 </button>
-                <Link
-                  href="/profile#addresses"
+                <button
+                  type="button"
+                  onClick={() => setManagingAddresses(true)}
+                  disabled={!profile}
                   data-manage-addresses
-                  className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-900/[.12] text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-900/[.04] dark:border-white/[.14] dark:text-slate-200 dark:hover:bg-white/[.06]"
+                  className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-900/[.12] text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-900/[.04] disabled:opacity-50 dark:border-white/[.14] dark:text-slate-200 dark:hover:bg-white/[.06]"
                 >
                   <MapPin size={14} strokeWidth={2} />
                   {t("manageDelivery")}
-                </Link>
+                  {addresses.length > 0 && <span className="font-mono text-[11.5px] font-medium text-slate-400">· {addresses.length}</span>}
+                </button>
 
                 {/* 5 · trust, one row inside the card */}
                 <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-900/[.07] pt-3.5 dark:border-white/[.07]" data-settings-trust>
@@ -618,6 +601,10 @@ export default function AccountSettingsPage({ profile }: { profile: UserProfileD
         </motion.main>
       </div>
 
+      {managing2fa && security && (
+        <TwoFactorManager state={security} email={profile?.email ?? ""} onClose={() => setManaging2fa(false)} onChange={setSecurity} />
+      )}
+      {managingAddresses && <AddressesManager addresses={addresses} onClose={() => setManagingAddresses(false)} />}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
