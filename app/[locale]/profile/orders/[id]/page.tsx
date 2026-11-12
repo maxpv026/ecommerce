@@ -5,8 +5,7 @@ import { redirect } from "@/i18n/navigation";
 import prisma from "@/lib/prisma";
 import OrderDetailView, { type OrderDetailData } from "@/components/OrderDetailView";
 import AppChrome from "@/components/AppChrome";
-import { getTrackingStatus } from "@/lib/actions/tracking";
-import { buildOrderTracking } from "@/lib/tracking";
+import { resolveOrderTracking } from "@/lib/shipping/resolve";
 import { bankTransferDetails } from "@/lib/bankTransfer";
 import { imagePathForProduct } from "@/lib/productMedia";
 import { isPurchasable } from "@/lib/waitlist";
@@ -38,16 +37,11 @@ export default async function OrderPage({ params }: OrderPageProps) {
   });
   if (!order) notFound();
 
-  // Live DHL status when the shipment has a tracking number; any failure
-  // (no key, rate limit, unknown number) degrades to the status-derived
-  // timeline instead of breaking the page.
-  const dhlResult = order.trackingNumber ? await getTrackingStatus(order.trackingNumber) : null;
-  const tracking = buildOrderTracking({
-    orderStatus: order.status,
-    createdAt: order.createdAt.toISOString(),
-    estimatedDelivery: order.estimatedDelivery.toISOString(),
-    dhl: dhlResult?.ok ? dhlResult.tracking : null,
-  });
+  // One view for every carrier (lib/shipping/resolve): live DHL scans for a
+  // DHL waybill, the stage and checkpoints set by our logistics team (admin
+  // or CRM) for freight carriers, our own ADR fleet and warehouse pickups.
+  // Any DHL failure degrades to the stage instead of breaking the page.
+  const tracking = await resolveOrderTracking(order);
 
   const data: OrderDetailData = {
     orderNumber: order.orderNumber,

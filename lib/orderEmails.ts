@@ -7,18 +7,18 @@ import type { Block, ItemLine } from "@/lib/email/design";
 import { orderBreakdown } from "@/lib/orderTotals";
 import { bankTransferDetails, formatIban } from "@/lib/bankTransfer";
 import { isBankTransfer } from "@/lib/payment";
+import { resolveOrderTracking, SHIPMENT_SELECT } from "@/lib/shipping/resolve";
+import type { FulfilmentEmailKind } from "@/lib/shipping/carriers";
 
 /**
  * The emails about one order: the confirmation (with the invoice PDF) and
- * the fulfilment updates (dispatched with DHL tracking, delivered).
+ * the fulfilment updates, worded for the order's carrier (lib/shipping).
  *
  * Built from the ORDER AS STORED, not from the checkout's working values:
  * the same frozen lines and total the invoice PDF and the order page read,
  * through the same orderBreakdown, so the email can never show a figure
  * that differs from the invoice attached to it.
  */
-
-const DHL_TRACKING = (n: string) => `https://www.dhl.com/global-en/home/tracking/tracking-parcel.html?submit=1&tracking-id=${encodeURIComponent(n)}`;
 
 async function loadOrder(orderId: string) {
   return prisma.order.findUnique({
@@ -27,12 +27,10 @@ async function loadOrder(orderId: string) {
       id: true,
       orderNumber: true,
       totalAmount: true,
-      estimatedDelivery: true,
       paymentMethod: true,
       paymentStatus: true,
-      trackingNumber: true,
+      ...SHIPMENT_SELECT,
       shippingAddress: true,
-      createdAt: true,
       authorizingCertificateNumber: true,
       authorizingCertificateExpiresAt: true,
       invoice: { select: { invoiceNumber: true } },
@@ -137,7 +135,7 @@ async function confirmation(orderId: string, invoicePdf: Buffer | null): Promise
           { label: c.t("fieldOrder"), value: order.orderNumber, mono: true },
           { label: c.t("fieldInvoice"), value: invoice, mono: true, note: invoicePdf ? c.t("invoiceAttached") : undefined },
           { label: c.t("fieldPayment"), value: isBankTransfer(order.paymentMethod) ? c.t("paymentBank") : (order.paymentMethod ?? "—") },
-          { label: c.t("fieldShipping"), value: c.t("shippingAdr"), note: c.t("etaNote", { date: c.date(order.estimatedDelivery) }) },
+          { label: c.t("fieldShipping"), value: c.t("shippingMethodPending"), note: c.t("etaNote", { date: c.date(order.estimatedDelivery) }) },
           ...(order.authorizingCertificateNumber
             ? [
                 {
@@ -187,59 +185,97 @@ async function confirmation(orderId: string, invoicePdf: Buffer | null): Promise
   });
 }
 
-export type FulfilmentEmailKind = "SHIPPED" | "DELIVERED";
-
 /**
- * A fulfilment update: dispatched (with the DHL tracking number) or
- * delivered. Transactional, so it is not gated by marketing preferences.
- * Never throws — the status change is committed before this runs.
+ * A fulfilment update, worded for how THIS order travels (lib/shipping):
+ *
+ *   SHIPPED           left us — with DHL / a freight carrier (name, waybill,
+ *                     public link) or on our own ADR vehicle (plate, driver).
+ *   OUT_FOR_DELIVERY  on the final leg.
+ *   READY_FOR_PICKUP  waiting at the warehouse (address, hours, notes).
+ *   DELIVERED         arrived — or, for a pickup, collected.
+ *
+ * Built from the same tracking view as the order page, without a live DHL
+ * call. Transactional (not preference-gated). Never throws: the stage change
+ * is committed before this runs.
  */
 export async function sendOrderStatusEmail(orderId: string, kind: FulfilmentEmailKind): Promise<boolean> {
   try {
     const order = await loadOrder(orderId);
     if (!order?.user.email) return false;
-    if (kind === "SHIPPED" && !order.trackingNumber) return false;
     const c = await emailContext(order.user.locale, "OrderEmail");
+    const view = await resolveOrderTracking(order, { live: false });
     const name = order.user.name?.trim();
     const deposits = order.items.reduce((n, i) => n + (Number(i.depositAtPurchase) > 0 ? i.quantity : 0), 0);
     const depositSum = order.items.reduce((n, i) => n + Number(i.depositAtPurchase) * i.quantity, 0);
-    const shipped = kind === "SHIPPED";
+    const pickup = view.method === "PICKUP";
+    const fleet = view.method === "OWN_FLEET";
+    const carrier = fleet ? c.t("fleetName") : (view.carrier?.name ?? c.t("carrierUnnamed"));
+    const ref = view.carrier?.trackingNumber ?? null;
+    const url = view.carrier?.trackingUrl ?? null;
+    const o = order.orderNumber;
 
-    const subject = shipped ? c.t("shippedSubject", { order: order.orderNumber }) : c.t("deliveredSubject", { order: order.orderNumber });
+    const copy = {
+      SHIPPED: {
+        subject: c.t("shippedSubject", { order: o }),
+        preview: fleet ? c.t("shippedPreviewFleet") : c.t("shippedPreviewCarrier", { carrier }),
+        kicker: c.t("shippedKicker"),
+        heading: c.t("shippedHeading"),
+        body: fleet ? "shippedBodyFleet" : ref ? "shippedBodyCarrierTracking" : "shippedBodyCarrier",
+      },
+      OUT_FOR_DELIVERY: { subject: c.t("outSubject", { order: o }), preview: c.t("outPreview"), kicker: c.t("outKicker"), heading: c.t("outHeading"), body: "outBody" },
+      READY_FOR_PICKUP: { subject: c.t("pickupSubject", { order: o }), preview: c.t("pickupPreview"), kicker: c.t("pickupKicker"), heading: c.t("pickupHeading"), body: "pickupBody" },
+      DELIVERED: pickup
+        ? { subject: c.t("collectedSubject", { order: o }), preview: c.t("collectedPreview", { order: o }), kicker: c.t("collectedKicker"), heading: c.t("collectedHeading"), body: "collectedBody" }
+        : { subject: c.t("deliveredSubject", { order: o }), preview: c.t("deliveredPreview", { order: o }), kicker: c.t("deliveredKicker"), heading: c.t("deliveredHeading"), body: "deliveredBody" },
+    }[kind];
+
+    const travelling = kind === "SHIPPED" || kind === "OUT_FOR_DELIVERY";
     const facts: Block = {
       kind: "facts",
       rows: [
-        { label: c.t("fieldOrder"), value: order.orderNumber, mono: true },
+        { label: c.t("fieldOrder"), value: o, mono: true },
         ...(order.invoice ? [{ label: c.t("fieldInvoice"), value: order.invoice.invoiceNumber, mono: true }] : []),
-        { label: c.t("fieldCarrier"), value: "DHL" },
-        ...(order.trackingNumber ? [{ label: c.t("fieldTracking"), value: order.trackingNumber, mono: true }] : []),
-        ...(shipped ? [{ label: c.t("fieldEta"), value: c.date(order.estimatedDelivery) }] : []),
-        ...(order.shippingAddress ? [{ label: c.t("shipTo"), value: addressText(order.shippingAddress) }] : []),
+        ...(pickup
+          ? [
+              { label: c.t("fieldPickupAddress"), value: view.pickup?.location ?? c.t("pickupAddressPending") },
+              ...(view.pickup?.hours ? [{ label: c.t("fieldPickupHours"), value: view.pickup.hours }] : []),
+            ]
+          : [{ label: c.t("fieldCarrier"), value: carrier }]),
+        ...(ref ? [{ label: c.t("fieldReference"), value: ref, mono: true }] : []),
+        ...(fleet && view.fleet?.vehiclePlate ? [{ label: c.t("fieldVehicle"), value: view.fleet.vehiclePlate, mono: true }] : []),
+        ...(fleet && view.fleet?.driverName ? [{ label: c.t("fieldDriver"), value: view.fleet.driverName }] : []),
+        ...(fleet && view.fleet?.driverPhone ? [{ label: c.t("fieldDriverPhone"), value: view.fleet.driverPhone, mono: true }] : []),
+        ...(travelling && view.estimatedDelivery ? [{ label: c.t("fieldEta"), value: fleet ? c.dateTime(new Date(view.estimatedDelivery)) : c.date(new Date(view.estimatedDelivery)) }] : []),
+        ...(!pickup && order.shippingAddress ? [{ label: c.t("shipTo"), value: addressText(order.shippingAddress) }] : []),
       ],
     };
 
+    const cta: Block =
+      travelling && url
+        ? { kind: "cta", label: c.t("trackCtaCarrier", { carrier }), href: url, note: c.t("trackNoteCarrier") }
+        : { kind: "cta", label: c.t("cta"), href: c.url(`/profile/orders/${order.id}`) };
+
     const { html, text } = c.render({
-      subject,
-      preview: shipped ? c.t("shippedPreview", { tracking: order.trackingNumber ?? "" }) : c.t("deliveredPreview", { order: order.orderNumber }),
-      reference: order.orderNumber,
-      kicker: { label: shipped ? c.t("shippedKicker") : c.t("deliveredKicker"), tone: shipped ? "brand" : "success" },
-      heading: shipped ? c.t("shippedHeading") : c.t("deliveredHeading"),
+      subject: copy.subject,
+      preview: copy.preview,
+      reference: o,
+      kicker: { label: copy.kicker, tone: kind === "DELIVERED" ? "success" : "brand" },
+      heading: copy.heading,
       blocks: [
         ...(name ? ([{ kind: "text", text: c.t("greeting", { name }) }] satisfies Block[]) : []),
-        { kind: "text", text: c.rich(shipped ? "shippedBody" : "deliveredBody", { order: order.orderNumber }, ["order"]) },
+        { kind: "text", text: c.rich(copy.body, { order: o, carrier }, ["order"]) },
         facts,
+        ...(view.notes ? ([{ kind: "callout", tone: "neutral", title: c.t("fieldNotes"), text: view.notes }] satisfies Block[]) : []),
         { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, false) },
-        ...(!shipped && deposits > 0
+        ...(kind === "DELIVERED" && deposits > 0
           ? ([{ kind: "callout", tone: "brand", title: c.t("depositTitle"), text: c.t("deliveredReturn", { count: deposits, amount: c.money(depositSum) }) }] satisfies Block[])
           : []),
-        shipped && order.trackingNumber
-          ? { kind: "cta", label: c.t("trackCta"), href: DHL_TRACKING(order.trackingNumber), note: c.t("trackNote") }
-          : { kind: "cta", label: c.t("cta"), href: c.url(`/profile/orders/${order.id}`) },
+        cta,
       ],
       footer: { reason: c.t("reason") },
     });
 
-    await sendHtmlEmail({ to: order.user.email, subject: subject.replace(/[\r\n]+/g, " "), html, text });
+    await sendHtmlEmail({ to: order.user.email, subject: copy.subject.replace(/[\r\n]+/g, " "), html, text });
     return true;
   } catch (error) {
     console.error(`[order-email] ${kind} email for order ${orderId} failed:`, error);

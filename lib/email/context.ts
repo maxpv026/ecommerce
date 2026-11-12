@@ -39,6 +39,8 @@ export async function emailContext(locale: string | null | undefined, namespace?
 
   const moneyFormat = new Intl.NumberFormat(loc, { style: "currency", currency: "EUR" });
   const dateFormat = new Intl.DateTimeFormat(loc, { dateStyle: "long", timeZone: "UTC" });
+  // Delivery slots are local to the business (Sofia), not UTC.
+  const dateTimeFormat = new Intl.DateTimeFormat(loc, { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Sofia" });
 
   return {
     locale: loc,
@@ -47,6 +49,7 @@ export async function emailContext(locale: string | null | undefined, namespace?
     s,
     money: (n: number) => moneyFormat.format(n),
     date: (d: Date) => dateFormat.format(d),
+    dateTime: (d: Date) => dateTimeFormat.format(d),
     url,
     /** A translated sentence with some of its values in bold (order numbers, totals). */
     rich: (key: string, values: Record<string, string | number>, bold: string[], tr: Translate = t): RichSegment[] => richMessage(tr, key, values, bold),

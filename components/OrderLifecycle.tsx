@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Check, ExternalLink, X } from "lucide-react";
 import type { OrderStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
 import type { OrderTrackingView } from "@/lib/tracking";
+import { isDispatchedStage } from "@/lib/shipping/carriers";
 
 /**
  * Placed → Payment → ADR dispatch → Delivery, across the top of the desktop
@@ -12,9 +13,10 @@ import type { OrderTrackingView } from "@/lib/tracking";
  * Every state is read from the order itself — nothing is projected. Payment
  * is its own step because a bank-transfer order sits reserved until the funds
  * clear, and that wait, not the carrier, is usually why nothing has shipped.
- * Dispatch and delivery follow the same signal as the tracking timeline
- * (lib/tracking: live DHL status when there is one, the order status
- * otherwise), so the two views can never disagree.
+ * Dispatch and delivery follow the same view as the tracking card
+ * (lib/tracking buildOrderTracking: the stage set by our logistics team, a
+ * live DHL scan where there is one), so the two can never disagree — and
+ * name the real carrier, our own vehicle, or the warehouse for a pickup.
  */
 
 type StepState = "done" | "current" | "upcoming" | "failed";
@@ -27,10 +29,6 @@ interface Step {
   href?: string;
 }
 
-/** DHL's public tracking page for one shipment. */
-const dhlTrackingUrl = (trackingNumber: string) =>
-  `https://www.dhl.com/global-en/home/tracking/tracking-parcel.html?submit=1&tracking-id=${encodeURIComponent(trackingNumber)}`;
-
 export default function OrderLifecycle({
   status,
   paymentStatus,
@@ -38,7 +36,6 @@ export default function OrderLifecycle({
   createdAt,
   paidAt,
   estimatedDelivery,
-  trackingNumber,
   tracking,
 }: {
   status: OrderStatus;
@@ -48,17 +45,30 @@ export default function OrderLifecycle({
   createdAt: string;
   paidAt: string | null;
   estimatedDelivery: string;
-  trackingNumber: string | null;
   tracking: OrderTrackingView;
 }) {
   const t = useTranslations("OrderDetail");
   const format = useFormatter();
   const day = (iso: string) => format.dateTime(new Date(iso), { day: "numeric", month: "long", year: "numeric" });
 
-  const [, shipped, , delivered] = tracking.steps;
-  const isDelivered = status === "DELIVERED" || delivered?.state === "done";
-  const isDispatched = isDelivered || status === "IN_TRANSIT" || (shipped !== undefined && shipped.state !== "upcoming");
+  const [, , , delivered] = tracking.steps;
+  const isDelivered = status === "DELIVERED" || tracking.stage === "DELIVERED";
+  const isDispatched = isDelivered || status === "IN_TRANSIT" || isDispatchedStage(tracking.stage);
   const paid = paymentStatus === "PAID";
+  const pickup = tracking.method === "PICKUP";
+  const c = tracking.carrier;
+
+  // What "dispatched" means for this order: a carrier waybill (linked to the
+  // carrier's own tracker when there is one), our own vehicle, or the
+  // warehouse shelf.
+  const dispatchedDetail = pickup
+    ? { detail: t("pickupReadyDetail") }
+    : tracking.method === "OWN_FLEET"
+      ? { detail: tracking.fleet?.vehiclePlate ? t("dispatchFleetPlate", { plate: tracking.fleet.vehiclePlate }) : t("dispatchFleet") }
+      : {
+          detail: c?.trackingNumber ? t("dispatchCarrierRef", { carrier: c.name ?? "—", number: c.trackingNumber }) : (c?.name ?? t("dispatchShipped")),
+          href: c?.trackingUrl ?? undefined,
+        };
 
   const steps: Step[] = [
     { key: "placed", title: t("stepPlaced"), detail: day(createdAt), state: "done" },
@@ -73,20 +83,18 @@ export default function OrderLifecycle({
     },
     {
       key: "dispatch",
-      title: t("stepDispatch"),
+      title: pickup ? t("stepPickupPrep") : t("stepDispatch"),
       ...(isDispatched
-        ? {
-            state: "done" as const,
-            detail: trackingNumber ? t("dispatchShippedTracking", { number: trackingNumber }) : t("dispatchShipped"),
-            href: trackingNumber ? dhlTrackingUrl(trackingNumber) : undefined,
-          }
-        : paid
+        ? { state: "done" as const, ...dispatchedDetail }
+        : paid || tracking.stage === "ADR_PACKING"
           ? { state: "current" as const, detail: t("dispatchPacking") }
           : { state: "upcoming" as const, detail: t("dispatchAfterPayment") }),
     },
     isDelivered
-      ? { key: "delivery", title: t("stepDelivered"), detail: delivered?.timestamp ? day(delivered.timestamp) : null, state: "done" }
-      : { key: "delivery", title: t("stepEstimatedDelivery"), detail: day(estimatedDelivery), state: isDispatched ? "current" : "upcoming" },
+      ? { key: "delivery", title: pickup ? t("stepCollected") : t("stepDelivered"), detail: delivered?.timestamp ? day(delivered.timestamp) : null, state: "done" }
+      : pickup
+        ? { key: "delivery", title: t("stepCollection"), detail: isDispatched ? t("pickupAwaiting") : null, state: isDispatched ? "current" : "upcoming" }
+        : { key: "delivery", title: t("stepEstimatedDelivery"), detail: day(estimatedDelivery), state: isDispatched ? "current" : "upcoming" },
   ];
 
   return (

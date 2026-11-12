@@ -165,6 +165,11 @@ export default function OrderDetailView({ order, bank }: OrderDetailViewProps) {
   const available = order.items.filter((item) => item.purchasable);
   const skipped = order.items.length - available.length;
   const awaitingPayment = order.paymentStatus === "PENDING";
+  // Desktop: the lifecycle bar covers progress, so the tracking card shows
+  // only when it adds something — a live DHL log, our checkpoints, or the
+  // carrier / vehicle / pickup details.
+  const tr = order.tracking;
+  const showTrackingOnDesktop = tr.live || tr.events.length > 0 || tr.method !== "DHL" || Boolean(tr.carrier?.trackingNumber || tr.notes);
   // Bank transfer is the checkout default (lib/payment); only card is named.
   const bankTransfer = order.paymentMethod !== "card";
   const addressLines = (order.shippingAddress ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
@@ -341,7 +346,6 @@ export default function OrderDetailView({ order, bank }: OrderDetailViewProps) {
             createdAt={order.createdAt}
             paidAt={order.paidAt}
             estimatedDelivery={order.estimatedDelivery}
-            trackingNumber={order.trackingNumber}
             tracking={order.tracking}
           />
         </div>
@@ -489,18 +493,21 @@ export default function OrderDetailView({ order, bank }: OrderDetailViewProps) {
             )}
 
             {/* Mobile: first thing under the summary — where the order is and
-                where it is going, in one card. Desktop: the lifecycle bar covers
-                progress, so this stays only for its live DHL scan log, and the
-                address lives in the right column instead. */}
-            <div className={`max-lg:order-1 print:hidden ${order.tracking.live ? "" : "lg:hidden"}`} data-tracking-card>
+                where it is going, in one card. Desktop: shown when it adds detail
+                beyond the lifecycle bar (showTrackingOnDesktop); the address
+                lives in the right column there. */}
+            <div className={`max-lg:order-1 print:hidden ${showTrackingOnDesktop ? "" : "lg:hidden"}`} data-tracking-card>
               <TrackingTimeline tracking={order.tracking} trackingNumber={order.trackingNumber}>
-                <div className="mt-5 border-t border-slate-900/[.07] pt-4 lg:hidden dark:border-white/[.07]" data-mobile-delivery>
-                  <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-[.08em] text-slate-500 uppercase dark:text-slate-400">
-                    <MapPin size={12} strokeWidth={2.2} />
-                    {t("deliveryTitle")}
+                {/* A pickup goes nowhere: the card's pickup box names the warehouse instead. */}
+                {tr.method !== "PICKUP" && (
+                  <div className="mt-5 border-t border-slate-900/[.07] pt-4 lg:hidden dark:border-white/[.07]" data-mobile-delivery>
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-[.08em] text-slate-500 uppercase dark:text-slate-400">
+                      <MapPin size={12} strokeWidth={2.2} />
+                      {t("deliveryTitle")}
+                    </div>
+                    {addressBlock}
                   </div>
-                  {addressBlock}
-                </div>
+                )}
               </TrackingTimeline>
             </div>
           </div>
@@ -542,8 +549,18 @@ export default function OrderDetailView({ order, bank }: OrderDetailViewProps) {
 
             {/* Desktop and print only: on a phone the address sits inside the
                 tracking card at the top, and that card is screen-only. */}
-            <Group title={t("deliveryTitle")} icon={MapPin} className="max-lg:hidden print:block!">
-              <div className="px-4 py-4 md:px-5">{addressBlock}</div>
+            {/* A pickup goes nowhere: the right column names the warehouse instead of the address book entry. */}
+            <Group title={tr.method === "PICKUP" ? tCheckout("pickupTitle") : t("deliveryTitle")} icon={MapPin} className="max-lg:hidden print:block!">
+              <div className="px-4 py-4 md:px-5" data-delivery-group={tr.method}>
+                {tr.method === "PICKUP" ? (
+                  <div className="text-[13px] leading-[1.55]">
+                    <div className="whitespace-pre-line font-semibold">{tr.pickup?.location ?? tCheckout("pickupPending")}</div>
+                    {tr.pickup?.hours && <div className="text-slate-500 dark:text-slate-400">{tCheckout("pickupHours", { hours: tr.pickup.hours })}</div>}
+                  </div>
+                ) : (
+                  addressBlock
+                )}
+              </div>
             </Group>
 
             {showCompliance && (

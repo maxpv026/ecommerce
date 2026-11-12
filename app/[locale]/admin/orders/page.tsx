@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { guardAdmin } from "@/lib/admin/guardAdmin";
 import { ADMIN_ORDER_FILTERS, listAdminOrders, type AdminOrderFilter } from "@/lib/adminOrders";
 import AdminOrdersTable from "@/components/admin/AdminOrdersTable";
+import { pickupDefaults } from "@/lib/shipping/resolve";
 
 export const metadata: Metadata = {
   title: "Orders — My Energy Admin",
@@ -32,12 +33,13 @@ export default async function AdminOrdersPage({ params, searchParams }: AdminOrd
         <p className="m-0 text-[11px] font-semibold uppercase tracking-[.09em] text-slate-400 dark:text-slate-500">Fulfilment</p>
         <h1 className="m-0 mt-2 text-[34px] font-semibold leading-[1.05] tracking-[-.045em] md:text-[38px]">Orders</h1>
         <p className="m-0 mt-2.5 max-w-[640px] text-[14px] leading-[1.6] text-slate-500 dark:text-slate-400">
-          Record bank-transfer payments, dispatch with a DHL tracking number, and confirm delivery. Unpaid orders that
-          haven&rsquo;t shipped can be cancelled — stock, invoice and cylinder ledger are all put right.
+          Record bank-transfer payments, choose how each order travels — DHL, another ADR carrier, our own ADR vehicle or
+          collection at the warehouse — and move it through its delivery stages; the customer is emailed at each real
+          step. Unpaid orders that haven&rsquo;t shipped can be cancelled — stock, invoice and cylinder ledger are all put right.
         </p>
       </header>
 
-      <AdminOrdersTable data={data} filter={filter} query={query} />
+      <AdminOrdersTable data={data} filter={filter} query={query} pickupAddress={pickupDefaults().location} />
     </div>
   );
 }

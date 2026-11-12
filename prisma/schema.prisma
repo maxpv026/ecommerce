@@ -741,6 +741,29 @@ model Order {
   // carrier; orders without one show a status-derived timeline instead.
   trackingNumber  String?
 
+  // ── Fulfilment, carrier-agnostic (lib/shipping) ──
+  // Who moves the cylinders: a registry code — DHL, a freight carrier
+  // (DB_SCHENKER, DACHSER, RABEN, DSV, KUEHNE_NAGEL, DPD, GLS, NOVA_POSHTA,
+  // OTHER), our own ADR vehicle (OWN_FLEET) or collection at the warehouse
+  // (PICKUP). Null reads as DHL: every order before this column existed
+  // went by DHL. `trackingNumber` above is the waybill / CMR / TTN for any
+  // carrier; `trackingUrl` overrides the registry's public tracking link.
+  shippingCarrier String?
+  carrierName     String?
+  trackingUrl     String?
+  // Own-fleet dispatch: who is driving what.
+  driverName      String?
+  driverPhone     String?
+  vehiclePlate    String?
+  // Delivery window, pickup address and hours, gate code — shown to the buyer.
+  deliveryNotes   String?
+  // Granular stage, independent of payment (lib/shipping SHIPMENT_STAGES).
+  // Null on orders placed before it: derived from `status` instead. `status`
+  // is kept in step with it on every write (stageToStatus).
+  shipmentStage   String?
+  // Timestamped checkpoints, oldest first: [{ stage, at, location?, note?, source }].
+  shipmentEvents  Json?
+
   // Shipping address chosen at checkout. Nullable: pre-checkout seed orders
   // have none, and deleting an address must not delete its order history.
   addressId String?

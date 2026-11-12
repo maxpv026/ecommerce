@@ -4,6 +4,8 @@ import { cartLineFromOrderItem } from "@/lib/store/cart";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { buildOrderTracking } from "@/lib/tracking";
+import { isDispatchedStage } from "@/lib/shipping/carriers";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -154,10 +156,16 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
     void signOut({ callbackUrl: "/auth" });
   };
 
+  // Carrier-aware (lib/tracking, no live call): DHL or a freight waybill, our
+  // own ADR vehicle, or a pickup waiting at the warehouse.
   const trackingLine = (order: UserOrder) => {
-    if (order.status === "DELIVERED") return t("trackingDelivered");
-    if (order.trackingNumber) return t("trackingArrives", { number: order.trackingNumber, date: day(order.estimatedDelivery) });
-    return t("trackingEta", { date: day(order.estimatedDelivery) });
+    const view = buildOrderTracking({ order: order.shipment, dhl: null });
+    const date = day(view.estimatedDelivery ?? order.estimatedDelivery);
+    if (view.stage === "DELIVERED") return view.method === "PICKUP" ? t("trackingCollected") : t("trackingDelivered");
+    if (view.method === "PICKUP") return view.stage === "READY_FOR_PICKUP" ? t("trackingReadyForPickup") : t("trackingPreparingPickup");
+    if (view.method === "OWN_FLEET" && isDispatchedStage(view.stage)) return t("trackingArrivesFleet", { date });
+    if (view.carrier?.trackingNumber) return t("trackingArrivesCarrier", { carrier: view.carrier.name ?? "—", number: view.carrier.trackingNumber, date });
+    return t("trackingEta", { date });
   };
 
   const settingsRows: Array<{

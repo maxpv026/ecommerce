@@ -1,7 +1,7 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { crmWebhookAuth } from "@/lib/webhookAuth";
 import { applyInventoryUpdate, type InventoryUpdateResult } from "@/lib/inventory";
 import { CATALOG_COUNTS_TAG } from "@/lib/cacheTags";
 import { notifyBackInStock, type StockNotifyResult } from "@/lib/stockNotify";
@@ -109,23 +109,8 @@ type SuccessBody = {
 
 const json = (body: ErrorBody | SuccessBody, status: number) => Response.json(body, { status });
 
-/** Constant-time comparison; hashing first removes the length side channel. */
-function secretMatches(provided: string, expected: string): boolean {
-  const a = createHash("sha256").update(provided).digest();
-  const b = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(a, b);
-}
-
-function isAuthorized(request: Request): "ok" | "unconfigured" | "denied" {
-  const expected = process.env.CRM_WEBHOOK_SECRET?.trim();
-  if (!expected) return "unconfigured";
-  const header = request.headers.get("authorization") ?? "";
-  const provided = header.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  return provided && secretMatches(provided, expected) ? "ok" : "denied";
-}
-
 export async function POST(request: Request) {
-  const auth = isAuthorized(request);
+  const auth = crmWebhookAuth(request);
   // Fail closed: an unset secret must never turn into an open endpoint.
   if (auth === "unconfigured") return json({ ok: false, error: "CRM_WEBHOOK_SECRET is not configured" }, 503);
   if (auth === "denied") return json({ ok: false, error: "Unauthorized" }, 401);

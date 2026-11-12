@@ -4,10 +4,10 @@ import PageSkeleton from "@/components/PageSkeleton";
 import { auth } from "@/auth";
 import AccountLayoutClient from "@/components/AccountLayoutClient";
 import { getProfileDashboardData, getUserAddresses, getUserOrders, getUserProfile } from "@/lib/data";
-import { getTrackingStatus } from "@/lib/actions/tracking";
 import { getCustomerComplianceSummary } from "@/lib/compliance";
 import { getActiveRestockAlerts } from "@/lib/smartRestock";
-import { buildOrderTracking, type OrderTrackingView } from "@/lib/tracking";
+import type { OrderTrackingView } from "@/lib/tracking";
+import { resolveOrderTracking } from "@/lib/shipping/resolve";
 
 export const metadata: Metadata = {
   title: "Your Account — My Energy",
@@ -55,18 +55,13 @@ async function ProfileContent() {
       }
     : null;
 
-  // Per-order shipment timelines for the accordion rows: live DHL data
-  // where a tracking number exists (cached 5 min upstream), status-derived
-  // otherwise. Same machinery the order-detail page uses.
+  // Per-order shipment timelines for the accordion rows — the same resolver
+  // as the order page (lib/shipping/resolve): live DHL scans where there is a
+  // DHL waybill (cached 5 min upstream), the logistics team's stage and
+  // checkpoints for every other carrier, own-fleet delivery and pickup.
   const orderTracking: Record<string, OrderTrackingView> = {};
   for (const order of orders ?? []) {
-    const dhl = order.trackingNumber ? await getTrackingStatus(order.trackingNumber) : null;
-    orderTracking[order.id] = buildOrderTracking({
-      orderStatus: order.status,
-      createdAt: order.createdAt,
-      estimatedDelivery: order.estimatedDelivery,
-      dhl: dhl?.ok ? dhl.tracking : null,
-    });
+    orderTracking[order.id] = await resolveOrderTracking(order.shipment);
   }
 
   return (

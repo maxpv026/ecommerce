@@ -8,6 +8,7 @@ import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useSession } from "next-auth/react";
 import type { ReactNode } from "react";
 import { useFormatter, useTranslations } from "next-intl";
+import { buildOrderTracking } from "@/lib/tracking";
 import {
   ArrowRight,
   FileText,
@@ -188,6 +189,18 @@ const Shimmer = ({ className }: { className: string }) => (
   <span aria-hidden className={`block animate-pulse rounded-md bg-slate-900/[.07] dark:bg-white/[.08] ${className}`} />
 );
 
+/** Dashboard-namespace label for each stage on the Track card. */
+const HOME_STAGE_KEY = {
+  ORDER_PLACED: "stageOrderPlaced",
+  ADR_PACKING: "stageAdrPacking",
+  DISPATCHED: "dispatched",
+  IN_TRANSIT: "inTransit",
+  OUT_FOR_DELIVERY: "stageOutForDelivery",
+  READY_FOR_PICKUP: "stageReadyForPickup",
+  DELIVERED: "delivered",
+  COLLECTED: "stageCollected",
+} as const;
+
 export default function DesktopHome({ products, marketAlerts, dashboard, latestOrder, accountLoading, greetingKey, sdsCount }: DesktopHomeProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
@@ -245,13 +258,21 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
 
   const lastItem = latestOrder?.items[0];
   const lastOrderTotal = latestOrder?.items.reduce((sum, i) => sum + i.priceAtPurchase * i.quantity, 0) ?? 0;
-  const statusLabel =
-    latestOrder?.status === "IN_TRANSIT"
-      ? td("inTransit")
-      : latestOrder?.status === "DELIVERED"
-        ? td("delivered")
-        : td("dispatched");
-  const eta = latestOrder ? format.dateTime(new Date(latestOrder.estimatedDelivery), { month: "short", day: "numeric" }) : null;
+  // Same view as the order page (lib/tracking), minus the live DHL call: the
+  // stage our logistics team set, and who is carrying it. A placed order used
+  // to read "Dispatched" here before anything had left the warehouse.
+  const shipment = latestOrder ? buildOrderTracking({ order: latestOrder.shipment, dhl: null }) : null;
+  const statusLabel = shipment ? td(HOME_STAGE_KEY[shipment.method === "PICKUP" && shipment.stage === "DELIVERED" ? "COLLECTED" : shipment.stage]) : "";
+  const carrierLine = shipment
+    ? shipment.method === "PICKUP"
+      ? td("methodPickup")
+      : shipment.method === "OWN_FLEET"
+        ? [td("methodOwnFleet"), shipment.fleet?.vehiclePlate].filter(Boolean).join(" · ")
+        : shipment.carrier?.trackingNumber
+          ? [shipment.carrier.name, shipment.carrier.trackingNumber].filter(Boolean).join(" · ")
+          : null
+    : null;
+  const eta = latestOrder ? format.dateTime(new Date(shipment?.estimatedDelivery ?? latestOrder.estimatedDelivery), { month: "short", day: "numeric" }) : null;
 
   return (
     <main className="mx-auto max-w-[1320px] px-6 pb-32 md:px-8">
@@ -556,11 +577,18 @@ export default function DesktopHome({ products, marketAlerts, dashboard, latestO
               </div>
               {latestOrder && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 ring-1 ring-green-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/25">
+                  <span data-track-stage={shipment?.stage} className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 ring-1 ring-green-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/25">
                     <span className="h-1 w-1 rounded-full bg-green-600 dark:bg-emerald-400" />
                     {statusLabel}
                   </span>
-                  <span className="text-xs text-slate-400 dark:text-ink-muted">{t("etaLabel", { date: eta ?? "" })}</span>
+                  {shipment?.stage !== "DELIVERED" && shipment?.method !== "PICKUP" && (
+                    <span className="text-xs text-slate-400 dark:text-ink-muted">{t("etaLabel", { date: eta ?? "" })}</span>
+                  )}
+                </div>
+              )}
+              {carrierLine && (
+                <div className="mt-2 truncate font-mono text-[11px] text-slate-500 dark:text-ink-muted" data-track-carrier>
+                  {carrierLine}
                 </div>
               )}
               {ownDataLoading && !latestOrder && <Shimmer className="mt-3 h-5 w-40" />}

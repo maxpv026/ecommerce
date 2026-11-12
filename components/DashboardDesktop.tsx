@@ -45,7 +45,7 @@ import { deleteAddress, setDefaultAddress } from "@/lib/actions/address";
 import { nativeLanguageName } from "@/lib/languageNames";
 import { ACCOUNT_PROFILE } from "@/lib/account";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
-import type { OrderTrackingView, TimelineStepKey } from "@/lib/tracking";
+import { STEP_LABEL_KEY, type OrderTrackingView } from "@/lib/tracking";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
 
 // F-Gas certs run on a 4-year cycle — the DB stores the issue date, the
@@ -127,12 +127,14 @@ const ORDER_TONES: Record<
   },
 };
 
-const STEP_LABEL_KEY: Record<TimelineStepKey, string> = {
-  placed: "stepPlaced",
-  shipped: "stepShipped",
-  inTransit: "stepInTransit",
-  delivered: "stepDelivered",
-};
+/** "Raben ADR · CMR 4471", "My Energy ADR fleet · AA 1234 BB", "Warehouse pickup" — or "—" before dispatch details exist. */
+function shipmentLine(tracking: OrderTrackingView | undefined, tCheckout: (key: string) => string): string {
+  if (!tracking) return "—";
+  if (tracking.method === "PICKUP") return tCheckout("methodPickup");
+  if (tracking.method === "OWN_FLEET") return [tCheckout("methodOwnFleet"), tracking.fleet?.vehiclePlate].filter(Boolean).join(" · ");
+  const c = tracking.carrier;
+  return c?.trackingNumber ? [c.name, c.trackingNumber].filter(Boolean).join(" · ") : "—";
+}
 
 /** This year's F-Gas logbook figures (lib/compliance), for the logbook card. */
 export interface LogbookSummary {
@@ -424,7 +426,7 @@ export default function DashboardDesktop({
     {
       label: tHome("statInTransit"),
       value: String(activeShipments),
-      note: t("statDhlNote"),
+      note: t("statShipmentsNote"),
       icon: Truck,
       grad: "bg-[linear-gradient(140deg,#0891b2,#22d3ee)]",
     },
@@ -1052,7 +1054,7 @@ export default function DashboardDesktop({
               <div className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white p-[26px] shadow-[0_26px_60px_-46px_rgba(2,4,10,.5)] dark:border-hairline dark:bg-surface">
                 <div className="mb-5 flex items-baseline justify-between gap-5">
                   <h2 className="m-0 text-[13px] tracking-[.09em] text-slate-400 dark:text-ink-muted">
-                    {t("ordersHeading")}
+                    {t("ordersHeadingTracking")}
                   </h2>
                   <span className="text-[12.5px] font-semibold text-blue-700 dark:text-blue-400">
                     {t("allOrders")}
@@ -1248,8 +1250,8 @@ export default function DashboardDesktop({
                                   <span className="text-[10.5px] uppercase tracking-[.08em] text-slate-400 dark:text-ink-muted">
                                     {tCheckout("trackingTitle")}
                                   </span>
-                                  <span className="font-mono text-[11px] font-semibold text-slate-600 dark:text-ink-muted">
-                                    {order.trackingNumber ?? "—"}
+                                  <span className="font-mono text-[11px] font-semibold text-slate-600 dark:text-ink-muted" data-shipment-line>
+                                    {shipmentLine(tracking, tCheckout)}
                                   </span>
                                 </div>
                                 <div className="flex flex-col">
@@ -1287,7 +1289,7 @@ export default function DashboardDesktop({
                                               live ? "font-semibold" : "font-medium"
                                             } ${pendingStep ? "text-slate-400 dark:text-ink-muted" : ""}`}
                                           >
-                                            {tCheckout(STEP_LABEL_KEY[step.key])}
+                                            {tCheckout(STEP_LABEL_KEY[step.label])}
                                           </span>
                                           <span className="mt-0.5 block text-[11.5px] text-slate-400 dark:text-ink-muted">
                                             {at}

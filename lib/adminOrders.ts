@@ -3,6 +3,17 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { OrderStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
+import {
+  carrierCodeOf,
+  methodOf,
+  parseShipmentEvents,
+  resolveTrackingUrl,
+  stageOf,
+  type CarrierCode,
+  type FulfilmentMethod,
+  type ShipmentEvent,
+  type ShipmentStage,
+} from "@/lib/shipping/carriers";
 
 /**
  * Admin order directory — read side. Writes live in lib/actions/adminOrders.
@@ -49,6 +60,22 @@ export interface AdminOrderRow {
   trackingNumber: string | null;
   estimatedDelivery: string;
   shippingAddress: string | null;
+  /** Carrier-agnostic fulfilment (lib/shipping): what the admin panel edits. */
+  shipment: {
+    carrier: CarrierCode;
+    method: FulfilmentMethod;
+    stage: ShipmentStage;
+    carrierName: string | null;
+    /** The stored override only; `publicUrl` is what the buyer actually gets. */
+    trackingUrl: string | null;
+    publicUrl: string | null;
+    driverName: string | null;
+    driverPhone: string | null;
+    vehiclePlate: string | null;
+    deliveryNotes: string | null;
+    /** Oldest first. */
+    events: ShipmentEvent[];
+  };
   customer: { id: string; name: string | null; email: string | null; companyName: string | null; vatNumber: string | null };
   invoice: { id: string; invoiceNumber: string; status: string } | null;
   items: Array<{ id: string; sku: string; name: string; quantity: number; unitPrice: number; deposit: number; weightKg: number }>;
@@ -69,6 +96,8 @@ function searchWhere(query: string): Prisma.OrderWhereInput {
     OR: [
       { orderNumber: { contains: q, mode: "insensitive" } },
       { trackingNumber: { contains: q, mode: "insensitive" } },
+      { carrierName: { contains: q, mode: "insensitive" } },
+      { vehiclePlate: { contains: q, mode: "insensitive" } },
       { user: { email: { contains: q, mode: "insensitive" } } },
       { user: { name: { contains: q, mode: "insensitive" } } },
       { user: { companyName: { contains: q, mode: "insensitive" } } },
@@ -107,6 +136,15 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
       trackingNumber: true,
       estimatedDelivery: true,
       shippingAddress: true,
+      shippingCarrier: true,
+      carrierName: true,
+      trackingUrl: true,
+      driverName: true,
+      driverPhone: true,
+      vehiclePlate: true,
+      deliveryNotes: true,
+      shipmentStage: true,
+      shipmentEvents: true,
       user: { select: { id: true, name: true, email: true, companyName: true, vatNumber: true } },
       invoice: { select: { id: true, invoiceNumber: true, status: true } },
       items: {
@@ -124,7 +162,9 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
 
   const [all, ...rest] = stageCounts;
   return {
-    rows: orders.map((o) => ({
+    rows: orders.map((o) => {
+      const carrier = carrierCodeOf(o.shippingCarrier);
+      return {
       id: o.id,
       orderNumber: o.orderNumber,
       createdAt: o.createdAt.toISOString(),
@@ -137,6 +177,19 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
       trackingNumber: o.trackingNumber,
       estimatedDelivery: o.estimatedDelivery.toISOString(),
       shippingAddress: o.shippingAddress,
+      shipment: {
+        carrier,
+        method: methodOf(carrier),
+        stage: stageOf(o.shipmentStage, o.status),
+        carrierName: o.carrierName,
+        trackingUrl: o.trackingUrl,
+        publicUrl: resolveTrackingUrl(carrier, o.trackingNumber, o.trackingUrl),
+        driverName: o.driverName,
+        driverPhone: o.driverPhone,
+        vehiclePlate: o.vehiclePlate,
+        deliveryNotes: o.deliveryNotes,
+        events: parseShipmentEvents(o.shipmentEvents),
+      },
       customer: o.user,
       invoice: o.invoice,
       items: o.items.map((i) => ({
@@ -148,7 +201,8 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
         deposit: Number(i.depositAtPurchase),
         weightKg: i.weightKgAtPurchase,
       })),
-    })),
+      };
+    }),
     total,
     page,
     pageCount,

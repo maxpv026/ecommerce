@@ -5,6 +5,8 @@ import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { SHIPMENT_SELECT, shipmentSource } from "@/lib/shipping/resolve";
+import type { ShipmentSource } from "@/lib/tracking";
 import type { FGasStatus, OrderStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
 import { KG_PER_LB, cylinderGasPrice, isPricedPerKg } from "@/lib/pricing";
 import { GAS_MARKS, gasMarkWhere, productHasGasMark } from "@/lib/gasMarks";
@@ -455,6 +457,8 @@ export interface UserOrder {
   estimatedDelivery: string;
   createdAt: string;
   trackingNumber: string | null;
+  /** The fulfilment columns (carrier, stage, checkpoints…) — lib/tracking buildOrderTracking reads them. */
+  shipment: ShipmentSource;
   /**
    * Invoice id, when one has been issued for this order — the argument the
    * PDF route takes. Null until issueInvoiceForOrder() has run, which is what
@@ -473,6 +477,8 @@ export interface UserOrder {
  * trips; on an order history with many lines that is most of the payload.
  */
 const USER_ORDER_SELECT = {
+  // status, createdAt, estimatedDelivery, trackingNumber and the carrier columns.
+  ...SHIPMENT_SELECT,
   id: true,
   orderNumber: true,
   status: true,
@@ -480,7 +486,6 @@ const USER_ORDER_SELECT = {
   totalAmount: true,
   estimatedDelivery: true,
   createdAt: true,
-  trackingNumber: true,
   invoice: { select: { id: true } },
   items: {
     select: {
@@ -510,6 +515,7 @@ export async function getUserOrders(userId: string): Promise<UserOrder[]> {
     estimatedDelivery: order.estimatedDelivery.toISOString(),
     createdAt: order.createdAt.toISOString(),
     trackingNumber: order.trackingNumber,
+    shipment: shipmentSource(order),
     invoiceId: order.invoice?.id ?? null,
     items: order.items.map((item) => ({
       id: item.id,

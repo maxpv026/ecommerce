@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { sendOrderStatusEmail } from "@/lib/orderEmails";
+import { advanceShipment, revertShipment, saveFulfilment, type ShipmentErrorCode } from "@/lib/shipping/update";
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
@@ -64,65 +65,69 @@ export async function getAdminOrders(input: unknown): Promise<({ ok: true } & Ad
   return { ok: true, ...(await listAdminOrders(ListInput.parse(input ?? {}))) };
 }
 
-/**
- * Fulfilment moves. Forward: dispatch (needs the DHL tracking number the
- * customer's timeline reads) and delivery. Back one step: to correct a
- * mis-click. A cancelled order (payment FAILED) is frozen.
- */
-const TRANSITIONS = {
-  IN_TRANSIT: { from: ["PENDING", "DELIVERED"] },
-  DELIVERED: { from: ["IN_TRANSIT"] },
-  PENDING: { from: ["IN_TRANSIT"] },
-} as const;
+// ── Fulfilment: lib/shipping/update is the engine (shared with the CRM webhook) ──
 
-const StatusInput = z.object({
-  orderId: OrderId,
-  status: z.enum(["PENDING", "IN_TRANSIT", "DELIVERED"]),
-  trackingNumber: z
-    .string()
-    .trim()
-    .transform((v) => v.replace(/\s+/g, "").toUpperCase())
-    .refine((v) => /^[A-Z0-9]{8,40}$/.test(v))
-    .optional(),
+type ShipmentDone = { ok: true; stage?: string; email?: string | null } | { ok: false; error: string; code: ShipmentErrorCode | "AUTH" };
+
+const SHIPMENT_ERRORS: Record<ShipmentErrorCode, string> = {
+  NOT_FOUND: "That order no longer exists.",
+  CANCELLED: "This order was cancelled.",
+  INVALID: "Check the highlighted field.",
+  STAGE_NOT_ALLOWED: "That stage doesn't apply to this delivery method.",
+  STAGE_BEHIND: "The order is already further along.",
+  UNCHANGED: "Nothing to record — add a location or a note for a checkpoint.",
+  TRACKING_REQUIRED: "Add the DHL tracking number first.",
+  CARRIER_NAME_REQUIRED: "Name the carrier.",
+  METHOD_LOCKED: "Move the order back a stage before changing the delivery method.",
+  STALE,
+};
+
+const shipmentFailure = (code: ShipmentErrorCode, detail?: string): ShipmentDone => ({
+  ok: false,
+  code,
+  error: code === "INVALID" && detail ? `${SHIPMENT_ERRORS.INVALID} (${detail})` : SHIPMENT_ERRORS[code],
 });
 
-export async function updateOrderStatus(
-  orderId: string,
-  newStatus: "PENDING" | "IN_TRANSIT" | "DELIVERED",
-  trackingNumber?: string
-): Promise<Done> {
+/** Carrier / method and the details the buyer sees. No stage change, no email. */
+export async function saveOrderFulfilment(orderId: string, input: unknown): Promise<ShipmentDone> {
   const who = await admin();
-  if (!who.ok) return who;
-  const parsed = StatusInput.safeParse({ orderId, status: newStatus, trackingNumber: trackingNumber || undefined });
-  if (!parsed.success) return { ok: false, error: "Enter a valid tracking number (8-40 letters or digits)." };
-
-  const { status } = parsed.data;
-  const current = await prisma.order.findUnique({ where: { id: parsed.data.orderId }, select: { status: true, trackingNumber: true } });
-  if (!current) return { ok: false, error: "That order no longer exists." };
-
-  // Dispatching for the first time needs a tracking number; moving back to
-  // "shipped" from "delivered" keeps the one already on the order.
-  const tracking = parsed.data.trackingNumber ?? (current.status === "DELIVERED" ? current.trackingNumber : null);
-  if (status === "IN_TRANSIT" && !tracking) return { ok: false, error: "Add the DHL tracking number to mark it shipped." };
-
-  const { count } = await prisma.order.updateMany({
-    where: {
-      id: parsed.data.orderId,
-      status: { in: [...TRANSITIONS[status].from] },
-      paymentStatus: { not: "FAILED" },
-    },
-    data: { status, ...(status === "IN_TRANSIT" ? { trackingNumber: tracking } : {}) },
-  });
-  if (count === 0) return { ok: false, error: STALE };
-
-  // Tell the buyer about real progress only: the first dispatch and the
-  // delivery. Corrections (delivered → back in transit, in transit → back to
-  // pending) send nothing. Sent after the response; it never throws.
-  const notify = status === "IN_TRANSIT" && current.status === "PENDING" ? "SHIPPED" : status === "DELIVERED" ? "DELIVERED" : null;
-  if (notify) after(() => sendOrderStatusEmail(parsed.data.orderId, notify));
-
-  refresh(parsed.data.orderId);
+  if (!who.ok) return { ok: false, error: who.error, code: "AUTH" };
+  const id = OrderId.safeParse(orderId);
+  if (!id.success) return shipmentFailure("NOT_FOUND");
+  const result = await saveFulfilment(id.data, input);
+  if (!result.ok) return shipmentFailure(result.code, result.detail);
+  refresh(id.data);
   return { ok: true };
+}
+
+/**
+ * Moves the delivery forward (or logs a checkpoint at the current stage) and
+ * emails the buyer when the move calls for it — after the response, so a
+ * mail outage can't fail the click.
+ */
+export async function advanceOrderShipment(orderId: string, input: unknown): Promise<ShipmentDone> {
+  const who = await admin();
+  if (!who.ok) return { ok: false, error: who.error, code: "AUTH" };
+  const id = OrderId.safeParse(orderId);
+  if (!id.success) return shipmentFailure("NOT_FOUND");
+  const result = await advanceShipment(id.data, input, "admin");
+  if (!result.ok) return shipmentFailure(result.code, result.detail);
+  const email = result.value.email;
+  if (email) after(() => sendOrderStatusEmail(id.data, email));
+  refresh(id.data);
+  return { ok: true, stage: result.value.stage, email };
+}
+
+/** One stage back, for a mis-click. Emails nothing. */
+export async function revertOrderShipment(orderId: string): Promise<ShipmentDone> {
+  const who = await admin();
+  if (!who.ok) return { ok: false, error: who.error, code: "AUTH" };
+  const id = OrderId.safeParse(orderId);
+  if (!id.success) return shipmentFailure("NOT_FOUND");
+  const result = await revertShipment(id.data);
+  if (!result.ok) return shipmentFailure(result.code, result.detail);
+  refresh(id.data);
+  return { ok: true, stage: result.value.stage };
 }
 
 /** A bank transfer arrived: settle the order and its invoice. */

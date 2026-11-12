@@ -311,6 +311,9 @@ export async function commitOrder(
             userId: draft.userId,
             addressId: draft.addressId,
             status: "PENDING",
+            // The carrier is chosen at dispatch (admin / CRM, lib/shipping);
+            // until then the buyer's timeline reads "order placed".
+            shipmentStage: "ORDER_PLACED",
             totalAmount,
             estimatedDelivery: new Date(Date.now() + DELIVERY_DAYS * 24 * 60 * 60 * 1000),
             paymentMethod: payment.paymentMethod,

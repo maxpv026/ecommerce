@@ -67,6 +67,7 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "AdminRbac", //       admin
   "AdminAnalytics", //  admin/analytics
   "AdminOverview", //   admin
+  "AdminShipping", //   admin/orders
   "SdsAssistant", //    compliance/sds
   "FgasGate", //        cart
   "SecurityCenter", //  profile/**, notifications (settings + security)
