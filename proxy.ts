@@ -4,6 +4,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { authConfig } from "./auth.config";
 import { routing } from "./i18n/routing";
 import { checkRateLimit, clientIp, ruleFor } from "./lib/rateLimit";
+import { can, canAccessAdminRoute, isStaffRole, permissionForAdminApi } from "@/lib/rbac";
 
 // Uses the Edge-safe authConfig (no Prisma adapter / Credentials providers)
 // instead of importing the full auth from "@/auth" — this still runs before
@@ -71,8 +72,10 @@ export default auth((req) => {
   // which re-reads the row. This is the outer wall: it refuses anything
   // without an authenticated, 2FA-carrying session before a handler is ever
   // reached, so an unauthenticated flood costs nothing.
+  // Each API needs its own permission (lib/rbac): the accountant's CSV
+  // export is not the owner's SMTP test.
   if (pathname.startsWith("/api/admin")) {
-    if (!req.auth?.user || req.auth.user.role !== "ADMIN") {
+    if (!req.auth?.user || !can(req.auth.user.role, permissionForAdminApi(pathname))) {
       return finish(NextResponse.json({ ok: false, code: "FORBIDDEN" }, { status: 403 }));
     }
     if (req.auth.user.isTwoFactorEnabled !== true) {
@@ -90,13 +93,18 @@ export default auth((req) => {
   const pathWithoutLocale = stripLocalePrefix(pathname);
   const isProtected = PROTECTED_SEGMENTS.some((prefix) => pathWithoutLocale.startsWith(prefix));
 
-  // /admin is ADMIN-only and fails closed: guests, USER sessions, and
+  // /admin is staff-only and fails closed: guests, USER sessions, and
   // pre-RBAC session tokens (no role claim) are all sent to the home page.
   // The admin page itself re-checks the session server-side — this gate is
   // the outer wall, not the only one.
   const isAdminRoute = pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/");
-  if (isAdminRoute && req.auth?.user?.role !== "ADMIN") {
+  if (isAdminRoute && !isStaffRole(req.auth?.user?.role)) {
     return finish(NextResponse.redirect(new URL(`/${locale}`, req.nextUrl.origin)));
+  }
+  // Staff, but not for this screen (lib/rbac): the in-shell 403 page, with a
+  // real 403 status. The page guard re-checks the row; this is the fast path.
+  if (isAdminRoute && !canAccessAdminRoute(req.auth?.user?.role, pathWithoutLocale)) {
+    return finish(NextResponse.rewrite(new URL(`/${locale}/admin/forbidden`, req.nextUrl.origin), { status: 403 }));
   }
 
   // An admin without an authenticator is sent to set one up rather than

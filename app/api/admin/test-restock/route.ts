@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { requireAdmin } from "@/lib/fgasReview";
+
+import { requirePermission } from "@/lib/admin/permissions";
 import { applyInventoryUpdate } from "@/lib/inventory";
 import { notifyBackInStock } from "@/lib/stockNotify";
 
@@ -45,7 +46,7 @@ const Payload = z.object({
 
 export async function POST(request: Request) {
   const session = await auth();
-  const admin = await requireAdmin(session?.user?.id);
+  const admin = await requirePermission(session?.user?.id, "inventory.stock");
   if (!admin.ok) {
     return Response.json({ ok: false, code: admin.code }, { status: admin.code === "FORBIDDEN" ? 403 : 401 });
   }

@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Support chat — My Energy Admin", r
 export const dynamic = "force-dynamic";
 
 export default async function AdminSupportThreadPage({ params }: PageProps<"/[locale]/admin/support/[id]">) {
-  await guardAdmin(params);
+  await guardAdmin(params, "support");
   const { id } = await params;
 
   const session = await prisma.chatSession.findUnique({

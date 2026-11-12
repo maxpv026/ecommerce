@@ -73,6 +73,9 @@ export const sessionAnchor = cache(async (userId: string, sid?: string | null) =
     select: {
       passwordChangedAt: true,
       sessionsRevokedAt: true,
+      // The role, re-derived per request (auth.ts → lib/rbac effectiveRole).
+      role: true,
+      email: true,
       // This device's row (lib/deviceSessions) — same query, no extra round trip.
       deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true }, take: 1 } : false,
     },

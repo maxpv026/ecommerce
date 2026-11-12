@@ -5,7 +5,7 @@ import { generateText, Output } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@/auth";
-import { requireAdmin } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 
 /**
  * AI first draft for an admin regulatory broadcast.
@@ -82,7 +82,7 @@ function factTokens(text: string): string[] {
 
 export async function generateBroadcastDraft(instruction: unknown): Promise<BroadcastDraftResult> {
   const session = await auth();
-  const check = await requireAdmin(session?.user?.id);
+  const check = await requirePermission(session?.user?.id, "broadcasts");
   if (!check.ok) return { ok: false, error: "Not authorised." };
 
   const parsed = Instruction.safeParse(instruction);

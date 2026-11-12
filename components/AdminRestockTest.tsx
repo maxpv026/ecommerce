@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { BugPlay, Loader2 } from "lucide-react";
 import { testRestockEmail, type TestRestockReport } from "@/lib/actions/testRestock";
+import { can } from "@/lib/rbac";
 
 /**
  * Admin-only probe on the product page: force a real back-in-stock run and
@@ -28,7 +29,7 @@ export default function AdminRestockTest({ productId }: AdminRestockTestProps) {
   const [running, setRunning] = useState(false);
   const [report, setReport] = useState<TestRestockReport | null>(null);
 
-  if (session?.user?.role !== "ADMIN") return null;
+  if (!can(session?.user?.role, "inventory.stock")) return null;
 
   const run = async () => {
     if (running) return;

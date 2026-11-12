@@ -19,7 +19,7 @@ interface AdminOrdersPageProps {
 
 export default async function AdminOrdersPage({ params, searchParams }: AdminOrdersPageProps) {
   // Before any data is read — this lists every customer's orders and addresses.
-  await guardAdmin(params);
+  await guardAdmin(params, "orders.view");
 
   const sp = await searchParams;
   const filter = (ADMIN_ORDER_FILTERS as readonly string[]).includes(sp.filter ?? "") ? (sp.filter as AdminOrderFilter) : "all";

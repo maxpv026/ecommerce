@@ -1,5 +1,6 @@
+import { getFormatter, getTranslations } from "next-intl/server";
 import { getRevenueStats } from "@/lib/admin/analytics";
-import { EmptyRow, Panel, formatEur } from "./primitives";
+import { EmptyRow, Panel } from "./primitives";
 import RevenueChartMount from "./RevenueChartMount";
 
 /**
@@ -15,29 +16,30 @@ import RevenueChartMount from "./RevenueChartMount";
  * to bucket on `paidAt` and this becomes a true cash-in curve.
  */
 export default async function RevenueChart({ days = 30 }: { days?: number }) {
-  const data = await getRevenueStats(days);
+  const [data, t, format] = await Promise.all([getRevenueStats(days), getTranslations("AdminAnalytics"), getFormatter()]);
+  const eur = (n: number) => format.number(n, { style: "currency", currency: "EUR" });
   const booked = data.reduce((n, d) => n + d.booked, 0);
   const paid = data.reduce((n, d) => n + d.paid, 0);
   const hasActivity = data.some((d) => d.booked > 0);
 
   return (
-    <Panel title={`Revenue — last ${days} days`} hint={`${formatEur(booked)} BOOKED · ${formatEur(paid)} SETTLED`}>
+    <Panel title={t("chartTitle", { days })} hint={t("chartHint", { booked: eur(booked), paid: eur(paid) })}>
       {hasActivity ? (
         <RevenueChartMount data={data} />
       ) : (
-        <EmptyRow>No orders in this period yet.</EmptyRow>
+        <EmptyRow>{t("empty")}</EmptyRow>
       )}
       <div className="flex items-center gap-5 border-t border-slate-900/[.06] px-6 py-3 dark:border-hairline">
         <span className="flex items-center gap-2 text-[11.5px] text-slate-500 dark:text-slate-400">
           <span className="h-[2px] w-4 rounded-full bg-slate-900 dark:bg-slate-200" />
-          Booked
+          {t("chartBooked")}
         </span>
         <span className="flex items-center gap-2 text-[11.5px] text-slate-500 dark:text-slate-400">
           <span className="h-[2px] w-4 rounded-full bg-blue-700 dark:bg-blue-400" />
-          Settled
+          {t("chartSettled")}
         </span>
         <span className="ml-auto text-[11px] text-slate-400 dark:text-slate-500">
-          Dated by order date — settlement dates are not recorded yet
+          {t("chartNote")}
         </span>
       </div>
     </Panel>

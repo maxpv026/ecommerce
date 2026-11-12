@@ -4,7 +4,7 @@ import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { FGasStatus } from "@/lib/generated/prisma/enums";
-import { isFounderEmail } from "@/lib/rbac";
+import { requirePermission, viewerCan } from "@/lib/admin/permissions";
 import { certificateHref } from "@/lib/fgasStorage";
 import { getEffectiveFgasStatus, isAiActor, type FgasExtraction } from "@/lib/fgas";
 import { activateCertificate, revalidateFgasViews } from "@/lib/fgasLifecycle";
@@ -34,26 +34,12 @@ export type ReviewErrorCode =
 
 export type ReviewResult<T = { status: FGasStatus }> = { ok: true; value: T } | { ok: false; code: ReviewErrorCode };
 
-export async function requireAdmin(userId: string | null | undefined): Promise<ReviewResult<{ id: string; email: string | null }>> {
-  if (!userId) return { ok: false, code: "UNAUTHENTICATED" };
-  const caller = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, role: true, isTwoFactorEnabled: true } });
-  if (!caller) return { ok: false, code: "UNAUTHENTICATED" };
-  if (caller.role !== "ADMIN" || !isFounderEmail(caller.email)) {
-    console.warn(`[fgas] refused review action for non-admin ${caller.id}`);
-    return { ok: false, code: "FORBIDDEN" };
-  }
-  if (!caller.isTwoFactorEnabled) {
-    console.warn(`[admin] refused: ${caller.email ?? caller.id} has no authenticator enrolled`);
-    return { ok: false, code: "TWO_FACTOR_REQUIRED" };
-  }
-  return { ok: true, value: { id: caller.id, email: caller.email } };
-}
+/** Reviewing F-Gas certificates: SUPER_ADMIN or ADMIN, with an authenticator (lib/admin/permissions). */
+const requireReviewer = (userId: string | null | undefined) => requirePermission(userId, "users.fgas");
 
-/** The same rule as requireAdmin minus 2FA — for READING a document only. */
+/** May this account READ certificate documents? Same roles, no authenticator needed to view. */
 export async function isAdminViewer(userId: string | null | undefined): Promise<boolean> {
-  if (!userId) return false;
-  const viewer = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, email: true } });
-  return viewer?.role === "ADMIN" && isFounderEmail(viewer.email);
+  return viewerCan(userId, "users.fgas");
 }
 
 export interface PendingReview {
@@ -113,7 +99,7 @@ function notifyAfter(fn: () => Promise<unknown>) {
  * (PENDING_REVIEW or REJECTED — the latter so a person can overturn the AI).
  */
 export async function approveFGasCertificate(adminUserId: string | null | undefined, targetUserId: string): Promise<ReviewResult> {
-  const admin = await requireAdmin(adminUserId);
+  const admin = await requireReviewer(adminUserId);
   if (!admin.ok) return admin;
 
   const user = await prisma.user.findUnique({
@@ -204,7 +190,7 @@ export async function rejectFGasCertificate(
   reason: string,
   mode: "auto" | "revoke" | "replacement" = "auto"
 ): Promise<ReviewResult> {
-  const admin = await requireAdmin(adminUserId);
+  const admin = await requireReviewer(adminUserId);
   if (!admin.ok) return admin;
   const trimmed = (typeof reason === "string" ? reason.trim().slice(0, 500) : "") || "The certificate could not be accepted.";
 

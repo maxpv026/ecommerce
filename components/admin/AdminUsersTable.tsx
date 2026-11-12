@@ -4,7 +4,9 @@ import { Fragment, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Bot, Check, ChevronDown, Clock, ExternalLink, FileText, History, Loader2, Search, ShieldAlert, ShieldCheck, ShieldX, X } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
-import { updateUserFgasStatus } from "@/lib/actions/adminUsers";
+import { setUserRole, updateUserFgasStatus } from "@/lib/actions/adminUsers";
+import { useTranslations } from "next-intl";
+import { ASSIGNABLE_ROLES, type AppRole } from "@/lib/rbac";
 import type { AdminUserFilter, AdminUserRow, AdminUsersPage } from "@/lib/adminUsers";
 
 /**
@@ -94,7 +96,66 @@ const day = (iso: string | null | undefined) =>
 const isExpired = (u: AdminUserRow) => Boolean(u.extracted?.expiresAt && new Date(`${u.extracted.expiresAt}T23:59:59Z`) < new Date());
 const docExpired = (u: AdminUserRow) => isExpired(u);
 
-export default function AdminUsersTable({ data, filter, query }: { data: AdminUsersPage; filter: AdminUserFilter; query: string }) {
+const ROLE_TONE: Record<AppRole, string> = {
+  SUPER_ADMIN: "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300",
+  ADMIN: "border-blue-600/25 bg-blue-600/[.08] text-blue-700 dark:text-blue-300",
+  ACCOUNTANT: "border-emerald-600/25 bg-emerald-600/[.08] text-emerald-700 dark:text-emerald-300",
+  USER: "border-slate-900/[.1] bg-slate-100 text-slate-600 dark:border-white/[.1] dark:bg-white/[.05] dark:text-slate-300",
+};
+
+/**
+ * Role badge, and — for the owner only (users.roles) — a selector between
+ * USER, ACCOUNTANT and ADMIN. The owner's own row is locked: SUPER_ADMIN is
+ * never assignable or removable. setUserRole re-checks all of this.
+ */
+function RoleControl({ user, canManage }: { user: AdminUsersPage["rows"][number]; canManage: boolean }) {
+  const t = useTranslations("AdminRbac");
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const badge = (
+    <span className={`inline-flex items-center rounded-full border px-2 py-px text-[10.5px] font-semibold ${ROLE_TONE[user.role]}`} data-role-badge={user.role}>
+      {t(`role_${user.role}`)}
+    </span>
+  );
+  if (!canManage || user.owner) {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 pl-[22px]">
+        {badge}
+        {user.owner && <span className="text-[10.5px] text-slate-400" data-owner-lock>{t("ownerLocked")}</span>}
+      </div>
+    );
+  }
+  return (
+    <div className="mt-1.5 flex items-center gap-1.5 pl-[22px]">
+      {badge}
+      <select
+        value={user.role}
+        disabled={pending}
+        aria-label={t("changeRole")}
+        data-role-select={user.id}
+        onChange={async (e) => {
+          const next = e.target.value as AppRole;
+          setPending(true);
+          const result = await setUserRole(user.id, next).catch(() => null);
+          setPending(false);
+          if (result?.ok) {
+            toast.success(t("roleChanged", { role: t(`role_${result.role}`) }));
+            router.refresh();
+          } else toast.error(t("roleChangeFailed"));
+        }}
+        className="h-7 rounded-lg border border-slate-900/[.12] bg-white px-2 text-[11.5px] font-medium text-slate-700 outline-none disabled:opacity-50 dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-200"
+      >
+        {ASSIGNABLE_ROLES.map((r) => (
+          <option key={r} value={r}>
+            {t(`role_${r}`)}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+export default function AdminUsersTable({ data, filter, query, canManageRoles = false }: { data: AdminUsersPage; filter: AdminUserFilter; query: string; canManageRoles?: boolean }) {
   const router = useRouter();
   const [search, setSearch] = useState(query);
   const [open, setOpen] = useState<string | null>(null);
@@ -215,11 +276,11 @@ export default function AdminUsersTable({ data, filter, query }: { data: AdminUs
                           <span className="min-w-0">
                             <span className="flex items-center gap-1.5 text-[13.5px] font-semibold">
                               {u.name ?? "—"}
-                              {u.role === "ADMIN" && <span className="rounded-full bg-blue-700/10 px-1.5 text-[9.5px] font-bold uppercase tracking-[.08em] text-blue-700 dark:text-blue-300">Admin</span>}
                             </span>
                             <span className="block text-[12px] text-slate-500 dark:text-slate-400">{u.email ?? "no email"}</span>
                           </span>
                         </button>
+                        <RoleControl user={u} canManage={canManageRoles} />
                       </td>
                       <td className="px-4 py-4 text-[12.5px]">
                         <span className="block font-medium">{u.companyName ?? <span className="text-slate-400">No company</span>}</span>

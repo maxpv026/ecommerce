@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { isFounderEmail } from "@/lib/rbac";
+import { viewerCan } from "@/lib/admin/permissions";
 import { isProductDocumentType, productDocument } from "@/lib/productDocuments";
 import { buildSafetyDataSheet, renderSafetyDataSheet } from "@/lib/sdsPdf";
 
@@ -34,8 +34,8 @@ async function viewerIsAdmin(): Promise<boolean> {
   const session = await auth();
   const viewerId = session?.user?.id;
   if (!viewerId) return false;
-  const viewer = await prisma.user.findUnique({ where: { id: viewerId }, select: { role: true, email: true } });
-  return viewer?.role === "ADMIN" && isFounderEmail(viewer.email);
+  // Staff who work the catalog (lib/rbac inventory.view), read from the row.
+  return viewerCan(viewerId, "inventory.view");
 }
 
 export async function GET(_request: Request, ctx: RouteContext<"/api/documents/[type]/[sku]">) {

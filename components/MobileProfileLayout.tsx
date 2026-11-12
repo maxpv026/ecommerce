@@ -38,6 +38,7 @@ import { useThemeChoice } from "@/lib/hooks/useThemeChoice";
 import AvatarUploader from "./AvatarUploader";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
+import { isStaffRole } from "@/lib/rbac";
 
 const TONES: Record<OrderStatus, { fg: string; dark: string; dot: string; bg: string; bd: string; live: boolean }> = {
   IN_TRANSIT: { fg: "#0369a1", dark: "#38bdf8", dot: "#22d3ee", bg: "rgba(56,189,248,.14)", bd: "rgba(56,189,248,.3)", live: true },
@@ -586,7 +587,7 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }} className="px-[18px] pt-4" id="profile-panel-settings" role="tabpanel" data-panel-settings>
             {/* Admins only — visibility, not access: proxy.ts and guardAdmin
                 still decide who gets into /admin. */}
-            {session?.user?.role === "ADMIN" && (
+            {session?.user && isStaffRole(session.user.role) && (
               <Link
                 href="/admin"
                 data-admin-link

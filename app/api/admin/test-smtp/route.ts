@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
-import { requireAdmin } from "@/lib/fgasReview";
+
+import { requirePermission } from "@/lib/admin/permissions";
 import { sendSmtpSelfTest, smtpDiagnostics } from "@/lib/mail";
 
 /**
@@ -22,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const session = await auth();
-  const admin = await requireAdmin(session?.user?.id);
+  const admin = await requirePermission(session?.user?.id, "diagnostics");
   if (!admin.ok) {
     return Response.json(
       { ok: false, code: admin.code, hint: "Sign in as the ADMIN_EMAIL account first." },

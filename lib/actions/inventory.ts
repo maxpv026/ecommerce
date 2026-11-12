@@ -5,7 +5,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { expireCatalog } from "@/lib/catalogCache";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { requireAdmin } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 import { stockStateForQuantity } from "@/lib/inventory";
 import { CATALOG_COUNTS_TAG } from "@/lib/cacheTags";
 import { CONTAINER_TYPES, LISTED, normalizeFamilyKey, sizeLabel } from "@/lib/productFamily";
@@ -34,10 +34,15 @@ export type VariantResult =
   | { ok: true; id: string; sku: string; created: boolean; stockMessage: string | null }
   | Failure;
 
-async function admin(): Promise<Failure | null> {
+/**
+ * Catalog structure — create, rename, reprice, regroup, delete — is the
+ * owner's (inventory.catalog). Stock counts and deposits on an existing row
+ * are operations (inventory.stock): see upsertVariant.
+ */
+async function admin(permission: "inventory.catalog" | "inventory.stock" = "inventory.catalog"): Promise<Failure | null> {
   const session = await auth();
-  const check = await requireAdmin(session?.user?.id);
-  return check.ok ? null : { ok: false, error: "Admins only." };
+  const check = await requirePermission(session?.user?.id, permission);
+  return check.ok ? null : { ok: false, error: check.code === "FORBIDDEN" ? "FORBIDDEN" : "Admins only." };
 }
 
 const Sku = z
@@ -79,8 +84,32 @@ const isUniqueViolation = (error: unknown) =>
  * are written to the row; stock is handed to updateInventory afterwards.
  */
 export async function upsertVariant(raw: VariantInputData): Promise<VariantResult> {
-  const denied = await admin();
-  if (denied) return denied;
+  // The owner may change anything. Operations (ADMIN) may save an EXISTING
+  // size whose catalog fields — name, SKU, container, net weight, price —
+  // arrive exactly as stored: only stock and the deposit can differ. Checked
+  // here against the row, so a hand-built request can't slip a price in.
+  const session = await auth();
+  const owner = await requirePermission(session?.user?.id, "inventory.catalog");
+  if (!owner.ok) {
+    if (owner.code !== "FORBIDDEN") return { ok: false, error: "Admins only." };
+    const ops = await requirePermission(session?.user?.id, "inventory.stock");
+    if (!ops.ok) return { ok: false, error: ops.code === "FORBIDDEN" ? "FORBIDDEN" : "Admins only." };
+    const attempt = VariantInput.safeParse(raw);
+    if (!attempt.success || !attempt.data.id) return { ok: false, error: "FORBIDDEN" };
+    const stored = await prisma.product.findUnique({
+      where: { id: attempt.data.id, ...LISTED },
+      select: { name: true, sku: true, containerType: true, weightKg: true, pricePerKg: true },
+    });
+    if (!stored) return { ok: false, error: "That size no longer exists — refresh the page." };
+    const d = attempt.data;
+    const unchanged =
+      stored.name === d.name &&
+      stored.sku === d.sku &&
+      stored.containerType === d.containerType &&
+      Math.abs(stored.weightKg - d.weightKg) < 1e-9 &&
+      Math.abs(stored.pricePerKg - d.pricePerKg) < 1e-9;
+    if (!unchanged) return { ok: false, error: "FORBIDDEN" };
+  }
 
   const parsed = VariantInput.safeParse(raw);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the fields." };

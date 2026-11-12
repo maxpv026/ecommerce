@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { requireAdmin } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 import { applyInventoryUpdate } from "@/lib/inventory";
 import { notifyBackInStock } from "@/lib/stockNotify";
 
@@ -59,7 +59,7 @@ export async function testRestockEmail(raw: {
   quantity?: number;
 }): Promise<TestRestockReport> {
   const session = await auth();
-  const admin = await requireAdmin(session?.user?.id);
+  const admin = await requirePermission(session?.user?.id, "inventory.stock");
   if (!admin.ok) {
     return { ok: false, headline: "Admins only.", steps: [], error: admin.code };
   }

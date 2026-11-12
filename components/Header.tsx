@@ -16,6 +16,7 @@ import { useCartStore, selectCartCount } from "@/lib/store/cart";
 import { useFavoritesCount } from "@/lib/hooks/useFavorite";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { RECORDS_LINKS, type RecordsIconKey } from "@/lib/profileRecords";
+import { isStaffRole } from "@/lib/rbac";
 
 interface NavLink {
   key: string;
@@ -83,8 +84,8 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
   const tRecords = useTranslations("Records");
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated";
-  // Same rule the session callback derives (ADMIN_EMAIL-based, fails closed to USER).
-  const isAdmin = isAuthenticated && session?.user?.role === "ADMIN";
+  // Any staff role sees the way into /admin (lib/rbac); what they can do there is decided on the server.
+  const isAdmin = isAuthenticated && isStaffRole(session?.user?.role);
 
   // Cart badge: read straight from the persisted store so every add/remove
   // anywhere in the app updates it instantly. Hydration-gated because the

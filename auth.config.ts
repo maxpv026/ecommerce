@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { isRole } from "@/lib/rbac";
 
 // Edge-safe subset of the full config in auth.ts. middleware.ts runs in the
 // Edge runtime, which can't load Prisma Client or bcryptjs (both need
@@ -16,7 +17,7 @@ export const authConfig = {
     // this copy exists solely for the Edge middleware instance.
     session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
+        session.user.role = isRole(token.role) ? token.role : "USER";
         session.user.isFGasVerified = Boolean(token.epaVerified);
         // Needed by proxy.ts's admin gate. Without it `req.auth.user`
         // carries no 2FA claim on the Edge, the gate reads undefined, and

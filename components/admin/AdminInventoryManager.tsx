@@ -161,7 +161,13 @@ const without = <T,>(record: Record<string, T>, key: string): Record<string, T> 
   return next;
 };
 
-export default function AdminInventoryManager({ families, archived = [] }: { families: InventoryFamily[]; archived?: ArchivedSize[] }) {
+/**
+ * `canEditCatalog` (lib/rbac inventory.catalog — the owner): sizes can be
+ * added, renamed, repriced, regrouped, deleted and restored. Without it
+ * (operations ADMIN) only stock and the deposit are editable; the server
+ * (upsertVariant) refuses anything else regardless of what this renders.
+ */
+export default function AdminInventoryManager({ families, archived = [], canEditCatalog = true }: { families: InventoryFamily[]; archived?: ArchivedSize[]; canEditCatalog?: boolean }) {
   const t = useTranslations("AdminInventory");
   const format = useFormatter();
   const router = useRouter();
@@ -431,18 +437,18 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
         <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
           <label>
             <span className={LABEL}>{t("fieldName")}</span>
-            <input className={INPUT} value={draft.name} disabled={disabled} onChange={(e) => set("name", e.target.value)} data-field={`${testId}:name`} />
+            <input className={INPUT} value={draft.name} disabled={disabled || !canEditCatalog} onChange={(e) => set("name", e.target.value)} data-field={`${testId}:name`} />
           </label>
           <label>
             <span className={LABEL}>{t("fieldSku")}</span>
-            <input className={`${INPUT} font-mono uppercase`} value={draft.sku} disabled={disabled} onChange={(e) => set("sku", e.target.value)} data-field={`${testId}:sku`} />
+            <input className={`${INPUT} font-mono uppercase`} value={draft.sku} disabled={disabled || !canEditCatalog} onChange={(e) => set("sku", e.target.value)} data-field={`${testId}:sku`} />
           </label>
         </div>
         {/* 2. Container + net kg */}
         <div className="mt-2 grid grid-cols-2 gap-2 md:mt-0 md:grid-cols-1">
           <label>
             <span className={LABEL}>{t("fieldContainer")}</span>
-            <select className={INPUT} value={draft.containerType} disabled={disabled} onChange={(e) => set("containerType", e.target.value)} data-field={`${testId}:container`}>
+            <select className={INPUT} value={draft.containerType} disabled={disabled || !canEditCatalog} onChange={(e) => set("containerType", e.target.value)} data-field={`${testId}:container`}>
               {CONTAINER_TYPES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -452,7 +458,7 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
           </label>
           <label>
             <span className={LABEL}>{t("fieldNetKg")}</span>
-            <input className={INPUT} inputMode="decimal" value={draft.weightKg} disabled={disabled} onChange={(e) => set("weightKg", e.target.value)} data-field={`${testId}:kg`} />
+            <input className={INPUT} inputMode="decimal" value={draft.weightKg} disabled={disabled || !canEditCatalog} onChange={(e) => set("weightKg", e.target.value)} data-field={`${testId}:kg`} />
           </label>
         </div>
         {/* 3. Pricing: €/kg ↔ cylinder €, deposit, and the resulting price */}
@@ -460,11 +466,11 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
           <div className="grid grid-cols-3 gap-2">
             <label>
               <span className={LABEL}>{t("fieldPerKg")}</span>
-              <input className={INPUT} inputMode="decimal" value={draft.pricePerKg} disabled={disabled} onChange={(e) => set("pricePerKg", e.target.value)} data-field={`${testId}:price`} />
+              <input className={INPUT} inputMode="decimal" value={draft.pricePerKg} disabled={disabled || !canEditCatalog} onChange={(e) => set("pricePerKg", e.target.value)} data-field={`${testId}:price`} />
             </label>
             <label>
               <span className={LABEL}>{t("fieldCylinder")}</span>
-              <input className={INPUT} inputMode="decimal" value={draft.cylinderPrice} disabled={disabled} onChange={(e) => set("cylinderPrice", e.target.value)} data-field={`${testId}:cylinder`} />
+              <input className={INPUT} inputMode="decimal" value={draft.cylinderPrice} disabled={disabled || !canEditCatalog} onChange={(e) => set("cylinderPrice", e.target.value)} data-field={`${testId}:cylinder`} />
             </label>
             <label>
               <span className={LABEL}>{t("fieldDeposit")}</span>
@@ -774,6 +780,7 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
                                         {pending && busy === row.id && <Loader2 size={13} className="animate-spin" />}
                                         {t("save")}
                                       </button>
+                                      {canEditCatalog && (<>
                                       <button
                                         type="button"
                                         onClick={() => setMoreOpen(showMore ? null : row.id)}
@@ -800,6 +807,7 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
                                         {deleteBusy ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={14} strokeWidth={2.1} />}
                                         {armed && t("confirmDelete")}
                                       </button>
+                                      </>)}
                                     </div>
                                   </div>
 
@@ -876,7 +884,7 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
                         {/* Footer: add a size · save the family's changes */}
                         {(!family.perUnit || s.dirty > 0) && (
                           <div className="flex flex-wrap items-center gap-2 border-t border-slate-900/[.07] bg-slate-900/[.015] px-4 py-3 dark:border-white/[.07] dark:bg-white/[.015]">
-                            {!family.perUnit && !addDraft && (
+                            {canEditCatalog && !family.perUnit && !addDraft && (
                               <button
                                 type="button"
                                 onClick={() => setAdding((a) => ({ ...a, [family.id]: blankFor(family) }))}
@@ -910,7 +918,7 @@ export default function AdminInventoryManager({ families, archived = [] }: { fam
         </div>
 
         {/* ── Archived sizes ── */}
-        {archived.length > 0 && (
+        {canEditCatalog && archived.length > 0 && (
           <div className={`${CARD} mt-8 p-4 md:p-5`} data-archived-sizes>
             <div className="mb-1 flex items-center gap-2 text-[14px] font-semibold tracking-[-.02em]">
               <Archive size={15} strokeWidth={2} /> {t("archivedTitle")}

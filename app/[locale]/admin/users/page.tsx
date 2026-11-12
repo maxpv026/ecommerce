@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { guardAdmin } from "@/lib/admin/guardAdmin";
 import { ADMIN_USER_FILTERS, listAdminUsers, type AdminUserFilter } from "@/lib/adminUsers";
 import AdminUsersTable from "@/components/admin/AdminUsersTable";
+import { can } from "@/lib/rbac";
 
 export const metadata: Metadata = {
   title: "Users — My Energy Admin",
@@ -19,7 +20,7 @@ interface AdminUsersPageProps {
 
 export default async function AdminUsersPage({ params, searchParams }: AdminUsersPageProps) {
   // Before any data is read — this page lists every account's PII.
-  await guardAdmin(params);
+  const admin = await guardAdmin(params, "users.view");
 
   const sp = await searchParams;
   const filter = (ADMIN_USER_FILTERS as readonly string[]).includes(sp.filter ?? "") ? (sp.filter as AdminUserFilter) : "all";
@@ -37,7 +38,7 @@ export default async function AdminUsersPage({ params, searchParams }: AdminUser
         </p>
       </header>
 
-      <AdminUsersTable data={data} filter={filter} query={query} />
+      <AdminUsersTable data={data} filter={filter} query={query} canManageRoles={can(admin.role, "users.roles")} />
     </div>
   );
 }

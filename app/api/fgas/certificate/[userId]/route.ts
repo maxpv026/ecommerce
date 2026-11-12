@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { isFounderEmail } from "@/lib/rbac";
+import { viewerCan } from "@/lib/admin/permissions";
 import { readCertificate } from "@/lib/fgasStorage";
 
 /**
@@ -41,9 +41,8 @@ export async function GET(request: Request, ctx: RouteContext<"/api/fgas/certifi
   if (!viewerId) return text("Sign in to view this document.", 401);
 
   if (viewerId !== userId) {
-    const viewer = await prisma.user.findUnique({ where: { id: viewerId }, select: { role: true, email: true } });
-    const isAdmin = viewer?.role === "ADMIN" && isFounderEmail(viewer.email);
-    if (!isAdmin) return text("You don't have access to this document.", 403);
+    // Certificate reviewers (lib/rbac users.fgas), read from the row.
+    if (!(await viewerCan(viewerId, "users.fgas"))) return text("You don't have access to this document.", 403);
   }
 
   const owner = await prisma.user.findUnique({ where: { id: userId }, select: { fGasDocumentUrl: true } });

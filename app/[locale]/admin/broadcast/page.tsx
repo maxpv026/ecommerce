@@ -16,7 +16,7 @@ export const maxDuration = 60;
 
 export default async function AdminBroadcastPage({ params }: { params: Promise<{ locale: string }> }) {
   // Before any data is read. guardAdmin never returns on failure.
-  await guardAdmin(params);
+  await guardAdmin(params, "broadcasts");
 
   const [audience, recent] = await Promise.all([countRegulatoryAudience(), recentBroadcasts()]);
 

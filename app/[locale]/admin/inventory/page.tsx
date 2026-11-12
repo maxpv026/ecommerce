@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { guardAdmin } from "@/lib/admin/guardAdmin";
 import { imagePathForProduct } from "@/lib/productMedia";
+import { can } from "@/lib/rbac";
 import AdminInventoryManager, { type InventoryFamily, type ArchivedSize } from "@/components/admin/AdminInventoryManager";
 import { refrigerantTypeOf, resolveFamily } from "@/lib/productFamily";
 import { isPricedPerKg } from "@/lib/pricing";
@@ -24,7 +25,7 @@ const looksLikeMark = (s: string) => /^R-?\d/i.test(s);
 
 export default async function AdminInventoryPage({ params }: AdminInventoryPageProps) {
   // One shared gate for every admin route — see lib/admin/guardAdmin.
-  await guardAdmin(params);
+  const admin = await guardAdmin(params, "inventory.view");
 
   const [all, waiting] = await Promise.all([
     prisma.product.findMany({
@@ -111,5 +112,5 @@ export default async function AdminInventoryPage({ params }: AdminInventoryPageP
     // Gas families first, A–Z (R-32 before R-404A by natural order), then the per-unit products.
     .sort((a, b) => Number(a.perUnit) - Number(b.perUnit) || a.label.localeCompare(b.label, "en", { numeric: true }));
 
-  return <AdminInventoryManager families={familyList} archived={archived} />;
+  return <AdminInventoryManager families={familyList} archived={archived} canEditCatalog={can(admin.role, "inventory.catalog")} />;
 }

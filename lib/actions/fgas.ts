@@ -1,12 +1,13 @@
 "use server";
 
+import { requirePermission } from "@/lib/admin/permissions";
+
 import { z } from "zod";
 import { auth } from "@/auth";
 import {
   approveFGasCertificate as approve,
   rejectFGasCertificate as reject,
   listPendingReviews,
-  requireAdmin,
   type PendingReview,
   type ReviewResult,
 } from "@/lib/fgasReview";
@@ -51,7 +52,7 @@ export async function rejectFGasCertificate(userId: string, reason: string): Pro
 /** Admin-only: the queue of certificates awaiting a decision. */
 export async function getPendingFGasReviews(): Promise<ReviewResult<PendingReview[]>> {
   const session = await auth();
-  const admin = await requireAdmin(session?.user?.id);
+  const admin = await requirePermission(session?.user?.id, "users.fgas");
   if (!admin.ok) return admin;
   return { ok: true, value: await listPendingReviews() };
 }

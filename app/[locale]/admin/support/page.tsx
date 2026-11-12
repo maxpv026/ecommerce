@@ -15,7 +15,7 @@ const STATUS = {
 } as const;
 
 export default async function AdminSupportPage({ params, searchParams }: PageProps<"/[locale]/admin/support">) {
-  await guardAdmin(params);
+  await guardAdmin(params, "support");
   const view = (await searchParams).view === "all" ? "all" : "open";
 
   const { sessions, waiting } = await loadQueue(view);

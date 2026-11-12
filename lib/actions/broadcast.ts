@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { auth } from "@/auth";
-import { requireAdmin } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 import {
   cancelBroadcast,
   countRegulatoryAudience,
@@ -35,7 +35,7 @@ type Failure = { ok: false; error: string };
 
 async function admin(): Promise<{ ok: true; id: string } | Failure> {
   const session = await auth();
-  const check = await requireAdmin(session?.user?.id);
+  const check = await requirePermission(session?.user?.id, "broadcasts");
   if (!check.ok) {
     return {
       ok: false,

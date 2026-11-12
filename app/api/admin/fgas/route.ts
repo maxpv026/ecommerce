@@ -4,9 +4,9 @@ import {
   approveFGasCertificate,
   listPendingReviews,
   rejectFGasCertificate,
-  requireAdmin,
   type ReviewErrorCode,
 } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 
 /**
  * Admin review endpoint.
@@ -55,7 +55,7 @@ const STATUS: Record<ReviewErrorCode, number> = {
 
 export async function GET() {
   const session = await auth();
-  const admin = await requireAdmin(session?.user?.id);
+  const admin = await requirePermission(session?.user?.id, "users.fgas");
   if (!admin.ok) return Response.json({ ok: false, code: admin.code }, { status: STATUS[admin.code] });
 
   const pending = await listPendingReviews();
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
   // Check admin before parsing: an anonymous caller learns nothing about the
   // request shape.
-  const admin = await requireAdmin(callerId);
+  const admin = await requirePermission(callerId, "users.fgas");
   if (!admin.ok) return Response.json({ ok: false, code: admin.code }, { status: STATUS[admin.code] });
 
   let raw: unknown;

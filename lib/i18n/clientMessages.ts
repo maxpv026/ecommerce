@@ -50,6 +50,9 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "Hub", //             hub
   "Admin", //           admin
   "AdminInventory", //  admin/inventory
+  "AdminRbac", //       admin
+  "AdminAnalytics", //  admin/analytics
+  "AdminOverview", //   admin
   "SdsAssistant", //    compliance/sds
   "FgasGate", //        cart
   "SecurityCenter", //  profile/**, notifications (settings + security)

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { effectiveRole, isFounderEmail, type AppRole } from "@/lib/rbac";
+
 import prisma from "@/lib/prisma";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { FGasStatus } from "@/lib/generated/prisma/enums";
@@ -42,7 +44,10 @@ export interface AdminUserRow {
   email: string | null;
   companyName: string | null;
   vatNumber: string | null;
-  role: "USER" | "ADMIN";
+  /** Effective role (lib/rbac): the owner is always SUPER_ADMIN. */
+  role: AppRole;
+  /** The ADMIN_EMAIL account — its role can never be changed. */
+  owner: boolean;
   status: FGasStatus;
   /** What every gate sees: VERIFIED past its expiry is EXPIRED here. */
   effectiveStatus: FGasStatus;
@@ -143,7 +148,8 @@ export async function listAdminUsers(options: { filter?: AdminUserFilter; query?
         email: u.email,
         companyName: u.companyName,
         vatNumber: u.vatNumber,
-        role: u.role,
+        role: effectiveRole(u.email, u.role),
+        owner: isFounderEmail(u.email),
         status: u.fGasStatus,
         effectiveStatus: effective,
         expiresAt: u.fGasExpiresAt?.toISOString() ?? null,

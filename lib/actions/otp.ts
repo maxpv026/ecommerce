@@ -75,7 +75,7 @@ export async function requestEmailOtp(rawInput: {
       return { ok: false, code: "EMAIL_EXISTS" };
     }
     const hashed = await bcrypt.hash(password, 12);
-    // The ADMIN_EMAIL account is created as ADMIN with the founder's legal
+    // The ADMIN_EMAIL account is created as SUPER_ADMIN with the founder's legal
     // name attached; everyone else gets the schema default (USER).
     const founder = isFounderEmail(email);
     if (existing) {
@@ -87,7 +87,7 @@ export async function requestEmailOtp(rawInput: {
         data: {
           email,
           password: hashed,
-          ...(founder ? { role: "ADMIN" as const, name: ADMIN_LEGAL_NAME } : {}),
+          ...(founder ? { role: "SUPER_ADMIN" as const, name: ADMIN_LEGAL_NAME } : {}),
         },
       });
     }

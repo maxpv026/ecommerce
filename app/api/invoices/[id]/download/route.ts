@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { isFounderEmail } from "@/lib/rbac";
+import { viewerCan } from "@/lib/admin/permissions";
 import { generateInvoicePdfBuffer } from "@/lib/pdf";
 
 /**
@@ -45,12 +45,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!isOwner) {
       // Same DB-backed admin rule the rest of the app uses — the role claim
       // in the session is not enough on its own.
-      const viewer = await prisma.user.findUnique({
-        where: { id: viewerId },
-        select: { role: true, email: true },
-      });
-      const isAdmin = viewer?.role === "ADMIN" && isFounderEmail(viewer.email);
-      if (!isAdmin) return notFound();
+      // Order staff and the accountant (lib/rbac), read from the row.
+      if (!(await viewerCan(viewerId, "orders.view", "finance.export"))) return notFound();
     }
 
     const pdf = await generateInvoicePdfBuffer(invoice.orderId);

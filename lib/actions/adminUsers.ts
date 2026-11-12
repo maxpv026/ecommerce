@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { approveFGasCertificate, rejectFGasCertificate, requireAdmin, type ReviewErrorCode } from "@/lib/fgasReview";
+import prisma from "@/lib/prisma";
+import { approveFGasCertificate, rejectFGasCertificate, type ReviewErrorCode } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
+import { ASSIGNABLE_ROLES, effectiveRole, isFounderEmail, isRole, type AppRole } from "@/lib/rbac";
 import { ADMIN_USER_FILTERS, listAdminUsers, type AdminUsersPage } from "@/lib/adminUsers";
 
 /**
@@ -38,7 +41,7 @@ const ListInput = z.object({
 
 export async function getAdminUsers(input: unknown): Promise<({ ok: true } & AdminUsersPage) | Failure> {
   const session = await auth();
-  const admin = await requireAdmin(session?.user?.id);
+  const admin = await requirePermission(session?.user?.id, "users.view");
   if (!admin.ok) return { ok: false, error: MESSAGES[admin.code] };
   return { ok: true, ...(await listAdminUsers(ListInput.parse(input ?? {}))) };
 }
@@ -82,4 +85,31 @@ export async function updateUserFgasStatus(
   if (!result.ok) return { ok: false, error: MESSAGES[result.code] };
   revalidatePath("/[locale]/admin/users", "page");
   return { ok: true, status: parsed.data.status };
+}
+
+export type SetRoleResult = { ok: true; role: AppRole } | { ok: false; code: "UNAUTHENTICATED" | "FORBIDDEN" | "TWO_FACTOR_REQUIRED" | "INVALID_ROLE" | "NOT_FOUND" | "OWNER_LOCKED" | "SELF" };
+
+/**
+ * Changes a user's role — the owner only (users.roles). SUPER_ADMIN can
+ * never be assigned, and the owner's own row can never be changed, so the
+ * account that holds every permission can't be demoted by accident or by a
+ * forged request. The new role applies on the person's next request: the
+ * session re-reads it (auth.ts), and every guard reads the row anyway.
+ */
+export async function setUserRole(targetUserId: unknown, role: unknown): Promise<SetRoleResult> {
+  const session = await auth();
+  const owner = await requirePermission(session?.user?.id, "users.roles");
+  if (!owner.ok) return { ok: false, code: owner.code };
+  if (!isRole(role) || !ASSIGNABLE_ROLES.includes(role)) return { ok: false, code: "INVALID_ROLE" };
+  if (typeof targetUserId !== "string" || targetUserId.length > 64) return { ok: false, code: "NOT_FOUND" };
+  if (targetUserId === owner.value.id) return { ok: false, code: "SELF" };
+
+  const target = await prisma.user.findUnique({ where: { id: targetUserId }, select: { id: true, email: true, role: true } });
+  if (!target) return { ok: false, code: "NOT_FOUND" };
+  if (isFounderEmail(target.email) || effectiveRole(target.email, target.role) === "SUPER_ADMIN") return { ok: false, code: "OWNER_LOCKED" };
+
+  await prisma.user.update({ where: { id: target.id }, data: { role } });
+  console.info(`[rbac] ${owner.value.id} set ${target.id} → ${role}`);
+  revalidatePath("/[locale]/admin/users", "page");
+  return { ok: true, role };
 }

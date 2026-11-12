@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { requireAdmin } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 import { saveMessage } from "@/lib/chatSession";
 import { isChatExpired, purgeIfExpired } from "@/lib/chatRetention";
 import { sendHtmlEmail } from "@/lib/mail";
@@ -21,7 +21,7 @@ type Done = { ok: true } | { ok: false; error: string };
 
 async function admin(): Promise<string | null> {
   const session = await auth();
-  const check = await requireAdmin(session?.user?.id);
+  const check = await requirePermission(session?.user?.id, "support");
   return check.ok ? null : "Not authorised.";
 }
 

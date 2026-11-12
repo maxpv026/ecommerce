@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { requireAdmin, type ReviewErrorCode } from "@/lib/fgasReview";
+import type { ReviewErrorCode } from "@/lib/fgasReview";
+import { requirePermission } from "@/lib/admin/permissions";
 import { markOrderPaid, releaseOrder } from "@/lib/orders";
 import { ADMIN_ORDER_FILTERS, listAdminOrders, type AdminOrdersPage } from "@/lib/adminOrders";
 
@@ -32,9 +33,10 @@ const ADMIN_ERRORS: Record<ReviewErrorCode, string> = {
   FAILED: "Not authorised.",
 };
 
-async function admin(): Promise<{ ok: true; id: string } | Failure> {
+/** Reading the order list: orders.view. Changing an order: orders.manage (SUPER_ADMIN, ADMIN). */
+async function admin(permission: "orders.view" | "orders.manage" = "orders.manage"): Promise<{ ok: true; id: string } | Failure> {
   const session = await auth();
-  const check = await requireAdmin(session?.user?.id);
+  const check = await requirePermission(session?.user?.id, permission);
   return check.ok ? { ok: true, id: check.value.id } : { ok: false, error: ADMIN_ERRORS[check.code] };
 }
 
@@ -55,7 +57,7 @@ const ListInput = z.object({
 });
 
 export async function getAdminOrders(input: unknown): Promise<({ ok: true } & AdminOrdersPage) | Failure> {
-  const who = await admin();
+  const who = await admin("orders.view");
   if (!who.ok) return who;
   return { ok: true, ...(await listAdminOrders(ListInput.parse(input ?? {}))) };
 }

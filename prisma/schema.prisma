@@ -28,9 +28,17 @@ datasource db {
 // fields/timestamps) since the adapter reads/writes them directly.
 // ---------------------------------------------------------------------------
 
+/// Access roles (lib/rbac.ts holds the permission matrix).
+///   SUPER_ADMIN  the owner — only the ADMIN_EMAIL account, enforced on every
+///                request; never assignable, never demotable
+///   ADMIN        operations: stock, orders, F-Gas review, support
+///   ACCOUNTANT   read-only finance: turnover, revenue ledger, customers
+///   USER         a buyer
 enum Role {
   USER
   ADMIN
+  ACCOUNTANT
+  SUPER_ADMIN
 }
 
 /// Where a buyer's F-Gas certificate stands. Only VERIFIED (and not past its

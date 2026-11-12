@@ -9,7 +9,7 @@ import { readRestamp, revokedBefore, sessionAnchor, sessionStillValid } from "@/
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { looksLikePhrase, verifyRecoveryForUser } from "@/lib/recoveryPhrase";
-import { ADMIN_LEGAL_NAME, roleForEmail } from "@/lib/rbac";
+import { ADMIN_LEGAL_NAME, effectiveRole, isRole } from "@/lib/rbac";
 import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
 import { legacySessionId, registerSession, touchSession } from "@/lib/deviceSessions";
 import { randomUUID } from "node:crypto";
@@ -247,6 +247,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             const authTime = typeof token.authTime === "number" ? token.authTime : typeof token.iat === "number" ? token.iat * 1000 : 0;
             if (!sessionStillValid(anchor, authTime)) return null;
           }
+          // The role is re-read on every request, so a role the owner
+          // changes (or revokes) applies at once, not at the next sign-in.
+          if (anchor) token.role = effectiveRole(anchor.email, anchor.role);
           // ── Revocation of this one device ──
           const device = anchor?.deviceSessions?.[0];
           if (device?.revokedAt) return null;
@@ -286,16 +289,17 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // Profile photo for the header and app bar, which only have the session.
         token.picture = dbUser?.image ?? token.picture ?? null;
 
-        // The iron-clad admin rule: the role is DERIVED from ADMIN_EMAIL on
-        // every sign-in, never trusted from the row. A matching email is
-        // promoted, any non-matching account holding ADMIN (manual DB edit,
-        // rotated ADMIN_EMAIL) is demoted before a session ever carries it.
-        const role = roleForEmail(user.email);
+        // The owner rule (lib/rbac effectiveRole): the ADMIN_EMAIL account is
+        // SUPER_ADMIN whatever the row says, and no other account can be.
+        // ADMIN and ACCOUNTANT come from the row — the owner assigns them.
+        // The row is repaired here if it disagrees (owner not yet promoted,
+        // or a hand-edited SUPER_ADMIN elsewhere).
+        const role = effectiveRole(user.email, dbUser?.role);
         token.role = role;
         if (dbUser) {
           const patch: { role?: typeof role; name?: string } = {};
           if (dbUser.role !== role) patch.role = role;
-          if (role === "ADMIN" && !dbUser.name) patch.name = ADMIN_LEGAL_NAME;
+          if (role === "SUPER_ADMIN" && !dbUser.name) patch.name = ADMIN_LEGAL_NAME;
           if (Object.keys(patch).length > 0) {
             // The token already carries the derived role, so a failed write
             // only leaves the row to be repaired on the next sign-in — it
@@ -383,7 +387,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         session.user.theme = token.theme as ThemePreference | undefined;
         session.user.image = (token.picture as string | null | undefined) ?? null;
         // Absent role (pre-RBAC session tokens) fails closed to USER.
-        session.user.role = token.role === "ADMIN" ? "ADMIN" : "USER";
+        session.user.role = isRole(token.role) ? token.role : "USER";
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled === true;
         session.user.sessionId = typeof token.sid === "string" ? token.sid : undefined;
       }

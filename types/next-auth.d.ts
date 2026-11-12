@@ -28,7 +28,7 @@ declare module "next-auth" {
       /** Mirrors Prisma User.themePreference. Undefined on tokens issued before it existed. */
       theme?: ThemePreference;
       /** RBAC role — "ADMIN" only for the ADMIN_EMAIL account. */
-      role?: "USER" | "ADMIN";
+      role?: "USER" | "ADMIN" | "ACCOUNTANT" | "SUPER_ADMIN";
       /** This device's UserSession.sessionTokenId — an identifier, not a credential. */
       sessionId?: string;
     };
@@ -38,7 +38,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     provider?: string;
-    role?: "USER" | "ADMIN";
+    role?: "USER" | "ADMIN" | "ACCOUNTANT" | "SUPER_ADMIN";
     companyName?: string | null;
     fGasStatus?: FGasStatus;
     epaVerified?: boolean;
