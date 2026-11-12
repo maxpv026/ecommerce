@@ -3,6 +3,7 @@ import { PRODUCTS_TAG } from "@/lib/cacheTags";
 import { generateText, Output } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { SHIPMENT_SELECT, shipmentSource } from "@/lib/shipping/resolve";
@@ -611,9 +612,10 @@ async function computeRecommendedSkus(userId: string, limit: number): Promise<st
     .join("\n");
 
   const { output: object } = await generateText({
-    model: openai("gpt-4o-mini"),
+    model: openai(model(process.env.RECOMMENDATION_MODEL)),
     output: Output.object({ schema: RecommendationSchema }),
     abortSignal: aiTimeout(),
+    maxOutputTokens: MAX_OUTPUT.recommendations,
     prompt: `You are recommending HVAC refrigerant products to a B2B customer based on their order history.
 
 Order history (most recent orders):

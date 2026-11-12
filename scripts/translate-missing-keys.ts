@@ -10,8 +10,9 @@
  *   --dry-run          Show what would be sent (counts, token estimate, the
  *                      first prompt in full). No API calls, no file writes.
  *   --lang=de,fr       Only these locales (default: every file but en.json).
- *   --model=gpt-4o     Model id (default gpt-4o).
- *   --batch=80         Strings per request (default 80).
+ *   --model=gpt-4o     Model id (default gpt-4o-mini — ~16× cheaper; ICU
+ *                      validation + one targeted retry catch its slips).
+ *   --batch=100        Strings per request (default 100).
  *   --concurrency=4    Locales translated in parallel (default 4).
  *
  * What it guarantees
@@ -45,8 +46,8 @@ const args = new Map(
   })
 );
 const DRY_RUN = args.get("dry-run") === "true";
-const MODEL = args.get("model") ?? "gpt-4o";
-const BATCH = Math.max(1, Number(args.get("batch") ?? 80));
+const MODEL = args.get("model") ?? "gpt-4o-mini";
+const BATCH = Math.max(1, Number(args.get("batch") ?? 100));
 const CONCURRENCY = Math.max(1, Number(args.get("concurrency") ?? 4));
 const ONLY = args.get("lang")?.split(",").map((s) => s.trim()).filter(Boolean);
 
@@ -80,13 +81,6 @@ function nest(entries: Iterable<[string, string]>): Tree {
     node[parts.at(-1)!] = value;
   }
   return root;
-}
-
-/** A zod schema that only accepts exactly this shape — passed to structured output. */
-function schemaFor(tree: Tree): z.ZodType<Tree> {
-  const shape: Record<string, z.ZodType> = {};
-  for (const [k, v] of Object.entries(tree)) shape[k] = typeof v === "string" ? z.string() : schemaFor(v);
-  return z.object(shape).strict() as unknown as z.ZodType<Tree>;
 }
 
 /**
@@ -204,12 +198,12 @@ const languageName = (locale: string) => new Intl.DisplayNames(["en"], { type: "
 const GLOSSARY_HINT =
   /F-?Gas|GWP|CO2e|CO₂e|SDS|safety data|cylinder|drum|isotank|deposit|refrigerant|certificate|quote|quotation|logbook|VAT|invoice|leak|reclaim|recovery cylinder|ADR|REACH/i;
 
-function glossaryFor(source: Map<string, string>, target: Map<string, string>, max = 30): string {
+function glossaryFor(source: Map<string, string>, target: Map<string, string>, max = 15): string {
   const pairs: string[] = [];
   for (const [k, en] of source) {
     const tr = target.get(k);
     if (!tr || tr === en || en.length > 90 || !GLOSSARY_HINT.test(en)) continue;
-    pairs.push(`- "${en}" → "${tr}"`);
+    pairs.push(`${en} → ${tr}`);
     if (pairs.length >= max) break;
   }
   return pairs.join("\n");
@@ -217,31 +211,15 @@ function glossaryFor(source: Map<string, string>, target: Map<string, string>, m
 
 function systemPrompt(locale: string, glossary: string): string {
   const lang = languageName(locale);
-  return `You are a professional B2B translator for the European refrigerant and HVAC-R industry. You translate the user interface of "My Energy", an online wholesaler of refrigerant gases (sold by weight in cylinders, drums and isotanks), refrigeration equipment and recovery cylinders to certified trade buyers.
-
-Translate from English into ${lang} (${locale}).
-
-Tone and register
-- Professional, formal and concise, as in a well-localised business application. Use the formal form of address where ${lang} has one.
-- Keep UI labels short: a button label stays a button label.
-
-Terminology
-- Use the terminology established in the ${lang} language version of EU law where it exists: Regulation (EU) 2024/573 on fluorinated greenhouse gases ("F-Gas") and REACH for safety data sheets ("SDS").
-- Abbreviations (F-Gas, GWP, tCO2e / tCO₂e, SDS, ADR, VAT, CoA): use the abbreviation ${lang}-speaking industry professionals actually use. If the industry keeps the English abbreviation, keep it. Never invent a new abbreviation.
-- "Isotank", product codes and SKUs (e.g. R-32, R-410A, HC-134A-50), units (kg, €, %) and the brand "My Energy" stay exactly as written.
-${glossary ? `- Stay consistent with how this app is ALREADY translated into ${lang}:\n${glossary}` : ""}
-
-Message format (ICU MessageFormat — this is critical, the app parses every string)
-- Copy every {placeholder} exactly, e.g. {count}, {date}, {number}. Never translate or rename what is inside the braces.
-- Copy every rich-text tag name exactly, e.g. <link>…</link>, <ref>…</ref>, <strong>…</strong>; translate only the text between the tags.
-- Plurals: "{count, plural, one {# item} other {# items}}" — keep "{count, plural," and "#", translate the branch texts, and use exactly the CLDR plural categories of ${lang}: ${new Intl.PluralRules(locale).resolvedOptions().pluralCategories.join(", ")}. Keep any "=0"-style exact branches.
-- Do not add or remove apostrophes next to { or } (an apostrophe there changes the meaning in ICU).
-
-Output
-- Return a JSON object with exactly the same keys and nesting as the input. Every value is the translated string. Do not add, drop or rename keys.`;
+  const plurals = new Intl.PluralRules(locale).resolvedOptions().pluralCategories.join(", ");
+  return `Translate UI strings of "My Energy", a B2B wholesaler of refrigerant gases (cylinders, drums, isotanks), HVAC-R equipment and recovery cylinders, from English into ${lang} (${locale}). Formal, concise; button labels stay short.
+- EU terminology as in the ${lang} text of Regulation (EU) 2024/573 (F-Gas) and REACH (SDS). Keep abbreviations the ${lang} trade actually uses; never invent one.
+- Keep verbatim: "My Energy", SKUs/codes (R-32, HC-134A-50), units (kg, €, %), "Isotank".
+- ICU: copy {placeholders} and <tags> exactly; plurals keep "{x, plural," and "#" and use exactly the ${lang} categories: ${plurals}; keep "=0" branches; don't add/remove apostrophes next to braces.${glossary ? `\n- Existing ${lang} terms to reuse:\n${glossary}` : ""}
+Input: JSON array of [key, English]; the key is context only. Output {"t": [...]}: one translation per item, same order.`;
 }
 
-const userPrompt = (payload: Tree) => `Translate the values of this JSON object:\n\n${JSON.stringify(payload, null, 2)}`;
+const userPrompt = (items: Array<[string, string]>) => JSON.stringify(items.map(([k, en]) => [dotted(k), en]));
 
 // ───────────────────────────── translation ─────────────────────────────
 
@@ -254,39 +232,43 @@ interface LocaleReport {
   outputTokens: number;
 }
 
+/** One translation per item, in order — keys are not echoed back (half the output tokens of a keyed object). */
+const BatchSchema = z.object({ t: z.array(z.string()) });
+
 async function translateBatch(locale: string, system: string, batch: Array<[string, string]>, report: LocaleReport) {
   const done = new Map<string, string>();
   let pending = batch;
   for (let attempt = 0; attempt < 2 && pending.length; attempt++) {
-    const payload = nest(pending);
     const retryNote =
       attempt === 0
         ? ""
-        : `\n\nThese strings were rejected on a previous attempt; fix exactly these problems:\n${report.failed
+        : `\nFix exactly these problems from the previous attempt:\n${report.failed
             .filter((f) => pending.some(([k]) => dotted(k) === f.key))
             .map((f) => `- ${f.key}: ${f.reason}`)
             .join("\n")}`;
     const result = await generateText({
       model: openai(MODEL),
       system,
-      prompt: userPrompt(payload) + retryNote,
-      output: Output.object({ schema: schemaFor(payload) }),
+      prompt: userPrompt(pending) + retryNote,
+      output: Output.object({ schema: BatchSchema }),
       temperature: 0.2,
       maxRetries: 3,
+      // Generous: ~3× the English length, never the 16k default.
+      maxOutputTokens: Math.min(8000, 400 + pending.reduce((n, [, en]) => n + Math.ceil(en.length / 1.5), 0)),
     });
     report.inputTokens += result.usage.inputTokens ?? 0;
     report.outputTokens += result.usage.outputTokens ?? 0;
 
-    const translated = flatten(result.output as Tree);
+    const out = result.output.t;
     const retry: Array<[string, string]> = [];
-    for (const [k, en] of pending) {
-      const reason = validate(en, translated.get(k), locale);
+    pending.forEach(([k, en], i) => {
+      const reason = out.length !== pending.length ? `returned ${out.length} items for ${pending.length}` : validate(en, out[i], locale);
       report.failed = report.failed.filter((f) => f.key !== dotted(k));
       if (reason) {
         report.failed.push({ key: dotted(k), reason });
         retry.push([k, en]);
-      } else done.set(k, translated.get(k)!);
-    }
+      } else done.set(k, out[i]);
+    });
     pending = retry;
   }
   return done;
@@ -356,7 +338,7 @@ async function main() {
       const namespaces = [...new Set(missing.map(([k]) => keyPath(k)[0]))];
       const system = systemPrompt(locale, glossaryFor(sourceFlat, targetFlat));
       const requests = Math.ceil(missing.length / BATCH);
-      const chars = missing.length ? system.length * requests + JSON.stringify(nest(missing)).length * 2 : 0;
+      const chars = missing.length ? system.length * requests + userPrompt(missing).length * 2 : 0;
       totalChars += chars;
       console.log(
         `${locale.padEnd(3)} ${languageName(locale).padEnd(12)} ${String(missing.length).padStart(4)} missing in ${namespaces.length} namespaces` +
@@ -364,7 +346,7 @@ async function main() {
           (stale ? `  (${stale} keys no longer in en.json — left alone)` : "") +
           (missing.length ? `\n      ${namespaces.join(", ")}` : "")
       );
-      if (!first && missing.length) first = { locale, system, user: userPrompt(nest(missing.slice(0, BATCH))) };
+      if (!first && missing.length) first = { locale, system, user: userPrompt(missing.slice(0, BATCH)) };
     }
     console.log(`\nTotal ≈ ${Math.round(totalChars / 4).toLocaleString()} tokens (input + output, rough: chars ÷ 4).`);
     if (first) {
@@ -397,7 +379,11 @@ async function main() {
   const failed = reports.flatMap((r) => r.failed.map((f) => `  ${r.locale} ${f.key}: ${f.reason}`));
   const tokensIn = reports.reduce((n, r) => n + r.inputTokens, 0);
   const tokensOut = reports.reduce((n, r) => n + r.outputTokens, 0);
-  console.log(`\nDone. ${reports.reduce((n, r) => n + r.written, 0)} strings written; ${tokensIn} input / ${tokensOut} output tokens.`);
+  // USD per 1M tokens (input, output) — for the summary line only.
+  const PRICE: Record<string, [number, number]> = { "gpt-4o-mini": [0.15, 0.6], "gpt-4o": [2.5, 10] };
+  const price = PRICE[MODEL];
+  const cost = price ? ` ≈ $${((tokensIn * price[0] + tokensOut * price[1]) / 1e6).toFixed(3)}` : "";
+  console.log(`\nDone. ${reports.reduce((n, r) => n + r.written, 0)} strings written; ${tokensIn} input / ${tokensOut} output tokens (${MODEL})${cost}.`);
   if (failed.length) {
     console.log(`\n${failed.length} strings failed validation twice and still show in English (rerun to retry them):\n${failed.join("\n")}`);
     process.exitCode = 2;

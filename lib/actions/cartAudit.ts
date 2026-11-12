@@ -8,6 +8,8 @@ import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { auth } from "@/auth";
 import { LISTED } from "@/lib/productFamily";
+import { withAiCache } from "@/lib/ai/cache";
+import { MAX_OUTPUT, logAiUsage, model, usageOf } from "@/lib/ai/budget";
 
 const AuditInput = z
   .array(z.object({ sku: z.string().min(1).max(64), qty: z.number().int().min(1).max(99) }))
@@ -20,7 +22,7 @@ const AuditSchema = z.object({
     .array(
       z.object({
         tone: z.enum(["ok", "warn"]),
-        text: z.string().max(160).describe("One finding sentence about this order's F-Gas / safety / fit status."),
+        text: z.string().max(160).describe("One sentence."),
       })
     )
     .min(1)
@@ -28,13 +30,19 @@ const AuditSchema = z.object({
   suggestions: z
     .array(
       z.object({
-        sku: z.string().describe("A catalog SKU not already in the cart."),
-        reason: z.string().max(120).describe("Why this order needs it, tied to a specific cart line."),
+        sku: z.string().describe("An addable item's SKU."),
+        reason: z.string().max(120).describe("Why, tied to a cart line."),
       })
     )
     .max(3)
-    .describe("Genuinely required or strongly recommended additions only. Empty when the order is complete."),
+    .describe("Required additions only; empty if complete."),
 });
+
+const AUDIT_SYSTEM = `Audit a B2B refrigerant order for EU F-Gas compliance and on-site compatibility: A2L handling (ventilation, leak detection, seals), ADR mixed-class rules, oil/fitting compatibility, plausible total charge for one certified buyer.
+Give 2-4 short findings ("ok" = cleared, "warn" = genuine caution). Suggest only addable items this order genuinely needs for safety or fit (not upsell), each tied to a line → verdict "optimisable"; otherwise "compliant" with no suggestions.`;
+
+/** Bump when AUDIT_SYSTEM or AuditSchema changes. */
+const CACHE_VERSION = 1;
 
 export interface CartAuditSuggestion {
   sku: string;
@@ -72,36 +80,46 @@ export async function auditCart(rawLines: Array<{ sku: string; qty: number }>): 
     const session = await auth();
     const cert = session?.user?.email
       ? await prisma.certificate
-          .findFirst({ where: { user: { email: session.user.email } } })
+          .findFirst({ where: { user: { email: session.user.email } }, select: { certType: true } })
           .catch(() => null)
       : null;
 
+    // What the audit judges: the order lines, compactly. Prices play no part
+    // in a compliance check, so they aren't sent.
     const describe = (sku: string) => {
       const p = bySku.get(sku)!;
-      return `${p.sku}: ${p.name} · category ${p.category} · ${p.weight} · safety ${p.gwpClass}` +
-        (p.gwp ? ` · GWP ${p.gwp}` : "") + ` · €${p.pricePerKg}/kg (${p.weightKg} kg cylinder)`;
+      return `${p.sku}: ${p.name}, ${p.category}, ${p.weight}, class ${p.gwpClass}${p.gwp ? `, GWP ${p.gwp}` : ""}`;
     };
+    // What it may suggest: equipment and recovery items not already in the
+    // cart — never the whole catalog (a gas is never a "required addition").
+    const inCartSkus = new Set(lines.map((l) => l.sku));
+    const candidates = catalog
+      .filter((p) => (p.category === "equipment" || p.category === "recovery") && !inCartSkus.has(p.sku))
+      .map((p) => `${p.sku}: ${p.name}`)
+      .sort();
+    const certLine = cert ? `${cert.certType} on file` : "none on file (checked at checkout)";
+    const orderLines = [...lines].sort((x, y) => x.sku.localeCompare(y.sku)).map((l) => `${l.qty}× ${describe(l.sku)}`);
 
-    const { output: object } = await generateText({
-      model: openai("gpt-4o-mini"),
-      output: Output.object({ schema: AuditSchema }),
-      abortSignal: aiTimeout(),
-      prompt: `You audit a B2B refrigerant order for EU F-Gas compliance and on-site compatibility.
+    const llm = model(process.env.CART_AUDIT_MODEL);
+    const { value: object } = await withAiCache<z.infer<typeof AuditSchema>>(
+      { feature: "cart-audit", version: CACHE_VERSION, parts: [llm, orderLines, certLine, candidates], ttlSeconds: 86_400 },
+      async () => {
+        const result = await generateText({
+          model: openai(llm),
+          output: Output.object({ schema: AuditSchema }),
+          abortSignal: aiTimeout(),
+          maxOutputTokens: MAX_OUTPUT.cartAudit,
+          temperature: 0,
+          system: AUDIT_SYSTEM,
+          prompt: `Order:\n${orderLines.join("\n")}\nBuyer F-Gas certificate: ${certLine}\nAddable items:\n${candidates.join("\n") || "none"}`,
+        });
+        logAiUsage({ feature: "cart-audit", model: llm, source: "model", ...usageOf(result) });
+        return { value: result.output, cacheable: true };
+      }
+    );
 
-Order lines:
-${lines.map((l) => `- qty ${l.qty} × ${describe(l.sku)}`).join("\n")}
-
-Buyer certificate: ${cert ? `${cert.certType} (${cert.certId})` : "not on file — verified at checkout"}.
-
-Full catalog (for suggestions):
-${catalog.map((p) => `- ${describe(p.sku)}`).join("\n")}
-
-Review the order: A2L handling (ventilated storage, leak detection, safety seals), ADR mixed-class consignment rules, oil/fitting compatibility between refrigerants and any equipment lines, and whether the combined charge is plausible for one certified buyer. Report 2-4 short findings ("ok" for cleared checks, "warn" for genuine cautions). If the catalog contains items this order genuinely needs (safety or fit driven, not upsell), return them as suggestions with a reason tied to a specific line and verdict "optimisable"; otherwise verdict "compliant" with no suggestions. Only use catalog SKUs not already in the order.`,
-    });
-
-    const inCart = new Set(lines.map((l) => l.sku));
     const suggestions = object.suggestions
-      .filter((s) => bySku.has(s.sku) && !inCart.has(s.sku))
+      .filter((s) => bySku.has(s.sku) && !inCartSkus.has(s.sku))
       .slice(0, 3);
     // A verdict promising additions with none surviving validation is a
     // compliant order as far as the UI is concerned.

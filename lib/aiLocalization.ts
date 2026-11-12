@@ -3,6 +3,7 @@ import "server-only";
 import { generateText } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT } from "@/lib/ai/budget";
 import { routing } from "@/i18n/routing";
 
 /**
@@ -127,6 +128,7 @@ export async function localizeAiText({
     const { text: out } = await generateText({
       model: openai(model),
       abortSignal: aiTimeout(),
+      maxOutputTokens: MAX_OUTPUT.localization,
       system: TRANSLATE_SYSTEM,
       prompt: [
         `Target language: ${language} (locale code "${locale}").`,

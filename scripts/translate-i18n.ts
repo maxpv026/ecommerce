@@ -89,7 +89,7 @@ const ONLY_LOCALES = arg("locales")?.split(",").map((s) => s.trim()).filter(Bool
 const SKIP_LOCALES = arg("skip-locales")?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
 /** The review pass. On by default; --no-qa runs the cheaper single pass. */
 const QA = !flag("no-qa");
-const QA_MODEL = arg("qa-model") ?? "gpt-4o";
+const QA_MODEL = arg("qa-model") ?? "gpt-4o-mini";
 
 const SOURCE = routing.defaultLocale; // "en"
 const dictPath = (locale: string) => `messages/${locale}.json`;

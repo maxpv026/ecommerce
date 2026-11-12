@@ -1,6 +1,7 @@
 import { convertToModelMessages, createUIMessageStreamResponse, streamText } from "ai";
 import { ASSISTANT_UNAVAILABLE, CHAT_STREAM_TIMEOUT, timeoutAsUnavailable } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { logAiUsage } from "@/lib/ai/budget";
 import { boundTranscript } from "@/lib/aiMessages";
 import { SDS_DOCUMENTS } from "@/lib/sds";
 
@@ -75,6 +76,8 @@ export async function POST(req: Request) {
     messages: await convertToModelMessages(messages),
     maxOutputTokens: 700,
     timeout: CHAT_STREAM_TIMEOUT,
+    // FinOps trail: every turn's tokens, all steps (tool call + answer) together.
+    onFinish: ({ totalUsage }) => logAiUsage({ feature: "chat-sds", model: "gpt-4o-mini", source: "model", inputTokens: totalUsage.inputTokens, outputTokens: totalUsage.outputTokens, cachedInputTokens: totalUsage.cachedInputTokens }),
     onError: ({ error }) => console.error("[chat-sds] stream error:", error),
     onAbort: () => console.error("[chat-sds] stream timed out"),
   });

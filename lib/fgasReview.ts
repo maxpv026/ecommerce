@@ -4,7 +4,7 @@ import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { FGasStatus } from "@/lib/generated/prisma/enums";
-import { requirePermission, viewerCan } from "@/lib/admin/permissions";
+import { requirePermission, viewerCan } from "@/lib/admin/permissionCore";
 import { certificateHref } from "@/lib/fgasStorage";
 import { getEffectiveFgasStatus, isAiActor, type FgasExtraction } from "@/lib/fgas";
 import { activateCertificate, revalidateFgasViews } from "@/lib/fgasLifecycle";

@@ -178,7 +178,7 @@ export async function transcript(sessionId: string, options: { after?: Date } = 
  * Product cards become a one-line note of what was shown, so the model can
  * refer back to them without re-reading every price.
  */
-export async function modelHistory(sessionId: string, limit = 30) {
+export async function modelHistory(sessionId: string, limit = 16) {
   const rows = await prisma.chatMessage.findMany({
     where: { sessionId },
     orderBy: { createdAt: "desc" },

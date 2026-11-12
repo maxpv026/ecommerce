@@ -3,12 +3,15 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { LISTED } from "@/lib/productFamily";
 import { resolveAgainstCatalog } from "@/lib/magicOrderResolve";
-import { MAX_TEXT_CHARS, extractLines, groundLines, sanitiseOrderText } from "@/lib/smartOrder/extract";
+import { MAX_TEXT_CHARS, extractLines, groundLines, sanitiseOrderText, type ExtractionRaw } from "@/lib/smartOrder/extract";
+import { parseOrderLocally } from "@/lib/smartOrder/fastPath";
+import { logAiUsage } from "@/lib/ai/budget";
 import { productLine, solveRefrigerantLine, unsolvedLine, type SolvedLine, type SolverRow } from "@/lib/smartOrder/solver";
 
 /**
  * The whole Smart Bulk Order pipeline over text that is already plain:
- * sanitise → bound → extract (model) → ground → solve (deterministic).
+ * sanitise → bound → read locally (fastPath) → extract only the rest
+ * (model, cached) → ground → solve (deterministic).
  */
 
 export type SmartOrderErrorCode =
@@ -68,21 +71,37 @@ export async function runSmartOrder(rawText: string): Promise<SmartOrderResponse
   if (text.length > MAX_TEXT_CHARS) return { ok: false, code: "TEXT_TOO_LONG" };
   if (text.length < 3) return { ok: false, code: removedLines > 0 ? "NOTHING_FOUND" : "INVALID_INPUT" };
 
-  // No key, no parsing — reported, never replaced by a keyword guess.
-  if (!process.env.OPENAI_API_KEY?.trim()) {
-    console.error("[SMART-ORDER] OPENAI_API_KEY is not set.");
-    return { ok: false, code: "NOT_CONFIGURED" };
-  }
+  // Zero tokens first: every segment the local reader can account for
+  // (lib/smartOrder/fastPath). Only what it can't read goes to the model.
+  const local = parseOrderLocally(text);
+  const lines: Array<{ segment: number; line: ExtractionRaw["lines"][number] }> = [...local.parsed];
 
-  let extracted;
-  try {
-    extracted = await extractLines(text);
-  } catch (error) {
-    console.error("[SMART-ORDER] extraction failed:", error);
-    return { ok: false, code: "UNAVAILABLE" };
+  if (local.unparsed.length > 0) {
+    // No key: the unreadable part is reported, never replaced by a keyword guess.
+    if (!process.env.OPENAI_API_KEY?.trim()) {
+      console.error("[SMART-ORDER] OPENAI_API_KEY is not set.");
+      return { ok: false, code: "NOT_CONFIGURED" };
+    }
+    let extracted: ExtractionRaw;
+    try {
+      extracted = await extractLines(local.unparsed.map((u) => u.text).join("\n"), local.unparsed.length);
+    } catch (error) {
+      console.error("[SMART-ORDER] extraction failed:", error);
+      return { ok: false, code: "UNAVAILABLE" };
+    }
+    // Keep the buyer's order: each model line goes back to the segment its words came from.
+    const fold = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+    for (const line of extracted?.lines ?? []) {
+      const raw = fold(line.rawText);
+      const home = local.unparsed.find((u) => raw && (fold(u.text).includes(raw) || raw.includes(fold(u.text))));
+      lines.push({ segment: home?.segment ?? local.unparsed[0].segment, line });
+    }
+  } else {
+    logAiUsage({ feature: "smart-order", source: "fast-path" });
   }
-  if (!extracted?.lines?.length) return { ok: false, code: "NOTHING_FOUND" };
+  if (lines.length === 0) return { ok: false, code: "NOTHING_FOUND" };
 
+  const ordered: ExtractionRaw = { lines: lines.sort((a, b) => a.segment - b.segment).map((l) => l.line) };
   const catalog = await loadSolverCatalog();
-  return { ok: true, lines: solveAll(groundLines(extracted, text), catalog), removedLines };
+  return { ok: true, lines: solveAll(groundLines(ordered, text), catalog), removedLines };
 }

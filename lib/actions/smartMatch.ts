@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateText, Output } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { LISTED } from "@/lib/productFamily";
@@ -48,9 +49,10 @@ export async function smartMatch(rawQuery: string): Promise<SmartMatchResult> {
       .join("\n");
 
     const { output: object } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: openai(model(process.env.SMART_MATCH_MODEL)),
       output: Output.object({ schema: MatchSchema }),
       abortSignal: aiTimeout(),
+      maxOutputTokens: MAX_OUTPUT.smartMatch,
       prompt: `You match HVAC refrigerant products to a B2B customer's stated requirement.
 
 Requirement: "${parsed.data}"

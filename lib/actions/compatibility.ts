@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateText, Output } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { answerLanguage } from "@/lib/answerLanguage";
@@ -13,7 +14,7 @@ import { answerLanguage } from "@/lib/answerLanguage";
  * mini answered — in the wrong language — that the gas is unsuitable for
  * car air-conditioning. It cannot hold this much domain nuance at once.
  */
-const COMPAT_MODEL = process.env.COMPAT_MODEL?.trim() || "gpt-4o";
+const COMPAT_MODEL = model(process.env.COMPAT_MODEL);
 
 /**
  * Strips control characters from model output before it reaches the DOM.
@@ -77,6 +78,7 @@ export async function checkCompatibility(rawInput: {
       model: openai(COMPAT_MODEL),
       output: Output.object({ schema: VerdictSchema }),
       abortSignal: aiTimeout(),
+      maxOutputTokens: MAX_OUTPUT.compatibility,
       prompt: `Write your entire response in ${language}. Every word of the summary and every chip must be in ${language}, whatever language these instructions or the product data happen to be in.
 
 You are a refrigerant applications expert covering both stationary HVAC/R and automotive mobile air-conditioning (MAC).

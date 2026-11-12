@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateText, Output } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import { auth } from "@/auth";
 import { requirePermission } from "@/lib/admin/permissions";
 
@@ -29,7 +30,7 @@ import { requirePermission } from "@/lib/admin/permissions";
  * override with BROADCAST_DRAFT_MODEL.
  */
 
-const MODEL = process.env.BROADCAST_DRAFT_MODEL?.trim() || "gpt-4o";
+const MODEL = model(process.env.BROADCAST_DRAFT_MODEL);
 
 const Instruction = z.string().trim().min(10).max(1000);
 
@@ -97,6 +98,7 @@ export async function generateBroadcastDraft(instruction: unknown): Promise<Broa
       system: SYSTEM,
       prompt: `Sender's instruction:\n"""\n${parsed.data}\n"""`,
       temperature: 0.3,
+      maxOutputTokens: MAX_OUTPUT.broadcastDraft,
     });
 
     const subject = object.subject.replace(/[\r\n]+/g, " ").trim();

@@ -5,6 +5,7 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { withinActionLimit } from "@/lib/actionRateLimit";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import { auth } from "@/auth";
 import { localizeAiText, resolveLocale } from "@/lib/aiLocalization";
 import {
@@ -162,12 +163,13 @@ export async function generateEcoReport(localeInput?: string): Promise<EcoReport
   try {
     const ask = (correction?: string) =>
       generateText({
-        model: openai("gpt-4o-mini"),
+        model: openai(model(process.env.ECO_REPORT_MODEL)),
         abortSignal: aiTimeout(),
+        maxOutputTokens: MAX_OUTPUT.ecoReport,
         system: SYSTEM_PROMPT,
         prompt: correction
-          ? `DATA:\n${JSON.stringify(data, null, 2)}\n\n${correction}`
-          : `DATA:\n${JSON.stringify(data, null, 2)}`,
+          ? `DATA:\n${JSON.stringify(data)}\n\n${correction}`
+          : `DATA:\n${JSON.stringify(data)}`,
         temperature: 0.4,
         maxRetries: 1,
       });

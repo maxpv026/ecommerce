@@ -9,7 +9,10 @@ import { LISTED } from "@/lib/productFamily";
 import { GAS_MARKS, normalizeMark, productHasGasMark, type GasMark } from "@/lib/gasMarks";
 import { isPurchasable } from "@/lib/waitlist";
 import { checkRateLimit, clientIp } from "@/lib/rateLimit";
-import { ChargeExtractionSchema, type ChargeExtraction } from "@/lib/chargeSchema";
+import { ChargeWireSchema, chargeFromWire, type ChargeExtraction } from "@/lib/chargeSchema";
+import { parseChargeLocally } from "@/lib/chargeFastPath";
+import { withAiCache, normaliseInput } from "@/lib/ai/cache";
+import { MAX_OUTPUT, logAiUsage, usageOf } from "@/lib/ai/budget";
 import {
   DEFAULT_LIQUID_LINE,
   DEFAULT_RATED_LENGTH_M,
@@ -26,8 +29,8 @@ import {
 /**
  * System Charge Calculator — the reading half.
  *
- * gpt-4o turns the engineer's sentence ("Daikin FTXM35R, 15 m line set")
- * into fields, copying values and units exactly as written. It does no
+ * The engineer's sentence ("Daikin FTXM35R, 15 m line set") becomes fields —
+ * locally when it can be read without doubt, by gpt-4o otherwise — copying values and units exactly as written. It does no
  * arithmetic and no unit conversion — this file converts anything imperial
  * to metric, so the card is m / kg / g/m whatever was typed — and it never
  * supplies a number that
@@ -75,36 +78,66 @@ const toKg = (parts: { value: number; unit: "kg" | "g" | "lb" | "oz" }[]) =>
   parts.reduce((kg, p) => kg + (p.unit === "kg" ? p.value : p.unit === "g" ? p.value / 1000 : p.unit === "lb" ? p.value * KG_PER_LB : (p.value * G_PER_OZ) / 1000), 0);
 const toGPerM = (r: { value: number; unit: "g/m" | "oz/ft" }) => (r.unit === "g/m" ? r.value : (r.value * G_PER_OZ) / M_PER_FT);
 
-const SYSTEM = `You read a refrigeration/HVAC engineer's short description of a split system and extract fields for a refrigerant charge calculation.
+// The model fills compact keys (ChargeWireSchema); the rules live here, once.
+const SYSTEM = `Extract fields from an HVAC engineer's split-system description for a refrigerant charge calculation. Copy numbers and units as written: no conversion, no arithmetic. Never supply a value not in the text (null).
+Keys: q=describes a system whose charge can be calculated; b=brand; m=model no.; r=refrigerant (R-32, R-410A…): as written (rs "s"); if not written, the only inference allowed is the refrigerant of a model number you recognise with confidence (rs "i"); if unsure, null; cap=capacity as written (3.5 kW, 12 000 BTU); len=total line-set length ("15 m line set", "pipe run 12 m", "40 ft lineset"); ll=liquid line OD only if stated (mm: 6.35→1/4, 7.94→5/16, 9.52→3/8, 12.7→1/2, 15.88→5/8); fc=factory/nameplate charge only if stated ("3 lb 8 oz" → two parts); rl=length the factory charge covers, only if stated; cpl=extra charge per length only if stated (20 g/m, 0.6 oz/ft).`;
 
-Rules:
-- Copy numbers and units exactly as written. Do not convert units and do not do arithmetic.
-- Never supply a value that is not in the text — return null instead. In particular never estimate the factory/nameplate charge, the per-metre charge rate, the rated line length or the liquid line size.
-- The only inference allowed is the refrigerant, from a model number you recognise with confidence; mark it "inferred". If unsure, return null.
-- "15 m line set", "pipe run 12 m", "40 ft lineset" are the total line-set length.
-- Liquid line sizes may be written in inches (1/4", 3/8") or as copper OD in mm (6.35 → 1/4, 7.94 → 5/16, 9.52 → 3/8, 12.7 → 1/2, 15.88 → 5/8).`;
+/** Bump when SYSTEM or ChargeWireSchema changes: cached answers of the old prompt are never served. */
+const CACHE_VERSION = 4;
+
+/**
+ * Sentence → fields, cheapest first:
+ *   1. lib/chargeFastPath — local, 0 tokens (every preset chip, every
+ *      sentence whose numbers it fully accounts for);
+ *   2. the content-hash cache — 0 tokens for a sentence already answered;
+ *   3. the model (gpt-4o — see below — ≤300 output tokens, compact schema).
+ */
+async function extract(query: string): Promise<ChargeExtraction> {
+  const local = parseChargeLocally(query);
+  if (local) {
+    logAiUsage({ feature: "charge-calc", source: "fast-path" });
+    return local;
+  }
+  // gpt-4o, not mini, for this one: the fallback's job is the sentence the
+  // local reader couldn't do — typically a model number whose refrigerant
+  // must be inferred. Measured: mini returned no refrigerant for a Daikin
+  // FTXM35R (gpt-4o: R-32), and with looser wording named R-32 for an
+  // R-410A unit — a wrong gas in a real system. Standard sentences never
+  // get here (lib/chargeFastPath), repeats come from the cache.
+  const llm = process.env.CHARGE_CALC_MODEL?.trim() || "gpt-4o";
+  const { value } = await withAiCache<ChargeExtraction>(
+    { feature: "charge-calc", version: CACHE_VERSION, parts: [llm, normaliseInput(query)], ttlSeconds: 30 * 86_400 },
+    async () => {
+      const result = await generateText({
+        model: openai(llm),
+        system: SYSTEM,
+        prompt: query,
+        output: Output.object({ schema: ChargeWireSchema }),
+        temperature: 0,
+        maxOutputTokens: MAX_OUTPUT.chargeExtraction,
+        // A stuck model call must not leave the engineer on "Calculating…".
+        abortSignal: AbortSignal.timeout(25_000),
+        maxRetries: 1,
+      });
+      logAiUsage({ feature: "charge-calc", model: llm, source: "model", ...usageOf(result) });
+      return { value: chargeFromWire(result.output), cacheable: true };
+    }
+  );
+  return value;
+}
 
 export async function calculateCharge(rawQuery: string): Promise<CalculateChargeResult> {
   const parsed = Query.safeParse(rawQuery);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
 
-  // Public form, paid model call: 10 a minute per address is generous for a person.
+  // Public form: 10 a minute per address is generous for a person. Counted
+  // before the fast path too — it still reads the catalog.
   const ip = clientIp(await headers());
   if (!checkRateLimit(`charge-calc:${ip}`, { limit: 10, windowMs: 60_000 }).success) return { ok: false, code: "RATE_LIMITED" };
 
   let x: ChargeExtraction;
   try {
-    const { output } = await generateText({
-      model: openai("gpt-4o"),
-      system: SYSTEM,
-      prompt: parsed.data,
-      output: Output.object({ schema: ChargeExtractionSchema }),
-      temperature: 0,
-      // A stuck model call must not leave the engineer on "Calculating…".
-      abortSignal: AbortSignal.timeout(25_000),
-      maxRetries: 1,
-    });
-    x = output;
+    x = await extract(parsed.data);
   } catch (error) {
     console.error("[charge-calc] extraction failed:", error);
     return { ok: false, code: "UNAVAILABLE" };

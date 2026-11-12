@@ -4,6 +4,7 @@ import { generateText, Output } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { FGAS_ACCEPTED_TYPES, type FgasCheck, type FgasExtraction, type FgasMediaType } from "./fgas";
+import { MAX_OUTPUT, VISION_MODEL, logAiUsage, usageOf } from "@/lib/ai/budget";
 
 /**
  * Tier 1 of F-Gas verification: what does the document SAY and LOOK LIKE?
@@ -26,7 +27,6 @@ import { FGAS_ACCEPTED_TYPES, type FgasCheck, type FgasExtraction, type FgasMedi
  * picture, it gets it right.
  */
 
-const VISION_MODEL = process.env.FGAS_VISION_MODEL?.trim() || "gpt-4o";
 /** Whole-call budget, retries included. */
 export const AI_TIMEOUT_MS = 25_000;
 const AI_MAX_RETRIES = 1;
@@ -58,7 +58,7 @@ export const isVisionConfigured = () => Boolean(process.env.OPENAI_API_KEY?.trim
 /** Regulations whose citation passes outright. */
 export const ACCEPTED_REGULATIONS = ["517/2014", "2024/573"] as const;
 
-const ReadingSchema = z.object({
+export const ReadingSchema = z.object({
   documentKind: z
     .enum(["fgas_certificate", "other_certificate", "unrelated_document", "photo", "blank_or_illegible"])
     .describe("What the document actually is, judged on its own merits."),
@@ -126,7 +126,7 @@ const ReadingSchema = z.object({
 
 export type Reading = z.infer<typeof ReadingSchema>;
 
-const SYSTEM_PROMPT = `You are a compliance auditor for an EU refrigerant wholesaler. A buyer has uploaded a document claiming to be their F-Gas certificate — the law (Regulation (EU) 2024/573, which replaced 517/2014) requires one before they may buy fluorinated refrigerant gas. You record what the document says and how it looks; code then applies the acceptance rules. Be precise, not helpful.
+export const SYSTEM_PROMPT = `You are a compliance auditor for an EU refrigerant wholesaler. A buyer has uploaded a document claiming to be their F-Gas certificate — the law (Regulation (EU) 2024/573, which replaced 517/2014) requires one before they may buy fluorinated refrigerant gas. You record what the document says and how it looks; code then applies the acceptance rules. Be precise, not helpful.
 
 WHAT TO RECORD
 - documentKind: what the document really is.
@@ -152,8 +152,10 @@ RULES
 
 // ── Analysis ─────────────────────────────────────────────────────────────
 
+export type ImageDetail = "low" | "high" | "auto";
+
 export type AnalysisResult =
-  | { status: "read"; reading: Reading }
+  | { status: "read"; reading: Reading; usage: { model: string; detail: ImageDetail | null; inputTokens: number; outputTokens: number } }
   | { status: "unconfigured" }
   | { status: "timeout" }
   | { status: "error"; detail: string };
@@ -166,19 +168,30 @@ function isAbortError(error: unknown): boolean {
   return /abort|timed? ?out/i.test(message);
 }
 
-export async function readCertificateDocument(bytes: Uint8Array, mediaType: FgasMediaType): Promise<AnalysisResult> {
+/**
+ * One reading of the document. `detail` applies to images only (a PDF goes
+ * as a file); the caller (readCertificate) decides it — see there.
+ */
+export async function readCertificateDocument(
+  bytes: Uint8Array,
+  mediaType: FgasMediaType,
+  options: { model?: string; detail?: ImageDetail } = {}
+): Promise<AnalysisResult> {
   if (!isVisionConfigured()) return { status: "unconfigured" };
+  const model = options.model ?? VISION_MODEL;
+  const detail = mediaType === "application/pdf" ? null : (options.detail ?? "auto");
   const documentPart =
     mediaType === "application/pdf"
       ? ({ type: "file", data: bytes, mediaType, filename: "document.pdf" } as const)
-      : ({ type: "image", image: bytes, mediaType } as const);
+      : ({ type: "image", image: bytes, mediaType, providerOptions: { openai: { imageDetail: detail } } } as const);
   try {
-    const { output } = await generateText({
-      model: openai(VISION_MODEL),
+    const result = await generateText({
+      model: openai(model),
       system: SYSTEM_PROMPT,
       output: Output.object({ schema: ReadingSchema, name: "fgas_certificate_reading" }),
       temperature: 0,
       maxRetries: AI_MAX_RETRIES,
+      maxOutputTokens: MAX_OUTPUT.fgasReading,
       abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS),
       messages: [
         {
@@ -193,7 +206,10 @@ export async function readCertificateDocument(bytes: Uint8Array, mediaType: Fgas
         },
       ],
     });
-    return { status: "read", reading: output };
+    const output = result.output;
+    const usage = usageOf(result);
+    logAiUsage({ feature: `fgas-vision${detail ? `:${detail}` : ":pdf"}`, model, source: "model", ...usage });
+    return { status: "read", reading: output, usage: { model, detail, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens } };
   } catch (error) {
     if (isAbortError(error)) {
       console.error("verify-fgas: vision call timed out after", AI_TIMEOUT_MS, "ms");

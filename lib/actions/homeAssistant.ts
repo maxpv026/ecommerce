@@ -4,6 +4,7 @@ import { z } from "zod";
 import { generateText } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import prisma from "@/lib/prisma";
 import { PUBLIC_AI_RULE, withinActionLimit } from "@/lib/actionRateLimit";
 import { auth } from "@/auth";
@@ -49,8 +50,9 @@ export async function askHomeAssistant(rawQuery: string): Promise<HomeAssistantR
       .join("\n");
 
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: openai(model(process.env.HOME_ASSISTANT_MODEL)),
       abortSignal: aiTimeout(),
+      maxOutputTokens: MAX_OUTPUT.homeAssistant,
       prompt: `You are My Energy AI, a B2B assistant for HVAC professionals. Answer the question below in AT MOST 40 words, plain text, no markdown. Be concrete and technical. Ground every stock/price claim in the catalog; never invent quantities or prices.
 
 Catalog:

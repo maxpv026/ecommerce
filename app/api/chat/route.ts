@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { sweepExpiredChats } from "@/lib/chatRetention";
 import { createUIMessageStream, createUIMessageStreamResponse, hasToolCall, stepCountIs, streamText, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { logAiUsage } from "@/lib/ai/budget";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { ASSISTANT_UNAVAILABLE, CHAT_STREAM_TIMEOUT, timeoutAsUnavailable } from "@/lib/aiTimeout";
@@ -165,6 +166,8 @@ export async function POST(req: Request) {
     timeout: CHAT_STREAM_TIMEOUT,
     // Logged with the real cause; the browser gets a stable code, never the
     // provider's raw message (quota, keys, request ids).
+    // FinOps trail: every turn's tokens, all steps (tool call + answer) together.
+    onFinish: ({ totalUsage }) => logAiUsage({ feature: "chat", model: "gpt-4o-mini", source: "model", inputTokens: totalUsage.inputTokens, outputTokens: totalUsage.outputTokens, cachedInputTokens: totalUsage.cachedInputTokens }),
     onError: ({ error }) => console.error("[chat] stream error:", error),
     onAbort: () => console.error("[chat] stream timed out"),
   });

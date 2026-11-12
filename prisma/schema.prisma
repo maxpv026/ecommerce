@@ -1215,3 +1215,19 @@ model UserSession {
 
   @@index([userId, revokedAt])
 }
+
+/// Content-hash cache of model responses (lib/ai/cache): the same request to
+/// the same feature is answered once, then served for 0 tokens until it
+/// expires. The key is a SHA-256 of feature + version + normalised input —
+/// the input itself is never stored. Rows past expiresAt are ignored and
+/// swept opportunistically.
+model AiResponseCache {
+  key       String   @id
+  feature   String
+  value     Json
+  hits      Int      @default(0)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}

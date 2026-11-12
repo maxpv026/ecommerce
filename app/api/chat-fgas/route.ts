@@ -7,6 +7,7 @@ import {
   type UIMessage,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { logAiUsage } from "@/lib/ai/budget";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { cylinderGasPrice } from "@/lib/pricing";
@@ -237,6 +238,8 @@ export async function POST(request: Request) {
     stopWhen: stepCountIs(2),
     maxOutputTokens: 900,
     timeout: CHAT_STREAM_TIMEOUT,
+    // FinOps trail: every turn's tokens, all steps (tool call + answer) together.
+    onFinish: ({ totalUsage }) => logAiUsage({ feature: "chat-fgas", model: "gpt-4o-mini", source: "model", inputTokens: totalUsage.inputTokens, outputTokens: totalUsage.outputTokens, cachedInputTokens: totalUsage.cachedInputTokens }),
     onError: ({ error }) => console.error("[RAG] stream error:", error),
     onAbort: () => console.error("[RAG] stream timed out"),
   });

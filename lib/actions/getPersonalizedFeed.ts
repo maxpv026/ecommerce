@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { generateText } from "ai";
 import { aiTimeout } from "@/lib/aiTimeout";
 import { openai } from "@ai-sdk/openai";
+import { MAX_OUTPUT, model } from "@/lib/ai/budget";
 import { auth } from "@/auth";
 import {
   HIGH_GWP_THRESHOLD,
@@ -308,12 +309,13 @@ const cachedBriefing = unstable_cache(
   async (data: BriefingData, insights: InsightPayload): Promise<string> => {
     const ask = (correction?: string) =>
       generateText({
-        model: openai("gpt-4o-mini"),
+        model: openai(model(process.env.BRIEFING_MODEL)),
         abortSignal: aiTimeout(),
+        maxOutputTokens: MAX_OUTPUT.briefing,
         system: SYSTEM_PROMPT,
         prompt: [
-          `DATA:\n${JSON.stringify(data, null, 2)}`,
-          `INSIGHTS:\n${JSON.stringify(insights, null, 2)}`,
+          `DATA:\n${JSON.stringify(data)}`,
+          `INSIGHTS:\n${JSON.stringify(insights)}`,
           correction ?? "",
         ]
           .filter(Boolean)
