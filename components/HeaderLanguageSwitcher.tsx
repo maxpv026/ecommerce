@@ -8,7 +8,8 @@ import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import { useSwitchLocale } from "@/lib/hooks/useSwitchLocale";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 
-export default function HeaderLanguageSwitcher() {
+/** `triggerClassName` lets the header dock it inside its control capsule. */
+export default function HeaderLanguageSwitcher({ triggerClassName }: { triggerClassName?: string } = {}) {
   const t = useTranslations("LanguageSwitcher");
   const { activeLocale, switchLocale, isPending } = useSwitchLocale();
   const [open, setOpen] = useState(false);
@@ -79,7 +80,8 @@ export default function HeaderLanguageSwitcher() {
         aria-expanded={open}
         aria-label="Change language"
         disabled={isPending}
-        className="flex h-[38px] items-center gap-[7px] rounded-full border border-slate-900/[.12] bg-white px-3.5 text-[13px] font-medium text-slate-900 transition-[color,border-color,transform] active:scale-95 hover:border-slate-900/30 disabled:opacity-60 dark:border-white/[.12] dark:bg-white/5 dark:text-slate-50 dark:hover:border-white/30"
+        data-header-language
+        className={triggerClassName ?? "flex h-[38px] items-center gap-[7px] rounded-full border border-slate-900/[.12] bg-white px-3.5 text-[13px] font-medium text-slate-900 transition-[color,border-color,transform] active:scale-95 hover:border-slate-900/30 disabled:opacity-60 dark:border-white/[.12] dark:bg-white/5 dark:text-slate-50 dark:hover:border-white/30"}
       >
         <Globe size={15} strokeWidth={2} />
         <span className="uppercase tracking-[.02em]">{activeLocale}</span>

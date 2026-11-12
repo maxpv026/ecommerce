@@ -1,664 +1,505 @@
 "use client";
 
-import { sortProducts } from "@/lib/productSort";
-import { GAS_MARKS, GAS_MARKS_COLLAPSED_COUNT, serializeGasMarks } from "@/lib/gasMarks";
-import { isPurchasable } from "@/lib/waitlist";
-import StockNotifyModal from "./StockNotifyModal";
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Check, ChevronDown, Loader2, Search, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, LayoutGrid, Loader2, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
+import StockNotifyModal from "./StockNotifyModal";
 import MobileProductsLayout from "./MobileProductsLayout";
-import { useCartStore } from "@/lib/store/cart";
-import { smartMatch } from "@/lib/actions/smartMatch";
-import ProductCard, { CATEGORY_LABEL_KEY, STOCK_TONES } from "./ProductCard";
-import type { StoreProduct } from "@/lib/data";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
+import { CatalogCard, CatalogRow, ROW_GRID } from "./catalog/CatalogItem";
+import { CATEGORY_LABEL_KEY } from "./ProductCard";
+import { ICON_TILE, PILL, PILL_ON, SURFACE } from "./home/ui";
+import { sortProducts } from "@/lib/productSort";
+import { productHasGasMark } from "@/lib/gasMarks";
+import { smartMatch } from "@/lib/actions/smartMatch";
+import {
+  CATEGORIES,
+  EMPTY_FILTERS,
+  GWP_LEVELS,
+  KNOWN_MARKS,
+  QUICK_GASES,
+  SAFETY_CLASSES,
+  STOCK_LEVELS,
+  USE_CASES,
+  WEIGHT_BANDS,
+  activeFilterCount,
+  facetCount,
+  filtersFromParams,
+  filtersToParams,
+  matchLocally,
+  passes,
+  type CatalogFilters,
+  type FacetGroup,
+  type UseCase,
+} from "@/lib/catalogFacets";
+import type { StoreProduct } from "@/lib/data";
 
 /**
- * The original placeholder. Still the fallback for equipment, custom blends
- * and anything whose render is missing, so a card is never an empty tile.
+ * /products on desktop, in the Cart / Settings design language: the cart's
+ * header bar (34 px title, middle-dot meta, pills on the same row),
+ * max-w-7xl, 22 px surfaces, cart micro-badges, and a table view that is
+ * the cart's line layout.
+ *
+ * Every filter runs in the browser over the whole catalog the server sent
+ * (lib/catalogFacets) — instant, no request, no model call — and is
+ * mirrored into the URL (replaceState) so a filtered view can be shared and
+ * other pages can deep-link (?gasType=R32, ?category=equipment, ?use=ac).
+ * Only `?search=` is applied on the server, with the header search's clause.
+ *
+ * The match bar reads gas codes, use cases, cylinder sizes and safety
+ * classes locally (matchLocally); its presets are plain filter sets. Only a
+ * sentence it cannot read goes to the AI matcher.
  */
-const ACCENT = "#1d4ed8";
 
-const WEIGHT_OPTIONS = ["25", "30", "50", "100"];
-const STOCK_OPTIONS = ["in", "low", "order", "out"] as const;
 const SORTS = ["featured", "price", "gwp"] as const;
+const STOCK_KEY: Record<string, string> = { in: "stockIn", low: "stockLow", order: "stockOrder", out: "stockOut" };
+type View = "grid" | "table";
 
-interface Filters {
-  cat: string[];
-  weight: string[];
-  stock: string[];
-}
-
-const EMPTY_FILTERS: Filters = { cat: [], weight: [], stock: [] };
-
-/* slider track: blue fill runs exactly to the thumb */
-const sliderTrack = (value: number, min: number, max: number) => {
-  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-  return {
-    background: `linear-gradient(90deg,${ACCENT} 0%,${ACCENT} ${pct}%,var(--hc-border-idle) ${pct}%,var(--hc-border-idle) 100%)`,
-  };
-};
+const PRESETS: Array<{ key: string; filters: Partial<CatalogFilters> }> = [
+  { key: "preset_split", filters: { marks: ["R32"], use: "ac" } },
+  { key: "preset_cold", filters: { marks: ["R404A"], use: "refrigeration" } },
+  { key: "preset_auto", filters: { use: "auto" } },
+  { key: "preset_lowGwp", filters: { safety: ["A2L"], use: "ac" } },
+];
 
 interface ProductBrowserProps {
+  /** The whole listed catalog (or the `?search=` result). */
   products: StoreProduct[];
-  initialCategory: string | null;
-  /** Marks currently applied by the server, straight from `?gasType=`. */
-  gasMarks: string[];
-  /** Per-mark totals over the whole catalog, so unselected marks still show a count. */
-  gasMarkCounts: Record<string, number>;
   /** Free-text term from `?search=`, already applied to `products` by the server. */
   searchTerm: string;
 }
 
-export default function ProductBrowser({
-  products,
-  initialCategory,
-  gasMarks,
-  gasMarkCounts,
-  searchTerm,
-}: ProductBrowserProps) {
+export default function ProductBrowser({ products, searchTerm }: ProductBrowserProps) {
   const t = useTranslations("Products");
   const tCat = useTranslations("Categories");
-  const addItem = useCartStore((s) => s.addItem);
-
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  // Product whose waitlist dialog is open; null when the dialog is closed.
-  const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
-
-  // ─── Refrigerant mark filter ───
-  // The URL is the source of truth (the server queries Prisma with it), but a
-  // checkbox has to answer instantly, so the selection is mirrored locally and
-  // the navigation runs in a transition.
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [marksExpanded, setMarksExpanded] = useState(false);
-  const [marksPending, startMarks] = useTransition();
-  // The checkbox ticks immediately while the server round-trip is in flight;
-  // once it lands, React drops the optimistic value for the real prop, so
-  // back/forward and a failed navigation both self-correct.
-  const [marks, setOptimisticMarks] = useOptimistic(gasMarks);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
 
-  /** Applies a new mark selection to the URL — the server re-queries from it. */
-  const applyMarks = (next: string[]) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const serialized = serializeGasMarks(next);
-    if (serialized) params.set("gasType", serialized);
-    else params.delete("gasType");
-    const query = params.toString();
-    startMarks(() => {
-      setOptimisticMarks(next);
-      router.replace(query ? `/products?${query}` : "/products", { scroll: false });
-    });
-  };
-
-  const toggleMark = (mark: string) => {
-    applyMarks(marks.includes(mark) ? marks.filter((m) => m !== mark) : [...marks, mark]);
-  };
-
-  /** Drops `?search=` — like the marks, the term lives in the URL. */
-  const clearSearch = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("search");
-    const rest = params.toString();
-    startMarks(() => router.replace(rest ? `/products?${rest}` : "/products", { scroll: false }));
-  };
-
-  const visibleMarks = marksExpanded ? GAS_MARKS : GAS_MARKS.slice(0, GAS_MARKS_COLLAPSED_COUNT);
-  const [filters, setFilters] = useState<Filters>(() =>
-    initialCategory ? { ...EMPTY_FILTERS, cat: [initialCategory] } : EMPTY_FILTERS
-  );
-  const [purity, setPurity] = useState(99);
-  const [maxPrice, setMaxPrice] = useState(900);
+  const [filters, setFilters] = useState<CatalogFilters>(() => filtersFromParams(new URLSearchParams(searchParams.toString())));
+  const [view, setView] = useState<View>(() => (searchParams.get("view") === "table" ? "table" : "grid"));
   const [sort, setSort] = useState<(typeof SORTS)[number]>("featured");
-  const [aiQuery, setAiQuery] = useState("");
-  const [aiMatch, setAiMatch] = useState<{ skus: string[]; reason: string } | null>(null);
+  const [gasExpanded, setGasExpanded] = useState(false);
+
+  // ── Match bar ──
+  const [query, setQuery] = useState("");
+  const [note, setNote] = useState<{ kind: "local"; parts: string[] } | { kind: "ai"; reason: string; skus: string[] } | { kind: "error" } | null>(null);
   const [aiPending, startAi] = useTransition();
-  const [added, setAdded] = useState<string[]>([]);
+  const [searchPending, startSearch] = useTransition();
 
-  const toggle = (key: keyof Filters, value: string) =>
-    setFilters((f) => ({
-      ...f,
-      [key]: f[key].includes(value) ? f[key].filter((v) => v !== value) : [...f[key], value],
-    }));
+  // Mirror the filters and the view into the URL, without a navigation.
+  useEffect(() => {
+    const params = filtersToParams(filters, new URLSearchParams(window.location.search));
+    if (view === "table") params.set("view", "table");
+    else params.delete("view");
+    const qs = params.toString();
+    const next = `${window.location.pathname}${qs ? `?${qs}` : ""}`;
+    if (next !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(window.history.state, "", next);
+  }, [filters, view]);
 
-  const resetFilters = () => {
-    setFilters(EMPTY_FILTERS);
-    setPurity(99);
-    setMaxPrice(900);
-    setAiQuery("");
-    setAiMatch(null);
-    // Marks and the search term live in the URL, so clearing them is a
-    // navigation — one, not two, so the two don't race each other.
-    if (marks.length > 0 || searchTerm) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("gasType");
-      params.delete("search");
-      const rest = params.toString();
-      startMarks(() => {
-        setOptimisticMarks([]);
-        router.replace(rest ? `/products?${rest}` : "/products", { scroll: false });
-      });
-    }
-  };
-
-  const runSmartMatch = (q?: string) => {
-    const text = (q ?? aiQuery).trim();
-    if (!text || aiPending) return;
-    if (q) setAiQuery(q);
-    setAiMatch(null);
-    startAi(async () => {
-      const result = await smartMatch(text);
-      if (!result.ok) {
-        toast.error(t("aiError"));
-        return;
-      }
-      setAiMatch({ skus: result.skus, reason: result.reason });
+  const setGroup = (group: FacetGroup, value: string) =>
+    setFilters((f) => {
+      if (group === "use") return { ...f, use: f.use === value ? null : (value as UseCase) };
+      const list = f[group];
+      return { ...f, [group]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value] };
     });
+  const resetAll = () => {
+    setFilters(EMPTY_FILTERS);
+    setNote(null);
+    setQuery("");
   };
 
+  const aiSkus = note?.kind === "ai" ? note.skus : null;
   const rows = useMemo(() => {
-    let list = products.filter(
-      (p) =>
-        (filters.cat.length === 0 || filters.cat.includes(p.category)) &&
-        (filters.weight.length === 0 || (p.weightLb !== null && filters.weight.includes(String(p.weightLb)))) &&
-        (filters.stock.length === 0 || filters.stock.includes(p.stockLevel)) &&
-        (p.purity === null || p.purity >= purity) &&
-        p.cylinderPrice <= maxPrice
-    );
-    if (aiMatch && aiMatch.skus.length > 0) {
-      list = list.filter((p) => aiMatch.skus.includes(p.sku));
-      list.sort((a, b) => aiMatch.skus.indexOf(a.sku) - aiMatch.skus.indexOf(b.sku));
-      return list;
-    }
-    // Availability is the primary key for every sort, so re-sorting by price
-    // or GWP can never lift an out-of-stock cylinder above a purchasable one.
+    const list = products.filter((p) => passes(p, filters));
+    if (aiSkus) return list.filter((p) => aiSkus.includes(p.sku)).sort((a, b) => aiSkus.indexOf(a.sku) - aiSkus.indexOf(b.sku));
     if (sort === "price") return sortProducts(list, (a, b) => a.cylinderPrice - b.cylinderPrice);
     if (sort === "gwp") return sortProducts(list, (a, b) => (a.gwp ?? 0) - (b.gwp ?? 0));
     return sortProducts(list);
-  }, [products, filters, purity, maxPrice, sort, aiMatch]);
+  }, [products, filters, sort, aiSkus]);
 
-  const countFor = (key: keyof Filters, value: string) =>
-    products.filter((p) =>
-      key === "cat" ? p.category === value : key === "weight" ? String(p.weightLb) === value : p.stockLevel === value
-    ).length;
+  const count = (group: FacetGroup, value: string) => facetCount(products, filters, group, value);
+  const label = (group: FacetGroup, value: string): string =>
+    group === "use"
+      ? t(`use_${value}`)
+      : group === "marks"
+        ? value.replace(/^R/, "R-")
+        : group === "cat"
+          ? tCat(CATEGORY_LABEL_KEY[value] ?? value)
+          : group === "weight"
+            ? t(`weight_${value}`)
+            : group === "safety"
+              ? t(`safety_${value}`)
+              : group === "gwp"
+                ? t(`gwp_${value}`)
+                : t(STOCK_KEY[value] ?? "stockIn");
 
-  const filterGroups: Array<{ key: keyof Filters; labelKey: string; options: Array<{ value: string; label: string }> }> = [
-    {
-      key: "cat",
-      labelKey: "groupCategory",
-      options: Object.entries(CATEGORY_LABEL_KEY).map(([value, k]) => ({ value, label: tCat(k) })),
-    },
-    { key: "weight", labelKey: "groupWeight", options: WEIGHT_OPTIONS.map((w) => ({ value: w, label: `${w} lb` })) },
-    { key: "stock", labelKey: "groupStock", options: STOCK_OPTIONS.map((s) => ({ value: s, label: t(STOCK_TONES[s].labelKey) })) },
-  ];
-
-  const addToCart = (product: StoreProduct) => {
-    // Belt and braces: the button is disabled and the server re-checks at
-    // checkout, but never let an out-of-stock line into the cart from here.
-    if (!isPurchasable(product)) return;
-    addItem({
-      sku: product.sku,
-      name: product.name,
-      variant: product.weightLabel,
-      pricePerKg: product.pricePerKg,
-      weightKg: product.weightKg,
-      deposit: product.cylinderDeposit,
+  const runMatch = (text = query) => {
+    const q = text.trim();
+    if (!q || aiPending) return;
+    const local = matchLocally(q);
+    if (local) {
+      setFilters(local.filters);
+      setNote({ kind: "local", parts: local.matched.map((m) => label(m.group, m.value)) });
+      return;
+    }
+    // Nothing recognisable: the one path that asks the model.
+    setNote(null);
+    startAi(async () => {
+      const result = await smartMatch(q).catch(() => null);
+      if (!result?.ok) setNote({ kind: "error" });
+      else {
+        setFilters(EMPTY_FILTERS);
+        setNote({ kind: "ai", reason: result.reason, skus: result.skus });
+      }
     });
-    setAdded((a) => [...a, product.sku]);
   };
 
-  const chips = [t("chip1"), t("chip2"), t("chip3")];
+  const clearSearch = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("search");
+    const rest = params.toString();
+    startSearch(() => router.replace(rest ? `/products?${rest}` : "/products", { scroll: false }));
+  };
+
+  const groups: Array<{ group: Exclude<FacetGroup, "use" | "marks">; title: string; values: readonly string[] }> = [
+    { group: "cat", title: t("fCategory"), values: CATEGORIES },
+    { group: "weight", title: t("fWeight"), values: WEIGHT_BANDS },
+    { group: "safety", title: t("fSafety"), values: SAFETY_CLASSES },
+    { group: "gwp", title: t("fGwp"), values: GWP_LEVELS },
+    { group: "stock", title: t("fStock"), values: STOCK_LEVELS },
+  ];
+  const catalogMarks = KNOWN_MARKS.filter((m) => products.some((p) => productHasGasMark(p, m)));
+  const sortedMarks = [...catalogMarks].sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
+  const visibleMarks = gasExpanded ? sortedMarks : sortedMarks.slice(0, 6);
+  const active: Array<{ group: FacetGroup; value: string }> = [
+    ...(filters.use ? [{ group: "use" as const, value: filters.use }] : []),
+    ...filters.marks.map((value) => ({ group: "marks" as const, value })),
+    ...(["cat", "weight", "safety", "gwp", "stock"] as const).flatMap((group) => filters[group].map((value) => ({ group, value }))),
+  ];
+
+  // Mobile keeps its own layout; it gets the gas filter from the same state.
+  const mobileProducts = filters.marks.length ? products.filter((p) => filters.marks.some((m) => productHasGasMark(p, m))) : products;
+  const mobileCounts = Object.fromEntries(KNOWN_MARKS.map((m) => [m, products.filter((p) => productHasGasMark(p, m)).length]));
 
   return (
     <div className="flex-1 bg-canvas">
       <div className="hidden md:block">
-      <Header onSignInClick={() => setIsAuthModalOpen(true)} />
+        <Header onSignInClick={() => setIsAuthModalOpen(true)} />
 
-      <div className="relative overflow-x-clip">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1100px] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_0%,#000_46%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_46%,transparent_100%)]">
-          <div className="absolute -top-[300px] left-[16%] h-[880px] w-[880px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_66%)] opacity-30 blur-[120px] [animation:hc-float_28s_ease-in-out_infinite]" />
-          <div className="absolute -top-[200px] right-[-8%] h-[700px] w-[700px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.28] blur-[120px] [animation:hc-float_34s_ease-in-out_infinite_reverse]" />
-          <div className="absolute left-[-6%] top-[120px] h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_68%)] opacity-20 blur-[110px] [animation:hc-float_40s_ease-in-out_infinite]" />
-        </div>
+        <div className="relative overflow-x-clip">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-[220px] right-[-8%] h-[760px] w-[760px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_66%)] opacity-[.2] blur-[120px]" />
+            <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.16] blur-[120px]" />
+          </div>
 
-        <main className="relative mx-auto max-w-[1320px] px-8 pb-[120px] pt-11">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="mb-3 text-xs tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("eyebrow")}</div>
-            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+          <main className="relative mx-auto max-w-7xl px-8 pb-24 pt-9" data-catalog>
+            {/* ── Header bar (cart layout) ── */}
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4" data-catalog-header>
               <div className="min-w-0">
-                <h1 className="m-0 text-[40px] font-semibold leading-[1.05] tracking-[-.045em]">{t("title")}</h1>
-                <p className="mb-0 mt-3 max-w-[520px] text-[15px] leading-[1.6] text-slate-600 dark:text-ink-muted">
-                  {t("subtitle")}
+                <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{t("title")}</h1>
+                <p className="m-0 mt-2 text-[14px] text-slate-500 tabular-nums dark:text-ink-muted" data-catalog-meta>
+                  {[t("metaCount", { count: products.length }), t("metaAhri"), t("metaAdr"), t("metaEur")].join(" · ")}
                 </p>
               </div>
-              {/* Bulk orders start from a spec or a BOM, not from browsing. */}
-              <SmartOrderButton variant="pill" source="catalog" className="flex-none" />
+              <div className="flex flex-wrap items-center gap-2">
+                <div role="radiogroup" aria-label={t("viewLabel")} className="inline-flex rounded-full border border-slate-900/[.12] bg-white/70 p-1 dark:border-white/[.14] dark:bg-white/[.04]" data-view-switch>
+                  {(["grid", "table"] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      role="radio"
+                      aria-checked={view === v}
+                      onClick={() => setView(v)}
+                      data-view={v}
+                      className={`inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold transition-colors ${
+                        view === v ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                      }`}
+                    >
+                      {v === "grid" ? <LayoutGrid size={14} strokeWidth={2} /> : <Rows3 size={14} strokeWidth={2} />}
+                      {v === "grid" ? t("viewGrid") : t("viewTable")}
+                    </button>
+                  ))}
+                </div>
+                <SmartOrderButton variant="pill" source="catalog" label={t("bulkImport")} className="min-h-[38px] px-3.5" />
+              </div>
             </div>
 
             {/* The term that produced this list, and the way out of it. */}
-            <AnimatePresence initial={false}>
-              {searchTerm && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  data-search-chip
-                  className="mt-5 inline-flex items-center gap-2.5 rounded-full border border-cyan-500/40 bg-cyan-500/[.08] py-2 pl-3.5 pr-2 text-[12.5px] shadow-[0_0_24px_-10px_rgba(6,182,212,.9)]"
-                >
-                  <Search size={13} strokeWidth={2.2} className="flex-none text-cyan-700 dark:text-cyan-300" />
-                  <span className="min-w-0 truncate">{t("searchResultsFor", { query: searchTerm })}</span>
-                  <span className="flex-none rounded-full bg-cyan-500/15 px-2 py-[3px] text-[10.5px] font-semibold tabular-nums text-cyan-800 dark:text-cyan-200">
-                    {t("resultCount", { count: products.length })}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    aria-label={t("searchClearAria")}
-                    data-search-chip-clear
-                    className="flex h-6 w-6 flex-none items-center justify-center rounded-full text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
-                  >
-                    <X size={13} strokeWidth={2.4} />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+            {searchTerm && (
+              <div data-search-chip className="mb-4 inline-flex items-center gap-2.5 rounded-full border border-slate-900/[.12] bg-white/70 py-1.5 pl-3.5 pr-1.5 text-[12.5px] dark:border-white/[.14] dark:bg-white/[.04]">
+                <Search size={13} strokeWidth={2.2} className="flex-none text-slate-500" />
+                <span className="min-w-0 truncate">{t("searchResultsFor", { query: searchTerm })}</span>
+                <span className="flex-none rounded-full bg-slate-900/[.06] px-2 py-[2px] text-[10.5px] font-semibold tabular-nums dark:bg-white/[.08]">{t("resultCount", { count: products.length })}</span>
+                <button type="button" onClick={clearSearch} aria-label={t("searchClearAria")} data-search-chip-clear className="flex h-6 w-6 flex-none items-center justify-center rounded-full text-slate-500 hover:bg-slate-900/[.06] dark:hover:bg-white/10">
+                  {searchPending ? <Loader2 size={12} className="animate-spin" /> : <X size={13} strokeWidth={2.4} />}
+                </button>
+              </div>
+            )}
 
-          {/* strict 12-col grid: sidebar locked to 3, content to 9 */}
-          <div className="mt-10 grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
-            <motion.aside
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
-              // Sticks under the 70px header (+24px breathing room) with a fixed
-              // height. It does NOT scroll itself — scrolling here would drag the
-              // glass card's own rounded top and padding out of view. The inner
-              // body below owns the scrolling instead.
-              className="lg:sticky lg:top-[94px] lg:col-span-3 lg:h-[calc(100vh-118px)]"
-              data-filters
-            >
-              <div className="relative rounded-[26px] border border-slate-900/[.14] bg-white/70 p-[22px] shadow-[0_30px_70px_-46px_rgba(2,4,10,.6)] backdrop-blur-xl backdrop-saturate-150 lg:flex lg:h-full lg:flex-col lg:overflow-hidden dark:border-hairline-strong dark:bg-glass">
-                {/* Pinned: stays put while the groups below scroll */}
-                <div className="mb-5 flex flex-none items-baseline justify-between gap-3">
-                  <h2 className="m-0 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("filters")}</h2>
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="text-[11.5px] font-semibold text-blue-700 dark:text-blue-400"
-                  >
-                    {t("reset")}
-                  </button>
-                </div>
+            {/* ── Quick strip: use case + gas ── */}
+            <div className="mb-6 flex flex-col gap-2.5" data-quick-strip>
+              <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t("useLabel")}>
+                <button type="button" role="radio" aria-checked={filters.use === null} onClick={() => setFilters((f) => ({ ...f, use: null }))} data-quick-use="all" className={filters.use === null ? PILL_ON : PILL}>
+                  {t("use_all")}
+                  <Count n={products.filter((p) => passes(p, filters, "use")).length} on={filters.use === null} />
+                </button>
+                {USE_CASES.map((u) => {
+                  const n = count("use", u);
+                  const on = filters.use === u;
+                  return (
+                    <button key={u} type="button" role="radio" aria-checked={on} disabled={n === 0 && !on} onClick={() => setGroup("use", u)} data-quick-use={u} className={`${on ? PILL_ON : PILL} disabled:opacity-40`}>
+                      {t(`use_${u}`)}
+                      <Count n={n} on={on} />
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5" data-quick-gases>
+                <span className="mr-1 text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("quickGasLabel")}</span>
+                {QUICK_GASES.map((m) => {
+                  const n = count("marks", m);
+                  const on = filters.marks.includes(m);
+                  const stocked = products.some((p) => productHasGasMark(p, m));
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={on}
+                      disabled={!stocked && !on}
+                      title={!stocked ? t("notInCatalog") : undefined}
+                      onClick={() => setGroup("marks", m)}
+                      data-quick-gas={m}
+                      className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 font-mono text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                        on
+                          ? "border-transparent bg-blue-700 text-white"
+                          : "border-slate-900/[.12] bg-white/70 text-slate-700 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-200 dark:hover:bg-white/[.09]"
+                      }`}
+                    >
+                      {m.replace(/^R/, "R-")}
+                      <span className={`font-sans text-[10.5px] tabular-nums ${on ? "text-white/80" : "text-slate-400"}`}>{n}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-                {/* The only scroll container: pr-2 keeps the thin bar off the
-                    controls, pb-4 stops the last filter touching the card edge. */}
-                <div className="scrollbar-slim lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pb-4 lg:pr-2" data-filters-scroll>
-
-                  {filterGroups.map((group) => (
-                    <div key={group.key} className="mb-5 border-b border-slate-900/[.07] pb-5 dark:border-hairline">
-                      <div className="mb-3 text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                        {t(group.labelKey)}
-                      </div>
-                      <div className="flex flex-col gap-[3px]">
-                        {group.options.map((option) => {
-                          const on = filters[group.key].includes(option.value);
-                          return (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => toggle(group.key, option.value)}
-                              className={`flex min-h-[38px] w-full items-center gap-[11px] rounded-[11px] px-2 text-left text-[12.5px] tracking-[-.01em] transition-colors hover:bg-slate-900/[.05] dark:hover:bg-white/10 ${
-                                on ? "font-semibold text-slate-900 dark:text-slate-50" : "font-medium text-slate-600 dark:text-ink-muted"
-                              }`}
-                            >
-                              <span
-                                className={`flex h-[18px] w-[18px] flex-none items-center justify-center rounded-md border-[1.5px] transition-all duration-200 ${
-                                  on
-                                    ? "border-blue-700 bg-blue-700 shadow-[0_0_14px_-2px_var(--glow-700)]"
-                                    : "border-slate-900/[.14] dark:border-hairline-strong"
-                                }`}
-                              >
-                                {on && <Check size={11} strokeWidth={3} className="text-white" />}
-                              </span>
-                              <span className="min-w-0 flex-1">{option.label}</span>
-                              <span className="text-[11px] text-slate-400 dark:text-ink-muted">
-                                {countFor(group.key, option.value)}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Refrigerant mark — URL-backed, so it survives a share or reload */}
-                  <div className="mb-5 border-b border-slate-900/[.07] pb-5 dark:border-hairline" data-gas-filter>
-                    <div className="mb-3 flex items-baseline justify-between gap-3">
-                      <span className="text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                        {t("groupGasMark")}
-                      </span>
-                      {marksPending && <Loader2 size={12} strokeWidth={2.4} className="animate-spin text-blue-700 dark:text-blue-400" />}
-                    </div>
-                    <div className="flex flex-col gap-[3px]">
-                      {visibleMarks.map((mark) => {
-                        const on = marks.includes(mark);
-                        const count = gasMarkCounts[mark] ?? 0;
-                        return (
-                          <button
-                            key={mark}
-                            type="button"
-                            onClick={() => toggleMark(mark)}
-                            aria-pressed={on}
-                            data-gas-mark={mark}
-                            className={`flex min-h-[38px] w-full items-center gap-[11px] rounded-[11px] px-2 text-left text-[12.5px] tracking-[-.01em] transition-colors hover:bg-slate-900/[.05] dark:hover:bg-white/10 ${
-                              on ? "font-semibold text-slate-900 dark:text-slate-50" : "font-medium text-slate-600 dark:text-ink-muted"
-                            }`}
-                          >
-                            <span
-                              className={`flex h-[18px] w-[18px] flex-none items-center justify-center rounded-md border-[1.5px] transition-all duration-200 ${
-                                on
-                                  ? "border-blue-700 bg-blue-700 shadow-[0_0_14px_-2px_var(--glow-700)]"
-                                  : "border-slate-900/[.14] dark:border-hairline-strong"
-                              }`}
-                            >
-                              {on && <Check size={11} strokeWidth={3} className="text-white" />}
-                            </span>
-                            <span className="min-w-0 flex-1">{mark}</span>
-                            <span className="text-[11px] text-slate-400 dark:text-ink-muted">{count}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {GAS_MARKS.length > GAS_MARKS_COLLAPSED_COUNT && (
-                      <button
-                        type="button"
-                        onClick={() => setMarksExpanded((v) => !v)}
-                        data-gas-toggle
-                        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-[11px] py-2 text-[11.5px] font-semibold text-blue-700 transition-colors hover:bg-blue-700/[.07] dark:text-blue-400 dark:hover:bg-blue-400/10"
-                      >
-                        {marksExpanded ? t("showLess") : t("showMore", { count: GAS_MARKS.length - GAS_MARKS_COLLAPSED_COUNT })}
-                        <ChevronDown
-                          size={13}
-                          strokeWidth={2.4}
-                          className={`transition-transform duration-200 ${marksExpanded ? "rotate-180" : ""}`}
-                        />
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+              {/* ── Sidebar ── */}
+              <aside className="lg:sticky lg:top-[88px] lg:col-span-3" data-filters>
+                <div className="scrollbar-slim rounded-[22px] border border-slate-900/[.1] bg-white/80 p-5 shadow-[0_24px_60px_-44px_rgba(2,4,10,.55)] backdrop-blur-xl backdrop-saturate-150 lg:max-h-[calc(100vh-112px)] lg:overflow-y-auto dark:border-white/[.1] dark:bg-white/[.04]">
+                  <div className="mb-3 flex items-baseline justify-between gap-3">
+                    <h2 className="m-0 text-[12px] font-semibold uppercase tracking-[.08em] text-slate-500 dark:text-ink-muted">{t("filtersTitle")}</h2>
+                    {activeFilterCount(filters) > 0 && (
+                      <button type="button" onClick={resetAll} className="text-[12px] font-semibold text-blue-700 dark:text-blue-400" data-filters-reset>
+                        {t("clearAll")}
                       </button>
                     )}
                   </div>
-
-                  <div className="mb-5 border-b border-slate-900/[.07] pb-5 dark:border-hairline">
-                    <div className="mb-3.5 flex items-baseline justify-between gap-3">
-                      <span className="text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                        {t("minPurity")}
-                      </span>
-                      <span className="text-[12.5px] font-semibold tracking-[-.02em] text-blue-700 dark:text-blue-400">
-                        {purity.toFixed(2)}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={99}
-                      max={99.99}
-                      step={0.01}
-                      value={purity}
-                      onChange={(e) => setPurity(Number(e.target.value))}
-                      aria-label={t("minPurity")}
-                      className="hc-range w-full"
-                      style={sliderTrack(purity, 99, 99.99)}
-                    />
-                  </div>
-
-                  <div>
-                    <div className="mb-3.5 flex items-baseline justify-between gap-3">
-                      <span className="text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                        {t("maxPrice")}
-                      </span>
-                      <span className="text-[12.5px] font-semibold tracking-[-.02em] text-blue-700 dark:text-blue-400">
-                        €{maxPrice}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={100}
-                      max={900}
-                      step={10}
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(Number(e.target.value))}
-                      aria-label={t("maxPrice")}
-                      className="hc-range w-full"
-                      style={sliderTrack(maxPrice, 100, 900)}
-                    />
-                    <div className="mt-2 flex justify-between text-[10.5px] text-slate-400 dark:text-ink-muted">
-                      <span>€100</span>
-                      <span>€900</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.aside>
-
-            <div className="min-w-0 lg:col-span-9">
-              {/* Smart Match — sweeping gradient border while the real AI runs */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-                data-smart-match
-                className="relative w-full overflow-hidden rounded-3xl p-[1.5px]"
-                style={{
-                  background: aiPending
-                    ? `linear-gradient(90deg,${ACCENT},#22d3ee,#7c3aed,${ACCENT})`
-                    : "var(--hc-cat-border)",
-                  backgroundSize: aiPending ? "300% 100%" : undefined,
-                  animation: aiPending ? "hc-sweep 2.4s linear infinite" : undefined,
-                }}
-              >
-                <div className="relative rounded-[22.5px] bg-white/90 p-5 backdrop-blur-xl backdrop-saturate-150 dark:bg-[rgba(20,21,24,.92)]">
-                  <div className="flex flex-wrap items-center gap-3.5">
-                    <motion.span
-                      animate={aiPending ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
-                      transition={aiPending ? { duration: 1.4, repeat: Infinity, ease: "easeInOut" } : undefined}
-                      className="flex h-11 w-11 flex-none items-center justify-center rounded-[15px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_14px_30px_-14px_rgba(37,99,235,.7)]"
-                    >
-                      <Sparkles size={20} strokeWidth={2} className="text-white" />
-                    </motion.span>
-                    <div className="min-w-[240px] flex-1">
-                      <div className="mb-[7px] text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
-                        {t("smartMatch")}
-                      </div>
-                      <input
-                        value={aiQuery}
-                        onChange={(e) => setAiQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && runSmartMatch()}
-                        placeholder={t("aiPlaceholder")}
-                        className="w-full border-0 bg-transparent text-sm tracking-[-.015em] text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-50 dark:placeholder:text-slate-500"
-                      />
-                    </div>
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => runSmartMatch()}
-                      disabled={aiPending}
-                      className="flex h-11 flex-none items-center justify-center gap-2 rounded-[14px] bg-blue-700 px-5 text-[13.5px] font-semibold tracking-[-.015em] text-white shadow-[0_16px_32px_-16px_rgba(29,78,216,.8)] transition-colors hover:bg-blue-800 disabled:opacity-70"
-                    >
-                      {aiPending && <Loader2 size={15} strokeWidth={2.2} className="animate-spin" />}
-                      {aiPending ? t("aiThinking") : t("aiButton")}
-                    </motion.button>
-                  </div>
-
-                  <div className="mt-3.5 flex w-full flex-wrap gap-2">
-                    {chips.map((chip) => (
-                      <button
-                        key={chip}
-                        type="button"
-                        onClick={() => runSmartMatch(chip)}
-                        className="h-[30px] flex-none whitespace-nowrap rounded-full border border-slate-900/[.14] px-3 text-[11.5px] font-medium tracking-[-.005em] text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:border-hairline-strong dark:text-ink-muted dark:hover:bg-white/10"
-                      >
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* AI result banner — the model's own reasoning */}
-              <AnimatePresence>
-                {aiMatch && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="mt-3.5 flex items-center gap-3 rounded-[18px] border border-blue-700/[.26] bg-blue-700/[.1] px-[18px] py-3.5"
-                  >
-                    <span className="h-[7px] w-[7px] flex-none rounded-full bg-blue-700 shadow-[0_0_10px_1px_var(--glow-700)] dark:bg-blue-400 dark:shadow-[0_0_10px_1px_#60a5fa]" />
-                    <span className="min-w-0 flex-1 text-[13px] leading-[1.6] text-slate-600 dark:text-slate-300">
-                      {aiMatch.reason}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setAiMatch(null)}
-                      className="flex-none text-[11.5px] font-semibold text-blue-700 dark:text-blue-400"
-                    >
-                      {t("clear")}
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* heading + sorts */}
-              <div className="mt-6 flex flex-wrap items-baseline justify-between gap-5">
-                <h2 className="m-0 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">
-                  {aiMatch ? t("aiRecommended") : t("allProducts")}
-                </h2>
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[11.5px] text-slate-400 dark:text-ink-muted">
-                    {t("resultCount", { count: rows.length })}
-                  </span>
-                  {SORTS.map((s) => {
-                    const on = sort === s && !aiMatch;
-                    return (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSort(s)}
-                        className={`h-8 rounded-full px-[13px] text-xs font-semibold tracking-[-.01em] transition-colors ${
-                          on
-                            ? "bg-blue-700 text-white"
-                            : "border border-slate-900/[.14] text-slate-600 hover:bg-slate-900/[.05] dark:border-hairline-strong dark:text-ink-muted dark:hover:bg-white/10"
-                        }`}
-                      >
-                        {t(`sort_${s}`)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* skeleton shimmer while the AI thinks */}
-              {aiPending && (
-                <div className="mt-[18px] grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] gap-[18px]" data-skeletons>
-                  {[0, 1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="rounded-3xl border border-slate-900/[.07] bg-white/70 p-5 backdrop-blur-xl dark:border-hairline dark:bg-glass"
-                    >
-                      {["h-[150px] rounded-2xl mb-[18px]", "h-[13px] w-[72%] rounded-full mb-2.5", "h-[11px] w-[48%] rounded-full mb-2.5", "h-[11px] w-[32%] rounded-full"].map(
-                        (cls, n) => (
-                          <div
-                            key={n}
-                            className={`${cls} bg-[linear-gradient(90deg,var(--hc-cat-tile)_0%,var(--hc-cat-border)_40%,var(--hc-cat-tile)_80%)] bg-[length:340px_100%]`}
-                            style={{ animation: `hc-shimmer 1.3s linear infinite ${i * 0.12}s` }}
-                          />
-                        )
-                      )}
-                    </div>
+                  {groups.map(({ group, title, values }) => (
+                    <FacetSection key={group} title={title}>
+                      {values.map((v) => (
+                        <FacetOption key={v} label={label(group, v)} count={count(group, v)} on={filters[group].includes(v)} onClick={() => setGroup(group, v)} data={`${group}:${v}`} />
+                      ))}
+                    </FacetSection>
                   ))}
-                </div>
-              )}
-
-              {/* product grid — layout animations glide survivors into place */}
-              {!aiPending && rows.length > 0 && (
-                <motion.div
-                  variants={{ hidden: {}, show: { transition: { staggerChildren: 0.055, delayChildren: 0.15 } } }}
-                  initial="hidden"
-                  animate="show"
-                  // No items-start: grid rows stretch so every card matches the
-                  // tallest in its row, whether or not it carries the waitlist.
-                  className="mt-[18px] grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] gap-[18px]"
-                  data-product-grid
-                >
-                  <AnimatePresence mode="popLayout">
-                    {rows.map((product) => (
-                      <ProductCard
-                        key={product.sku}
-                        product={product}
-                        inCart={added.includes(product.sku)}
-                        isAiMatch={Boolean(aiMatch?.skus.includes(product.sku))}
-                        onAddToCart={addToCart}
-                        onNotify={setNotifyFor}
-                      />
+                  <FacetSection title={t("fGas")} last>
+                    {visibleMarks.map((m) => (
+                      <FacetOption key={m} label={m.replace(/^R/, "R-")} mono count={count("marks", m)} on={filters.marks.includes(m)} onClick={() => setGroup("marks", m)} data={`marks:${m}`} />
                     ))}
-                  </AnimatePresence>
-                </motion.div>
-              )}
+                    {sortedMarks.length > 6 && (
+                      <button type="button" onClick={() => setGasExpanded((v) => !v)} className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-[10px] py-1.5 text-[12px] font-semibold text-blue-700 hover:bg-blue-700/[.06] dark:text-blue-400 dark:hover:bg-blue-400/10">
+                        {gasExpanded ? t("showLess") : t("showMore", { count: sortedMarks.length - 6 })}
+                        <ChevronDown size={13} strokeWidth={2.4} className={gasExpanded ? "rotate-180" : ""} />
+                      </button>
+                    )}
+                  </FacetSection>
+                </div>
+              </aside>
 
-              {/* empty state */}
-              {!aiPending && rows.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-[18px] rounded-3xl border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-14 text-center backdrop-blur-xl dark:border-hairline-strong dark:bg-glass"
+              <div className="min-w-0 lg:col-span-9">
+                {/* ── Match bar: local first, AI only for what it can't read ── */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    runMatch();
+                  }}
+                  className={`${SURFACE} px-4 py-3.5`}
+                  data-match-bar
                 >
-                  <div className="text-[15px] font-semibold tracking-[-.025em]">{t("emptyTitle")}</div>
-                  <p className="mx-0 mb-[18px] mt-2.5 text-[13.5px] text-slate-600 dark:text-ink-muted">{t("emptyBody")}</p>
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="inline-flex h-11 items-center justify-center rounded-[14px] bg-blue-700 px-[22px] text-[13.5px] font-semibold tracking-[-.015em] text-white shadow-[0_18px_36px_-18px_rgba(29,78,216,.8)] transition-colors hover:bg-blue-800"
-                  >
-                    {t("resetFilters")}
-                  </button>
-                </motion.div>
-              )}
+                  <div className="flex items-center gap-3">
+                    <span className={ICON_TILE}>
+                      <SlidersHorizontal size={17} strokeWidth={1.9} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <label htmlFor="catalog-match" className="block text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+                        {t("matchTitle")}
+                      </label>
+                      <input
+                        id="catalog-match"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder={t("matchPlaceholder")}
+                        data-match-input
+                        className="mt-0.5 w-full border-0 bg-transparent text-[13.5px] tracking-[-.01em] outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+                    <button type="submit" disabled={!query.trim() || aiPending} data-match-submit className="inline-flex h-10 flex-none items-center gap-1.5 rounded-[12px] bg-blue-700 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-blue-800 disabled:opacity-50">
+                      {aiPending ? <Loader2 size={14} className="animate-spin" /> : null}
+                      {t("matchButton")}
+                      {!aiPending && <ArrowRight size={14} strokeWidth={2.4} />}
+                    </button>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-900/[.06] pt-3 dark:border-white/[.06]" data-match-presets>
+                    {PRESETS.map((pr) => (
+                      <button
+                        key={pr.key}
+                        type="button"
+                        onClick={() => {
+                          setFilters({ ...EMPTY_FILTERS, ...pr.filters });
+                          setNote({ kind: "local", parts: [t(pr.key)] });
+                        }}
+                        data-match-preset={pr.key}
+                        className="inline-flex h-7 items-center rounded-full border border-slate-900/[.1] bg-slate-50 px-2.5 text-[11.5px] font-medium text-slate-700 transition-colors hover:border-blue-600/30 hover:bg-white dark:border-white/[.12] dark:bg-white/[.04] dark:text-slate-300 dark:hover:bg-white/[.08]"
+                      >
+                        {t(pr.key)}
+                      </button>
+                    ))}
+                  </div>
+                </form>
+                <AnimatePresence initial={false}>
+                  {note && (
+                    <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-2.5 flex items-center gap-2.5 rounded-[14px] border border-slate-900/[.08] bg-white/70 px-3.5 py-2 text-[12.5px] dark:border-white/[.1] dark:bg-white/[.04]" data-match-note={note.kind}>
+                      <Check size={14} strokeWidth={2.4} className={note.kind === "error" ? "hidden" : "flex-none text-emerald-600 dark:text-emerald-400"} />
+                      <span className="min-w-0 flex-1 text-slate-600 dark:text-slate-300">
+                        {note.kind === "local" ? t("matchLocal", { items: note.parts.join(" · ") }) : note.kind === "ai" ? (note.skus.length ? t("matchAi", { reason: note.reason }) : t("matchAiNone")) : t("matchError")}
+                      </span>
+                      <button type="button" onClick={() => setNote(null)} className="flex-none text-[12px] font-semibold text-blue-700 dark:text-blue-400">
+                        {t("clear")}
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* ── Toolbar: count, active filters, sort ── */}
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    <span className="mr-1 text-[13px] font-semibold tabular-nums" data-result-count={rows.length}>
+                      {t("resultCount", { count: rows.length })}
+                    </span>
+                    {active.map(({ group, value }) => (
+                      <button key={`${group}:${value}`} type="button" onClick={() => setGroup(group, value)} data-active-filter={`${group}:${value}`} className="inline-flex h-7 items-center gap-1 rounded-full border border-blue-700/20 bg-blue-700/[.06] pl-2.5 pr-1.5 text-[11.5px] font-semibold text-blue-800 hover:bg-blue-700/[.1] dark:border-blue-400/25 dark:bg-blue-500/[.12] dark:text-blue-200">
+                        {label(group, value)}
+                        <X size={12} strokeWidth={2.4} />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {SORTS.map((s) => {
+                      const on = sort === s && !aiSkus;
+                      return (
+                        <button key={s} type="button" onClick={() => setSort(s)} aria-pressed={on} data-sort={s} className={`h-8 rounded-full px-3 text-[12px] font-semibold transition-colors ${on ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "border border-slate-900/[.12] text-slate-600 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:text-slate-300 dark:hover:bg-white/[.06]"}`}>
+                          {t(`sort_${s}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {aiPending ? (
+                  <div className="mt-4 grid grid-cols-3 gap-4" data-skeletons>
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="h-[260px] animate-pulse rounded-[22px] border border-slate-900/[.06] bg-white/60 dark:border-white/[.06] dark:bg-white/[.03]" />
+                    ))}
+                  </div>
+                ) : rows.length === 0 ? (
+                  <div className="mt-4 rounded-[22px] border border-dashed border-slate-900/[.14] bg-white/70 px-7 py-14 text-center dark:border-white/[.14] dark:bg-white/[.03]" data-catalog-empty>
+                    <div className="text-[15px] font-semibold tracking-[-.025em]">{t("emptyTitle")}</div>
+                    <p className="mx-0 mb-[18px] mt-2.5 text-[13.5px] text-slate-600 dark:text-ink-muted">{t("emptyBodyFilters")}</p>
+                    <button type="button" onClick={resetAll} className="inline-flex h-11 items-center justify-center rounded-[14px] bg-blue-700 px-[22px] text-[13.5px] font-semibold text-white hover:bg-blue-800">
+                      {t("resetFilters")}
+                    </button>
+                  </div>
+                ) : view === "grid" ? (
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" data-product-grid>
+                    {rows.map((p) => (
+                      <CatalogCard key={p.sku} p={p} onNotify={setNotifyFor} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className={`mt-4 ${SURFACE}`} data-product-table>
+                    <div className={`${ROW_GRID} border-b border-slate-900/[.06] bg-slate-900/[.015] px-5 py-2 text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-white/[.06] dark:bg-white/[.02] dark:text-ink-muted`}>
+                      <span />
+                      <span>{t("colProduct")}</span>
+                      <span className="w-[84px] text-center">{t("colQty")}</span>
+                      <span className="text-right">{t("colPrice")}</span>
+                      <span />
+                    </div>
+                    {rows.map((p) => (
+                      <CatalogRow key={p.sku} p={p} onNotify={setNotifyFor} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
-
-      {/* Waitlist lives here, not in the card, so the grid stays uniform */}
-      <StockNotifyModal
-        isOpen={notifyFor !== null}
-        onClose={() => setNotifyFor(null)}
-        productId={notifyFor?.id ?? ""}
-        productName={notifyFor?.name ?? ""}
-      />
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+        <StockNotifyModal isOpen={notifyFor !== null} onClose={() => setNotifyFor(null)} productId={notifyFor?.id ?? ""} productName={notifyFor?.name ?? ""} />
       </div>
 
       <div className="block md:hidden">
         <MobileProductsLayout
-          products={products}
-          initialCategory={initialCategory}
-          gasMarks={marks}
-          gasMarkCounts={gasMarkCounts}
-          onToggleGasMark={toggleMark}
-          gasMarksPending={marksPending}
+          products={mobileProducts}
+          initialCategory={filters.cat[0] ?? null}
+          gasMarks={filters.marks}
+          gasMarkCounts={mobileCounts}
+          onToggleGasMark={(m) => setGroup("marks", m)}
+          gasMarksPending={false}
         />
       </div>
     </div>
+  );
+}
+
+function Count({ n, on }: { n: number; on: boolean }) {
+  return <span className={`rounded-full px-1.5 text-[11px] tabular-nums ${on ? "bg-white/15 dark:bg-slate-900/10" : "bg-slate-900/[.06] dark:bg-white/[.08]"}`}>{n}</span>;
+}
+
+function FacetSection({ title, children, last = false }: { title: string; children: React.ReactNode; last?: boolean }) {
+  return (
+    <div className={`${last ? "" : "border-b border-slate-900/[.07] dark:border-white/[.07]"} py-3.5`}>
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:text-ink-muted">{title}</div>
+      <div className="flex flex-col gap-0.5">{children}</div>
+    </div>
+  );
+}
+
+function FacetOption({ label, count, on, onClick, mono = false, data }: { label: string; count: number; on: boolean; onClick: () => void; mono?: boolean; data: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      disabled={count === 0 && !on}
+      data-facet={data}
+      data-facet-count={count}
+      className={`flex min-h-[34px] w-full items-center gap-2.5 rounded-[10px] px-2 text-left text-[12.5px] transition-colors hover:bg-slate-900/[.04] disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent dark:hover:bg-white/[.06] ${
+        on ? "font-semibold text-slate-900 dark:text-white" : "font-medium text-slate-600 dark:text-slate-300"
+      }`}
+    >
+      <span className={`flex h-[17px] w-[17px] flex-none items-center justify-center rounded-[5px] border-[1.5px] ${on ? "border-blue-700 bg-blue-700" : "border-slate-900/[.18] dark:border-white/[.22]"}`}>
+        {on && <Check size={11} strokeWidth={3} className="text-white" />}
+      </span>
+      <span className={`min-w-0 flex-1 truncate ${mono ? "font-mono" : ""}`}>{label}</span>
+      <span className="text-[11px] tabular-nums text-slate-400 dark:text-ink-muted">{count}</span>
+    </button>
   );
 }

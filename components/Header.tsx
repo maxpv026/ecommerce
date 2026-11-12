@@ -33,6 +33,9 @@ const NAV_LINKS: NavLink[] = [
   // rather than breaking. Putting it behind a session would hide the best
   // reason a new buyer has to look at this site.
   { key: "marketHub", href: "/hub" },
+  // Public SDS library + the F-Gas rules — named for exactly what it holds,
+  // so it can't be mistaken for the account's own "Records & Compliance".
+  { key: "navSds", href: "/compliance/sds", matchPrefix: "/compliance" },
   // The "Compliance" item used to sit here, pointing at /compliance/sds.
   // It came out because one header label reading "Compliance" and an account
   // group reading "Records & Compliance" were two different things: public
@@ -128,26 +131,35 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
     router.refresh();
   };
 
+  const epaVerified = isAuthenticated && Boolean(session?.user?.epaVerified);
+  // Shared by every control in the dock: one height, one radius, one border.
+  const CONTROL = "flex h-9 flex-none items-center rounded-xl border text-[13px] font-medium transition-colors";
+  const CONTROL_IDLE = "border-slate-200 bg-white/70 text-slate-800 hover:border-slate-300 hover:bg-white dark:border-white/[.1] dark:bg-white/[.03] dark:text-slate-100 dark:hover:border-white/20 dark:hover:bg-white/[.06]";
+  const CAPSULE_ITEM = "flex h-8 items-center gap-1.5 rounded-[10px] px-2.5 text-[12.5px] font-semibold text-slate-700 transition-colors hover:bg-white hover:shadow-[0_1px_2px_rgba(15,23,42,.08)] dark:text-slate-200 dark:hover:bg-white/[.08]";
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-900/[.07] bg-white/75 backdrop-blur-xl backdrop-saturate-150 dark:border-hairline dark:bg-glass">
-      <div className="mx-auto flex h-[70px] max-w-[1320px] items-center gap-7 px-8">
-        <Link href="/" className="flex flex-none items-center gap-[9px]">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl backdrop-saturate-150 dark:border-white/[.08] dark:bg-[#0B0F17]/85" data-header>
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-8">
+        <Link href="/" className="flex flex-none items-center gap-2" data-header-brand>
           <span className="block h-[15px] w-[15px] rounded-full border-[3.5px] border-slate-900 dark:border-slate-50" />
-          <span className="text-[19px] font-semibold tracking-[-.035em]">My Energy</span>
+          <span className="text-[17px] font-semibold tracking-[-.035em]">My Energy</span>
         </Link>
 
-        <nav className="ml-3.5 hidden flex-none gap-6.5 min-[1120px]:flex">
+        {/* Navigation track: the active route sits on a surface, not bare text. */}
+        <nav className="ml-2 hidden flex-none items-center gap-0.5 min-[1120px]:flex" data-header-nav>
           {NAV_LINKS.map(({ key, href, matchPrefix }) => {
             const active = pathname.startsWith(matchPrefix ?? href);
             return (
               <Link
                 key={key}
                 href={href}
-                className={
+                aria-current={active ? "page" : undefined}
+                data-nav-item={key}
+                className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-medium tracking-[-.01em] transition-colors ${
                   active
-                    ? "text-[13.5px] font-semibold tracking-[-.01em] text-slate-900 dark:text-slate-50"
-                    : "text-[13.5px] tracking-[-.01em] text-slate-600 hover:text-blue-700 dark:text-ink-muted dark:hover:text-blue-400"
-                }
+                    ? "bg-slate-100 text-slate-900 dark:bg-white/[.07] dark:text-white"
+                    : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[.04] dark:hover:text-white"
+                }`}
               >
                 {t(key)}
               </Link>
@@ -155,12 +167,14 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
           })}
         </nav>
 
-        <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2.5">
+        <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
           <HeaderSearch onQueryChange={onQueryChange} />
 
-          <div className="flex flex-none items-center gap-1.5">
-            <HeaderLanguageSwitcher />
-            <ThemeToggle />
+          {/* Language + theme: one capsule */}
+          <div className="flex flex-none items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-50/60 p-0.5 dark:border-white/[.08] dark:bg-white/[.02]" data-header-capsule>
+            <HeaderLanguageSwitcher triggerClassName={`${CAPSULE_ITEM} disabled:opacity-60`} />
+            <span aria-hidden className="h-4 w-px bg-slate-200 dark:bg-white/[.1]" />
+            <ThemeToggle className={`${CAPSULE_ITEM} w-8 justify-center px-0`} iconSize={15} />
           </div>
 
           {isAuthenticated ? (
@@ -171,14 +185,24 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
                 aria-label={t("accountMenuAria")}
-                className="flex h-[38px] flex-none items-center gap-2 rounded-full border border-slate-900/[.12] bg-white pl-[5px] pr-3 text-[13px] font-medium text-slate-900 transition-colors hover:border-slate-900/30 dark:border-hairline-strong dark:bg-surface dark:text-slate-50 dark:hover:border-white/30"
+                data-header-account
+                className={`${CONTROL} ${CONTROL_IDLE} gap-2 pl-1 pr-2.5`}
               >
-                <Avatar
-                  avatarUrl={session?.user?.image ?? null}
-                  initials={initialsFrom(session?.user?.name ?? session?.user?.email ?? "?")}
-                  size={28}
-                  className="text-[11px]"
-                />
+                <span className="relative flex-none">
+                  <Avatar
+                    avatarUrl={session?.user?.image ?? null}
+                    initials={initialsFrom(session?.user?.name ?? session?.user?.email ?? "?")}
+                    size={26}
+                    className="text-[10.5px]"
+                  />
+                  {epaVerified && (
+                    <span
+                      title={t("fgasVerifiedDot")}
+                      data-fgas-dot
+                      className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 dark:border-[#0B0F17]"
+                    />
+                  )}
+                </span>
                 <span className="hidden max-w-[120px] truncate min-[1120px]:block">
                   {session?.user?.name?.split(" ")[0] ?? session?.user?.email?.split("@")[0]}
                 </span>
@@ -302,7 +326,8 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
             <button
               type="button"
               onClick={onSignInClick}
-              className="flex h-[38px] flex-none items-center gap-[7px] rounded-full border border-slate-900/[.12] bg-white px-[15px] text-[13px] font-medium text-slate-900 transition-colors hover:border-slate-900/30 dark:border-hairline-strong dark:bg-surface dark:text-slate-50 dark:hover:border-white/30"
+              data-header-signin
+              className={`${CONTROL} ${CONTROL_IDLE} gap-[7px] px-3`}
             >
               <User size={15} strokeWidth={2} />
               {t("signIn")}
@@ -315,27 +340,32 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
             aria-label={favoritesCount > 0 ? t("favoritesAriaCount", { count: favoritesCount }) : t("favoritesAria")}
             title={t("favoritesAria")}
             data-header-favorites
-            className="relative flex h-[38px] w-[38px] flex-none items-center justify-center rounded-full border border-slate-900/[.12] bg-white text-slate-700 transition-colors hover:border-slate-900/30 hover:text-primary dark:border-hairline-strong dark:bg-surface dark:text-slate-200 dark:hover:border-white/30 dark:hover:text-blue-300"
+            className={`${CONTROL} ${CONTROL_IDLE} gap-1.5 px-2.5`}
           >
-            <Heart size={16} strokeWidth={2} fill={favoritesCount > 0 ? "currentColor" : "none"} className={favoritesCount > 0 ? "text-primary dark:text-blue-300" : ""} />
+            <Heart size={16} strokeWidth={2} fill={favoritesCount > 0 ? "currentColor" : "none"} className={favoritesCount > 0 ? "text-blue-700 dark:text-blue-300" : "text-slate-600 dark:text-slate-300"} />
             {favoritesCount > 0 && (
-              <span
-                data-favorites-badge
-                className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-blue-700 px-[5px] text-[10.5px] font-semibold text-white dark:border-canvas"
-              >
+              <span data-favorites-badge className="text-[12.5px] font-semibold tabular-nums">
                 {favoritesCount > 99 ? "99+" : favoritesCount}
               </span>
             )}
           </Link>
+          {/* Cart: the count is inline, and the button turns the brand blue once it holds something. */}
           <Link
             href="/cart"
-            aria-label="Open cart"
-            className="relative flex h-[38px] w-[38px] flex-none items-center justify-center rounded-full border border-slate-900/[.12] bg-slate-900 text-white transition-colors hover:bg-slate-800 dark:border-hairline-strong dark:bg-invert dark:text-invert-ink dark:hover:bg-slate-200"
+            aria-label={t("cartAria", { count: shownCount })}
+            data-header-cart
+            data-cart-count={shownCount}
+            className={`${CONTROL} gap-2 px-3 font-semibold ${
+              shownCount > 0
+                ? "border-transparent bg-blue-700 text-white hover:bg-blue-800"
+                : "border-slate-900 bg-slate-900 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+            }`}
           >
             <ShoppingCart size={16} strokeWidth={2} />
+            <span>{t("cart")}</span>
             {shownCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-blue-700 px-[5px] text-[10.5px] font-semibold text-white dark:border-canvas">
-                {shownCount}
+              <span className="rounded-md bg-white/20 px-1.5 text-[12px] tabular-nums" data-cart-badge>
+                {shownCount > 99 ? "99+" : shownCount}
               </span>
             )}
           </Link>

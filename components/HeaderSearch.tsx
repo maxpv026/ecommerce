@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useId, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -66,9 +66,11 @@ interface HeaderSearchProps {
  * The boundary lives here rather than at each call site so that simply
  * rendering a `<Header>` cannot un-static a page again.
  */
+const noSubscribe = () => () => undefined;
+
 export default function HeaderSearch(props: HeaderSearchProps) {
   return (
-    <Suspense fallback={<div className="relative flex h-[38px] w-[180px] max-w-[280px] flex-1" />}>
+    <Suspense fallback={<div className="relative flex h-9 min-w-[160px] max-w-[300px] flex-1" />}>
       <HeaderSearchBox {...props} />
     </Suspense>
   );
@@ -95,6 +97,27 @@ function HeaderSearchBox({ onQueryChange }: HeaderSearchProps) {
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ⌘K / Ctrl+K anywhere, or "/" when not already typing, focuses the box.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+      if (((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") || (e.key === "/" && !typing)) {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  // The badge names the platform's key. Server and hydration render "⌘K";
+  // the store swaps in "Ctrl K" afterwards on non-Apple systems, mismatch-free.
+  const shortcut = useSyncExternalStore(
+    noSubscribe,
+    () => (/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘K" : "Ctrl K"),
+    () => "⌘K"
+  );
 
   const debounced = useDebouncedValue(value, 300);
   const term = normalizeSearchTerm(debounced);
@@ -206,12 +229,12 @@ function HeaderSearchBox({ onQueryChange }: HeaderSearchProps) {
   const empty = !loading && !failed && hits.length === 0;
 
   return (
-    <div ref={wrapRef} className="relative flex h-[38px] w-[180px] max-w-[280px] flex-1" data-header-search>
+    <div ref={wrapRef} className="relative flex h-9 min-w-[160px] max-w-[300px] flex-1" data-header-search>
       <div
-        className={`flex h-[38px] w-full items-center gap-2 rounded-full border bg-slate-50 px-3.5 transition-[border-color,box-shadow] duration-200 dark:bg-surface ${
+        className={`flex h-9 w-full items-center gap-2 rounded-xl border bg-slate-50/80 px-3.5 transition-[border-color,box-shadow,background-color] duration-200 focus-within:bg-white dark:bg-white/[.03] dark:focus-within:bg-white/[.05] ${
           showDropdown
-            ? "border-cyan-500/60 shadow-[0_0_0_3px_rgba(6,182,212,.16)] dark:border-cyan-400/50"
-            : "border-slate-900/[.12] dark:border-hairline-strong"
+            ? "border-blue-600/50 shadow-[0_0_0_3px_rgba(37,99,235,.14)] dark:border-blue-400/40"
+            : "border-slate-200 dark:border-white/10"
         }`}
       >
         {loading ? (
@@ -250,6 +273,11 @@ function HeaderSearchBox({ onQueryChange }: HeaderSearchProps) {
           >
             <X size={13} strokeWidth={2.4} />
           </button>
+        )}
+        {value.length === 0 && (
+          <kbd aria-hidden data-search-shortcut className="flex-none rounded-md border border-slate-200 bg-white px-1.5 py-px font-sans text-[10.5px] font-semibold text-slate-400 dark:border-white/10 dark:bg-white/[.04] dark:text-slate-500">
+            {shortcut}
+          </kbd>
         )}
       </div>
 
