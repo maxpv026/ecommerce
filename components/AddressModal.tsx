@@ -17,8 +17,12 @@ type FormState = {
   city: string;
   postalCode: string;
   country: string;
+  phone: string;
+  siteType: "" | "WAREHOUSE" | "SITE" | "OFFICE";
   isDefault: boolean;
 };
+
+const SITE_TYPES = ["WAREHOUSE", "SITE", "OFFICE"] as const;
 
 const EMPTY: FormState = {
   title: "",
@@ -27,11 +31,13 @@ const EMPTY: FormState = {
   city: "",
   postalCode: "",
   country: "",
+  phone: "",
+  siteType: "",
   isDefault: false,
 };
 
 interface FieldSpec {
-  key: keyof Omit<FormState, "isDefault">;
+  key: keyof Omit<FormState, "isDefault" | "siteType">;
   labelKey: string;
   placeholder: string;
   wide?: boolean;
@@ -43,7 +49,9 @@ const FIELDS: FieldSpec[] = [
   { key: "street", labelKey: "adrFieldStreet", placeholder: "vul. Shevchenka 12, of. 4", wide: true },
   { key: "city", labelKey: "adrFieldCity", placeholder: "Lviv" },
   { key: "postalCode", labelKey: "adrFieldPostal", placeholder: "79000" },
-  { key: "country", labelKey: "adrFieldCountry", placeholder: "Ukraine", wide: true },
+  { key: "country", labelKey: "adrFieldCountry", placeholder: "Ukraine" },
+  // The consignee an ADR carrier calls — saved with the address, and kept on edit.
+  { key: "phone", labelKey: "adrFieldPhone", placeholder: "+380 67 123 45 67" },
 ];
 
 interface AddressModalProps {
@@ -69,6 +77,8 @@ export default function AddressModal({ open, address, onClose, onSaved }: Addres
           city: address.city ?? "",
           postalCode: address.postalCode ?? "",
           country: address.country ?? "",
+          phone: address.phone ?? "",
+          siteType: address.siteType ?? "",
           isDefault: address.isDefault,
         }
       : EMPTY
@@ -104,6 +114,8 @@ export default function AddressModal({ open, address, onClose, onSaved }: Addres
       postalCode: form.postalCode,
       country: form.country,
       kind: address?.kind ?? "SHIPPING",
+      phone: form.phone,
+      siteType: form.siteType,
       isDefault: form.isDefault,
     });
     setSaving(false);
@@ -197,6 +209,31 @@ export default function AddressModal({ open, address, onClose, onSaved }: Addres
                     </label>
                   );
                 })}
+              </div>
+
+              {/* What the place is — the buyer's own tag, shown on the address row. */}
+              <div className="mt-4" role="radiogroup" aria-label={t("adrSiteTypeLabel")} data-address-site-type>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("adrSiteTypeLabel")}</div>
+                <div className="flex flex-wrap gap-2">
+                  {(["", ...SITE_TYPES] as const).map((type) => {
+                    const on = form.siteType === type;
+                    return (
+                      <button
+                        key={type || "none"}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        data-site-type={type || "none"}
+                        onClick={() => setForm((f) => ({ ...f, siteType: type }))}
+                        className={`h-8 rounded-full border px-3 text-[12px] font-semibold transition-colors ${
+                          on ? "border-transparent bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "border-slate-900/[.12] text-slate-600 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:text-slate-300"
+                        }`}
+                      >
+                        {t(type ? `adrSite_${type}` : "adrSite_none")}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <label className="mt-4 flex cursor-pointer items-center gap-3">

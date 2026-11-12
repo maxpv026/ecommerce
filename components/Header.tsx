@@ -191,7 +191,8 @@ export default function Header({ onQueryChange, onSignInClick }: HeaderProps) {
                 <span className="relative flex-none">
                   <Avatar
                     avatarUrl={session?.user?.image ?? null}
-                    initials={initialsFrom(session?.user?.name ?? session?.user?.email ?? "?")}
+                    initials={session?.user?.avatarInitials || initialsFrom(session?.user?.name ?? session?.user?.email ?? "?")}
+                    tone={session?.user?.avatarTone}
                     size={26}
                     className="text-[10.5px]"
                   />

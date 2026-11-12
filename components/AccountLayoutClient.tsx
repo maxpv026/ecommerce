@@ -2,16 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
-import DashboardDesktop from "./DashboardDesktop";
 import SmartRestockStrip from "./profile/SmartRestockStrip";
 import MobileProfileLayout from "./MobileProfileLayout";
 import MobileProfileSignedOutLayout from "./MobileProfileSignedOutLayout";
+import ProfileHub, { type LogbookSummary } from "./profile/hub/ProfileHub";
+import type { ProfileTab } from "@/lib/profileTabs";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { ActiveRestockAlert } from "@/lib/smartRestock";
 import type { OrderTrackingView } from "@/lib/tracking";
-import type { LogbookSummary } from "./DashboardDesktop";
+import type { ProfileHubData } from "@/lib/profileHub";
 
 interface AccountLayoutClientProps {
   isAuthenticated: boolean;
@@ -22,8 +25,11 @@ interface AccountLayoutClientProps {
   addresses?: UserAddress[] | null;
   /** Predictive restock suggestions; empty renders nothing. */
   restockAlerts?: ActiveRestockAlert[];
-  /** This year's F-Gas logbook figures for the dashboard card. */
+  /** This year's F-Gas logbook figures. */
   logbook?: LogbookSummary | null;
+  /** Preferences, cylinder fleet, quotes, favourites, security (lib/profileHub). */
+  hub?: ProfileHubData | null;
+  initialTab?: ProfileTab;
 }
 
 export default function AccountLayoutClient({
@@ -35,7 +41,10 @@ export default function AccountLayoutClient({
   addresses,
   restockAlerts = [],
   logbook = null,
+  hub = null,
+  initialTab = "overview",
 }: AccountLayoutClientProps) {
+  const t = useTranslations("ProfileHub");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: session, status, update } = useSession();
 
@@ -61,33 +70,39 @@ export default function AccountLayoutClient({
 
   return (
     <div className="flex-1 bg-canvas">
-      {/* Desktop: the bento dashboard (My Energy Dashboard Desktop design) */}
       <div className="hidden md:block">
-        <Header
-          onSignInClick={() => setIsAuthModalOpen(true)}
-        />
-        <SmartRestockStrip alerts={restockAlerts} className="mx-auto max-w-[1240px] px-8 pt-7" />
-        <DashboardDesktop
-          isAuthenticated={isAuthenticated}
-          profile={profile ?? null}
-          orders={orders ?? null}
-          orderTracking={orderTracking ?? {}}
-          addresses={addresses ?? null}
-          dashboard={dashboardData}
-          logbook={logbook}
-        />
+        <Header onSignInClick={() => setIsAuthModalOpen(true)} />
+        {isAuthenticated && profile && hub ? (
+          <>
+            <SmartRestockStrip alerts={restockAlerts} className="mx-auto max-w-7xl px-8 pt-7" />
+            <ProfileHub
+              profile={profile}
+              orders={orders ?? []}
+              orderTracking={orderTracking ?? {}}
+              addresses={addresses ?? []}
+              dashboard={dashboardData}
+              logbook={logbook}
+              hub={hub}
+              initialTab={initialTab}
+            />
+          </>
+        ) : (
+          // No session (a race past the proxy gate): ask to sign in — never a sample account.
+          <main className="mx-auto max-w-7xl px-8 pb-24 pt-9" data-profile-signed-out>
+            <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{t("signedOutTitle")}</h1>
+            <p className="m-0 mt-2 text-[14px] text-slate-500 dark:text-ink-muted">{t("signedOutBody")}</p>
+            <Link href="/auth" className="mt-6 inline-flex h-12 items-center rounded-[14px] bg-blue-700 px-6 text-[14.5px] font-semibold text-white hover:bg-blue-800">
+              {t("signIn")}
+            </Link>
+          </main>
+        )}
       </div>
 
       <div className="block md:hidden">
         {isAuthenticated ? (
           <>
             <SmartRestockStrip alerts={restockAlerts} className="px-4 pt-4" />
-            <MobileProfileLayout
-            dashboardData={dashboardData}
-            profile={profile}
-            orders={orders}
-              addresses={addresses}
-            />
+            <MobileProfileLayout dashboardData={dashboardData} profile={profile} orders={orders} addresses={addresses} />
           </>
         ) : (
           <MobileProfileSignedOutLayout />

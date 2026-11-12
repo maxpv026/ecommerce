@@ -10,6 +10,9 @@ declare module "next-auth" {
       provider?: string;
       /** Mirrors Prisma User.companyName. */
       companyName?: string | null;
+      /** Monogram colour and custom initials (lib/profilePrefs). */
+      avatarTone?: string | null;
+      avatarInitials?: string | null;
       /**
        * Where the buyer's F-Gas certificate stands. The source of truth for
        * every purchase gate: only "VERIFIED" — set by an admin, never by the
@@ -40,6 +43,8 @@ declare module "next-auth/jwt" {
     provider?: string;
     role?: "USER" | "ADMIN" | "ACCOUNTANT" | "SUPER_ADMIN";
     companyName?: string | null;
+    avatarTone?: string | null;
+    avatarInitials?: string | null;
     fGasStatus?: FGasStatus;
     epaVerified?: boolean;
     locale?: string;

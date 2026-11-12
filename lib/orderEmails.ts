@@ -34,7 +34,7 @@ async function loadOrder(orderId: string) {
       authorizingCertificateNumber: true,
       authorizingCertificateExpiresAt: true,
       invoice: { select: { invoiceNumber: true } },
-      user: { select: { name: true, email: true, companyName: true, vatNumber: true, locale: true } },
+      user: { select: { name: true, email: true, companyName: true, vatNumber: true, locale: true, billingEmail: true } },
       items: {
         orderBy: { id: "asc" },
         select: {
@@ -176,6 +176,8 @@ async function confirmation(orderId: string, invoicePdf: Buffer | null): Promise
 
   return sendHtmlEmail({
     to: order.user.email,
+    // The buyer's accounts inbox gets the receipt and invoice too (profile → billing email).
+    ...(order.user.billingEmail && order.user.billingEmail !== order.user.email ? { cc: order.user.billingEmail } : {}),
     subject: subject.replace(/[\r\n]+/g, " "),
     html,
     text,

@@ -260,6 +260,22 @@ model User {
   countrySource    String?
   countryUpdatedAt DateTime?
 
+  // ── Profile preferences (Settings → /profile editor) ──
+  /// Monogram colour when there is no photo: slate | blue | emerald | amber | violet.
+  avatarTone          String?
+  /// Up to 3 characters shown instead of the derived initials ("MP", "ME").
+  avatarInitials      String?
+  /// Copies of order receipts and invoices go here as well (CC).
+  billingEmail        String?
+  /// Where cylinder deposit refunds are paid. Validated (ISO 13616 mod-97) on save.
+  depositIban         String?
+  /// The buyer's preferred fulfilment: DHL | FREIGHT | OWN_FLEET | PICKUP.
+  /// Shown to the logistics team on the order; the carrier is still theirs to choose.
+  preferredFulfilment String?
+  /// metric (bar · °C) | imperial (psig · °F) — engineering tools on the site.
+  preferredUnits      String?
+  cylinderReturnRequests CylinderReturnRequest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -716,6 +732,8 @@ model Address {
   // because rows created before in-checkout address entry have none.
   phone      String?
   kind       String  @default("SHIPPING") // "SHIPPING" | "BILLING"
+  /// What the place is, for the buyer's own sorting: WAREHOUSE | SITE (installation site) | OFFICE.
+  siteType   String?
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
@@ -1245,4 +1263,27 @@ model AiResponseCache {
   expiresAt DateTime
 
   @@index([expiresAt])
+}
+
+/// A buyer asking for empty cylinders to be collected (or announcing a drop-off
+/// at the warehouse). The request is a message to the logistics team, not a
+/// ledger movement: the RETURNED CylinderTransaction is written when the
+/// cylinders are actually received.
+model CylinderReturnRequest {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity      Int
+  /// PICKUP (collect from an address) | DROP_OFF (buyer brings them in)
+  method        String
+  /// Copied, not linked: the address may later be edited or deleted.
+  addressText   String?
+  preferredDate DateTime?
+  notes         String?
+  /// REQUESTED | SCHEDULED | COLLECTED | CANCELLED
+  status        String    @default("REQUESTED")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
 }

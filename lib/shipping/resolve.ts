@@ -56,8 +56,29 @@ export interface ShipmentRow {
 
 const iso = (d: Date | string) => (typeof d === "string" ? d : d.toISOString());
 
+/**
+ * Exactly the shipment columns, never the rest of the row. Callers pass the
+ * whole order (with Decimal totals and line items): spreading it carried
+ * those into every client component that got a `shipment` — Prisma Decimals
+ * that React refuses to serialise ("Only plain objects can be passed to
+ * Client Components"), one console error per order on /profile.
+ */
 export function shipmentSource(row: ShipmentRow): ShipmentSource {
-  return { ...row, createdAt: iso(row.createdAt), estimatedDelivery: iso(row.estimatedDelivery) };
+  return {
+    status: row.status,
+    createdAt: iso(row.createdAt),
+    estimatedDelivery: iso(row.estimatedDelivery),
+    trackingNumber: row.trackingNumber,
+    shippingCarrier: row.shippingCarrier,
+    carrierName: row.carrierName,
+    trackingUrl: row.trackingUrl,
+    driverName: row.driverName,
+    driverPhone: row.driverPhone,
+    vehiclePlate: row.vehiclePlate,
+    deliveryNotes: row.deliveryNotes,
+    shipmentStage: row.shipmentStage,
+    shipmentEvents: row.shipmentEvents,
+  };
 }
 
 /**

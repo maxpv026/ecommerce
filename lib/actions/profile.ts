@@ -6,6 +6,10 @@ import { auth } from "@/auth";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import { refreshUserCountryQuietly } from "@/lib/userCountry";
+import { AVATAR_TONES, FULFILMENT_PREFS, UNIT_PREFS, isValidCompanyId, isValidIban, normaliseInitials } from "@/lib/profilePrefs";
+
+/** Optional enum: absent = unchanged, "" = clear. */
+const optionalEnum = <T extends readonly [string, ...string[]]>(values: T) => z.enum(values).optional().or(z.literal(""));
 
 const UpdateProfileInput = z.object({
   name: z.string().trim().min(2).max(120),
@@ -19,7 +23,8 @@ const UpdateProfileInput = z.object({
     .string()
     .trim()
     .transform((v) => v.replace(/[\s.\-]/g, "").toUpperCase())
-    .refine((v) => v === "" || /^[A-Z]{2}[A-Z0-9]{2,14}$/.test(v), "vatNumber")
+    // EU VAT id, or a Ukrainian ЄДРПОУ (8 digits) / ІПН (10 digits).
+    .refine((v) => v === "" || isValidCompanyId(v), "vatNumber")
     .optional()
     .or(z.literal("")),
   // Free-text job title — NOT the RBAC role. The `role` column is derived
@@ -35,11 +40,22 @@ const UpdateProfileInput = z.object({
     .regex(/^[\d\s+()./-]*$/, "phone")
     .optional()
     .or(z.literal("")),
+  // ── Preferences (lib/profilePrefs) ──
+  avatarTone: optionalEnum(AVATAR_TONES),
+  avatarInitials: z.string().transform(normaliseInitials).optional(),
+  billingEmail: z.string().trim().toLowerCase().max(254).email("billingEmail").optional().or(z.literal("")),
+  depositIban: z
+    .string()
+    .transform((v) => v.replace(/\s+/g, "").toUpperCase())
+    .refine((v) => v === "" || isValidIban(v), "depositIban")
+    .optional(),
+  preferredFulfilment: optionalEnum(FULFILMENT_PREFS),
+  preferredUnits: optionalEnum(UNIT_PREFS),
 });
 
 export type UpdateProfileResult =
   | { ok: true }
-  | { ok: false; code: "UNAUTHENTICATED" | "INVALID_INPUT" | "FAILED" };
+  | { ok: false; code: "UNAUTHENTICATED" | "INVALID_INPUT" | "FAILED"; field?: string };
 
 export async function updateProfile(rawInput: unknown): Promise<UpdateProfileResult> {
   const session = await auth();
@@ -47,8 +63,8 @@ export async function updateProfile(rawInput: unknown): Promise<UpdateProfileRes
   if (!userId) return { ok: false, code: "UNAUTHENTICATED" };
 
   const parsed = UpdateProfileInput.safeParse(rawInput);
-  if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
-  const { name, companyName, jobTitle, phone, vatNumber } = parsed.data;
+  if (!parsed.success) return { ok: false, code: "INVALID_INPUT", field: String(parsed.error.issues[0]?.path[0] ?? "") };
+  const { name, companyName, jobTitle, phone, vatNumber, avatarTone, avatarInitials, billingEmail, depositIban, preferredFulfilment, preferredUnits } = parsed.data;
 
   // An omitted field is left as it is; only an explicit "" clears one.
   // Treating "absent" as "blank" erased data: the desktop modal has no phone
@@ -66,6 +82,12 @@ export async function updateProfile(rawInput: unknown): Promise<UpdateProfileRes
         vatNumber: optional(vatNumber),
         jobTitle: optional(jobTitle),
         phone: optional(phone),
+        avatarTone: optional(avatarTone),
+        avatarInitials: optional(avatarInitials),
+        billingEmail: optional(billingEmail),
+        depositIban: optional(depositIban),
+        preferredFulfilment: optional(preferredFulfilment),
+        preferredUnits: optional(preferredUnits),
       },
     });
     // Re-renders the profile dashboard in the same action roundtrip, so the

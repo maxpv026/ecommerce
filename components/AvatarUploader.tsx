@@ -1,5 +1,6 @@
 "use client";
 
+import { AVATAR_TONE_CLASS, isAvatarTone } from "@/lib/profilePrefs";
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -46,14 +47,17 @@ interface AvatarProps {
   /** Pixel size of the circle. */
   size: number;
   className?: string;
+  /** Monogram colour (lib/profilePrefs); the brand gradient when unset. */
+  tone?: string | null;
 }
 
 /** The circle itself: photo when there is one (and it loads), initials otherwise. */
-export function Avatar({ avatarUrl, initials, size, className = "" }: AvatarProps) {
+export function Avatar({ avatarUrl, initials, size, className = "", tone = null }: AvatarProps) {
   const [broken, setBroken] = useState<string | null>(null);
   return (
     <span
-      className={`relative flex flex-none items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] font-semibold text-white ${className}`}
+      data-avatar-tone={tone ?? "default"}
+      className={`relative flex flex-none items-center justify-center overflow-hidden rounded-full font-semibold ${isAvatarTone(tone) ? AVATAR_TONE_CLASS[tone] : "bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] text-white"} ${className}`}
       style={{ width: size, height: size }}
     >
       {avatarUrl && broken !== avatarUrl ? (
@@ -85,7 +89,7 @@ interface AvatarUploaderProps extends AvatarProps {
  * local preview while the upload runs; a failure puts the old one back.
  * The parent keys this on `avatarUrl`, so a server-side change resets it.
  */
-export default function AvatarUploader({ avatarUrl, initials, size, className, editable }: AvatarUploaderProps) {
+export default function AvatarUploader({ avatarUrl, initials, size, className, editable, tone = null }: AvatarUploaderProps) {
   const t = useTranslations("ProfileDashboard");
   const router = useRouter();
   const { update } = useSession();
@@ -104,7 +108,7 @@ export default function AvatarUploader({ avatarUrl, initials, size, className, e
     await update({});
   };
 
-  if (!editable) return <Avatar avatarUrl={avatarUrl} initials={initials} size={size} className={className} />;
+  if (!editable) return <Avatar avatarUrl={avatarUrl} initials={initials} size={size} className={className} tone={tone} />;
 
   const onFile = async (file: File | undefined) => {
     if (input.current) input.current.value = ""; // so re-picking the same file fires again
@@ -161,7 +165,7 @@ export default function AvatarUploader({ avatarUrl, initials, size, className, e
         aria-label={shown ? t("avatarChange") : t("avatarUpload")}
         className="relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/40"
       >
-        <Avatar avatarUrl={shown} initials={initials} size={size} className={className} />
+        <Avatar avatarUrl={shown} initials={initials} size={size} className={className} tone={tone} />
         <span
           className={`absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-slate-950/55 text-[10.5px] font-semibold text-white transition-opacity duration-200 ${
             busy ? "opacity-100" : "opacity-0 group-hover/avatar:opacity-100 group-focus-within/avatar:opacity-100"

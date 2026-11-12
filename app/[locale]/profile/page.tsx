@@ -8,9 +8,11 @@ import { getCustomerComplianceSummary } from "@/lib/compliance";
 import { getActiveRestockAlerts } from "@/lib/smartRestock";
 import type { OrderTrackingView } from "@/lib/tracking";
 import { resolveOrderTracking } from "@/lib/shipping/resolve";
+import { getProfileHub } from "@/lib/profileHub";
+import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
 
 export const metadata: Metadata = {
-  title: "Your Account — My Energy",
+  title: "Profile — My Energy",
   description: "Manage your My Energy profile, order history, and account security.",
 };
 
@@ -21,20 +23,24 @@ export const metadata: Metadata = {
  * order that isn't yours could then only change the UI, not the 200 status.
  * See app/[locale]/page.tsx for the full reasoning and the measurement.
  */
-export default function ProfilePage() {
+export default function ProfilePage({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string }> }) {
   return (
     <Suspense fallback={<PageSkeleton rows={4} />}>
-      <ProfileContent />
+      <ProfileContent searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function ProfileContent() {
+async function ProfileContent({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string }> }) {
+  // ?tab=orders opens that view; ?section= is the older spelling some links still use.
+  const sp = await searchParams;
+  const wanted = sp.tab ?? sp.section ?? "";
+  const initialTab: ProfileTab = (PROFILE_TABS as readonly string[]).includes(wanted) ? (wanted as ProfileTab) : "overview";
   const session = await auth();
   const isAuthenticated = Boolean(session?.user);
   const userId = session?.user?.id;
 
-  const [dashboardData, profile, orders, addresses, restockAlerts, compliance] = userId
+  const [dashboardData, profile, orders, addresses, restockAlerts, compliance, hub] = userId
     ? await Promise.all([
         getProfileDashboardData(userId),
         getUserProfile(userId),
@@ -42,8 +48,9 @@ async function ProfileContent() {
         getUserAddresses(userId),
         getActiveRestockAlerts(userId),
         getCustomerComplianceSummary(userId),
+        getProfileHub(userId),
       ])
-    : [null, null, null, null, [], null];
+    : [null, null, null, null, [], null, null];
 
   // The logbook card's figures: this year, same numbers /profile/compliance shows.
   const logbook = compliance
@@ -74,6 +81,8 @@ async function ProfileContent() {
       addresses={addresses}
       restockAlerts={restockAlerts ?? []}
       logbook={logbook}
+      hub={hub}
+      initialTab={initialTab}
     />
   );
 }

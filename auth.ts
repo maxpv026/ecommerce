@@ -281,6 +281,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
               })
           : null;
         token.companyName = dbUser?.companyName ?? null;
+        token.avatarTone = dbUser?.avatarTone ?? null;
+        token.avatarInitials = dbUser?.avatarInitials ?? null;
         token.epaVerified = dbUser?.epaVerified ?? false;
         token.fGasStatus = dbUser?.fGasStatus ?? "NONE";
         token.isTwoFactorEnabled = dbUser?.isTwoFactorEnabled ?? false;
@@ -338,6 +340,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
                   locale: true,
                   themePreference: true,
                   image: true,
+                  avatarTone: true,
+                  avatarInitials: true,
                   // So enabling 2FA unlocks the admin area without a re-login.
                   isTwoFactorEnabled: true,
                 },
@@ -364,6 +368,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           // An avatar upload/removal calls update(), so the header photo
           // follows without a re-login.
           token.picture = dbUser.image;
+          // The monogram the profile editor saved (lib/profilePrefs).
+          token.avatarTone = dbUser.avatarTone;
+          token.avatarInitials = dbUser.avatarInitials;
         }
       }
       return token;
@@ -375,6 +382,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         session.user.name = (token.name as string | undefined) ?? session.user.name;
         session.user.provider = token.provider as string | undefined;
         session.user.companyName = (token.companyName as string | null | undefined) ?? null;
+        session.user.avatarTone = (token.avatarTone as string | null | undefined) ?? null;
+        session.user.avatarInitials = (token.avatarInitials as string | null | undefined) ?? null;
         // fGasStatus is the source of truth; the two booleans are kept as
         // derived mirrors so nothing reading them can disagree with it.
         session.user.fGasStatus = (token.fGasStatus as FGasStatus | undefined) ?? "NONE";

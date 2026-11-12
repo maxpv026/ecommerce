@@ -163,6 +163,8 @@ const oneLine = (value: string) => value.replace(/[\r\n]+/g, " ").trim();
  */
 export async function sendHtmlEmail(message: {
   to: string;
+  /** A copy — e.g. the buyer's accounts address on a receipt (User.billingEmail). */
+  cc?: string;
   subject: string;
   html: string;
   text: string;

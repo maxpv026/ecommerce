@@ -301,6 +301,8 @@ export interface UserAddress {
   /** Delivery contact for the ADR carrier; null on rows saved before checkout asked. */
   phone: string | null;
   kind: "SHIPPING" | "BILLING";
+  /** Warehouse · installation site · office — the buyer's own tag. */
+  siteType: "WAREHOUSE" | "SITE" | "OFFICE" | null;
 }
 
 export async function getUserAddresses(userId: string): Promise<UserAddress[]> {
@@ -320,6 +322,7 @@ export async function getUserAddresses(userId: string): Promise<UserAddress[]> {
     country: a.country,
     phone: a.phone,
     kind: a.kind === "BILLING" ? "BILLING" : "SHIPPING",
+    siteType: a.siteType === "WAREHOUSE" || a.siteType === "SITE" || a.siteType === "OFFICE" ? a.siteType : null,
   }));
 }
 

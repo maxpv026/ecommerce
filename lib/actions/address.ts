@@ -20,6 +20,8 @@ const SaveAddressInput = z.object({
   // (and legacy rows) keep working; checkout requires it in the form.
   phone: z.string().trim().max(40).optional(),
   kind: z.enum(["SHIPPING", "BILLING"]).default("SHIPPING"),
+  // Absent = unchanged; "" = clear.
+  siteType: z.enum(["WAREHOUSE", "SITE", "OFFICE"]).optional().or(z.literal("")),
   isDefault: z.boolean().default(false),
 });
 
@@ -47,6 +49,7 @@ export interface SavedAddress {
   country: string | null;
   phone: string | null;
   kind: "SHIPPING" | "BILLING";
+  siteType: "WAREHOUSE" | "SITE" | "OFFICE" | null;
 }
 
 // The composed line every legacy consumer (checkout, mobile, shipping card)
@@ -79,13 +82,16 @@ export async function saveAddress(rawInput: unknown): Promise<AddressActionResul
 
   const parsed = SaveAddressInput.safeParse(rawInput);
   if (!parsed.success) return { ok: false, code: "INVALID_INPUT" };
-  const { id, isDefault, title, phone, ...fields } = parsed.data;
+  const { id, isDefault, title, phone, siteType, ...fields } = parsed.data;
 
   const data = {
     ...fields,
     title: title ?? deriveTitle(fields),
     // Empty string and "not given" mean the same thing in a nullable column.
-    phone: phone && phone.length > 0 ? phone : null,
+    // Absent leaves the stored number alone (an editor without the field must
+    // not erase the consignee phone an ADR carrier needs); "" clears it.
+    phone: phone === undefined ? undefined : phone.length > 0 ? phone : null,
+    siteType: siteType === undefined ? undefined : siteType || null,
     fullAddress: composeFullAddress(fields),
     isDefault,
   };
@@ -130,6 +136,7 @@ export async function saveAddress(rawInput: unknown): Promise<AddressActionResul
         country: saved.country,
         phone: saved.phone,
         kind: saved.kind === "BILLING" ? "BILLING" : "SHIPPING",
+        siteType: saved.siteType === "WAREHOUSE" || saved.siteType === "SITE" || saved.siteType === "OFFICE" ? saved.siteType : null,
       },
     };
   } catch (error) {

@@ -192,6 +192,11 @@ export default function AdminOrdersTable({
                         <span className="mt-1.5 block" data-order-country={o.orderNumber}>
                           <CountryBadge country={o.customer.country} name={o.customer.country ? countryNames[o.customer.country.code] : undefined} compact />
                         </span>
+                        {o.customer.preferredFulfilment && (
+                          <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400" data-order-preference={o.customer.preferredFulfilment}>
+                            {tShip("buyerPrefers", { method: tShip(`pref_${o.customer.preferredFulfilment}`) })}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-4 text-right">
                         <span className="block text-[13.5px] font-semibold tabular-nums">{eur(o.totalAmount)}</span>

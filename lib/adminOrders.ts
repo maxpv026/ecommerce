@@ -84,6 +84,8 @@ export interface AdminOrderRow {
     vatNumber: string | null;
     /** The account's resolved country (User.countryCode, lib/userCountry). */
     country: { code: string; city: string | null; source: string } | null;
+    /** How the buyer prefers to receive goods (profile) — a hint; the team picks the carrier. */
+    preferredFulfilment: string | null;
   };
   invoice: { id: string; invoiceNumber: string; status: string } | null;
   items: Array<{ id: string; sku: string; name: string; quantity: number; unitPrice: number; deposit: number; weightKg: number }>;
@@ -153,7 +155,7 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
       deliveryNotes: true,
       shipmentStage: true,
       shipmentEvents: true,
-      user: { select: { id: true, name: true, email: true, companyName: true, vatNumber: true, countryCode: true, countryCity: true, countrySource: true } },
+      user: { select: { id: true, name: true, email: true, companyName: true, vatNumber: true, countryCode: true, countryCity: true, countrySource: true, preferredFulfilment: true } },
       invoice: { select: { id: true, invoiceNumber: true, status: true } },
       items: {
         select: {
@@ -205,6 +207,7 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
         companyName: o.user.companyName,
         vatNumber: o.user.vatNumber,
         country: o.user.countryCode ? { code: o.user.countryCode, city: o.user.countryCity, source: o.user.countrySource ?? "ip" } : null,
+        preferredFulfilment: o.user.preferredFulfilment,
       },
       invoice: o.invoice,
       items: o.items.map((i) => ({
