@@ -1,7 +1,9 @@
 "use server";
 
 import { auth } from "@/auth";
+import { after } from "next/server";
 import prisma from "@/lib/prisma";
+import { refreshUserCountryQuietly } from "@/lib/userCountry";
 import { routing } from "@/i18n/routing";
 
 /**
@@ -18,6 +20,9 @@ export async function updateUserLocale(locale: string): Promise<void> {
 
   try {
     await prisma.user.update({ where: { id: session.user.id }, data: { locale } });
+    // The language is the last-resort country signal (lib/userCountry).
+    const userId = session.user.id;
+    after(() => refreshUserCountryQuietly(userId));
   } catch (error) {
     console.error("updateUserLocale failed:", error);
   }

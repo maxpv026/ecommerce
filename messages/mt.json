@@ -2195,6 +2195,18 @@
     "ctaNote": "Iftaħ il-chat mill-buttuna ta' appoġġ fuq kwalunkwe paġna tas-sit.",
     "reason": "Qed tirċievi dan għax ikkuntattjajt l-appoġġ ta' My Energy."
   },
+  "AdminCountry": {
+    "column": "Pajjiż",
+    "filterLabel": "Filtra skont il-pajjiż",
+    "allCountries": "L-all pajjiżi",
+    "unknown": "Ma ġiex iddeterminat",
+    "unknownHint": "Xejn fuq il-fajl ma jpoġġi din il-kont: l-ebda post ta' idħol, indirizz, numru tal-VAT, numru tat-telefon jew lingwa tal-interfaċċa.",
+    "source_ip": "Lokazzjoni tal-IP",
+    "source_address": "Indirizz predefinit",
+    "source_vat": "Prefiss tan-numru tal-VAT",
+    "source_phone": "Kod ta' ċempel tat-telefon",
+    "source_locale": "Stimat mill-lingwa tal-interfaċċa (mhux lokazzjoni)"
+  },
   "AdminShipping": {
     "title": "Twettiq",
     "method": "Metodu ta' kunsinna",

@@ -2195,6 +2195,18 @@
     "ctaNote": "Deschideți chatul din butonul de suport de pe orice pagină a site-ului.",
     "reason": "Primiți acest mesaj deoarece ați contactat suportul My Energy."
   },
+  "AdminCountry": {
+    "column": "Țară",
+    "filterLabel": "Filtrați după țară",
+    "allCountries": "Toate țările",
+    "unknown": "Nedeterminat",
+    "unknownHint": "Nimic înregistrat nu plasează acest cont: nicio locație de conectare, adresă, număr de TVA, număr de telefon sau limbă de interfață.",
+    "source_ip": "Locația IP",
+    "source_address": "Adresă implicită",
+    "source_vat": "Prefix număr TVA",
+    "source_phone": "Cod de apel telefonic",
+    "source_locale": "Estimare din limba interfeței (nu o locație)"
+  },
   "AdminShipping": {
     "title": "Îndeplinire",
     "method": "Metodă de livrare",

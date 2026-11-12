@@ -2195,6 +2195,18 @@
     "ctaNote": "Avaa chat tukipainikkeesta millä tahansa sivuston sivulla.",
     "reason": "Saat tämän viestin, koska otit yhteyttä My Energy -tukeen."
   },
+  "AdminCountry": {
+    "column": "Maa",
+    "filterLabel": "Suodata maan mukaan",
+    "allCountries": "Kaikki maat",
+    "unknown": "Ei määritetty",
+    "unknownHint": "Tälle tilille ei ole tallennettu tietoja: ei kirjautumisosoitetta, osoitetta, ALV-numeroa, puhelinnumeroa tai käyttöliittymän kieltä.",
+    "source_ip": "IP-sijainti",
+    "source_address": "Oletusosoite",
+    "source_vat": "ALV-numeron etuliite",
+    "source_phone": "Puhelinnumeron suuntanumero",
+    "source_locale": "Arvioitu käyttöliittymän kielen perusteella (ei sijainti)"
+  },
   "AdminShipping": {
     "title": "Toimitus",
     "method": "Toimitustapa",

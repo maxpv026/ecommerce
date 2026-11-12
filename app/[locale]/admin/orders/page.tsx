@@ -3,6 +3,7 @@ import { guardAdmin } from "@/lib/admin/guardAdmin";
 import { ADMIN_ORDER_FILTERS, listAdminOrders, type AdminOrderFilter } from "@/lib/adminOrders";
 import AdminOrdersTable from "@/components/admin/AdminOrdersTable";
 import { pickupDefaults } from "@/lib/shipping/resolve";
+import { countryName } from "@/lib/country";
 
 export const metadata: Metadata = {
   title: "Orders — My Energy Admin",
@@ -26,6 +27,9 @@ export default async function AdminOrdersPage({ params, searchParams }: AdminOrd
   const filter = (ADMIN_ORDER_FILTERS as readonly string[]).includes(sp.filter ?? "") ? (sp.filter as AdminOrderFilter) : "all";
   const query = (sp.q ?? "").slice(0, 120);
   const data = await listAdminOrders({ filter, query, page: Number(sp.page) || 1 });
+  const { locale } = await params;
+  const codes = new Set(data.rows.flatMap((o) => (o.customer.country ? [o.customer.country.code] : [])));
+  const countryNames = Object.fromEntries([...codes].map((code) => [code, countryName(code, locale)]));
 
   return (
     <div className="mx-auto w-full max-w-[1240px] px-4 py-10 md:px-8 md:py-14">
@@ -39,7 +43,7 @@ export default async function AdminOrdersPage({ params, searchParams }: AdminOrd
         </p>
       </header>
 
-      <AdminOrdersTable data={data} filter={filter} query={query} pickupAddress={pickupDefaults().location} />
+      <AdminOrdersTable data={data} filter={filter} query={query} pickupAddress={pickupDefaults().location} countryNames={countryNames} />
     </div>
   );
 }

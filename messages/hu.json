@@ -2195,6 +2195,18 @@
     "ctaNote": "Nyissa meg a csevegést a támogatás gomb segítségével a webhely bármely oldalán.",
     "reason": "Ezt azért kapja, mert kapcsolatba lépett a My Energy támogatásával."
   },
+  "AdminCountry": {
+    "column": "Ország",
+    "filterLabel": "Szűrés ország szerint",
+    "allCountries": "Minden ország",
+    "unknown": "Nem meghatározott",
+    "unknownHint": "Nincs nyilvántartásban ezen fiók: nincs bejelentkezési hely, cím, adószám, telefonszám vagy felhasználói felület nyelve.",
+    "source_ip": "IP hely",
+    "source_address": "Alapértelmezett cím",
+    "source_vat": "ÁFA szám előtag",
+    "source_phone": "Telefonszám hívóelőhívója",
+    "source_locale": "A felület nyelve alapján becsült (nem helyszín)"
+  },
   "AdminShipping": {
     "title": "Teljesítés",
     "method": "Szállítási mód",

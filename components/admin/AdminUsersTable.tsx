@@ -2,15 +2,17 @@
 
 import { Fragment, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Bot, Check, ChevronDown, Clock, ExternalLink, FileText, History, Loader2, Search, ShieldAlert, ShieldCheck, ShieldX, X } from "lucide-react";
+import { AlertTriangle, Bot, Check, ChevronDown, Clock, ExternalLink, FileText, Globe2, History, Loader2, Search, ShieldAlert, ShieldCheck, ShieldX, X } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { setUserRole, updateUserFgasStatus } from "@/lib/actions/adminUsers";
 import { useTranslations } from "next-intl";
 import { ASSIGNABLE_ROLES, type AppRole } from "@/lib/rbac";
-import type { AdminUserFilter, AdminUserRow, AdminUsersPage } from "@/lib/adminUsers";
+import type { AdminCountryFilter, AdminUserFilter, AdminUserRow, AdminUsersPage } from "@/lib/adminUsers";
+import { flagEmoji } from "@/lib/country";
+import CountryBadge from "@/components/admin/CountryBadge";
 
 /**
- * Admin → Users. URL-driven (?filter, ?q, ?page) so a filtered view can be
+ * Admin → Users. URL-driven (?filter, ?country, ?q, ?page) so a filtered view can be
  * bookmarked or shared. Decisions go through updateUserFgasStatus, which
  * hands off to lib/fgasReview — the buttons only appear for transitions that
  * module allows, and it re-checks them anyway.
@@ -155,19 +157,75 @@ function RoleControl({ user, canManage }: { user: AdminUsersPage["rows"][number]
   );
 }
 
-export default function AdminUsersTable({ data, filter, query, canManageRoles = false }: { data: AdminUsersPage; filter: AdminUserFilter; query: string; canManageRoles?: boolean }) {
+/**
+ * Country filter: a native select (keyboard and screen-reader friendly),
+ * styled as a toolbar pill. Lists the countries present under the current
+ * status filter and search, most accounts first.
+ */
+function CountryFilter({ data, country, names, onChange }: { data: AdminUsersPage; country: AdminCountryFilter; names: Record<string, string>; onChange: (next: AdminCountryFilter) => void }) {
+  const t = useTranslations("AdminCountry");
+  const all = data.countries.reduce((n, c) => n + c.count, 0) + data.unknownCountry;
+  const on = country !== "all";
+  // A country chosen from a link can have no accounts under the other filters; keep it selectable.
+  const listed = on && country !== "unknown" && !data.countries.some((c) => c.code === country) ? [...data.countries, { code: country, count: 0 }] : data.countries;
+  return (
+    <label
+      className={`relative inline-flex h-9 items-center gap-2 rounded-full border pl-3.5 pr-2 text-[12.5px] font-semibold transition-colors ${
+        on
+          ? "border-transparent bg-[#0B1020] text-white dark:bg-white dark:text-slate-900"
+          : "border-slate-900/[.12] text-slate-600 hover:bg-slate-900/[.04] dark:border-white/[.12] dark:text-slate-300 dark:hover:bg-white/[.06]"
+      }`}
+    >
+      <Globe2 size={14} aria-hidden />
+      <select
+        value={country}
+        onChange={(e) => onChange(e.target.value as AdminCountryFilter)}
+        data-country-filter
+        aria-label={t("filterLabel")}
+        className="cursor-pointer appearance-none bg-transparent pr-5 text-[12.5px] font-semibold outline-none [&>option]:bg-white [&>option]:text-slate-900"
+      >
+        <option value="all">{`${t("allCountries")} · ${all}`}</option>
+        {listed.map((c) => (
+          <option key={c.code} value={c.code}>{`${flagEmoji(c.code)} ${names[c.code] ?? c.code} · ${c.count}`}</option>
+        ))}
+        {(data.unknownCountry > 0 || country === "unknown") && <option value="unknown">{`🌐 ${t("unknown")} · ${data.unknownCountry}`}</option>}
+      </select>
+      <ChevronDown size={13} aria-hidden className="pointer-events-none absolute right-2.5 opacity-70" />
+    </label>
+  );
+}
+
+export default function AdminUsersTable({
+  data,
+  filter,
+  query,
+  country = "all",
+  countryNames = {},
+  canManageRoles = false,
+}: {
+  data: AdminUsersPage;
+  filter: AdminUserFilter;
+  query: string;
+  country?: AdminCountryFilter;
+  /** ISO code → name in the admin's locale (computed on the server). */
+  countryNames?: Record<string, string>;
+  canManageRoles?: boolean;
+}) {
   const router = useRouter();
+  const tc = useTranslations("AdminCountry");
   const [search, setSearch] = useState(query);
   const [open, setOpen] = useState<string | null>(null);
   const [dialog, setDialog] = useState<{ user: AdminUserRow; mode: DialogMode } | null>(null);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
-  const href = (next: { filter?: AdminUserFilter; q?: string; page?: number }) => {
+  const href = (next: { filter?: AdminUserFilter; q?: string; page?: number; country?: AdminCountryFilter }) => {
     const params = new URLSearchParams();
     const f = next.filter ?? filter;
     const q = next.q ?? query;
+    const c = next.country ?? country;
     if (f !== "all") params.set("filter", f);
+    if (c !== "all") params.set("country", c);
     if (q) params.set("q", q);
     if (next.page && next.page > 1) params.set("page", String(next.page));
     const s = params.toString();
@@ -202,6 +260,7 @@ export default function AdminUsersTable({ data, filter, query, canManageRoles = 
     <div className="flex flex-col gap-4">
       {/* Filters + search */}
       <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by F-Gas status">
           {FILTERS.map((f) => {
             const on = f.id === filter;
@@ -223,6 +282,8 @@ export default function AdminUsersTable({ data, filter, query, canManageRoles = 
               </Link>
             );
           })}
+        </div>
+        <CountryFilter data={data} country={country} names={countryNames} onChange={(next) => router.replace(href({ country: next, page: 1 }))} />
         </div>
         <form
           onSubmit={(e) => {
@@ -246,10 +307,11 @@ export default function AdminUsersTable({ data, filter, query, canManageRoles = 
       {/* Table */}
       <div className={`${CARD} overflow-hidden`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] border-collapse text-left">
+          <table className="w-full min-w-[1080px] border-collapse text-left">
             <thead>
               <tr className="bg-[#0B1020] text-[10.5px] font-semibold uppercase tracking-[.09em] text-slate-400">
                 <th className="px-5 py-3">Account</th>
+                <th className="px-4 py-3">{tc("column")}</th>
                 <th className="px-4 py-3">Company · VAT</th>
                 <th className="px-4 py-3">F-Gas status</th>
                 <th className="px-4 py-3">Certificate</th>
@@ -259,7 +321,7 @@ export default function AdminUsersTable({ data, filter, query, canManageRoles = 
             <tbody>
               {data.rows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-14 text-center text-[13px] text-slate-500 dark:text-slate-400">
+                  <td colSpan={6} className="px-5 py-14 text-center text-[13px] text-slate-500 dark:text-slate-400">
                     No accounts match{query ? ` “${query}”` : " this filter"}.
                   </td>
                 </tr>
@@ -281,6 +343,9 @@ export default function AdminUsersTable({ data, filter, query, canManageRoles = 
                           </span>
                         </button>
                         <RoleControl user={u} canManage={canManageRoles} />
+                      </td>
+                      <td className="px-4 py-4" data-user-country={u.id}>
+                        <CountryBadge country={u.country} name={u.country ? countryNames[u.country.code] : undefined} showSource />
                       </td>
                       <td className="px-4 py-4 text-[12.5px]">
                         <span className="block font-medium">{u.companyName ?? <span className="text-slate-400">No company</span>}</span>
@@ -351,7 +416,7 @@ export default function AdminUsersTable({ data, filter, query, canManageRoles = 
                     </tr>
                     {expanded && (
                       <tr className="bg-slate-50/70 dark:bg-white/[.02]" data-user-details={u.id}>
-                        <td colSpan={5} className="px-5 pb-5 pt-1">
+                        <td colSpan={6} className="px-5 pb-5 pt-1">
                           <dl className="m-0 grid grid-cols-2 gap-x-6 gap-y-3 text-[12.5px] md:grid-cols-4">
                             {[
                               ["Holder on certificate", u.extracted?.companyName || "—"],

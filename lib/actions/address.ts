@@ -2,7 +2,9 @@
 
 import { z } from "zod";
 import { auth } from "@/auth";
+import { after } from "next/server";
 import prisma from "@/lib/prisma";
+import { refreshUserCountryQuietly } from "@/lib/userCountry";
 
 const SaveAddressInput = z.object({
   id: z.string().min(1).optional(),
@@ -110,6 +112,8 @@ export async function saveAddress(rawInput: unknown): Promise<AddressActionResul
         data: { isDefault: false },
       });
     }
+    // The default address is a country signal (lib/userCountry).
+    after(() => refreshUserCountryQuietly(userId));
 
     return {
       ok: true,
@@ -146,6 +150,7 @@ export async function deleteAddress(id: string): Promise<AddressMutationResult> 
   try {
     const removed = await prisma.address.deleteMany({ where: { id: addressId, userId } });
     if (removed.count === 0) return { ok: false, code: "NOT_FOUND" };
+    after(() => refreshUserCountryQuietly(userId));
     return { ok: true, id: addressId };
   } catch (error) {
     console.error("deleteAddress failed:", error);
@@ -176,6 +181,7 @@ export async function setDefaultAddress(id: string): Promise<AddressMutationResu
       prisma.address.updateMany({ where: { userId }, data: { isDefault: false } }),
       prisma.address.update({ where: { id: addressId }, data: { isDefault: true } }),
     ]);
+    after(() => refreshUserCountryQuietly(userId));
     return { ok: true, id: addressId };
   } catch (error) {
     console.error("setDefaultAddress failed:", error);

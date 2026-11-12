@@ -2195,6 +2195,18 @@
     "ctaNote": "Otvorte chat z tlačidla podpory na akejkoľvek stránke webu.",
     "reason": "Tento e-mail dostávate, pretože ste kontaktovali podporu My Energy."
   },
+  "AdminCountry": {
+    "column": "Krajina",
+    "filterLabel": "Filtrovať podľa krajiny",
+    "allCountries": "Všetky krajiny",
+    "unknown": "Nedeterminované",
+    "unknownHint": "Na tomto účte nie sú žiadne údaje: žiadna prihlasovacia poloha, adresa, IČ DPH, telefónne číslo alebo jazyk rozhrania.",
+    "source_ip": "IP lokalita",
+    "source_address": "Predvolená adresa",
+    "source_vat": "Predpona IČ DPH",
+    "source_phone": "Kód pre volanie",
+    "source_locale": "Odhadované z jazyka rozhrania (nie z lokácie)"
+  },
   "AdminShipping": {
     "title": "Plnenie",
     "method": "Spôsob doručenia",

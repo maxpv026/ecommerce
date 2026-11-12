@@ -3,6 +3,8 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { countryFromGeoHeader } from "@/lib/country";
+import { refreshUserCountry } from "@/lib/userCountry";
 
 /**
  * Real signed-in devices (UserSession).
@@ -77,16 +79,25 @@ export function legacySessionId(userId: string, authTime: number): string {
   return `legacy_${createHmac("sha256", secret).update(`sid:${userId}:${authTime}`).digest("base64url").slice(0, 32)}`;
 }
 
-/** UA, IP and place of the current request — empty outside a request. */
+/**
+ * UA, IP and place of the current request — empty outside a request.
+ *
+ * The place comes from the edge: Vercel's x-vercel-ip-country/-city, or
+ * Cloudflare's cf-ipcountry when the app runs behind Cloudflare instead. On
+ * Vercel the cf- header is ignored — nothing in front of the app sets it
+ * there, so it could only have come from the client.
+ */
 async function requestContext() {
   try {
     const h = await headers();
-    const city = h.get("x-vercel-ip-city");
+    const vercelCountry = countryFromGeoHeader(h.get("x-vercel-ip-country"));
+    const country = vercelCountry ?? (process.env.VERCEL ? null : countryFromGeoHeader(h.get("cf-ipcountry")));
+    const city = vercelCountry ? h.get("x-vercel-ip-city") : null;
     return {
       ua: h.get("user-agent"),
       ip: h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null,
-      city: city ? safeDecode(city) : null,
-      country: h.get("x-vercel-ip-country") || null,
+      city: city ? safeDecode(city).slice(0, 80) : null,
+      country,
     };
   } catch {
     return { ua: null, ip: null, city: null, country: null };
@@ -105,31 +116,51 @@ const safeDecode = (value: string) => {
 export async function registerSession(userId: string, sessionTokenId: string): Promise<void> {
   const ctx = await requestContext();
   const agent = parseUserAgent(ctx.ua);
-  await prisma.userSession.upsert({
-    where: { sessionTokenId },
-    create: {
-      userId,
-      sessionTokenId,
-      deviceName: agent.deviceName,
-      browser: agent.browser,
-      os: agent.os,
-      deviceType: agent.deviceType,
-      ipAddress: ctx.ip,
-      city: ctx.city,
-      country: ctx.country,
-    },
-    update: {},
-  });
+  // A page's first parallel requests (document, RSC, /api/auth/session) can
+  // all find no row and race to create it; the loser's unique violation
+  // means the row exists, which is all this wants.
+  await prisma.userSession
+    .upsert({
+      where: { sessionTokenId },
+      create: {
+        userId,
+        sessionTokenId,
+        deviceName: agent.deviceName,
+        browser: agent.browser,
+        os: agent.os,
+        deviceType: agent.deviceType,
+        ipAddress: ctx.ip,
+        city: ctx.city,
+        country: ctx.country,
+      },
+      update: {},
+    })
+    .catch((error: unknown) => {
+      if ((error as { code?: string }).code !== "P2002") throw error;
+    });
+  // A sign-in is the freshest location there is (User.countryCode).
+  await refreshUserCountry(userId).catch((error) => console.error("deviceSessions: country refresh failed:", error));
 }
 
-/** Marks a session as seen now — at most every few minutes per session. */
-export async function touchSession(sessionTokenId: string, lastActiveAt: Date): Promise<void> {
-  if (Date.now() - lastActiveAt.getTime() < TOUCH_INTERVAL_MS) return;
+/**
+ * Marks a session as seen now — at most every few minutes per session, or
+ * at once when the request comes from a different place than the row says,
+ * so the account's country follows the user (User.countryCode).
+ */
+export async function touchSession(
+  userId: string,
+  sessionTokenId: string,
+  device: { lastActiveAt: Date; country: string | null; city: string | null }
+): Promise<void> {
+  const due = Date.now() - device.lastActiveAt.getTime() >= TOUCH_INTERVAL_MS;
   const ctx = await requestContext();
+  const moved = ctx.country !== null && (ctx.country !== device.country || ctx.city !== device.city);
+  if (!due && !moved) return;
   await prisma.userSession.updateMany({
     where: { sessionTokenId, revokedAt: null },
     data: { lastActiveAt: new Date(), ...(ctx.ip ? { ipAddress: ctx.ip } : {}), ...(ctx.country ? { country: ctx.country, city: ctx.city } : {}) },
   });
+  if (moved) await refreshUserCountry(userId).catch((error) => console.error("deviceSessions: country refresh failed:", error));
 }
 
 export interface DeviceSessionView {

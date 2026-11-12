@@ -2195,6 +2195,18 @@
     "ctaNote": "Sitenin herhangi bir sayfasındaki destek butonundan sohbeti açın.",
     "reason": "Bu e-postayı alıyorsunuz çünkü My Energy desteğiyle iletişime geçtiniz."
   },
+  "AdminCountry": {
+    "column": "Ülke",
+    "filterLabel": "Ülkeye göre filtrele",
+    "allCountries": "Tüm ülkeler",
+    "unknown": "Belirlenmedi",
+    "unknownHint": "Bu hesaba ait hiçbir kayıt yok: giriş yeri, adres, KDV numarası, telefon numarası veya arayüz dili bulunmamaktadır.",
+    "source_ip": "IP konumu",
+    "source_address": "Varsayılan adres",
+    "source_vat": "KDV numarası ön eki",
+    "source_phone": "Telefon alan kodu",
+    "source_locale": "Arayüz dilinden tahmin edildi (bir konum değil)"
+  },
   "AdminShipping": {
     "title": "Sipariş Karşılama",
     "method": "Teslimat yöntemi",

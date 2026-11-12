@@ -2195,6 +2195,18 @@
     "ctaNote": "Otwórz czat z przycisku wsparcia na dowolnej stronie serwisu.",
     "reason": "Otrzymujesz tę wiadomość, ponieważ skontaktowałeś się z działem wsparcia My Energy."
   },
+  "AdminCountry": {
+    "column": "Kraj",
+    "filterLabel": "Filtruj według kraju",
+    "allCountries": "Wszystkie kraje",
+    "unknown": "Nieokreślony",
+    "unknownHint": "Brak informacji dotyczących tego konta: brak lokalizacji logowania, adresu, numeru VAT, numeru telefonu lub języka interfejsu.",
+    "source_ip": "Lokalizacja IP",
+    "source_address": "Domyślny adres",
+    "source_vat": "Prefiks numeru VAT",
+    "source_phone": "Kod kierunkowy telefonu",
+    "source_locale": "Szacowane na podstawie języka interfejsu (nie lokalizacja)"
+  },
   "AdminShipping": {
     "title": "Realizacja zamówienia",
     "method": "Metoda dostawy",

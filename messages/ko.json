@@ -2195,6 +2195,18 @@
     "ctaNote": "사이트의 모든 페이지에서 지원 버튼을 통해 채팅을 열 수 있습니다.",
     "reason": "이 이메일은 My Energy 지원팀에 문의하셨기 때문에 발송되었습니다."
   },
+  "AdminCountry": {
+    "column": "국가",
+    "filterLabel": "국가별 필터",
+    "allCountries": "모든 국가",
+    "unknown": "확인되지 않음",
+    "unknownHint": "이 계정에 대한 정보가 없습니다: 로그인 위치, 주소, VAT 번호, 전화번호 또는 인터페이스 언어가 없습니다.",
+    "source_ip": "IP 위치",
+    "source_address": "기본 주소",
+    "source_vat": "VAT 번호 접두사",
+    "source_phone": "전화 다이얼링 코드",
+    "source_locale": "인터페이스 언어에서 추정됨 (위치 아님)"
+  },
   "AdminShipping": {
     "title": "이행",
     "method": "배송 방법",

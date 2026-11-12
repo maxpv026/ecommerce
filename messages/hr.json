@@ -2195,6 +2195,18 @@
     "ctaNote": "Otvorite chat putem gumba za podršku na bilo kojoj stranici stranice.",
     "reason": "Ovo primate jer ste kontaktirali My Energy podršku."
   },
+  "AdminCountry": {
+    "column": "Država",
+    "filterLabel": "Filtriraj prema državi",
+    "allCountries": "Sve države",
+    "unknown": "Nije određeno",
+    "unknownHint": "Nema podataka koji povezuju ovaj račun: nema lokacije prijave, adrese, PDV broja, broja telefona ili jezika sučelja.",
+    "source_ip": "IP lokacija",
+    "source_address": "Zadana adresa",
+    "source_vat": "Prefiks PDV broja",
+    "source_phone": "Pozivni broj telefona",
+    "source_locale": "Procijenjeno iz jezika sučelja (nije lokacija)"
+  },
   "AdminShipping": {
     "title": "Ispunjenje",
     "method": "Način dostave",

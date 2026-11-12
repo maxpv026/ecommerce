@@ -2195,6 +2195,18 @@
     "ctaNote": "Open de chat via de ondersteuningsknop op elke pagina van de site.",
     "reason": "U ontvangt dit omdat u contact heeft opgenomen met My Energy-ondersteuning."
   },
+  "AdminCountry": {
+    "column": "Land",
+    "filterLabel": "Filteren op land",
+    "allCountries": "Alle landen",
+    "unknown": "Niet bepaald",
+    "unknownHint": "Niets in het bestand plaatst dit account: geen inloglocatie, adres, btw-nummer, telefoonnummer of interface-taal.",
+    "source_ip": "IP-locatie",
+    "source_address": "Standaardadres",
+    "source_vat": "BTW-nummerprefix",
+    "source_phone": "Telefoonlandcode",
+    "source_locale": "Geschat op basis van de interface-taal (geen locatie)"
+  },
   "AdminShipping": {
     "title": "Afhandeling",
     "method": "Leveringsmethode",

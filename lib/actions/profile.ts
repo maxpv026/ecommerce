@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { after } from "next/server";
 import prisma from "@/lib/prisma";
+import { refreshUserCountryQuietly } from "@/lib/userCountry";
 
 const UpdateProfileInput = z.object({
   name: z.string().trim().min(2).max(120),
@@ -69,6 +71,8 @@ export async function updateProfile(rawInput: unknown): Promise<UpdateProfileRes
     // Re-renders the profile dashboard in the same action roundtrip, so the
     // bento updates without a hard reload.
     revalidatePath("/[locale]/profile", "page");
+    // VAT prefix and phone dialing code are country signals (lib/userCountry).
+    if (vatNumber !== undefined || phone !== undefined) after(() => refreshUserCountryQuietly(userId));
     return { ok: true };
   } catch (error) {
     console.error("updateProfile failed:", error);

@@ -2195,6 +2195,18 @@
     "ctaNote": "Abra el chat desde el botón de soporte en cualquier página del sitio.",
     "reason": "Recibe esto porque contactó con el soporte de My Energy."
   },
+  "AdminCountry": {
+    "column": "País",
+    "filterLabel": "Filtrar por país",
+    "allCountries": "Todos los países",
+    "unknown": "No determinado",
+    "unknownHint": "Nada en el archivo asigna esta cuenta: no hay ubicación de inicio de sesión, dirección, número de IVA, número de teléfono o idioma de la interfaz.",
+    "source_ip": "Ubicación IP",
+    "source_address": "Dirección predeterminada",
+    "source_vat": "Prefijo del número de IVA",
+    "source_phone": "Código de marcación telefónica",
+    "source_locale": "Estimado del idioma de la interfaz (no de una ubicación)"
+  },
   "AdminShipping": {
     "title": "Cumplimiento",
     "method": "Método de entrega",

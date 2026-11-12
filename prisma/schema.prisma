@@ -247,8 +247,23 @@ model User {
   savedCart            SavedCart?
   deviceSessions       UserSession[]
 
+  /// Where the account is, resolved by lib/userCountry from the best signal
+  /// on file and kept current when one changes: the latest session's IP
+  /// location, then the default address, the VAT prefix, the phone's dialing
+  /// code, and last the interface language. ISO 3166-1 alpha-2 ("UA").
+  /// Stored, not computed per read, so the admin directory can filter by it.
+  countryCode      String?
+  /// The city, when the source gives one (IP location or address).
+  countryCity      String?
+  /// "ip" | "address" | "vat" | "phone" | "locale" — shown next to the
+  /// country so a guess from the language is never mistaken for a location.
+  countrySource    String?
+  countryUpdatedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([countryCode])
 }
 
 model Account {

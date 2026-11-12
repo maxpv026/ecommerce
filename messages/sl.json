@@ -2195,6 +2195,18 @@
     "ctaNote": "Odprite klepet s podpornega gumba na kateri koli strani spletnega mesta.",
     "reason": "To prejemate, ker ste kontaktirali podporo My Energy."
   },
+  "AdminCountry": {
+    "column": "Država",
+    "filterLabel": "Filtriraj po državi",
+    "allCountries": "Vse države",
+    "unknown": "Ni določeno",
+    "unknownHint": "Na tem računu ni shranjenih podatkov: ni lokacije prijave, naslova, ID za DDV, telefonske številke ali jezika vmesnika.",
+    "source_ip": "IP lokacija",
+    "source_address": "Privzeti naslov",
+    "source_vat": "Predpona ID za DDV",
+    "source_phone": "Koda za klic telefona",
+    "source_locale": "Ocenjeno iz jezika vmesnika (ni lokacija)"
+  },
   "AdminShipping": {
     "title": "Izpolnitev",
     "method": "Način dostave",

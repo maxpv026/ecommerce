@@ -2195,6 +2195,18 @@
     "ctaNote": "Öffnen Sie den Chat über die Support-Schaltfläche auf jeder Seite der Website.",
     "reason": "Sie erhalten diese Nachricht, weil Sie den My Energy-Support kontaktiert haben."
   },
+  "AdminCountry": {
+    "column": "Land",
+    "filterLabel": "Nach Land filtern",
+    "allCountries": "Alle Länder",
+    "unknown": "Nicht bestimmt",
+    "unknownHint": "Für dieses Konto sind keine Daten vorhanden: kein Anmeldestandort, keine Adresse, keine USt-IdNr., keine Telefonnummer oder Schnittstellensprache.",
+    "source_ip": "IP-Standort",
+    "source_address": "Standardadresse",
+    "source_vat": "USt-IdNr.-Präfix",
+    "source_phone": "Telefonvorwahl",
+    "source_locale": "Geschätzt aus der Schnittstellensprache (nicht aus einem Standort)"
+  },
   "AdminShipping": {
     "title": "Erfüllung",
     "method": "Liefermethode",

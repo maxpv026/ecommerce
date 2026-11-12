@@ -2194,6 +2194,18 @@
     "ctaNote": "Open the chat from the support button on any page of the site.",
     "reason": "You're receiving this because you contacted My Energy support."
   },
+  "AdminCountry": {
+    "column": "Country",
+    "filterLabel": "Filter by country",
+    "allCountries": "All countries",
+    "unknown": "Not determined",
+    "unknownHint": "Nothing on file places this account: no sign-in location, address, VAT number, phone number or interface language.",
+    "source_ip": "IP location",
+    "source_address": "Default address",
+    "source_vat": "VAT number prefix",
+    "source_phone": "Phone dialing code",
+    "source_locale": "Estimated from interface language (not a location)"
+  },
   "AdminShipping": {
     "title": "Fulfilment",
     "method": "Delivery method",

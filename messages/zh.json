@@ -2195,6 +2195,18 @@
     "ctaNote": "从网站任何页面的支持按钮打开聊天。",
     "reason": "您收到此邮件是因为您联系了 My Energy 支持。"
   },
+  "AdminCountry": {
+    "column": "国家",
+    "filterLabel": "按国家筛选",
+    "allCountries": "所有国家",
+    "unknown": "未确定",
+    "unknownHint": "此账户没有任何记录：未设置登录位置、地址、增值税号码、电话号码或界面语言。",
+    "source_ip": "IP 位置",
+    "source_address": "默认地址",
+    "source_vat": "增值税号码前缀",
+    "source_phone": "电话拨号代码",
+    "source_locale": "根据界面语言估算（非地点）"
+  },
   "AdminShipping": {
     "title": "履行",
     "method": "配送方式",

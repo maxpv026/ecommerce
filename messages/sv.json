@@ -2195,6 +2195,18 @@
     "ctaNote": "Öppna chatten från supportknappen på någon sida av webbplatsen.",
     "reason": "Du får detta eftersom du kontaktade My Energy-supporten."
   },
+  "AdminCountry": {
+    "column": "Land",
+    "filterLabel": "Filtrera efter land",
+    "allCountries": "Alla länder",
+    "unknown": "Ej fastställd",
+    "unknownHint": "Inga uppgifter finns för detta konto: ingen inloggningsplats, adress, momsnummer, telefonnummer eller gränssnittsspråk.",
+    "source_ip": "IP-plats",
+    "source_address": "Standardadress",
+    "source_vat": "Momsnummerprefix",
+    "source_phone": "Landskod för telefon",
+    "source_locale": "Beräknad från gränssnittsspråk (inte en plats)"
+  },
   "AdminShipping": {
     "title": "Orderhantering",
     "method": "Leveransmetod",

@@ -76,7 +76,15 @@ export interface AdminOrderRow {
     /** Oldest first. */
     events: ShipmentEvent[];
   };
-  customer: { id: string; name: string | null; email: string | null; companyName: string | null; vatNumber: string | null };
+  customer: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    companyName: string | null;
+    vatNumber: string | null;
+    /** The account's resolved country (User.countryCode, lib/userCountry). */
+    country: { code: string; city: string | null; source: string } | null;
+  };
   invoice: { id: string; invoiceNumber: string; status: string } | null;
   items: Array<{ id: string; sku: string; name: string; quantity: number; unitPrice: number; deposit: number; weightKg: number }>;
 }
@@ -145,7 +153,7 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
       deliveryNotes: true,
       shipmentStage: true,
       shipmentEvents: true,
-      user: { select: { id: true, name: true, email: true, companyName: true, vatNumber: true } },
+      user: { select: { id: true, name: true, email: true, companyName: true, vatNumber: true, countryCode: true, countryCity: true, countrySource: true } },
       invoice: { select: { id: true, invoiceNumber: true, status: true } },
       items: {
         select: {
@@ -190,7 +198,14 @@ export async function listAdminOrders(options: { filter?: AdminOrderFilter; quer
         deliveryNotes: o.deliveryNotes,
         events: parseShipmentEvents(o.shipmentEvents),
       },
-      customer: o.user,
+      customer: {
+        id: o.user.id,
+        name: o.user.name,
+        email: o.user.email,
+        companyName: o.user.companyName,
+        vatNumber: o.user.vatNumber,
+        country: o.user.countryCode ? { code: o.user.countryCode, city: o.user.countryCity, source: o.user.countrySource ?? "ip" } : null,
+      },
       invoice: o.invoice,
       items: o.items.map((i) => ({
         id: i.id,

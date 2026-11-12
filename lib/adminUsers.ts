@@ -7,6 +7,8 @@ import type { Prisma } from "@/lib/generated/prisma/client";
 import type { FGasStatus } from "@/lib/generated/prisma/enums";
 import { getEffectiveFgasStatus, isAiActor, type FgasCheck, type FgasExtraction } from "@/lib/fgas";
 import { certificateHref, documentHref, isLocalOnlyDocument } from "@/lib/fgasStorage";
+import { isCountryCode, type CountryResolution } from "@/lib/country";
+import { COUNTRY_SIGNALS_SELECT, persistCountry, resolveFromRow } from "@/lib/userCountry";
 
 /**
  * The admin user directory — read side only. Decisions go through
@@ -22,6 +24,12 @@ export const ADMIN_USERS_PAGE_SIZE = 25;
 /** The filter chips. "review" = what an admin should look at: in review, refused, or a parked replacement. */
 export const ADMIN_USER_FILTERS = ["all", "review", "VERIFIED", "EXPIRED", "REJECTED", "NONE"] as const;
 export type AdminUserFilter = (typeof ADMIN_USER_FILTERS)[number];
+
+/** The country filter: every account, one ISO code, or the accounts nothing places. */
+export type AdminCountryFilter = "all" | "unknown" | (string & {});
+
+export const parseCountryFilter = (value: string | undefined): AdminCountryFilter =>
+  value === "unknown" ? "unknown" : value && isCountryCode(value.toUpperCase()) ? value.toUpperCase() : "all";
 
 export interface AdminAuditEntry {
   id: string;
@@ -61,6 +69,8 @@ export interface AdminUserRow {
   rejectionReason: string | null;
   orderCount: number;
   createdAt: string;
+  /** Where the account is (lib/country) — null when no signal places it. */
+  country: CountryResolution | null;
   flags: {
     /** Granted (VERIFIED/EXPIRED) with no document behind it at all. */
     missingDocument: boolean;
@@ -82,6 +92,9 @@ export interface AdminUsersPage {
   page: number;
   pageCount: number;
   counts: Record<AdminUserFilter, number>;
+  /** Accounts per country under the current status filter and search, most first; "unknown" = not placed. */
+  countries: Array<{ code: string; count: number }>;
+  unknownCountry: number;
 }
 
 const reviewWhere = (): Prisma.UserWhereInput => ({ OR: [{ fGasStatus: { in: ["PENDING_REVIEW", "REJECTED"] } }, { fGasPendingSubmissionId: { not: null } }] });
@@ -108,14 +121,25 @@ function searchWhere(query: string): Prisma.UserWhereInput {
   };
 }
 
-export async function listAdminUsers(options: { filter?: AdminUserFilter; query?: string; page?: number }): Promise<AdminUsersPage> {
+function countryWhere(country: AdminCountryFilter): Prisma.UserWhereInput {
+  if (country === "all") return {};
+  return { countryCode: country === "unknown" ? null : country };
+}
+
+export async function listAdminUsers(options: { filter?: AdminUserFilter; query?: string; page?: number; country?: AdminCountryFilter }): Promise<AdminUsersPage> {
   const now = new Date();
   const filter = options.filter ?? "all";
+  const country = options.country ?? "all";
   const search = searchWhere(options.query ?? "");
-  const where: Prisma.UserWhereInput = { AND: [filterWhere(filter, now), search] };
-  const countOf = (f: AdminUserFilter) => prisma.user.count({ where: { AND: [filterWhere(f, now), search] } });
+  const where: Prisma.UserWhereInput = { AND: [filterWhere(filter, now), search, countryWhere(country)] };
+  const countOf = (f: AdminUserFilter) => prisma.user.count({ where: { AND: [filterWhere(f, now), search, countryWhere(country)] } });
 
-  const [total, ...chipCounts] = await Promise.all([prisma.user.count({ where }), ...ADMIN_USER_FILTERS.map(countOf)]);
+  const [total, byCountry, ...chipCounts] = await Promise.all([
+    prisma.user.count({ where }),
+    // The country menu counts under the status filter and search, not under itself.
+    prisma.user.groupBy({ by: ["countryCode"], where: { AND: [filterWhere(filter, now), search] }, _count: { _all: true } }),
+    ...ADMIN_USER_FILTERS.map(countOf),
+  ]);
   const pageCount = Math.max(1, Math.ceil(total / ADMIN_USERS_PAGE_SIZE));
   const page = Math.min(Math.max(1, Math.floor(options.page ?? 1)), pageCount);
 
@@ -125,13 +149,20 @@ export async function listAdminUsers(options: { filter?: AdminUserFilter; query?
     skip: (page - 1) * ADMIN_USERS_PAGE_SIZE,
     take: ADMIN_USERS_PAGE_SIZE,
     select: {
-      id: true, name: true, email: true, companyName: true, vatNumber: true, role: true,
+      ...COUNTRY_SIGNALS_SELECT,
+      id: true, name: true, email: true, companyName: true, role: true,
       fGasStatus: true, fGasExpiresAt: true, fGasPendingSubmissionId: true, fGasDocumentUrl: true, fGasExtractedData: true,
       fGasSubmittedAt: true, fGasReviewedAt: true, fGasReviewedBy: true, fGasRejectionReason: true, createdAt: true,
       _count: { select: { orders: true } },
       fgasAuditLog: { orderBy: { createdAt: "desc" }, take: 12 },
     },
   });
+
+  // Every row is shown with its country re-resolved from the signals; a
+  // stored value that a missed write left stale is corrected on the way.
+  const countries = new Map(users.map((u) => [u.id, resolveFromRow(u)]));
+  // (persistCountry writes only when the value differs.)
+  await Promise.all(users.map((u) => persistCountry(u.id, u, countries.get(u.id) ?? null).catch(() => false)));
 
   const actorIds = [...new Set(users.flatMap((u) => u.fgasAuditLog.map((l) => l.actorId)).filter((a) => !isAiActor(a) && a !== "system"))];
   const actors = new Map((await prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, email: true } })).map((a) => [a.id, a.email ?? a.id]));
@@ -161,6 +192,7 @@ export async function listAdminUsers(options: { filter?: AdminUserFilter; query?
         rejectionReason: u.fGasRejectionReason,
         orderCount: u._count.orders,
         createdAt: u.createdAt.toISOString(),
+        country: countries.get(u.id) ?? null,
         flags: {
           missingDocument: granted && !u.fGasDocumentUrl,
           localOnlyDocument: isLocalOnlyDocument(u.fGasDocumentUrl),
@@ -186,5 +218,10 @@ export async function listAdminUsers(options: { filter?: AdminUserFilter; query?
     page,
     pageCount,
     counts: Object.fromEntries(ADMIN_USER_FILTERS.map((f, i) => [f, chipCounts[i]!])) as Record<AdminUserFilter, number>,
+    countries: byCountry
+      .filter((g) => g.countryCode)
+      .map((g) => ({ code: g.countryCode!, count: g._count._all }))
+      .sort((a, b) => b.count - a.count || a.code.localeCompare(b.code)),
+    unknownCountry: byCountry.find((g) => !g.countryCode)?._count._all ?? 0,
   };
 }

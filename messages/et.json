@@ -2195,6 +2195,18 @@
     "ctaNote": "Avage vestlus tuginupust mis tahes lehelt saidil.",
     "reason": "Saate selle, kuna võtsite ühendust My Energy toega."
   },
+  "AdminCountry": {
+    "column": "Riik",
+    "filterLabel": "Filtreeri riigi järgi",
+    "allCountries": "Kõik riigid",
+    "unknown": "Määramata",
+    "unknownHint": "Selle konto kohta pole andmeid: ei ole sisselogimise asukohta, aadressi, käibemaksu numbrit, telefoninumbrit ega liidese keelt.",
+    "source_ip": "IP asukoht",
+    "source_address": "Vaikimisi aadress",
+    "source_vat": "Käibemaksu numbri eesliide",
+    "source_phone": "Telefonikood",
+    "source_locale": "Hinnatud liidese keele põhjal (mitte asukoha järgi)"
+  },
   "AdminShipping": {
     "title": "Tellimuse täitmine",
     "method": "Kohaletoimetamise meetod",

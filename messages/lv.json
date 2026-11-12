@@ -2195,6 +2195,18 @@
     "ctaNote": "Atveriet tērzēšanu no atbalsta pogas jebkurā vietnes lapā.",
     "reason": "Jūs saņemat šo, jo sazinājāties ar My Energy atbalstu."
   },
+  "AdminCountry": {
+    "column": "Valsts",
+    "filterLabel": "Filtrēt pēc valsts",
+    "allCountries": "Visas valstis",
+    "unknown": "Nav noteikts",
+    "unknownHint": "Nekas nav ierakstīts šajā kontā: nav pieteikšanās vietas, adreses, PVN numura, tālruņa numura vai saskarnes valodas.",
+    "source_ip": "IP atrašanās vieta",
+    "source_address": "Noklusējuma adrese",
+    "source_vat": "PVN numura prefikss",
+    "source_phone": "Tālruņa valsts kods",
+    "source_locale": "Novērtēts no saskarnes valodas (nevis vietas)"
+  },
   "AdminShipping": {
     "title": "Izpilde",
     "method": "Piegādes metode",

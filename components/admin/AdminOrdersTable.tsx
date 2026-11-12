@@ -7,6 +7,7 @@ import { Ban, Check, ChevronDown, CircleDollarSign, Clock, FileText, Loader2, Pa
 import { Link, useRouter } from "@/i18n/navigation";
 import { cancelUnpaidOrder, markOrderPaidByAdmin } from "@/lib/actions/adminOrders";
 import type { AdminOrderFilter, AdminOrderRow, AdminOrdersPage, OrderStage } from "@/lib/adminOrders";
+import CountryBadge from "@/components/admin/CountryBadge";
 import AdminFulfilmentPanel, { AdvanceButton, AdvanceDialog, stageLabel } from "@/components/admin/AdminFulfilmentPanel";
 import { CARRIERS } from "@/lib/shipping/carriers";
 
@@ -40,7 +41,20 @@ type Dialog = { kind: "paid"; order: AdminOrderRow } | { kind: "cancel"; order: 
 const eur = (n: number) => n.toLocaleString("en-IE", { style: "currency", currency: "EUR" });
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-IE", { day: "2-digit", month: "short", year: "numeric" }) : "—");
 
-export default function AdminOrdersTable({ data, filter, query, pickupAddress }: { data: AdminOrdersPage; filter: AdminOrderFilter; query: string; pickupAddress: string | null }) {
+export default function AdminOrdersTable({
+  data,
+  filter,
+  query,
+  pickupAddress,
+  countryNames = {},
+}: {
+  data: AdminOrdersPage;
+  filter: AdminOrderFilter;
+  query: string;
+  pickupAddress: string | null;
+  /** ISO code → name in the admin's locale (computed on the server). */
+  countryNames?: Record<string, string>;
+}) {
   const router = useRouter();
   const tShip = useTranslations("AdminShipping");
   const [search, setSearch] = useState(query);
@@ -175,6 +189,9 @@ export default function AdminOrdersTable({ data, filter, query, pickupAddress }:
                       <td className="px-4 py-4 text-[12.5px]">
                         <span className="block font-medium">{o.customer.companyName ?? o.customer.name ?? "—"}</span>
                         <span className="block text-slate-500 dark:text-slate-400">{o.customer.email}</span>
+                        <span className="mt-1.5 block" data-order-country={o.orderNumber}>
+                          <CountryBadge country={o.customer.country} name={o.customer.country ? countryNames[o.customer.country.code] : undefined} compact />
+                        </span>
                       </td>
                       <td className="px-4 py-4 text-right">
                         <span className="block text-[13.5px] font-semibold tabular-nums">{eur(o.totalAmount)}</span>

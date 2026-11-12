@@ -2195,6 +2195,18 @@
     "ctaNote": "Apri la chat dal pulsante di supporto su qualsiasi pagina del sito.",
     "reason": "Ricevi questa email perché hai contattato il supporto My Energy."
   },
+  "AdminCountry": {
+    "column": "Paese",
+    "filterLabel": "Filtra per paese",
+    "allCountries": "Tutti i paesi",
+    "unknown": "Non determinato",
+    "unknownHint": "Nessuna informazione archiviata per questo account: nessuna posizione di accesso, indirizzo, numero di partita IVA, numero di telefono o lingua dell'interfaccia.",
+    "source_ip": "Posizione IP",
+    "source_address": "Indirizzo predefinito",
+    "source_vat": "Prefisso del numero di partita IVA",
+    "source_phone": "Prefisso telefonico",
+    "source_locale": "Stimato dalla lingua dell'interfaccia (non da una posizione)"
+  },
   "AdminShipping": {
     "title": "Evasione",
     "method": "Metodo di consegna",

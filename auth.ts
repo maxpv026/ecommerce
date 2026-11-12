@@ -256,7 +256,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           if (anchor && !device) {
             await registerSession(token.sub, sid).catch((error) => console.error("auth: could not register the device session:", error));
           } else if (device) {
-            await touchSession(sid, device.lastActiveAt).catch(() => undefined);
+            await touchSession(token.sub, sid, device).catch(() => undefined);
           }
         }
       }

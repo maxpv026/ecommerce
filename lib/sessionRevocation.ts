@@ -77,7 +77,7 @@ export const sessionAnchor = cache(async (userId: string, sid?: string | null) =
       role: true,
       email: true,
       // This device's row (lib/deviceSessions) — same query, no extra round trip.
-      deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true }, take: 1 } : false,
+      deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true, country: true, city: true }, take: 1 } : false,
     },
   })
 );

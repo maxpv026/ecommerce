@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { guardAdmin } from "@/lib/admin/guardAdmin";
-import { ADMIN_USER_FILTERS, listAdminUsers, type AdminUserFilter } from "@/lib/adminUsers";
+import { ADMIN_USER_FILTERS, listAdminUsers, parseCountryFilter, type AdminUserFilter } from "@/lib/adminUsers";
+import { countryName } from "@/lib/country";
 import AdminUsersTable from "@/components/admin/AdminUsersTable";
 import { can } from "@/lib/rbac";
 
@@ -15,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 interface AdminUsersPageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ filter?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ filter?: string; q?: string; page?: string; country?: string }>;
 }
 
 export default async function AdminUsersPage({ params, searchParams }: AdminUsersPageProps) {
@@ -25,7 +26,12 @@ export default async function AdminUsersPage({ params, searchParams }: AdminUser
   const sp = await searchParams;
   const filter = (ADMIN_USER_FILTERS as readonly string[]).includes(sp.filter ?? "") ? (sp.filter as AdminUserFilter) : "all";
   const query = (sp.q ?? "").slice(0, 120);
-  const data = await listAdminUsers({ filter, query, page: Number(sp.page) || 1 });
+  const country = parseCountryFilter(sp.country);
+  const data = await listAdminUsers({ filter, query, country, page: Number(sp.page) || 1 });
+  // Country names in the admin's language, once, on the server — the browser renders the same text.
+  const { locale } = await params;
+  const codes = new Set([...data.countries.map((c) => c.code), ...data.rows.flatMap((r) => (r.country ? [r.country.code] : [])), ...(country.length === 2 ? [country] : [])]);
+  const countryNames = Object.fromEntries([...codes].map((code) => [code, countryName(code, locale)]));
 
   return (
     <div className="mx-auto w-full max-w-[1240px] px-4 py-10 md:px-8 md:py-14">
@@ -38,7 +44,7 @@ export default async function AdminUsersPage({ params, searchParams }: AdminUser
         </p>
       </header>
 
-      <AdminUsersTable data={data} filter={filter} query={query} canManageRoles={can(admin.role, "users.roles")} />
+      <AdminUsersTable data={data} filter={filter} query={query} country={country} countryNames={countryNames} canManageRoles={can(admin.role, "users.roles")} />
     </div>
   );
 }

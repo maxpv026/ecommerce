@@ -2195,6 +2195,18 @@
     "ctaNote": "Oscail an comhrá ón gcnaipe tacaíochta ar aon leathanach den suíomh.",
     "reason": "Tá tú ag fáil seo mar rinne tú teagmháil le tacaíocht My Energy."
   },
+  "AdminCountry": {
+    "column": "Tír",
+    "filterLabel": "Scagadh de réir tíre",
+    "allCountries": "Gach tír",
+    "unknown": "Níl le fios",
+    "unknownHint": "Níl aon fhaisnéis ar comhoibriú leis an gcuntas seo: níl suíomh sínithe, seoladh, uimhir CBL, uimhir gutháin nó teanga comhoibrithe ann.",
+    "source_ip": "Suíomh IP",
+    "source_address": "Seoladh réamhshocraithe",
+    "source_vat": "Réamhchód uimhir CBL",
+    "source_phone": "Cód gutháin",
+    "source_locale": "Measúnaithe ó theanga an chláir (ní suíomh)"
+  },
   "AdminShipping": {
     "title": "Comhlíonadh",
     "method": "Modh seachadta",

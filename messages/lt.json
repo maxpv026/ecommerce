@@ -2195,6 +2195,18 @@
     "ctaNote": "Atidarykite pokalbį iš pagalbos mygtuko bet kuriame svetainės puslapyje.",
     "reason": "Jūs gaunate šį pranešimą, nes susisiekėte su My Energy pagalba."
   },
+  "AdminCountry": {
+    "column": "Šalis",
+    "filterLabel": "Filtruoti pagal šalį",
+    "allCountries": "Visos šalys",
+    "unknown": "Nustatyta nebuvo",
+    "unknownHint": "Nėra jokių duomenų, kurie būtų susiję su šia paskyra: nėra prisijungimo vietos, adreso, PVM numerio, telefono numerio ar sąsajos kalbos.",
+    "source_ip": "IP vieta",
+    "source_address": "Numatytasis adresas",
+    "source_vat": "PVM numerio prefiksas",
+    "source_phone": "Telefono kodas",
+    "source_locale": "Apskaičiuota pagal sąsajos kalbą (ne vietovę)"
+  },
   "AdminShipping": {
     "title": "Įvykdymas",
     "method": "Pristatymo būdas",
