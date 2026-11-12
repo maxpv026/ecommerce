@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { sendOrderStatusEmail } from "@/lib/orderEmails";
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
@@ -112,6 +114,12 @@ export async function updateOrderStatus(
     data: { status, ...(status === "IN_TRANSIT" ? { trackingNumber: tracking } : {}) },
   });
   if (count === 0) return { ok: false, error: STALE };
+
+  // Tell the buyer about real progress only: the first dispatch and the
+  // delivery. Corrections (delivered → back in transit, in transit → back to
+  // pending) send nothing. Sent after the response; it never throws.
+  const notify = status === "IN_TRANSIT" && current.status === "PENDING" ? "SHIPPED" : status === "DELIVERED" ? "DELIVERED" : null;
+  if (notify) after(() => sendOrderStatusEmail(parsed.data.orderId, notify));
 
   refresh(parsed.data.orderId);
   return { ok: true };

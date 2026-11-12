@@ -9,8 +9,7 @@ import { issueInvoiceForOrder } from "@/lib/invoicing";
 import { convertRestockAlerts } from "@/lib/smartRestock";
 import { clearSavedCart } from "@/lib/savedCart";
 import { generateInvoicePdfBuffer } from "@/lib/pdf";
-import { sendOrderConfirmationEmail } from "@/lib/mail";
-import { absoluteUrl } from "@/lib/siteUrl";
+import { sendOrderConfirmation } from "@/lib/orderEmails";
 
 /**
  * Places a B2B order for payment by bank transfer.
@@ -178,31 +177,11 @@ export async function POST(request: Request) {
       console.error(`[INVOICE] PDF render failed for ${invoiceNumber}:`, error);
     }
 
-    try {
-      const delivery = await sendOrderConfirmationEmail(
-        buyer.email,
-        {
-          orderNumber: order.orderNumber,
-          invoiceNumber,
-          customerName: buyer.name ?? null,
-          total: new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" }).format(
-            order.totalAmount
-          ),
-          cylinders: cylindersBorrowed,
-          lines: draft.lines.map(({ product, qty }) => ({
-            name: product.name,
-            variant: product.weight,
-            qty,
-          })),
-          orderUrl: absoluteUrl(`/profile/orders/${order.id}`),
-        },
-        pdf
-      );
-      if (delivery.accepted.length === 0 || delivery.rejected.length > 0) {
-        console.error(`[INVOICE] confirmation for ${order.orderNumber} was not accepted:`, delivery);
-      }
-    } catch (error) {
-      console.error(`[INVOICE] confirmation email failed for ${order.orderNumber}:`, error);
+    // Built from the stored order (lib/orderEmails), so its receipt matches
+    // the attached invoice line for line. Never throws.
+    const delivery = await sendOrderConfirmation(order.id, pdf);
+    if (!delivery || delivery.accepted.length === 0 || delivery.rejected.length > 0) {
+      console.error(`[INVOICE] confirmation for ${order.orderNumber} was not accepted:`, delivery);
     }
   }
 

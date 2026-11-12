@@ -9,7 +9,8 @@ import { requirePermission } from "@/lib/admin/permissions";
 import { saveMessage } from "@/lib/chatSession";
 import { isChatExpired, purgeIfExpired } from "@/lib/chatRetention";
 import { sendHtmlEmail } from "@/lib/mail";
-import { absoluteUrl } from "@/lib/siteUrl";
+import { emailContext } from "@/lib/email/context";
+import type { Block } from "@/lib/email/design";
 
 /**
  * The team's side of the support chat (/admin/support). Every action
@@ -45,7 +46,6 @@ function refresh(sessionId: string) {
   revalidatePath(`/[locale]/admin/support/${sessionId}`, "page");
 }
 
-const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 /**
  * Posts a reply as the team. The visitor's widget picks it up on its next
@@ -78,20 +78,25 @@ export async function replyAsAgent(rawSessionId: string, rawText: string, emailC
 
   const email = emailCustomer ? session.user?.email : null;
   if (email) {
-    const link = absoluteUrl("/", session.user?.locale);
     after(async () => {
       try {
-        await sendHtmlEmail({
-          to: email,
-          subject: "My Energy replied to your support chat",
-          text: `${session.user?.name ? `Dear ${session.user.name},\n\n` : ""}Our team replied to your chat:\n\n${text.data}\n\nOpen the chat on ${link} to continue the conversation.`,
-          html: `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#0f172a;max-width:560px;font-size:14px;line-height:1.6">
-  ${session.user?.name ? `<p>Dear ${escapeHtml(session.user.name)},</p>` : ""}
-  <p>Our team replied to your support chat:</p>
-  <blockquote style="margin:0 0 16px;padding:10px 14px;border-left:3px solid #22429b;background:#f3f6fc;white-space:pre-line">${escapeHtml(text.data)}</blockquote>
-  <p><a href="${link}" style="color:#22429b;font-weight:600">Open the chat on My Energy</a> to continue the conversation.</p>
-</div>`,
+        const c = await emailContext(session.user?.locale, "SupportEmail");
+        const name = session.user?.name?.trim();
+        const subject = c.t("subject");
+        const { html, text: plain } = c.render({
+          subject,
+          preview: text.data.slice(0, 140),
+          reference: c.t("badge").toLocaleUpperCase(c.locale),
+          heading: c.t("heading"),
+          blocks: [
+            ...(name ? ([{ kind: "text", text: c.t("greeting", { name }) }] satisfies Block[]) : []),
+            { kind: "text", text: c.t("intro") },
+            { kind: "quote", text: text.data },
+            { kind: "cta", label: c.t("cta"), href: c.url("/"), note: c.t("ctaNote") },
+          ],
+          footer: { reason: c.t("reason") },
         });
+        await sendHtmlEmail({ to: email, subject, html, text: plain });
       } catch (error) {
         console.error(`[support] reply email for ${session.id} failed:`, error);
       }

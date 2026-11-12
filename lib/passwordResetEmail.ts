@@ -1,63 +1,74 @@
 import "server-only";
 
 import { sendHtmlEmail } from "@/lib/mail";
-import { emailTranslator } from "@/lib/emailTranslator";
+import { emailContext, type EmailContext } from "@/lib/email/context";
+import type { Block } from "@/lib/email/design";
 import { absoluteUrl } from "@/lib/siteUrl";
 
 /**
  * The three emails of the password-reset flow, in the recipient's language
- * (namespace PasswordResetEmail), in the same visual style as the sign-in
- * code email (lib/mail otpEmailHtml).
+ * (namespace PasswordResetEmail), in the shared email design (lib/email),
+ * laid out like the sign-in code email.
  *
  *   code     the 6-digit reset code (10 minutes, 5 tries)
  *   google   the address belongs to a Google-only account: nothing to reset
  *   changed  the password was just reset — "if this wasn't you" notice
  */
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-
-function shell(input: { kicker: string; body: string; code?: string; cta?: { label: string; href: string }; footer: string }): string {
-  return `
-<div style="background:#f8fafc;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:440px;margin:0 auto;background:#ffffff;border-radius:20px;padding:36px 32px;border:1px solid #e2e8f0;">
-    <div style="margin-bottom:28px;font-size:16px;font-weight:600;letter-spacing:-0.02em;color:#0f172a;">My Energy</div>
-    <p style="margin:0 0 6px;font-size:13px;letter-spacing:.05em;color:#94a3b8;text-transform:uppercase;">${esc(input.kicker)}</p>
-    <p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:#475569;">${esc(input.body)}</p>
-    ${input.code ? `<div style="text-align:center;background:#f1f5f9;border-radius:14px;padding:20px;margin-bottom:24px;"><span style="font-size:32px;font-weight:700;letter-spacing:.3em;color:#1d4ed8;">${esc(input.code)}</span></div>` : ""}
-    ${input.cta ? `<a href="${esc(input.cta.href)}" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 24px;border-radius:12px;margin-bottom:24px;">${esc(input.cta.label)}</a>` : ""}
-    <p style="margin:0;font-size:12px;line-height:1.5;color:#94a3b8;">${esc(input.footer)}</p>
-  </div>
-</div>`.trim();
+/** The shared security layout: heading, sentence, optional code or button, a closing note. */
+async function securityEmail(
+  locale: string | null,
+  build: (t: EmailContext["t"]) => { subject: string; heading: string; body: string; code?: string; cta?: { label: string; href: string }; note: string }
+) {
+  const c = await emailContext(locale, "PasswordResetEmail");
+  const m = build(c.t);
+  const blocks: Block[] = [
+    { kind: "text", text: m.body },
+    ...(m.code ? ([{ kind: "code", code: m.code, caption: c.t("codeCaption") }] satisfies Block[]) : []),
+    ...(m.cta ? ([{ kind: "cta", label: m.cta.label, href: m.cta.href }] satisfies Block[]) : []),
+    { kind: "callout", tone: "neutral", text: m.note },
+  ];
+  const { html, text } = c.render({
+    subject: m.subject,
+    preview: m.body,
+    reference: c.s("badgeSecurity").toLocaleUpperCase(c.locale),
+    heading: m.heading,
+    blocks,
+    footer: { reason: c.s("reasonSecurity") },
+  });
+  return { subject: m.subject.replace(/[\r\n]+/g, " "), html, text, locale: c.locale };
 }
 
 export async function sendPasswordResetCode(email: string, code: string, locale: string | null): Promise<void> {
-  const { t } = await emailTranslator(locale, "PasswordResetEmail");
-  const body = t("codeBody");
-  await sendHtmlEmail({
-    to: email,
-    subject: t("codeSubject", { code }),
-    text: `${body}\n\n${code}\n\n${t("codeFooter")}`,
-    html: shell({ kicker: t("codeKicker"), body, code, footer: t("codeFooter") }),
-  });
+  const m = await securityEmail(locale, (t) => ({
+    // The code leads the subject in every language, readable from a lock screen.
+    subject: `${code} — ${t("codeSubjectTail")}`,
+    heading: t("codeKicker"),
+    body: t("codeBody"),
+    code,
+    note: t("codeFooter"),
+  }));
+  await sendHtmlEmail({ to: email, subject: m.subject, html: m.html, text: m.text });
 }
 
 export async function sendPasswordResetGoogleNotice(email: string, locale: string | null): Promise<void> {
-  const { t, locale: loc } = await emailTranslator(locale, "PasswordResetEmail");
-  const href = absoluteUrl("/auth", loc);
-  await sendHtmlEmail({
-    to: email,
+  const href = absoluteUrl("/auth", locale ?? undefined);
+  const m = await securityEmail(locale, (t) => ({
     subject: t("googleSubject"),
-    text: `${t("googleBody")}\n\n${href}\n\n${t("googleFooter")}`,
-    html: shell({ kicker: t("googleKicker"), body: t("googleBody"), cta: { label: t("googleCta"), href }, footer: t("googleFooter") }),
-  });
+    heading: t("googleKicker"),
+    body: t("googleBody"),
+    cta: { label: t("googleCta"), href },
+    note: t("googleFooter"),
+  }));
+  await sendHtmlEmail({ to: email, subject: m.subject, html: m.html, text: m.text });
 }
 
 export async function sendPasswordChangedNotice(email: string, locale: string | null): Promise<void> {
-  const { t } = await emailTranslator(locale, "PasswordResetEmail");
-  await sendHtmlEmail({
-    to: email,
+  const m = await securityEmail(locale, (t) => ({
     subject: t("changedSubject"),
-    text: `${t("changedBody")}\n\n${t("changedFooter")}`,
-    html: shell({ kicker: t("changedKicker"), body: t("changedBody"), footer: t("changedFooter") }),
-  });
+    heading: t("changedKicker"),
+    body: t("changedBody"),
+    note: t("changedFooter"),
+  }));
+  await sendHtmlEmail({ to: email, subject: m.subject, html: m.html, text: m.text });
 }

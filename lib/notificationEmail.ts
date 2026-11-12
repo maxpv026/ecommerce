@@ -1,19 +1,14 @@
 import "server-only";
 
-import { render } from "@react-email/components";
 import prisma from "@/lib/prisma";
 import { sendHtmlEmail } from "@/lib/mail";
 import { tidyDots } from "@/lib/emailTranslator";
-import { sellerDetails } from "@/lib/seller";
-import { absoluteUrl } from "@/lib/siteUrl";
+import { emailContext } from "@/lib/email/context";
+import type { Block } from "@/lib/email/design";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
-import RegulatoryUpdateEmail from "@/components/email/RegulatoryUpdateEmail";
-import ReplenishmentEmail from "@/components/email/ReplenishmentEmail";
-import PriceDropEmail from "@/components/email/PriceDropEmail";
 import { cylinderGasPrice } from "@/lib/pricing";
 import { LISTED } from "@/lib/productFamily";
 import { isPurchasable } from "@/lib/waitlist";
-import { emailTranslator } from "@/lib/emailTranslator";
 
 /**
  * Preference-gated notification emails.
@@ -92,15 +87,28 @@ async function deliverRegulatoryEmail(
 ): Promise<NotificationSendResult> {
   try {
     const oneClick = unsubscribeUrl(recipient.userId, "regulatory");
-    const email = RegulatoryUpdateEmail({
-      recipientName: recipient.name,
+    const c = await emailContext(recipient.locale, "BroadcastEmail");
+    // Plain text; blank lines separate paragraphs. Escaped by the renderer,
+    // so a stray "<" in an update can't become markup.
+    const paragraphs = content
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const firstName = recipient.name?.trim().split(/\s+/)[0];
+    const { html, text } = c.render({
       subject,
-      content,
-      preferencesUrl: absoluteUrl("/profile/settings", recipient.locale),
-      unsubscribeUrl: oneClick,
-      sender: sellerDetails(),
+      preview: paragraphs[0]?.slice(0, 140) ?? subject,
+      reference: c.t("badge").toLocaleUpperCase(c.locale),
+      kicker: { label: c.t("kicker"), tone: "brand" },
+      heading: subject.replace(/^\[TEST\]\s*/, ""),
+      testBanner: subject.startsWith("[TEST]") ? c.t("testBanner") : null,
+      blocks: [
+        ...(firstName ? ([{ kind: "text", text: c.t("greeting", { name: firstName }) }] satisfies Block[]) : []),
+        ...paragraphs.map((p): Block => ({ kind: "text", text: p })),
+        { kind: "callout", tone: "neutral", text: c.t("disclaimer") },
+      ],
+      footer: { reason: c.t("reason"), unsubscribe: { label: c.s("unsubscribe"), href: oneClick } },
     });
-    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
 
     const delivery = await sendHtmlEmail({
       to: recipient.email,
@@ -148,7 +156,7 @@ export async function sendReplenishmentEmail(input: {
     }),
     prisma.product.findUnique({
       where: { id: input.productId, ...LISTED },
-      select: { sku: true, name: true, weight: true, pricePerKg: true, weightKg: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
+      select: { sku: true, name: true, weight: true, gwpClass: true, gwp: true, pricePerKg: true, weightKg: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
     }),
   ]);
   if (!user) return { status: "skipped", reason: "NOT_FOUND" };
@@ -157,11 +165,12 @@ export async function sendReplenishmentEmail(input: {
   if (!product || !isPurchasable(product) || !(product.pricePerKg > 0)) return { status: "skipped", reason: "UNAVAILABLE" };
 
   try {
-    const { t, locale } = await emailTranslator(user.locale, "ReplenishmentEmail");
-    const money = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" });
-    const date = (d: Date) => new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(d);
+    const c = await emailContext(user.locale, "ReplenishmentEmail");
+    const { t, locale } = c;
+    const date = c.date;
     const deposit = Number(product.cylinderDeposit);
-    const unitPrice = money.format(cylinderGasPrice(product.pricePerKg, product.weightKg));
+    const unit = cylinderGasPrice(product.pricePerKg, product.weightKg);
+    const unitPrice = c.money(unit);
     const qty = Math.min(99, Math.max(1, input.recommendedQty));
     const oneClick = unsubscribeUrl(input.userId, "restockReminders");
     const label = `${product.name} (${product.sku})`;
@@ -175,31 +184,41 @@ export async function sendReplenishmentEmail(input: {
           date: date(input.predictedDate),
         });
     const price = deposit > 0
-      ? t("bodyPriceDeposit", { price: unitPrice, variant: product.weight, deposit: money.format(deposit), qty })
+      ? t("bodyPriceDeposit", { price: unitPrice, variant: product.weight, deposit: c.money(deposit), qty })
       : t("bodyPrice", { price: unitPrice, variant: product.weight, qty });
+    const compliance = [product.gwpClass?.trim(), product.gwp ? c.s("gwp", { value: product.gwp }) : ""].filter(Boolean).join(" · ");
 
-    const email = ReplenishmentEmail({
-      lang: locale,
+    const subject = cleanHeader((input.test ? "[TEST] " : "") + t("subject", { product: label }));
+    const { html, text } = c.render({
+      subject,
       preview: t("preview", { product: label }),
-      kicker: t("kicker"),
-      productName: product.name,
-      greeting: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName"),
-      paragraphs: [cadence, price].map(tidyDots),
+      reference: t("kicker").toLocaleUpperCase(locale),
+      heading: product.name,
       testBanner: input.test ? t("testBanner") : null,
-      meta: `${product.sku} · ${product.weight}`,
-      quantityLine: `${qty} × ${unitPrice}`,
-      cta: { label: t("cta"), href: absoluteUrl(`/cart?reorder=${encodeURIComponent(product.sku)}&qty=${qty}`, locale) },
-      ctaNote: t("ctaNote"),
-      disclaimer: input.fixedDays ? t("disclaimerFixed") : t("disclaimerLearned"),
-      footer: t("footer"),
-      preferences: { label: t("managePreferences"), href: absoluteUrl("/profile/settings", locale) },
-      unsubscribe: { label: t("unsubscribe"), href: oneClick },
-      sender: sellerDetails(),
+      blocks: [
+        { kind: "text", text: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName") },
+        ...[cadence, price].map((p): Block => ({ kind: "text", text: tidyDots(p) })),
+        {
+          kind: "items",
+          qtyLabel: c.s("qty"),
+          lines: [
+            {
+              name: product.name,
+              qty,
+              meta: [product.weight, c.s("sku", { sku: product.sku }), c.s("perUnit", { price: unitPrice })].filter(Boolean),
+              badges: compliance ? [{ label: compliance, tone: "neutral" }] : [],
+              total: c.money(unit * qty),
+            },
+          ],
+        },
+        { kind: "cta", label: t("cta"), href: c.url(`/cart?reorder=${encodeURIComponent(product.sku)}&qty=${qty}`), note: t("ctaNote") },
+        { kind: "callout", tone: "neutral", text: input.fixedDays ? t("disclaimerFixed") : t("disclaimerLearned") },
+      ],
+      footer: { reason: t("footer"), unsubscribe: { label: c.s("unsubscribe"), href: oneClick } },
     });
-    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
     const delivery = await sendHtmlEmail({
       to: user.email,
-      subject: cleanHeader((input.test ? "[TEST] " : "") + t("subject", { product: label })),
+      subject,
       html,
       text,
       headers: {
@@ -229,7 +248,7 @@ export async function sendPriceDropEmail(input: {
 
   const [user, product] = await Promise.all([
     prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, name: true, locale: true, notifyPriceDrops: true } }),
-    prisma.product.findUnique({ where: { id: input.productId, ...LISTED }, select: { sku: true, name: true, weight: true } }),
+    prisma.product.findUnique({ where: { id: input.productId, ...LISTED }, select: { sku: true, name: true, weight: true, gwpClass: true, gwp: true } }),
   ]);
   if (!user) return { status: "skipped", reason: "NOT_FOUND" };
   if (!user.notifyPriceDrops) return { status: "skipped", reason: "OPTED_OUT" };
@@ -237,28 +256,46 @@ export async function sendPriceDropEmail(input: {
   if (!product) return { status: "skipped", reason: "UNAVAILABLE" };
 
   try {
-    const money = new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" });
+    const c = await emailContext(user.locale, "PriceDropEmail");
     const oneClick = unsubscribeUrl(input.userId, "priceDrops");
     const saving = Math.round(((input.oldPrice - input.newPrice) / input.oldPrice) * 100);
-    const email = PriceDropEmail({
-      recipientName: user.name,
-      productName: product.name,
-      sku: product.sku,
-      variant: product.weight,
-      oldPrice: money.format(input.oldPrice),
-      newPrice: money.format(input.newPrice),
-      // Under 1% rounds to 0 — say "<1%" rather than "−0%".
-      saving: saving >= 1 ? `${saving}%` : "<1%",
-      productUrl: absoluteUrl(`/products/${input.productId}`, user.locale),
-      favoritesUrl: absoluteUrl("/profile/favorites", user.locale),
-      preferencesUrl: absoluteUrl("/profile/settings", user.locale),
-      unsubscribeUrl: oneClick,
-      sender: sellerDetails(),
+    // Under 1% rounds to 0 — say "<1%" rather than "−0%".
+    const savingLabel = saving >= 1 ? `−${saving}%` : "<1%";
+    const newPrice = c.money(input.newPrice);
+    const oldPrice = c.money(input.oldPrice);
+    const subject = cleanHeader(c.t("subject", { product: product.name, sku: product.sku, price: newPrice }));
+    const name = user.name?.trim();
+    const compliance = [product.gwpClass?.trim(), product.gwp ? c.s("gwp", { value: product.gwp }) : ""].filter(Boolean).join(" · ");
+    const { html, text } = c.render({
+      subject,
+      preview: c.t("preview", { product: product.name, price: newPrice, old: oldPrice }),
+      reference: c.t("badge").toLocaleUpperCase(c.locale),
+      kicker: { label: c.t("kicker", { saving: savingLabel }), tone: "success" },
+      heading: product.name,
+      blocks: [
+        { kind: "text", text: name ? c.t("greeting", { name }) : c.t("greetingNoName") },
+        { kind: "text", text: c.rich("body", { product: product.name, variant: product.weight, price: newPrice, old: oldPrice }, ["price"]) },
+        {
+          kind: "items",
+          qtyLabel: c.s("qty"),
+          lines: [
+            {
+              name: product.name,
+              meta: [product.weight, c.s("sku", { sku: product.sku }), c.t("exVat")].filter(Boolean),
+              badges: [{ label: savingLabel, tone: "success" }, ...(compliance ? [{ label: compliance, tone: "neutral" as const }] : [])],
+              was: oldPrice,
+              total: newPrice,
+            },
+          ],
+        },
+        { kind: "cta", label: c.t("cta"), href: c.url(`/products/${input.productId}`), note: c.t("ctaNote") },
+        { kind: "text", tone: "small", text: [{ a: c.t("favorites"), href: c.url("/profile/favorites") }] },
+      ],
+      footer: { reason: c.t("reason"), unsubscribe: { label: c.s("unsubscribe"), href: oneClick } },
     });
-    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
     const delivery = await sendHtmlEmail({
       to: user.email,
-      subject: cleanHeader(`Price drop: ${product.name} (${product.sku}) is now ${money.format(input.newPrice)}`),
+      subject,
       html,
       text,
       headers: {

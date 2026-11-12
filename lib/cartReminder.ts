@@ -1,17 +1,15 @@
 import "server-only";
 
-import { render } from "@react-email/components";
 import prisma from "@/lib/prisma";
 import { sendHtmlEmail } from "@/lib/mail";
 import { tidyDots } from "@/lib/emailTranslator";
-import { sellerDetails } from "@/lib/seller";
-import { absoluteUrl } from "@/lib/siteUrl";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
-import { emailTranslator } from "@/lib/emailTranslator";
+import { emailContext } from "@/lib/email/context";
+import type { ItemLine } from "@/lib/email/design";
+import { calculateCartTotals, VAT_RATE, type CartPricingLine } from "@/lib/cart";
 import { cylinderGasPrice } from "@/lib/pricing";
 import { LISTED } from "@/lib/productFamily";
 import { parseSavedItems } from "@/lib/savedCart";
-import CartReminderEmail, { type CartReminderLine } from "@/components/email/CartReminderEmail";
 import type { NotificationSendResult } from "@/lib/notificationEmail";
 
 /**
@@ -133,73 +131,72 @@ export async function sendCartReminderEmail(userId: string, options: { test?: bo
 
   const products = await prisma.product.findMany({
     where: { ...LISTED, sku: { in: items.map((i) => i.sku) } },
-    select: { sku: true, name: true, weight: true, pricePerKg: true, weightKg: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
+    select: { sku: true, name: true, weight: true, gwpClass: true, gwp: true, pricePerKg: true, weightKg: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
   });
   const bySku = new Map(products.map((p) => [p.sku, p]));
 
   try {
-    const { t, locale } = await emailTranslator(user.locale, "CartReminderEmail");
-    const money = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" });
-    const date = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" });
+    const c = await emailContext(user.locale, "CartReminderEmail");
 
-    let gas = 0;
-    let deposits = 0;
-    let buyable = 0;
-    const lines: CartReminderLine[] = [];
+    const priced: CartPricingLine[] = [];
+    const lines: ItemLine[] = [];
+    let excluded = 0;
     for (const item of items) {
       const p = bySku.get(item.sku);
       if (!p || !(p.pricePerKg > 0)) continue;
       const unit = cylinderGasPrice(p.pricePerKg, p.weightKg);
-      const deposit = Number(p.cylinderDeposit);
       const available = p.inStock && p.stockQuantity > 0;
-      const stock: CartReminderLine["stock"] = !available
-        ? { label: t("stockOut"), tone: "out" }
+      const stock = !available
+        ? { label: c.t("stockOut"), tone: "danger" as const }
         : p.stockQuantity < item.qty
-          ? { label: t("stockLow", { count: p.stockQuantity }), tone: "low" }
-          : { label: t("stockIn"), tone: "ok" };
-      if (available) {
-        buyable += 1;
-        gas += unit * item.qty;
-        deposits += deposit * item.qty;
-      }
+          ? { label: c.t("stockLow", { count: p.stockQuantity }), tone: "warning" as const }
+          : { label: c.t("stockIn"), tone: "success" as const };
+      if (available) priced.push({ pricePerKg: p.pricePerKg, weightKg: p.weightKg, qty: item.qty, deposit: Number(p.cylinderDeposit) });
+      else excluded += 1;
+      const compliance = [p.gwpClass?.trim(), p.gwp ? c.s("gwp", { value: p.gwp }) : ""].filter(Boolean).join(" · ");
       lines.push({
         name: p.name,
-        meta: [p.weight, p.sku].filter(Boolean).join(" · "),
         qty: item.qty,
-        unitPrice: money.format(unit),
-        lineTotal: money.format((unit + deposit) * item.qty),
-        stock,
+        meta: [p.weight, c.s("sku", { sku: p.sku }), c.s("perUnit", { price: c.money(unit) })].filter(Boolean),
+        badges: [{ label: `● ${stock.label}`, tone: stock.tone }, ...(compliance ? [{ label: compliance, tone: "neutral" as const }] : [])],
+        total: c.money(unit * item.qty),
+        muted: !available,
       });
     }
-    if (buyable === 0) return { status: "skipped", reason: "UNAVAILABLE" };
+    if (priced.length === 0) return { status: "skipped", reason: "UNAVAILABLE" };
 
-    const count = lines.reduce((n, l) => n + l.qty, 0);
+    // The checkout's own arithmetic (lib/cart), so the reminder quotes what
+    // the buyer will actually be charged — freight and VAT included.
+    const totals = calculateCartTotals(priced);
+    const count = lines.reduce((n, l) => n + (l.qty ?? 0), 0);
     const oneClick = unsubscribeUrl(userId, "abandonedCart");
-    const subject = (options.test ? "[TEST] " : "") + t("subject", { count });
-    const email = CartReminderEmail({
-      lang: locale,
-      preview: t("preview", { count }),
-      kicker: t("kicker"),
-      heading: t("heading", { count }),
-      greeting: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName"),
-      intro: tidyDots(t("intro", { date: date.format(cart.contentUpdatedAt) })),
-      testBanner: options.test ? t("testBanner") : null,
-      lines,
-      labels: { qty: t("qty"), total: t("lineTotal") },
-      totals: [
-        { label: t("totalGas"), value: money.format(gas) },
-        ...(deposits > 0 ? [{ label: t("totalDeposits"), value: money.format(deposits) }] : []),
-        { label: t("totalExVat"), value: money.format(gas + deposits), strong: true },
+    const subject = (options.test ? "[TEST] " : "") + c.t("subject", { count });
+    const name = user.name?.trim();
+    const { html, text } = c.render({
+      subject,
+      preview: c.t("preview", { count }),
+      reference: c.t("kicker").toLocaleUpperCase(c.locale),
+      heading: c.t("heading", { count }),
+      testBanner: options.test ? c.t("testBanner") : null,
+      blocks: [
+        { kind: "text", text: name ? c.t("greeting", { name }) : c.t("greetingNoName") },
+        { kind: "text", text: tidyDots(c.t("intro", { date: c.date(cart.contentUpdatedAt) })) },
+        { kind: "items", qtyLabel: c.t("qty"), lines },
+        {
+          kind: "ledger",
+          rows: [
+            { label: c.s("ledgerSubtotal"), value: c.money(totals.subtotal) },
+            ...(totals.deposit > 0 ? [{ label: c.s("ledgerDeposit", { count: totals.depositUnits }), value: c.money(totals.deposit) }] : []),
+            { label: c.s("ledgerFreight"), value: c.money(totals.shipping) },
+            { label: c.s("ledgerVat", { rate: Math.round(VAT_RATE * 100) }), value: c.money(totals.vat) },
+          ],
+          total: { label: c.s("ledgerTotal"), value: c.money(totals.total) },
+          note: excluded > 0 ? c.t("ledgerNoteExcluded") : c.t("ledgerNote"),
+        },
+        { kind: "cta", label: c.t("cta"), href: c.url("/cart?restore=1"), note: c.t("ctaNote") },
       ],
-      totalsNote: t("totalsNote"),
-      cta: { label: t("cta"), href: absoluteUrl("/cart?restore=1", locale) },
-      ctaNote: t("ctaNote"),
-      footer: t("footer"),
-      preferences: { label: t("managePreferences"), href: absoluteUrl("/profile/settings", locale) },
-      unsubscribe: { label: t("unsubscribe"), href: oneClick },
-      sender: sellerDetails(),
+      footer: { reason: c.t("footer"), unsubscribe: { label: c.s("unsubscribe"), href: oneClick } },
     });
-    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
     const delivery = await sendHtmlEmail({
       to: user.email,
       subject: subject.replace(/[\r\n]+/g, " "),

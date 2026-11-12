@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { getProducts, type StoreProduct } from "@/lib/data";
 import { sendHtmlEmail } from "@/lib/mail";
 import { absoluteUrl } from "@/lib/siteUrl";
+import { emailContext } from "@/lib/email/context";
 import type { ChatRole, ChatSessionStatus } from "@/lib/generated/prisma/enums";
 import { chatExpiresAt, isChatExpired, purgeIfExpired } from "@/lib/chatRetention";
 
@@ -209,7 +210,6 @@ export async function escalateSession(sessionId: string, reason: string): Promis
   return count === 1;
 }
 
-const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 /**
  * "Action Required" to the admin. Never throws: the visitor's handoff has
@@ -236,16 +236,28 @@ export async function notifyAdminOfEscalation(sessionId: string): Promise<void> 
     const link = absoluteUrl(`/admin/support/${sessionId}`);
     const expires = chatExpiresAt(session.updatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Sofia", timeZoneName: "short" });
 
-    await sendHtmlEmail({
-      to,
-      subject: `Action Required: Chat escalated by ${who}`.replace(/[\r\n]+/g, " ").slice(0, 200),
-      text: `Action Required: Chat escalated by ${who}.\n\nView transcript here: ${link}\n\nThe chat is deleted an hour after its last message — around ${expires} unless someone writes again.`,
-      html: `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#0f172a;max-width:560px;font-size:14px;line-height:1.6">
-  <p style="margin:0 0 14px"><strong>Action Required:</strong> Chat escalated by ${escapeHtml(who)}.</p>
-  <p style="margin:0 0 18px"><a href="${link}" style="display:inline-block;background:#22429b;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600">View transcript here</a></p>
-  <p style="margin:0;font-size:12.5px;color:#64748b">The chat is deleted an hour after its last message — around ${escapeHtml(expires)} unless someone writes again. This email deliberately contains none of the conversation.</p>
-</div>`,
+    // Staff-facing: always English, the language of the admin.
+    const c = await emailContext("en", "SupportEmail");
+    const subject = `Action Required: Chat escalated by ${who}`.replace(/[\r\n]+/g, " ").slice(0, 200);
+    const { html, text } = c.render({
+      subject,
+      preview: `Chat escalated by ${who}. View the transcript before it is deleted around ${expires}.`,
+      reference: "ACTION REQUIRED",
+      kicker: { label: "Support escalation", tone: "warning" },
+      heading: `Chat escalated by ${who}`,
+      blocks: [
+        { kind: "text", text: "This conversation was handed to the team. The AI no longer answers in it until the chat is closed." },
+        { kind: "cta", label: "View transcript →", href: link },
+        {
+          kind: "callout",
+          tone: "warning",
+          title: "Retention",
+          text: `The chat is deleted an hour after its last message — around ${expires} unless someone writes again. This email deliberately contains none of the conversation.`,
+        },
+      ],
+      footer: { reason: "Sent to ADMIN_EMAIL because a support chat was escalated." },
     });
+    await sendHtmlEmail({ to, subject, html, text });
   } catch (error) {
     console.error(`[support] escalation email for ${sessionId} failed:`, error);
   }

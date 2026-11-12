@@ -37,6 +37,7 @@ async function caller() {
     select: {
       id: true,
       email: true,
+      locale: true,
       password: true,
       loginLockedUntil: true,
       isTwoFactorEnabled: true,
@@ -78,7 +79,7 @@ export async function sendStepUpEmailCode(): Promise<SendStepUpCodeResult> {
   // A code sent seconds ago is still valid: don't mail another.
   if (await otpRecentlySent(email, "step-up")) return { ok: true };
   try {
-    await sendOtpEmail(email, await createOtp(email, "step-up"));
+    await sendOtpEmail(email, await createOtp(email, "step-up"), { purpose: "stepUp", locale: c.user.locale });
     return { ok: true };
   } catch (error) {
     console.error("[step-up] could not send the code:", error);

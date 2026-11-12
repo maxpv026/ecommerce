@@ -53,7 +53,7 @@ function productUrl(productId: string, locale: string): string {
 }
 
 async function sendInBatches(
-  jobs: Array<{ id: string; email: string; url: string }>,
+  jobs: Array<{ id: string; email: string; url: string; locale: string }>,
   product: { name: string; variant: string }
 ): Promise<{ sentIds: string[]; failedIds: string[] }> {
   const sentIds: string[] = [];
@@ -64,7 +64,7 @@ async function sendInBatches(
     for (const job of slice) console.log(`[RESTOCK] Attempting to send email to: ${job.email} (link ${job.url})`);
 
     const settled = await Promise.allSettled(
-      slice.map((job) => sendBackInStockEmail(job.email, { ...product, url: job.url }))
+      slice.map((job) => sendBackInStockEmail(job.email, { ...product, url: job.url, locale: job.locale }))
     );
     settled.forEach((outcome, idx) => {
       if (outcome.status === "fulfilled") {
@@ -136,7 +136,7 @@ export async function notifyBackInStock(
     }
 
     const { sentIds, failedIds } = await sendInBatches(
-      batch.map((s) => ({ id: s.id, email: s.email, url: productUrl(product.id, s.locale) })),
+      batch.map((s) => ({ id: s.id, email: s.email, url: productUrl(product.id, s.locale), locale: s.locale })),
       { name: product.name, variant: product.weight }
     );
 

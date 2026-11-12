@@ -34,8 +34,9 @@ export async function requestPasswordChangeOtp(): Promise<PasswordActionResult> 
   if (await otpRecentlySent(email, "password-change")) return { ok: true };
 
   const code = await createOtp(email, "password-change");
+  const locale = (await prisma.user.findUnique({ where: { id: session.user.id }, select: { locale: true } }))?.locale;
   try {
-    await sendOtpEmail(email, code);
+    await sendOtpEmail(email, code, { purpose: "passwordChange", locale });
     return { ok: true };
   } catch (error) {
     console.error("requestPasswordChangeOtp send failed:", error);

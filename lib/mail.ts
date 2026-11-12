@@ -1,6 +1,11 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { emailContext } from "@/lib/email/context";
 
+// Email delivery over SMTP (nodemailer). Every message's body comes from
+// the shared design system in lib/email (design.ts renders, context.ts
+// localizes); this module is the transport and the security-code email.
+//
 // OTP email delivery over SMTP (nodemailer). Development setup targets
 // Gmail's SMTP service:
 //
@@ -89,128 +94,6 @@ function fromAddress(): string {
   return explicit || `"My Energy" <${process.env.SMTP_USER}>`;
 }
 
-function otpEmailHtml(code: string): string {
-  return `
-<div style="background:#f8fafc;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:420px;margin:0 auto;background:#ffffff;border-radius:20px;padding:36px 32px;border:1px solid #e2e8f0;">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:28px;">
-      <span style="display:inline-block;width:13px;height:13px;border-radius:999px;border:3.5px solid #0f172a;"></span>
-      <span style="font-size:16px;font-weight:600;letter-spacing:-0.02em;color:#0f172a;">My Energy</span>
-    </div>
-    <p style="margin:0 0 6px;font-size:13px;letter-spacing:.05em;color:#94a3b8;text-transform:uppercase;">Verification code</p>
-    <p style="margin:0 0 24px;font-size:14px;line-height:1.5;color:#475569;">
-      Enter this code to finish signing in to your My Energy account. It expires in 10 minutes.
-    </p>
-    <div style="text-align:center;background:#f1f5f9;border-radius:14px;padding:20px;margin-bottom:24px;">
-      <span style="font-size:32px;font-weight:700;letter-spacing:.3em;color:#1d4ed8;">${code}</span>
-    </div>
-    <p style="margin:0;font-size:12px;line-height:1.5;color:#94a3b8;">
-      If you didn't request this code, you can safely ignore this email.
-    </p>
-  </div>
-</div>`.trim();
-}
-
-function backInStockEmailHtml(productName: string, variant: string, url: string): string {
-  return `
-<div style="background:#f8fafc;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:460px;margin:0 auto;background:#ffffff;border-radius:20px;padding:36px 32px;border:1px solid #e2e8f0;">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:28px;">
-      <span style="display:inline-block;width:13px;height:13px;border-radius:999px;border:3.5px solid #0f172a;"></span>
-      <span style="font-size:16px;font-weight:600;letter-spacing:-0.02em;color:#0f172a;">My Energy</span>
-    </div>
-    <p style="margin:0 0 6px;font-size:13px;letter-spacing:.05em;color:#059669;text-transform:uppercase;font-weight:600;">Back in stock</p>
-    <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3;letter-spacing:-0.03em;color:#0f172a;">${productName} is available again</h1>
-    <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#475569;">
-      You asked to be told when <strong style="color:#0f172a;">${productName}</strong>${variant ? ` (${variant})` : ""}
-      came back into stock. It just did. Stock is limited and moves quickly, so order soon if you still need it.
-    </p>
-    <a href="${url}" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;font-size:14.5px;font-weight:600;letter-spacing:-0.01em;padding:14px 26px;border-radius:14px;">
-      View the product
-    </a>
-    <p style="margin:26px 0 0;font-size:12px;line-height:1.55;color:#94a3b8;">
-      You are receiving this once because you joined the waitlist for this product. You are not subscribed to anything else,
-      and we won't email you about it again.
-    </p>
-  </div>
-</div>`.trim();
-}
-
-function orderConfirmationHtml(o: {
-  orderNumber: string;
-  invoiceNumber: string;
-  customerName: string | null;
-  total: string;
-  cylinders: number;
-  lines: Array<{ name: string; variant: string; qty: number }>;
-  orderUrl: string;
-}): string {
-  const rows = o.lines
-    .map(
-      (l) => `
-      <tr>
-        <td style="padding:9px 0;border-bottom:1px solid #f1f5f9;font-size:13.5px;color:#0f172a;">
-          <strong style="font-weight:600;">${escapeHtml(l.name)}</strong>
-          <span style="color:#94a3b8;">${l.variant ? ` · ${escapeHtml(l.variant)}` : ""}</span>
-        </td>
-        <td style="padding:9px 0;border-bottom:1px solid #f1f5f9;font-size:13.5px;color:#475569;text-align:right;">×${l.qty}</td>
-      </tr>`
-    )
-    .join("");
-
-  return `
-<div style="background:#f8fafc;padding:40px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;padding:36px 32px;border:1px solid #e2e8f0;">
-    <div style="display:flex;align-items:center;gap:9px;margin-bottom:28px;">
-      <span style="display:inline-block;width:13px;height:13px;border-radius:999px;border:3.5px solid #0f172a;"></span>
-      <span style="font-size:16px;font-weight:600;letter-spacing:-0.02em;color:#0f172a;">My Energy</span>
-    </div>
-    <p style="margin:0 0 6px;font-size:13px;letter-spacing:.05em;color:#1d4ed8;text-transform:uppercase;font-weight:600;">Order confirmed</p>
-    <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3;letter-spacing:-0.03em;color:#0f172a;">Thank you${o.customerName ? `, ${escapeHtml(o.customerName)}` : ""}</h1>
-    <p style="margin:0 0 22px;font-size:14px;line-height:1.6;color:#475569;">
-      We have your order <strong style="color:#0f172a;">${escapeHtml(o.orderNumber)}</strong>.
-      Invoice <strong style="color:#0f172a;">${escapeHtml(o.invoiceNumber)}</strong> is attached to this email as a PDF.
-    </p>
-
-    <table style="width:100%;border-collapse:collapse;margin:0 0 18px;">${rows}</table>
-
-    <table style="width:100%;border-collapse:collapse;margin:0 0 24px;">
-      <tr>
-        <td style="padding:10px 0 0;border-top:1px solid #0f172a;font-size:14px;font-weight:600;color:#0f172a;">Total</td>
-        <td style="padding:10px 0 0;border-top:1px solid #0f172a;font-size:16px;font-weight:600;color:#1d4ed8;text-align:right;">${escapeHtml(o.total)}</td>
-      </tr>
-    </table>
-
-    ${
-      o.cylinders > 0
-        ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin:0 0 24px;">
-      <p style="margin:0;font-size:13px;line-height:1.55;color:#475569;">
-        <strong style="color:#0f172a;">${o.cylinders} returnable cylinder${o.cylinders === 1 ? "" : "s"}</strong>
-        ${o.cylinders === 1 ? "has" : "have"} been added to your account. The deposit is refunded in full when ${o.cylinders === 1 ? "it is" : "they are"} returned undamaged.
-      </p>
-    </div>`
-        : ""
-    }
-
-    <a href="${o.orderUrl}" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;font-size:14.5px;font-weight:600;letter-spacing:-0.01em;padding:14px 26px;border-radius:14px;">
-      View your order
-    </a>
-    <p style="margin:26px 0 0;font-size:12px;line-height:1.55;color:#94a3b8;">
-      Payment is by bank transfer. Please quote ${escapeHtml(o.invoiceNumber)} with your transfer.
-    </p>
-  </div>
-</div>`.trim();
-}
-
-/** Order data is customer-supplied; never interpolate it raw into HTML. */
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 /** What the SMTP server said, so the caller can log it and judge it. */
 export interface MailDelivery {
   accepted: string[];
@@ -221,7 +104,8 @@ export interface MailDelivery {
 }
 
 /**
- * Tells one waitlist subscriber that a product is purchasable again.
+ * Tells one waitlist subscriber that a product is purchasable again, in the
+ * language they subscribed in.
  *
  * Throws on transport failure — and, importantly, also when the server
  * ACCEPTS the connection but REJECTS the recipient. nodemailer resolves in
@@ -231,16 +115,30 @@ export interface MailDelivery {
  */
 export async function sendBackInStockEmail(
   email: string,
-  product: { name: string; variant: string; url: string }
+  product: { name: string; variant: string; url: string; locale?: string | null }
 ): Promise<MailDelivery> {
-  const active = getTransporter();
-
   // Build the body before opening the connection, and say plainly if the
   // template is what broke — a throw from in here used to surface as a
   // generic send failure.
-  let html: string;
+  let rendered: { subject: string; html: string; text: string };
   try {
-    html = backInStockEmailHtml(product.name, product.variant, product.url);
+    const c = await emailContext(product.locale, "StockEmail");
+    const subject = c.t("subject", { product: product.name });
+    rendered = {
+      subject,
+      ...c.render({
+        subject,
+        preview: c.t("preview", { product: product.name }),
+        reference: c.t("badge").toLocaleUpperCase(c.locale),
+        kicker: { label: c.t("kicker"), tone: "success" },
+        heading: c.t("heading", { product: product.name }),
+        blocks: [
+          { kind: "text", text: c.rich(product.variant ? "bodyVariant" : "body", { product: product.name, variant: product.variant }, ["product"]) },
+          { kind: "cta", label: c.t("cta"), href: product.url, note: c.t("ctaNote") },
+        ],
+        footer: { reason: c.t("reason") },
+      }),
+    };
   } catch (error) {
     console.error("[RESTOCK] FAILED to render the back-in-stock template:", error, { product });
     throw new Error(
@@ -248,110 +146,16 @@ export async function sendBackInStockEmail(
     );
   }
 
-  const info = await active.sendMail({
-    from: fromAddress(),
-    to: email,
-    subject: `${product.name} is back in stock`,
-    text: `${product.name}${product.variant ? ` (${product.variant})` : ""} is back in stock at My Energy. View it here: ${product.url}`,
-    html,
-  });
-
-  const delivery: MailDelivery = {
-    accepted: (info.accepted ?? []).map(String),
-    rejected: (info.rejected ?? []).map(String),
-    response: String(info.response ?? ""),
-    messageId: String(info.messageId ?? ""),
-  };
-
-  if (delivery.accepted.length === 0 || delivery.rejected.length > 0) {
-    throw new Error(
-      `SMTP accepted the message but rejected the recipient: accepted=[${delivery.accepted.join(", ")}] rejected=[${delivery.rejected.join(", ")}] response="${delivery.response}"`
-    );
-  }
-  return delivery;
+  return sendHtmlEmail({ to: email, subject: oneLine(rendered.subject), html: rendered.html, text: rendered.text });
 }
 
-/**
- * Sends the 6-digit sign-in code. Never crashes the server on transport
- * problems: nodemailer failures are caught here, logged with their SMTP
- * diagnostics, and re-thrown as a clean Error for the calling server action
- * (lib/actions/otp.ts), which converts it into the SEND_FAILED result the
- * UI shows as "Couldn't send the code."
- */
-/**
- * Order confirmation with the invoice PDF attached.
- *
- * The buffer is passed in rather than generated here so lib/mail.ts keeps no
- * dependency on Prisma or @react-pdf — this module is imported by the OTP
- * path on every sign-in, and dragging a PDF renderer into that is a cost for
- * nothing.
- *
- * Returns the delivery result instead of throwing on rejection: an order is
- * already placed and paid for by the time this runs, and a bounced
- * confirmation must never look like a failed checkout. The caller logs it.
- */
-export async function sendOrderConfirmationEmail(
-  email: string,
-  order: {
-    orderNumber: string;
-    invoiceNumber: string;
-    customerName: string | null;
-    total: string;
-    cylinders: number;
-    lines: Array<{ name: string; variant: string; qty: number }>;
-    orderUrl: string;
-  },
-  invoicePdf: Buffer | null
-): Promise<MailDelivery> {
-  const active = getTransporter();
-
-  const html = orderConfirmationHtml(order);
-  const text = [
-    `Order ${order.orderNumber} confirmed.`,
-    `Invoice ${order.invoiceNumber}${invoicePdf ? " is attached as a PDF." : "."}`,
-    ...order.lines.map((l) => `  ${l.qty} x ${l.name}${l.variant ? ` (${l.variant})` : ""}`),
-    `Total: ${order.total}`,
-    order.cylinders > 0
-      ? `${order.cylinders} returnable cylinder(s) added to your account; the deposit is refunded on return.`
-      : "",
-    `View your order: ${order.orderUrl}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const info = await active.sendMail({
-    from: fromAddress(),
-    to: email,
-    subject: `Order ${order.orderNumber} confirmed — invoice ${order.invoiceNumber}`,
-    text,
-    html,
-    // Omitted entirely when rendering failed: an email with a 0-byte
-    // "invoice.pdf" is worse than one that simply says where to find it.
-    ...(invoicePdf
-      ? {
-          attachments: [
-            {
-              filename: `${order.invoiceNumber}.pdf`,
-              content: invoicePdf,
-              contentType: "application/pdf",
-            },
-          ],
-        }
-      : {}),
-  });
-
-  return {
-    accepted: (info.accepted ?? []).map(String),
-    rejected: (info.rejected ?? []).map(String),
-    response: String(info.response ?? ""),
-    messageId: String(info.messageId ?? ""),
-  };
-}
+/** CR/LF stripped: a subject is a header, and a newline in a header is how header injection starts. */
+const oneLine = (value: string) => value.replace(/[\r\n]+/g, " ").trim();
 
 /**
- * Sends one pre-rendered email (the body is built by the caller, e.g. from a
- * React Email template). Throws when the recipient is rejected, like
- * sendBackInStockEmail, so the caller decides whether that is fatal.
+ * Sends one pre-rendered email (built with lib/email — the shared design
+ * system). Throws when the recipient is rejected, like sendBackInStockEmail,
+ * so the caller decides whether that is fatal.
  *
  * `headers` carries List-Unsubscribe for anything that isn't transactional:
  * Gmail and Yahoo require one-click unsubscribe from bulk senders, and the
@@ -363,6 +167,7 @@ export async function sendHtmlEmail(message: {
   html: string;
   text: string;
   headers?: Record<string, string>;
+  attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
 }): Promise<MailDelivery> {
   const info = await getTransporter().sendMail({ from: fromAddress(), ...message });
   const delivery: MailDelivery = {
@@ -377,17 +182,42 @@ export async function sendHtmlEmail(message: {
   return delivery;
 }
 
-export async function sendOtpEmail(email: string, code: string): Promise<void> {
-  const active = getTransporter();
+/** What the code is for — it changes the heading and the sentence around it. */
+export type OtpPurpose = "signIn" | "stepUp" | "passwordChange";
+
+/**
+ * Sends a 6-digit one-time code. Never crashes the server on transport
+ * problems: nodemailer failures are caught here, logged with their SMTP
+ * diagnostics, and re-thrown as a clean Error for the calling server action
+ * (lib/actions/otp.ts), which converts it into the SEND_FAILED result the
+ * UI shows as "Couldn't send the code."
+ *
+ * The subject always STARTS with the code, in every language, so it can be
+ * read from a lock-screen notification without opening the email.
+ */
+export async function sendOtpEmail(
+  email: string,
+  code: string,
+  options: { purpose?: OtpPurpose; locale?: string | null } = {}
+): Promise<void> {
+  const purpose = options.purpose ?? "signIn";
+  const c = await emailContext(options.locale, "OtpEmail");
+  const subject = `${code} — ${c.t("subjectTail")}`;
+  const { html, text } = c.render({
+    subject,
+    preview: c.t(`body_${purpose}`),
+    reference: c.s("badgeSecurity").toLocaleUpperCase(c.locale),
+    heading: c.t(`heading_${purpose}`),
+    blocks: [
+      { kind: "text", text: c.t(`body_${purpose}`) },
+      { kind: "code", code, caption: c.t("codeCaption") },
+      { kind: "callout", tone: "neutral", text: c.t("ignore") },
+    ],
+    footer: { reason: c.s("reasonSecurity") },
+  });
 
   try {
-    await active.sendMail({
-      from: fromAddress(),
-      to: email,
-      subject: `${code} is your My Energy verification code`,
-      text: `Your My Energy verification code is ${code}. It expires in 10 minutes.`,
-      html: otpEmailHtml(code),
-    });
+    await getTransporter().sendMail({ from: fromAddress(), to: email, subject, text, html });
   } catch (error) {
     // Log the full SMTP diagnostics server-side (auth rejections, TLS
     // failures, Gmail 5xx responses), but surface only a clean message.

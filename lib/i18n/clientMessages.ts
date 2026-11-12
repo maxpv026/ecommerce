@@ -26,7 +26,21 @@
  */
 
 /** Never read in a browser: e-mail templates, and namespaces nothing uses. */
-export const SERVER_ONLY_NAMESPACES = ["FgasEmail", "PasswordResetEmail", "CartReminderEmail", "ReplenishmentEmail", "Trust", "Home"] as const;
+export const SERVER_ONLY_NAMESPACES = [
+  "FgasEmail",
+  "PasswordResetEmail",
+  "CartReminderEmail",
+  "ReplenishmentEmail",
+  "EmailShell",
+  "OtpEmail",
+  "StockEmail",
+  "OrderEmail",
+  "PriceDropEmail",
+  "BroadcastEmail",
+  "SupportEmail",
+  "Trust",
+  "Home",
+] as const;
 
 /**
  * Read only on the routes that wrap themselves in FullMessagesProvider:

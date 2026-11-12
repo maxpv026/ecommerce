@@ -1,15 +1,12 @@
 import "server-only";
 
-import { render } from "@react-email/components";
 import prisma from "@/lib/prisma";
 import { sendHtmlEmail } from "@/lib/mail";
-import { tidyDots } from "@/lib/emailTranslator";
-import { sellerDetails } from "@/lib/seller";
-import { absoluteUrl } from "@/lib/siteUrl";
-import { emailTranslator } from "@/lib/emailTranslator";
+import { emailTranslator, tidyDots } from "@/lib/emailTranslator";
+import { emailContext, type EmailContext } from "@/lib/email/context";
+import type { Block, Tone } from "@/lib/email/design";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
 import { escapeMarkdown, notifyAdmin, notifyAdminWithDocument } from "@/lib/telegram";
-import FgasStatusEmail from "@/components/email/FgasStatusEmail";
 import type { FgasCheck, FgasExtraction } from "@/lib/fgas";
 
 /**
@@ -28,7 +25,7 @@ import type { FgasCheck, FgasExtraction } from "@/lib/fgas";
 
 export type FgasEmailKind = "VERIFIED" | "PENDING_REVIEW" | "REJECTED" | "REPLACEMENT_REJECTED" | "REVOKED" | "EXPIRED";
 
-const TONE: Record<FgasEmailKind, "success" | "info" | "danger" | "warning"> = {
+const TONE: Record<FgasEmailKind, Tone> = {
   VERIFIED: "success",
   PENDING_REVIEW: "info",
   REJECTED: "danger",
@@ -48,44 +45,40 @@ export async function sendFgasStatusEmail(input: {
   try {
     const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, name: true, locale: true } });
     if (!user?.email) return;
-    const { t, locale } = await emailTranslator(user.locale, "FgasEmail");
+    const c = await emailContext(user.locale, "FgasEmail");
+    const { t, locale } = c;
     if (input.reasonCheck && input.reasonCheck.code !== "MODEL_DOUBT") {
       const checks = await emailTranslator(locale, "FgasChecks");
       input = { ...input, reason: checks.t(`${input.reasonCheck.id}_${input.reasonCheck.code}`, { detail: input.reasonCheck.detail ?? "" }) };
     }
-    const date = (d: string | Date | null | undefined) =>
-      d ? new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date(typeof d === "string" && d.length === 10 ? `${d}T00:00:00Z` : d)) : null;
+    const date = (d: string | Date | null | undefined) => (d ? c.date(new Date(typeof d === "string" && d.length === 10 ? `${d}T00:00:00Z` : d)) : null);
 
-    const c = input.certificate;
+    const cert = input.certificate;
     const rows = [
-      c?.number ? { label: t("fieldNumber"), value: c.number } : null,
-      c?.holder ? { label: t("fieldHolder"), value: c.holder } : null,
-      c?.issuingBody ? { label: t("fieldIssuer"), value: c.issuingBody } : null,
-      c?.expiresAt ? { label: t("fieldExpiry"), value: date(c.expiresAt)! } : null,
-    ].filter((r): r is { label: string; value: string } => Boolean(r));
+      cert?.number ? { label: t("fieldNumber"), value: cert.number, mono: true } : null,
+      cert?.holder ? { label: t("fieldHolder"), value: cert.holder } : null,
+      cert?.issuingBody ? { label: t("fieldIssuer"), value: cert.issuingBody } : null,
+      cert?.expiresAt ? { label: t("fieldExpiry"), value: date(cert.expiresAt)! } : null,
+    ].filter((r): r is { label: string; value: string; mono?: boolean } => Boolean(r));
 
     const cta =
       input.kind === "VERIFIED"
-        ? { label: t("ctaShop"), href: absoluteUrl("/products", locale) }
+        ? { label: t("ctaShop"), href: c.url("/products") }
         : input.kind === "PENDING_REVIEW" || input.kind === "REPLACEMENT_REJECTED"
-          ? { label: t("ctaProfile"), href: absoluteUrl("/profile", locale) }
-          : { label: t("ctaUpload"), href: absoluteUrl("/profile?fgas=upload", locale) };
+          ? { label: t("ctaProfile"), href: c.url("/profile") }
+          : { label: t("ctaUpload"), href: c.url("/profile?fgas=upload") };
 
     const subject = t(`subject_${input.kind}`);
-    const email = FgasStatusEmail({
-      lang: locale,
+    const { html, text } = fgasDoc(c, {
+      subject,
       tone: TONE[input.kind],
-      kicker: t("kicker"),
-      heading: subject,
       greeting: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName"),
-      paragraphs: [input.kind === "EXPIRED" ? t("body_EXPIRED", { date: date(c?.expiresAt) ?? "—" }) : t(`body_${input.kind}`)],
+      body: input.kind === "EXPIRED" ? t("body_EXPIRED", { date: date(cert?.expiresAt) ?? "—" }) : t(`body_${input.kind}`),
       reason: input.reason ? { label: t("reasonLabel"), text: input.reason } : null,
       rows,
       cta,
-      footer: t("footer"),
-      sender: sellerDetails(),
+      footer: { reason: t("footer") },
     });
-    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
     await sendHtmlEmail({ to: user.email, subject: subject.replace(/[\r\n]+/g, " "), html, text });
   } catch (error) {
     console.error(`[fgas-notify] ${input.kind} email for user ${input.userId} failed:`, error);
@@ -102,32 +95,25 @@ export async function sendFgasExpiryWarning(input: { userId: string; expiresAt: 
   try {
     const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, name: true, locale: true, notifyFgasExpiry: true } });
     if (!user?.email || !user.notifyFgasExpiry) return false;
-    const { t, locale } = await emailTranslator(user.locale, "FgasEmail");
+    const c = await emailContext(user.locale, "FgasEmail");
+    const { t } = c;
     const days = Math.max(0, Math.ceil((input.expiresAt.getTime() - Date.now()) / 86_400_000));
-    const date = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(input.expiresAt);
+    const date = c.date(input.expiresAt);
     const subject = t("subject_EXPIRING", { days });
     const oneClick = unsubscribeUrl(input.userId, "fgasExpiry");
-    const email = FgasStatusEmail({
-      lang: locale,
+    const { html, text } = fgasDoc(c, {
+      subject,
       tone: "warning",
-      kicker: t("kicker"),
-      heading: subject,
       greeting: user.name?.trim() ? t("greeting", { name: user.name.trim() }) : t("greetingNoName"),
-      paragraphs: [tidyDots(t("body_EXPIRING", { days, date }))],
+      body: tidyDots(t("body_EXPIRING", { days, date })),
       reason: null,
       rows: [
-        ...(input.certificateNumber ? [{ label: t("fieldNumber"), value: input.certificateNumber }] : []),
+        ...(input.certificateNumber ? [{ label: t("fieldNumber"), value: input.certificateNumber, mono: true }] : []),
         { label: t("fieldExpiry"), value: date },
       ],
-      cta: { label: t("ctaRenew"), href: absoluteUrl("/profile?fgas=upload", locale) },
-      footer: t("footerExpiring"),
-      links: {
-        preferences: { label: t("managePreferences"), href: absoluteUrl("/profile/settings", locale) },
-        unsubscribe: { label: t("unsubscribe"), href: oneClick },
-      },
-      sender: sellerDetails(),
+      cta: { label: t("ctaRenew"), href: c.url("/profile?fgas=upload") },
+      footer: { reason: t("footerExpiring"), unsubscribe: { label: c.s("unsubscribe"), href: oneClick } },
     });
-    const [html, text] = await Promise.all([render(email), render(email, { plainText: true })]);
     await sendHtmlEmail({
       to: user.email,
       subject: subject.replace(/[\r\n]+/g, " "),
@@ -140,6 +126,37 @@ export async function sendFgasExpiryWarning(input: { userId: string; expiresAt: 
     console.error(`[fgas-notify] expiry warning for user ${input.userId} failed:`, error);
     return false;
   }
+}
+
+/** The one F-Gas layout: status line, certificate facts, reason, action. */
+function fgasDoc(
+  c: EmailContext,
+  input: {
+    subject: string;
+    tone: Tone;
+    greeting: string;
+    body: string;
+    reason: { label: string; text: string } | null;
+    rows: Array<{ label: string; value: string; mono?: boolean }>;
+    cta: { label: string; href: string };
+    footer: { reason: string; unsubscribe?: { label: string; href: string } };
+  }
+) {
+  return c.render({
+    subject: input.subject,
+    preview: input.body.slice(0, 140),
+    reference: c.t("kicker").toLocaleUpperCase(c.locale),
+    kicker: { label: c.s("regulationShort"), tone: input.tone },
+    heading: input.subject,
+    blocks: [
+      { kind: "text", text: input.greeting },
+      { kind: "text", text: input.body },
+      ...(input.reason ? ([{ kind: "callout", tone: input.tone, title: input.reason.label, text: input.reason.text }] satisfies Block[]) : []),
+      ...(input.rows.length ? ([{ kind: "facts", rows: input.rows }] satisfies Block[]) : []),
+      { kind: "cta", label: input.cta.label, href: input.cta.href },
+    ],
+    footer: input.footer,
+  });
 }
 
 // ── Telegram ─────────────────────────────────────────────────────────────

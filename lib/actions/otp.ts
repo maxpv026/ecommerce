@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { createOtp, otpRecentlySent } from "@/lib/otp";
 import { checkPassword } from "@/lib/loginThrottle";
 import { withinActionLimit } from "@/lib/actionRateLimit";
+import { getLocale } from "next-intl/server";
 import { sendOtpEmail } from "@/lib/mail";
 import { ADMIN_LEGAL_NAME, isFounderEmail } from "@/lib/rbac";
 
@@ -115,8 +116,10 @@ export async function requestEmailOtp(rawInput: {
   if (await otpRecentlySent(email)) return { ok: true, factor: "email" };
 
   const code = await createOtp(email);
+  // The account's language; for a brand-new signup, the page they signed up on.
+  const locale = existing?.locale ?? (await getLocale().catch(() => null));
   try {
-    await sendOtpEmail(email, code);
+    await sendOtpEmail(email, code, { purpose: "signIn", locale });
   } catch (error) {
     console.error("Failed to send OTP email:", error);
     return { ok: false, code: "SEND_FAILED" };
