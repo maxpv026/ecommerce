@@ -260,6 +260,24 @@ model User {
   countrySource    String?
   countryUpdatedAt DateTime?
 
+  // ── Telegram admin bot (lib/telegram) — staff only ──
+  // The private chat this account is linked to; a callback or command from
+  // it acts as this user, under the same RBAC as /admin.
+  telegramChatId               String?   @unique
+  telegramUsername             String?
+  // One-time pairing: SHA-256 of the deep-link token and of the 6-digit
+  // code, valid until telegramLinkExpiresAt. Cleared when used.
+  telegramLinkTokenHash        String?   @unique
+  telegramLinkCodeHash         String?
+  telegramLinkExpiresAt        DateTime?
+  telegramNotificationsEnabled Boolean   @default(true)
+  // Which alerts this admin wants: order · payment · fgas · returns · support.
+  telegramNotifyEvents         String[]  @default(["order", "payment", "fgas", "returns", "support"])
+
+  // Locked by the owner: no sign-in, and existing sessions end on their next request.
+  lockedAt     DateTime?
+  lockedReason String?
+
   // ── Profile preferences (Settings → /profile editor) ──
   /// Monogram colour when there is no photo: slate | blue | emerald | amber | violet.
   avatarTone             String?
@@ -1360,4 +1378,47 @@ model InsightBookmark {
   createdAt DateTime @default(now())
 
   @@unique([userId, insightId])
+}
+
+/// One Telegram chat's conversation state with the admin bot: a pending
+/// multi-step input (tracking number, exact stock, price, support reply…)
+/// and the pairing-code attempt counter.
+model TelegramChatState {
+  chatId             String    @id
+  state              String?
+  payload            Json?
+  expiresAt          DateTime?
+  failedLinkAttempts Int       @default(0)
+  updatedAt          DateTime  @updatedAt
+}
+
+/// A bot message that something can be replied to: a forwarded support
+/// message → its chat session, so a Telegram reply lands in that thread.
+model TelegramMessageRef {
+  id        String   @id @default(cuid())
+  chatId    String
+  messageId Int
+  kind      String
+  refId     String
+  createdAt DateTime @default(now())
+
+  @@unique([chatId, messageId])
+  @@index([refId])
+}
+
+/// Telegram update ids already handled — Telegram retries a webhook delivery
+/// it thinks failed, and a retried "mark paid" must not run twice.
+model TelegramUpdate {
+  updateId  BigInt   @id
+  createdAt DateTime @default(now())
+}
+
+/// The storefront announcement banner (one row; posted from /admin or the bot).
+model SiteAnnouncement {
+  id          String   @id @default(cuid())
+  text        String
+  active      Boolean  @default(false)
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

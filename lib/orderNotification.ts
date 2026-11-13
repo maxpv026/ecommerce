@@ -75,18 +75,3 @@ export function buildNewOrderMessage(order: NewOrderNotification): string {
     `_Ref:_ ${escapeMarkdown(order.orderId)}`,
   ].join("\n");
 }
-
-/** "The buyer says the transfer is on its way" — from /checkout/success. A report, not a settlement. */
-export function buildPaymentReportedMessage(order: { orderNumber: string; orderId: string; totalAmount: number; customer: string | null; bankReference: string | null }): string {
-  return [
-    "💶 *Payment reported as sent*",
-    "",
-    `*Order:* ${escapeMarkdown(order.orderNumber)}`,
-    `*Amount due:* ${eur(order.totalAmount)}`,
-    ...(order.customer ? [`*Customer:* ${escapeMarkdown(order.customer)}`] : []),
-    ...(order.bankReference ? [`*Bank reference:* ${escapeMarkdown(order.bankReference)}`] : []),
-    "",
-    "_Match it against the statement before marking the order paid._",
-    `_Ref:_ ${escapeMarkdown(order.orderId)}`,
-  ].join("\n");
-}

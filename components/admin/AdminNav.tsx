@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowLeft, BarChart3, Boxes, Headset, LayoutDashboard, Megaphone, ShieldCheck, ShoppingBag, Store, Users } from "lucide-react";
+import { ArrowLeft, BarChart3, Boxes, Headset, LayoutDashboard, Megaphone, Send, ShieldCheck, ShoppingBag, Store, Users } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { can, type AppRole, type Permission } from "@/lib/rbac";
 
@@ -13,7 +13,7 @@ import { can, type AppRole, type Permission } from "@/lib/rbac";
  * guardAdmin and every action's requirePermission are the enforcement.
  */
 
-type Href = "/admin" | "/admin/analytics" | "/admin/inventory" | "/admin/broadcast" | "/admin/users" | "/admin/orders" | "/admin/support";
+type Href = "/admin" | "/admin/analytics" | "/admin/inventory" | "/admin/broadcast" | "/admin/users" | "/admin/orders" | "/admin/support" | "/admin/telegram";
 type NavItem = { key: string; href: Href; icon: typeof Users; permission: Permission };
 
 const SECTIONS: Array<{ key: "sectionOverview" | "sectionManage"; items: NavItem[] }> = [
@@ -32,6 +32,7 @@ const SECTIONS: Array<{ key: "sectionOverview" | "sectionManage"; items: NavItem
       { key: "navOrders", href: "/admin/orders", icon: ShoppingBag, permission: "orders.view" },
       { key: "navUsers", href: "/admin/users", icon: Users, permission: "users.view" },
       { key: "navSupport", href: "/admin/support", icon: Headset, permission: "support" },
+      { key: "navTelegram", href: "/admin/telegram", icon: Send, permission: "telegram.link" },
     ],
   },
 ];

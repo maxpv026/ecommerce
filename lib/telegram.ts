@@ -10,7 +10,8 @@ import "server-only";
  * the caller can log it.
  */
 
-const API_ROOT = "https://api.telegram.org";
+/** Overridable so tests (and the dev poller) can point every call at a local mock — never the real bot. */
+const apiRoot = () => process.env.TELEGRAM_API_BASE?.trim().replace(/\/+$/, "") || "https://api.telegram.org";
 
 /** Telegram rejects anything over 4096 characters. */
 const MAX_MESSAGE_LENGTH = 4096;
@@ -59,7 +60,7 @@ export async function sendTelegramNotification(message: string): Promise<Telegra
     message.length > MAX_MESSAGE_LENGTH ? `${message.slice(0, MAX_MESSAGE_LENGTH - 1)}…` : message;
 
   try {
-    const response = await fetch(`${API_ROOT}/bot${token}/sendMessage`, {
+    const response = await fetch(`${apiRoot()}/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -147,7 +148,7 @@ export async function sendTelegramDocument(
   }
 
   try {
-    const response = await fetch(`${API_ROOT}/bot${token}/${method}`, {
+    const response = await fetch(`${apiRoot()}/bot${token}/${method}`, {
       method: "POST",
       headers,
       body,

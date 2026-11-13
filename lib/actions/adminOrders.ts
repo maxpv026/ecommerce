@@ -6,10 +6,9 @@ import { sendOrderStatusEmail } from "@/lib/orderEmails";
 import { advanceShipment, revertShipment, saveFulfilment, type ShipmentErrorCode } from "@/lib/shipping/update";
 import { z } from "zod";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
 import type { ReviewErrorCode } from "@/lib/fgasReview";
 import { requirePermission } from "@/lib/admin/permissions";
-import { markOrderPaid, releaseOrder } from "@/lib/orders";
+import { cancelOrderAndRelease, settleOrderPayment } from "@/lib/admin/orderOps";
 import { ADMIN_ORDER_FILTERS, listAdminOrders, type AdminOrdersPage } from "@/lib/adminOrders";
 
 /**
@@ -137,10 +136,8 @@ export async function markOrderPaidByAdmin(orderId: string): Promise<Done> {
   const parsed = OrderId.safeParse(orderId);
   if (!parsed.success) return { ok: false, error: "Unknown order." };
 
-  const paidAt = new Date();
-  if (!(await markOrderPaid(parsed.data, paidAt))) return { ok: false, error: STALE };
-  await prisma.invoice.updateMany({ where: { orderId: parsed.data, status: "PENDING" }, data: { status: "PAID" } });
-
+  const done = await settleOrderPayment(parsed.data);
+  if (!done.ok) return done;
   refresh(parsed.data);
   return { ok: true };
 }
@@ -163,36 +160,7 @@ export async function cancelUnpaidOrder(orderId: string): Promise<Done> {
   const parsed = OrderId.safeParse(orderId);
   if (!parsed.success) return { ok: false, error: "Unknown order." };
 
-  const order = await prisma.order.findUnique({ where: { id: parsed.data }, select: { userId: true, paymentStatus: true, status: true } });
-  if (!order) return { ok: false, error: "That order no longer exists." };
-  if (order.paymentStatus === "PAID") return { ok: false, error: "Paid orders need a refund and credit note — that isn't supported here yet." };
-  if (order.status !== "PENDING") return { ok: false, error: "This order has already shipped and can't be cancelled." };
-
-  if (!(await releaseOrder(parsed.data))) return { ok: false, error: STALE };
-
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.invoice.updateMany({ where: { orderId: parsed.data, status: { not: "CANCELLED" } }, data: { status: "CANCELLED" } });
-      const ledger = await tx.cylinderTransaction.groupBy({
-        by: ["type"],
-        where: { orderId: parsed.data, type: { in: ["BORROWED", "RETURNED"] } },
-        _sum: { quantity: true },
-      });
-      const sum = (t: string) => ledger.find((l) => l.type === t)?._sum.quantity ?? 0;
-      const outstanding = sum("BORROWED") - sum("RETURNED");
-      if (outstanding > 0) {
-        await tx.cylinderTransaction.create({
-          data: { userId: order.userId, orderId: parsed.data, type: "RETURNED", quantity: outstanding, notes: "Order cancelled before dispatch" },
-        });
-      }
-    });
-  } catch (error) {
-    // The order is cancelled and restocked; only the paperwork failed.
-    console.error(`[admin-orders] cancelled ${parsed.data} but could not update invoice/ledger:`, error);
-    refresh(parsed.data);
-    return { ok: false, error: "Order cancelled and restocked, but the invoice or cylinder ledger couldn't be updated. Check them." };
-  }
-
+  const done = await cancelOrderAndRelease(parsed.data);
   refresh(parsed.data);
-  return { ok: true };
+  return done;
 }

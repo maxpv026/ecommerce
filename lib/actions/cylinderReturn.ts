@@ -1,5 +1,6 @@
 "use server";
 
+import { alertCylinderReturn } from "@/lib/telegram/alerts";
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -73,6 +74,7 @@ export async function requestCylinderReturn(raw: unknown): Promise<CylinderRetur
       data: { userId, quantity: input.quantity, method: input.method, addressText, preferredDate, notes: input.notes || null },
     });
     after(() => notifyTeam(row.id));
+    after(() => alertCylinderReturn(row.id));
     revalidatePath("/[locale]/profile", "page");
     return { ok: true, id: row.id };
   } catch (error) {

@@ -6,7 +6,8 @@ import { emailTranslator, tidyDots } from "@/lib/emailTranslator";
 import { emailContext, type EmailContext } from "@/lib/email/context";
 import type { Block, Tone } from "@/lib/email/design";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
-import { escapeMarkdown, notifyAdmin, notifyAdminWithDocument } from "@/lib/telegram";
+import { escapeMarkdown, notifyAdmin } from "@/lib/telegram";
+import { alertFgasReview } from "@/lib/telegram/alerts";
 import type { FgasCheck, FgasExtraction } from "@/lib/fgas";
 
 /**
@@ -169,7 +170,11 @@ export function checksLine(checks: FgasCheck[]): string {
   return checks.map((c) => `${CHECK_ICON[c.outcome]} ${c.id}: ${c.code}`).join("\n");
 }
 
-/** The automatic decision on an upload, with the document attached. */
+/**
+ * The automatic decision on an upload: the document, then a card with
+ * Verify / Reject buttons, to every admin who takes F-Gas alerts in Telegram
+ * (lib/telegram/alerts). Never throws.
+ */
 export async function telegramVerdict(input: {
   verdict: "VERIFIED" | "PENDING_REVIEW" | "REJECTED";
   keptActive: boolean;
@@ -179,33 +184,8 @@ export async function telegramVerdict(input: {
   reason: string | null;
   document: { bytes: Uint8Array; contentType: string };
 }): Promise<void> {
-  const head =
-    input.verdict === "VERIFIED"
-      ? "🟢 *AI APPROVED*"
-      : input.verdict === "PENDING_REVIEW"
-        ? "🟡 *ACTION REQUIRED: certificate needs review*"
-        : input.keptActive
-          ? "🟠 *AI REJECTED REPLACEMENT* (current certificate stays active)"
-          : "🔴 *AI REJECTED*";
-  const who = [input.user.name, input.user.email].filter(Boolean).join(" · ") || input.user.id;
-  const x = input.extraction;
-  const caption = [
-    head,
-    "",
-    `👤 *User:* ${field(who)}`,
-    `🏢 *Holder:* ${field(x?.companyName ?? x?.personName)}`,
-    `🔢 *Cert:* ${field(x?.certificateId)} ${x?.countryCode ? `(${escapeMarkdown(x.countryCode)})` : ""}`,
-    `📅 *Expiry:* ${field(x?.expiresAt)}`,
-    `⚠️ *Reason:* ${field(input.reason)}`,
-    "",
-    escapeMarkdown(checksLine(input.checks)),
-    "",
-    input.verdict === "PENDING_REVIEW" ? "_Approve or reject in /admin/users (filter: Review)._" : `_User id:_ ${escapeMarkdown(input.user.id)}`,
-  ]
-    .join("\n")
-    .slice(0, 1000);
-  const ext = input.document.contentType === "application/pdf" ? "pdf" : input.document.contentType.split("/")[1] ?? "bin";
-  await notifyAdminWithDocument({ bytes: input.document.bytes, filename: `fgas-certificate.${ext}`, contentType: input.document.contentType }, caption, `F-Gas ${input.verdict} for ${input.user.email ?? input.user.id}`);
+  const reason = [input.keptActive ? "Поточний сертифікат залишається чинним." : null, input.reason, checksLine(input.checks)].filter(Boolean).join("\n");
+  await alertFgasReview(input.user.id, { verdict: input.verdict, reason, document: input.document });
 }
 
 /** A person changed a buyer's status: approval, rejection, revocation. */

@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { ArrowRight, BadgeCheck, Boxes, Headset, Receipt, ShoppingBag, Users, Wallet } from "lucide-react";
+import { ArrowRight, BadgeCheck, Boxes, Headset, Receipt, Send, ShoppingBag, Users, Wallet } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { Link } from "@/i18n/navigation";
 import { guardAdmin } from "@/lib/admin/guardAdmin";
 import { getAccountingReport } from "@/lib/admin/accounting";
 import { LISTED } from "@/lib/productFamily";
 import { can } from "@/lib/rbac";
+import { botToken } from "@/lib/telegram/api";
 
 export const metadata: Metadata = {
   title: "Admin — My Energy",
@@ -56,7 +57,9 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const showOps = can(admin.role, "orders.manage");
   const showFinance = can(admin.role, "analytics.view");
 
-  const [ops, finance, totals] = await Promise.all([
+  const showTelegram = can(admin.role, "telegram.link");
+
+  const [ops, finance, totals, tg, tTg] = await Promise.all([
     showOps
       ? Promise.all([
           prisma.order.count({ where: { status: "PENDING", paymentStatus: { not: "FAILED" } } }),
@@ -68,7 +71,10 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
       : null,
     showFinance ? getAccountingReport(30) : null,
     admin.role === "SUPER_ADMIN" ? Promise.all([prisma.user.count(), prisma.order.count()]) : null,
+    showTelegram ? prisma.user.findUnique({ where: { id: admin.adminId }, select: { telegramChatId: true, telegramUsername: true } }) : null,
+    getTranslations("AdminTelegram"),
   ]);
+  const tgState = !botToken() ? "unconfigured" : tg?.telegramChatId ? "linked" : "unlinked";
 
   return (
     <div className="mx-auto w-full max-w-[1240px] px-4 py-10 md:px-8" data-admin-overview data-role={admin.role}>
@@ -79,6 +85,31 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
       </header>
 
       <div className="flex flex-col gap-8">
+        {showTelegram && (
+          <Link
+            href="/admin/telegram"
+            className="group flex items-center gap-3.5 rounded-[22px] border border-slate-900/[.08] bg-white/80 p-4 transition-colors hover:border-blue-600/30 dark:border-white/[.08] dark:bg-white/[.03]"
+            data-overview-telegram={tgState}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#229ED9]/10 text-[#1C8ACB]">
+              <Send size={17} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-semibold text-slate-900 dark:text-white">{tTg("title")}</span>
+              <span className={`block text-[12.5px] ${tgState === "linked" ? "text-emerald-700 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}`}>
+                {tgState === "unconfigured"
+                  ? tTg("cardUnconfigured")
+                  : tgState === "linked"
+                    ? tg?.telegramUsername
+                      ? tTg("connectedAs", { username: `@${tg.telegramUsername}` })
+                      : tTg("connected")
+                    : tTg("cardUnlinked")}
+              </span>
+            </span>
+            <ArrowRight size={15} className="shrink-0 text-slate-300 transition-colors group-hover:text-blue-600" />
+          </Link>
+        )}
+
         {ops && (
           <section data-overview-ops>
             <h2 className="m-0 mb-3 text-[15px] font-semibold tracking-[-.02em] text-slate-900 dark:text-white">{t("opsTitle")}</h2>

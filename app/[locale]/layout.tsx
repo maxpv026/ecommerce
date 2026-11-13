@@ -8,6 +8,7 @@ import AIChatWidgetMount from "@/components/AIChatWidgetMount";
 import SmartOrderMount from "@/components/smartOrder/SmartOrderMount";
 import FgasModalMount from "@/components/fgas/FgasModalMount";
 import MobileAppShell from "@/components/MobileAppShell";
+import SiteAnnouncementBanner from "@/components/SiteAnnouncementBanner";
 import { CartCountProvider } from "@/components/CartCountProvider";
 import AuthProvider from "@/components/AuthProvider";
 import ToastProvider from "@/components/ToastProvider";
@@ -87,6 +88,9 @@ export default async function RootLayout({
             <ThemeSync />
             <CartServerSync />
             <CartCountProvider>
+              <Suspense fallback={null}>
+                <SiteAnnouncementBanner />
+              </Suspense>
               <MobileAppShell>{children}</MobileAppShell>
               <Footer />
               <AIChatWidgetMount />

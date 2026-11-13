@@ -45,6 +45,7 @@ export type Permission =
   | "users.roles" //       change a user's role
   | "broadcasts" //        /admin/broadcast
   | "support" //           /admin/support
+  | "telegram.link" //     /admin/telegram — pair a Telegram chat with the admin bot
   | "diagnostics"; //      SMTP self-test and similar owner tools
 
 const MATRIX: Record<AppRole, readonly Permission[]> = {
@@ -53,14 +54,14 @@ const MATRIX: Record<AppRole, readonly Permission[]> = {
     "inventory.view", "inventory.stock", "inventory.catalog",
     "orders.view", "orders.manage",
     "users.view", "users.fgas", "users.roles",
-    "broadcasts", "support", "diagnostics",
+    "broadcasts", "support", "diagnostics", "telegram.link",
   ],
   ADMIN: [
     "admin.access", "dashboard.view",
     "inventory.view", "inventory.stock",
     "orders.view", "orders.manage",
     "users.view", "users.fgas",
-    "support",
+    "support", "telegram.link",
   ],
   ACCOUNTANT: ["admin.access", "dashboard.view", "analytics.view", "finance.export"],
   USER: [],
@@ -95,6 +96,7 @@ const ADMIN_PAGE_RULES: ReadonlyArray<{ prefix: string; permission: Permission }
   { prefix: "/admin/orders", permission: "orders.view" },
   { prefix: "/admin/users", permission: "users.view" },
   { prefix: "/admin/support", permission: "support" },
+  { prefix: "/admin/telegram", permission: "telegram.link" },
   { prefix: "/admin", permission: "dashboard.view" },
 ];
 

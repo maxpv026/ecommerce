@@ -3,8 +3,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { BANK_TRANSFER_METHOD } from "@/lib/payment";
 import { commitOrder, prepareOrder, type OrderErrorCode } from "@/lib/orders";
-import { buildNewOrderMessage } from "@/lib/orderNotification";
-import { notifyAdmin } from "@/lib/telegram";
+import { alertNewOrder } from "@/lib/telegram/alerts";
 import { issueInvoiceForOrder } from "@/lib/invoicing";
 import { convertRestockAlerts } from "@/lib/smartRestock";
 import { clearSavedCart } from "@/lib/savedCart";
@@ -100,25 +99,9 @@ export async function POST(request: Request) {
     .findUnique({ where: { id: userId }, select: { name: true, email: true, companyName: true } })
     .catch(() => null);
 
-  await notifyAdmin(
-    buildNewOrderMessage({
-      orderNumber: order.orderNumber,
-      orderId: order.id,
-      customerName: buyer?.name ?? null,
-      customerEmail: buyer?.email ?? null,
-      companyName: buyer?.companyName ?? null,
-      totalAmount: order.totalAmount,
-      shippingAddress: draft.address,
-      lines: draft.lines.map(({ product, qty }) => ({
-        name: product.name,
-        sku: product.sku,
-        variant: product.weight,
-        qty,
-      })),
-      customerNote: parsed.data.note ?? null,
-    }),
-    `new order ${order.orderNumber}`
-  );
+  // Interactive alert (lib/telegram/alerts): linked admins + allowlisted chats, with
+  // "confirm payment / ship / cancel" buttons. Never throws; a no-op without a bot token.
+  await alertNewOrder(order.id);
 
   // ── 5. Credit any restock suggestion this order acted on ──
   //

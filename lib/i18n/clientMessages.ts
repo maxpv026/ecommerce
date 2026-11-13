@@ -66,6 +66,7 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "Admin", //           admin
   "AdminInventory", //  admin/inventory
   "AdminRbac", //       admin
+  "AdminTelegram", //   admin/telegram, admin
   "AdminAnalytics", //  admin/analytics
   "AdminOverview", //   admin
   "AdminShipping", //   admin/orders

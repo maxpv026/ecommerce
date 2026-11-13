@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { alertSupportMessage } from "@/lib/telegram/alerts";
 import { sweepExpiredChats } from "@/lib/chatRetention";
 import { createUIMessageStream, createUIMessageStreamResponse, hasToolCall, stepCountIs, streamText, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
@@ -85,7 +86,11 @@ export async function POST(req: Request) {
   await saveMessage(session.id, "user", text);
 
   // With the team: stored for them, no automated reply.
-  if (session.status === "ESCALATED_TO_HUMAN") return silentResponse();
+  if (session.status === "ESCALATED_TO_HUMAN") {
+    // …and forwarded to the admins' Telegram, where a reply answers this chat.
+    after(() => alertSupportMessage(session.id, text));
+    return silentResponse();
+  }
 
   const shown: string[] = [];
   let escalated = false;

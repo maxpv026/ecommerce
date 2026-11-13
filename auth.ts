@@ -59,6 +59,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user?.password) return null;
+        // Locked by the owner (lib/admin/opsExtra setAccountLocked): no sign-in.
+        if (user.lockedAt) return null;
 
         // Same per-account lockout as step 1 (lib/loginThrottle): this
         // endpoint is reachable directly, so it must count guesses too.
@@ -123,6 +125,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // Re-checked, not assumed: 2FA could have been switched off (or the
         // account deleted) in the five minutes since the challenge.
         if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) return null;
+        if (user.lockedAt) return null;
 
         const check = looksLikeRecoveryCode(code)
           ? await consumeRecoveryCode(prisma, user, code)
@@ -166,7 +169,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       const linked = await prisma.account
         .findUnique({
           where: { provider_providerAccountId: { provider: "google", providerAccountId: account.providerAccountId } },
-          select: { user: { select: { id: true, isTwoFactorEnabled: true } } },
+          select: { user: { select: { id: true, isTwoFactorEnabled: true, lockedAt: true } } },
         })
         .catch(() => null);
       const email = (profile.email ?? user.email)?.trim();
@@ -174,10 +177,11 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       const byEmail =
         !linked?.user && email
           ? await prisma.user
-              .findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true, isTwoFactorEnabled: true, emailVerified: true, password: true } })
+              .findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true, isTwoFactorEnabled: true, emailVerified: true, password: true, lockedAt: true } })
               .catch(() => null)
           : null;
       const target = linked?.user ?? byEmail;
+      if (target?.lockedAt) return "/auth?error=AccountLocked";
       if (target?.isTwoFactorEnabled) {
         const challenge = createGoogleTwoFactorChallenge({ userId: target.id, providerAccountId: account.providerAccountId });
         return `/api/two-factor/start?c=${encodeURIComponent(challenge)}`;
@@ -249,6 +253,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           }
           // The role is re-read on every request, so a role the owner
           // changes (or revokes) applies at once, not at the next sign-in.
+          // Locked by the owner: this session ends now (null clears the cookie).
+          if (anchor?.lockedAt) return null;
           if (anchor) token.role = effectiveRole(anchor.email, anchor.role);
           // ── Revocation of this one device ──
           const device = anchor?.deviceSessions?.[0];

@@ -5,8 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { isValidCompanyId } from "@/lib/profilePrefs";
-import { notifyAdmin } from "@/lib/telegram";
-import { buildPaymentReportedMessage } from "@/lib/orderNotification";
+import { alertPaymentReported } from "@/lib/telegram/alerts";
 
 /**
  * The two writes the checkout flow makes besides placing the order.
@@ -17,7 +16,8 @@ import { buildPaymentReportedMessage } from "@/lib/orderNotification";
  *    the profile editor (lib/actions/profile), without its required name.
  *
  *  • reportPaymentSent — "I've sent the transfer" on /checkout/success. It
- *    records when (and the bank's reference, if given) and tells logistics.
+ *    records when (and the bank's reference, if given) and alerts the admins
+ *    in Telegram with a "confirm payment" button.
  *    It is a report, not a settlement: paymentStatus changes only when the
  *    money is matched on the statement (markOrderPaid).
  */
@@ -89,11 +89,8 @@ export async function reportPaymentSent(raw: unknown): Promise<ReportResult> {
       select: { paymentReportedAt: true, paymentReportedRef: true },
     });
     if (!order.paymentReportedAt || reference !== order.paymentReportedRef) {
-      const customer = [order.user.companyName, order.user.name, order.user.email].filter(Boolean).join(" · ") || null;
-      await notifyAdmin(
-        buildPaymentReportedMessage({ orderNumber: order.orderNumber, orderId: order.id, totalAmount: Number(order.totalAmount), customer, bankReference: reference }),
-        `payment reported ${order.orderNumber}`
-      );
+      // Interactive alert with "confirm payment" (lib/telegram/alerts). Never throws.
+      await alertPaymentReported(order.id);
     }
     return { ok: true, reportedAt: saved.paymentReportedAt!.toISOString(), reference: saved.paymentReportedRef };
   } catch (error) {

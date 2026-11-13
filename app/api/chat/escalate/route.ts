@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { auth } from "@/auth";
 import { currentSession, escalateSession, notifyAdminOfEscalation, saveMessage, startSession } from "@/lib/chatSession";
+import { alertSupportMessage } from "@/lib/telegram/alerts";
 
 /**
  * POST /api/chat/escalate — the widget's "Talk to a person" button.
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   if (first) {
     await saveMessage(session.id, "assistant", "", { escalated: true });
     after(() => notifyAdminOfEscalation(session.id));
+    after(() => alertSupportMessage(session.id, null));
   }
   return Response.json({ ok: true, status: "ESCALATED_TO_HUMAN", alreadyEscalated: !first });
 }

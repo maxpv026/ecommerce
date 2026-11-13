@@ -284,3 +284,65 @@ export async function sendOrderStatusEmail(orderId: string, kind: FulfilmentEmai
     return false;
   }
 }
+
+/**
+ * "We've received your transfer" — sent when an admin settles a bank-transfer
+ * order (lib/admin/orderOps settleOrderPayment, from /admin/orders or the
+ * Telegram bot). The invoice is re-rendered, now marked paid, and attached;
+ * the billing email gets a copy. Never throws: the order is already paid.
+ */
+export async function sendPaymentReceivedEmail(orderId: string): Promise<boolean> {
+  try {
+    const order = await loadOrder(orderId);
+    if (!order?.user.email || order.paymentStatus !== "PAID") return false;
+    const c = await emailContext(order.user.locale, "OrderEmail");
+    const b = breakdownOf(order);
+    const name = order.user.name?.trim();
+    const o = order.orderNumber;
+    let pdf: Buffer | null = null;
+    if (order.invoice) {
+      try {
+        const { generateInvoicePdfBuffer } = await import("@/lib/pdf");
+        pdf = await generateInvoicePdfBuffer(order.id);
+      } catch (error) {
+        console.error(`[order-email] paid-invoice PDF for ${o} failed:`, error);
+      }
+    }
+    const subject = c.t("paidSubject", { order: o });
+    const { html, text } = c.render({
+      subject,
+      preview: c.t("paidPreview", { order: o, total: c.money(b.total) }),
+      reference: o,
+      kicker: { label: c.t("paidKicker"), tone: "success" },
+      heading: c.t("paidHeading"),
+      blocks: [
+        ...(name ? ([{ kind: "text", text: c.t("greeting", { name }) }] satisfies Block[]) : []),
+        { kind: "text", text: c.rich("paidBody", { order: o }, ["order"]) },
+        {
+          kind: "facts",
+          rows: [
+            { label: c.t("fieldOrder"), value: o, mono: true },
+            ...(order.invoice ? [{ label: c.t("fieldInvoice"), value: order.invoice.invoiceNumber, mono: true }] : []),
+            { label: c.t("paidAmount"), value: c.money(b.total) },
+          ],
+        },
+        { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, false) },
+        { kind: "cta", label: c.t("cta"), href: c.url(`/profile/orders/${order.id}`) },
+      ],
+      footer: { reason: c.t("reason") },
+    });
+    await sendHtmlEmail({
+      to: order.user.email,
+      ...(order.user.billingEmail && order.user.billingEmail !== order.user.email ? { cc: order.user.billingEmail } : {}),
+      subject: subject.replace(/[\r\n]+/g, " "),
+      html,
+      text,
+      ...(pdf && order.invoice ? { attachments: [{ filename: `${order.invoice.invoiceNumber}.pdf`, content: pdf, contentType: "application/pdf" }] } : {}),
+    });
+    return true;
+  } catch (error) {
+    console.error(`[order-email] payment-received for ${orderId} failed:`, error);
+    return false;
+  }
+}
+
