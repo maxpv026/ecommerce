@@ -9,6 +9,9 @@
  * requirements, reclaimed/recycled gas, chillers) carries it in its message.
  */
 
+/** Art. 13: virgin HFCs at this GWP or above may not service systems of 40 t CO₂e or more. Client-safe (lib/compliance re-exports it). */
+export const SERVICE_BAN_GWP = 2500;
+
 export const REGULATION_SOURCE = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R0573";
 
 /** Annex VII — maximum quantity of HFCs placed on the EU market, t CO₂e per year. The table starts in 2025. */

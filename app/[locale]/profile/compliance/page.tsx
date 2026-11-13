@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import PageSkeleton from "@/components/PageSkeleton";
-import CompliancePage from "@/components/CompliancePage";
+import ComplianceHub from "@/components/compliance/ComplianceHub";
 import AppChrome from "@/components/AppChrome";
 import { getComplianceDashboardData, type SummaryPeriod } from "@/lib/compliance";
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: ComplianceRouteProps): Promis
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Compliance" });
   return {
-    title: `${t("metaTitle")} — My Energy`,
+    title: `${t("pageTitle")} — My Energy`,
     description: t("metaDescription"),
   };
 }
@@ -53,7 +53,7 @@ async function ComplianceContent({ searchParams }: ComplianceRouteProps) {
 
   return (
     <AppChrome>
-      <CompliancePage data={data} period={period} />
+      <ComplianceHub data={data} period={period} />
     </AppChrome>
   );
 }

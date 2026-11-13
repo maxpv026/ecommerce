@@ -131,7 +131,7 @@ export async function getBuyerCompliance(userId: string): Promise<BuyerComplianc
   return {
     purchased,
     fgas,
-    ytd: compliance ? { year: compliance.generatedAt.getUTCFullYear(), massKg: compliance.yearToDate.massKg, co2eTonnes: compliance.yearToDate.co2eTonnes } : null,
+    ytd: compliance ? { year: compliance.generatedAt.getUTCFullYear(), massKg: compliance.yearToDate.massKg, co2eTonnes: compliance.yearToDate.co2eKg / 1000 } : null,
     countryCode: user?.countryCode ?? null,
   };
 }

@@ -2,6 +2,9 @@ import "server-only";
 
 import prisma from "@/lib/prisma";
 import { getCylinderLedger } from "@/lib/invoicing";
+import { getFgasSummary } from "@/lib/fgasAccount";
+import { SERVICE_BAN_GWP } from "@/lib/regulation";
+import type { FgasSummary } from "@/lib/fgas";
 
 /**
  * F-Gas carbon accounting for a customer's purchase history.
@@ -42,7 +45,7 @@ export const CO2E_KG_PER_TONNE = 1000;
  * This is about the gas itself, so it is the one line we can evaluate from
  * purchase history alone.
  */
-export const HIGH_GWP_THRESHOLD = 2500;
+export const HIGH_GWP_THRESHOLD = SERVICE_BAN_GWP;
 
 /**
  * Leak-check intervals by system charge (Art. 4). Reference only — these
@@ -73,10 +76,13 @@ export interface Co2eInputItem {
   /** GWP snapshotted at purchase. Null on equipment and on pre-migration rows. */
   gwpAtPurchase?: number | null;
   product?: {
+    id?: string | null;
     name?: string | null;
     sku?: string | null;
     gwp?: number | null;
     category?: string | null;
+    /** Safety class ("A1", "A2L"); only the ledger reads it. */
+    gwpClass?: string | null;
   } | null;
 }
 
@@ -267,6 +273,12 @@ export interface LedgerLine {
   co2eTonnes: number;
   /** GWP reconstructed from today's catalogue because the line predates the snapshot. */
   estimated: boolean;
+  /** For the product link; null when the caller didn't select it. */
+  productId: string | null;
+  /** ASHRAE safety class from the catalogue ("A1", "A2L"); null when unknown. */
+  safety: string | null;
+  /** The order's invoice, for the per-line PDF action; null before one is issued. */
+  invoiceId: string | null;
 }
 
 type LedgerOrder = {
@@ -274,6 +286,7 @@ type LedgerOrder = {
   orderNumber: string;
   createdAt: Date;
   items: Co2eInputItem[];
+  invoice?: { id: string } | null;
 };
 
 /**
@@ -284,8 +297,11 @@ type LedgerOrder = {
 export function ledgerLines(orders: LedgerOrder[]): LedgerLine[] {
   const out: LedgerLine[] = [];
   for (const order of orders) {
-    for (const line of calculateOrderCo2e(order.items).lines) {
-      if (!line.isGas) continue;
+    // calculateOrderCo2e returns one line per item, in order.
+    calculateOrderCo2e(order.items).lines.forEach((line, i) => {
+      if (!line.isGas) return;
+      const product = order.items[i]?.product;
+      const cls = product?.gwpClass?.trim();
       out.push({
         orderId: order.id,
         orderNumber: order.orderNumber,
@@ -300,8 +316,11 @@ export function ledgerLines(orders: LedgerOrder[]): LedgerLine[] {
         co2eKg: line.co2eKg,
         co2eTonnes: kgToTonnes(line.co2eKg),
         estimated: line.gwpSource === "catalogue",
+        productId: product?.id ?? null,
+        safety: cls && /^A[123]L?$/.test(cls) ? cls : null,
+        invoiceId: order.invoice?.id ?? null,
       });
-    }
+    });
   }
   return out;
 }
@@ -330,12 +349,13 @@ export async function getCustomerComplianceSummary(
       id: true,
       orderNumber: true,
       createdAt: true,
+      invoice: { select: { id: true } },
       items: {
         select: {
           quantity: true,
           weightKgAtPurchase: true,
           gwpAtPurchase: true,
-          product: { select: { name: true, sku: true, gwp: true, category: true } },
+          product: { select: { id: true, name: true, sku: true, gwp: true, category: true, gwpClass: true } },
         },
       },
     },
@@ -435,6 +455,8 @@ export interface CylinderHolding {
 export interface ComplianceDashboardData {
   summary: ComplianceSummary;
   cylinders: CylinderHolding;
+  /** The certificate on file (lib/fgasAccount) — same source as /profile?tab=fgas. */
+  fgas: FgasSummary | null;
 }
 
 /**
@@ -450,13 +472,14 @@ export async function getComplianceDashboardData(
   userId: string,
   period: SummaryPeriod = "ytd"
 ): Promise<ComplianceDashboardData> {
-  const [summary, ledger, depositRows] = await Promise.all([
+  const [summary, ledger, depositRows, fgas] = await Promise.all([
     getCustomerComplianceSummary(userId, { period }),
     getCylinderLedger(userId),
     prisma.orderItem.findMany({
       where: { order: { userId, paymentStatus: { not: "FAILED" } }, depositAtPurchase: { gt: 0 } },
       select: { quantity: true, depositAtPurchase: true },
     }),
+    getFgasSummary(userId),
   ]);
 
   const units = depositRows.reduce((n, r) => n + r.quantity, 0);
@@ -470,5 +493,6 @@ export async function getComplianceDashboardData(
       depositPerCylinder,
       depositHeldEur: round(ledger.inPossession * depositPerCylinder),
     },
+    fgas,
   };
 }

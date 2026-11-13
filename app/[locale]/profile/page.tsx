@@ -57,7 +57,9 @@ async function ProfileContent({ searchParams }: { searchParams: Promise<{ tab?: 
     ? {
         year: compliance.generatedAt.getUTCFullYear(),
         massKg: compliance.yearToDate.massKg,
-        co2eTonnes: compliance.yearToDate.co2eTonnes,
+        // From kg, unrounded: co2eTonnes is already rounded to 3 dp, and the card rounds again to 2 —
+        // 102.8746 would read 102,88 here and 102,87 on /profile/compliance.
+        co2eTonnes: compliance.yearToDate.co2eKg / 1000,
         lines: compliance.ledger.length,
       }
     : null;

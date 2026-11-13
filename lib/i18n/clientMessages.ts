@@ -59,7 +59,6 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "FgasProfile", //     profile
   "Profile", //         profile
   "Compliance", //      profile/compliance
-  "Analytics", //       profile/compliance
   "ProductDetail", //   products/[id]
   "Pdp", //             products/[id]
   "MarketHub", //       hub, categories, compliance/sds (oil / EU labels)
