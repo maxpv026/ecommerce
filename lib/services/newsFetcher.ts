@@ -11,10 +11,13 @@ import { isValid, parseISO } from "date-fns";
  * front of a buyer making a purchasing decision. Every item here is a real
  * article from a real publication, and links back to it.
  *
- * rss-parser talks to the feed over Node's http stack rather than `fetch`,
- * so Next's fetch cache never sees it — the revalidation window lives in the
- * `unstable_cache` wrapper in lib/data.ts (1 hour), which is also what keeps
- * us from hammering the publisher on every page load.
+ * The feed is fetched with WHATWG `fetch` (cache: "no-store") and handed to
+ * rss-parser as a string. Not `parser.parseURL()`: that path calls Node's
+ * deprecated `url.parse()`, whose DEP0169 warning Next forwards to the dev
+ * overlay as a "Console Error · Server" — the red "1 Issue" badge that then
+ * followed the session onto every page. The revalidation window lives in
+ * the `unstable_cache` wrapper in lib/data.ts (1 hour), which is also what
+ * keeps us from hammering the publisher on every page load.
  */
 
 /** Where the widget's news comes from. Override with NEWS_FEED_URLS. */
@@ -231,10 +234,11 @@ function configuredFeeds(): readonly FeedSource[] {
   return parsed.length > 0 ? parsed : DEFAULT_FEEDS;
 }
 
-const parser = new Parser({
-  timeout: FEED_TIMEOUT_MS,
-  headers: { "User-Agent": "MyEnergyStorefront/1.0 (+https://myenergy.example; industry news widget)" },
-});
+const parser = new Parser();
+const FEED_HEADERS = {
+  "User-Agent": "MyEnergyStorefront/1.0 (+https://myenergy.example; industry news widget)",
+  Accept: "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5",
+};
 
 /** Shape the widget needs out of one feed entry. */
 export function toMarketAlert(
@@ -281,12 +285,22 @@ export function tagLabel(tag: MarketAlertTag): string {
   return TAG_LABEL[tag];
 }
 
+/** One feed: fetched (redirects followed, FEED_TIMEOUT_MS), then parsed from text. */
+async function fetchAndParse(url: string) {
+  const res = await fetch(url, { headers: FEED_HEADERS, cache: "no-store", redirect: "follow", signal: AbortSignal.timeout(FEED_TIMEOUT_MS) });
+  if (!res.ok) {
+    await res.body?.cancel();
+    throw new Error(`feed ${url} answered HTTP ${res.status}`);
+  }
+  return parser.parseString(await res.text());
+}
+
 /** One retry: the feed host answers in ~0.5s, but drops the odd request entirely. */
 async function parseWithRetry(url: string) {
   try {
-    return await parser.parseURL(url);
+    return await fetchAndParse(url);
   } catch {
-    return await parser.parseURL(url);
+    return await fetchAndParse(url);
   }
 }
 

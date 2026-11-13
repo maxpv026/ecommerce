@@ -87,7 +87,7 @@ async function main() {
         name: "R-410A Premium",
         sku: "HC-R410A-25",
         ...gasPricingFromLegacy(189, 25),
-        weight: "25 lb cylinder",
+        weight: "11.34 kg cylinder",
         gwpClass: "A1",
         inStock: true,
       },
@@ -99,7 +99,7 @@ async function main() {
         name: "R-32 Low GWP",
         sku: "HC-R32-25",
         ...gasPricingFromLegacy(212, 25),
-        weight: "25 lb cylinder",
+        weight: "11.34 kg cylinder",
         gwpClass: "A2L",
         inStock: true,
       },
@@ -111,7 +111,7 @@ async function main() {
         name: "R-134a Standard",
         sku: "HC-R134A-30",
         ...gasPricingFromLegacy(164, 30),
-        weight: "30 lb cylinder",
+        weight: "13.61 kg cylinder",
         gwpClass: "A1",
         inStock: true,
       },
@@ -192,9 +192,9 @@ async function main() {
   // price; no returnable cylinder → no deposit) and isn't in the CRM's
   // refrigerant feed, so it gets a working quantity here.
   const extraCategories = [
-    { sku: "HC-BLEND-C1", name: "Custom Blend C1", ...gasPricingFromLegacy(342, 25), weight: "25 lb cylinder", gwpClass: "A2L", purity: 99.99, gwp: 890, stock: "order", category: "blends", cylinderDeposit: 15, stockQuantity: 0 },
+    { sku: "HC-BLEND-C1", name: "Custom Blend C1", ...gasPricingFromLegacy(342, 25), weight: "11.34 kg cylinder", gwpClass: "A2L", purity: 99.99, gwp: 890, stock: "order", category: "blends", cylinderDeposit: 15, stockQuantity: 0 },
     { sku: "HC-MAN-4V", name: "4-Valve Manifold", pricePerKg: 148, weightKg: 1, weight: "Set", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "equipment", cylinderDeposit: 0, stockQuantity: 100 },
-    { sku: "HC-REC-50", name: "Recovery Cylinder 50 lb", pricePerKg: 132, weightKg: 1, weight: "50 lb cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "recovery", cylinderDeposit: 0, stockQuantity: 100 },
+    { sku: "HC-REC-50", name: "Recovery Cylinder 22.7 kg", pricePerKg: 132, weightKg: 1, weight: "22.7 kg cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "recovery", cylinderDeposit: 0, stockQuantity: 100 },
   ];
   for (const p of extraCategories) {
     await prisma.product.upsert({

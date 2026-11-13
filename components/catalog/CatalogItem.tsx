@@ -218,3 +218,53 @@ export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: Sto
     </div>
   );
 }
+
+/**
+ * The compact, responsive line (/categories): the same state, badges and
+ * price lines as the row above, laid out to fit an 8-column module — and to
+ * wrap its buy controls onto their own line on a phone.
+ */
+export function CatalogLine({ p, onNotify, size }: { p: StoreProduct; onNotify: (p: StoreProduct) => void; /** Localized pack label ("10 кг · балон"); defaults to the cart variant. */ size?: string }) {
+  const t = useTranslations("Products");
+  const item = useCatalogItem(p);
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-3.5 transition-colors hover:bg-slate-900/[.02] dark:hover:bg-white/[.03]" data-catalog-line={p.sku}>
+      <Link href={p.pdpHref} aria-label={p.name} className="block flex-none">
+        <Thumb p={p} size={52} />
+      </Link>
+      <div className="min-w-0 flex-1 basis-[220px]">
+        <Link href={p.pdpHref} className="block truncate text-[14.5px] font-semibold tracking-[-.025em] hover:text-blue-700 dark:hover:text-blue-400">
+          {p.name}
+        </Link>
+        <div className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-ink-muted">
+          {size ?? p.weightLabel} · <span className="font-mono">{p.sku}</span>
+        </div>
+        <div className="mt-1.5">
+          <Badges p={p} co2eT={item.co2eT} purity={false} />
+        </div>
+      </div>
+      {/* Price and buy controls: one cluster beside the name; on a phone the price takes its own line and the controls share the next. */}
+      <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 max-md:w-full max-md:justify-between">
+        <div className="w-[176px] max-md:w-auto max-sm:w-full max-sm:[&>div]:text-left">
+          <PriceLines p={p} align="right" />
+        </div>
+        {item.purchasable ? (
+          <div className="flex w-[222px] items-center gap-2 max-sm:w-full">
+            <Stepper value={item.qty} onChange={item.setQty} max={item.maxQty} decreaseLabel={t("qtyDecrease")} increaseLabel={t("qtyIncrease")} data-item-qty={p.sku} />
+            <AddButton item={item} className="flex-1" />
+          </div>
+        ) : (
+          <button type="button" onClick={() => onNotify(p)} data-item-notify className={`${ROW_ACTION_GHOST} w-[222px] max-sm:w-full`}>
+            <Bell size={14} strokeWidth={2} />
+            {t("notifyCta")}
+          </button>
+        )}
+      </div>
+      {item.inCart > 0 && (
+        <Link href="/cart" className="w-full text-right text-[11px] font-medium text-emerald-700 hover:underline dark:text-emerald-400" data-item-in-cart={item.inCart}>
+          {t("alreadyInCart", { count: item.inCart })}
+        </Link>
+      )}
+    </div>
+  );
+}

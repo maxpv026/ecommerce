@@ -45,7 +45,7 @@ export const SERVER_ONLY_NAMESPACES = [
 
 /**
  * Read only on the routes that wrap themselves in FullMessagesProvider:
- *   /cart, /checkout, /profile/**, /notifications, /products/[id], /hub, /admin/**, /compliance/sds
+ *   /cart, /checkout, /profile/**, /notifications, /products/[id], /hub, /categories, /admin/**, /compliance/sds
  */
 export const ROUTE_SCOPED_NAMESPACES = [
   "Cart", //            cart, checkout, profile
@@ -62,7 +62,8 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "Analytics", //       profile/compliance
   "ProductDetail", //   products/[id]
   "Pdp", //             products/[id]
-  "MarketHub", //       hub
+  "MarketHub", //       hub, categories (oil / EU labels)
+  "CategoryExplorer", // categories
   "Admin", //           admin
   "AdminInventory", //  admin/inventory
   "AdminRbac", //       admin
