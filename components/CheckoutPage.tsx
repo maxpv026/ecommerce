@@ -1,26 +1,34 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
-import { Check, ChevronLeft, Loader2, Lock, MapPin, Package, Phone, Plus, ShieldCheck } from "lucide-react";
-import Header from "./Header";
-import AuthModal from "./AuthModal";
+import { ArrowLeft, ArrowRight, Check, FlaskConical, Landmark, Loader2, Lock, MapPin, Package, Pencil, Phone, Plus, Truck } from "lucide-react";
 import CheckoutAddressForm from "./CheckoutAddressForm";
 import QuoteCartBanner from "./QuoteCartBanner";
+import { FgasVerifiedLine } from "./FgasGateAlert";
+import { EYEBROW, MicroBadge, PRIMARY, ROW_ACTION_GHOST, SUMMARY_CARD, SURFACE, safetyTone } from "@/components/home/ui";
 import type { SavedAddress } from "@/lib/actions/address";
+import { updateBillingDetails } from "@/lib/actions/checkout";
 import { calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
-import { formatKg } from "@/lib/pricing";
 import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import { imagePathForProduct } from "@/lib/productMedia";
 import type { StoreProduct, UserAddress } from "@/lib/data";
+import type { FgasSummary } from "@/lib/fgas";
 import { requiresFgasCertificate } from "@/lib/fgasSubstances";
 
-const ACCENT = "#1d4ed8";
+/**
+ * /checkout — step 2 of 3, in the cart's language: the single-row header
+ * with the step indicator, then 8 + 4 — one divided surface (delivery
+ * address + delivery/PO note, payer details for the invoice, the lines being
+ * reserved) beside the cart's summary card. Payment is always a bank
+ * transfer: nothing is charged here, the next page is the requisites.
+ */
 
 /** Every code POST /api/checkout can answer with, mapped to a message. */
 const ERROR_KEY: Record<string, string> = {
@@ -35,46 +43,68 @@ const ERROR_KEY: Record<string, string> = {
   ORDER_FAILED: "errorGeneric",
 };
 
-interface CheckoutPageProps {
-  addresses: UserAddress[];
-  /** Live catalog — supplies each line's cylinder deposit for the summary. */
-  products: StoreProduct[];
-  /** The buyer's certificate is in force (effective VERIFIED). */
-  fgasCleared: boolean;
+const TRUST = [
+  { icon: FlaskConical, short: "trustCoa", long: "assuranceCoa" },
+  { icon: Truck, short: "trustAdr", long: "assuranceFreight" },
+  { icon: Lock, short: "trustFgas", long: "assuranceFgas" },
+] as const;
+
+export interface CheckoutPayer {
+  name: string | null;
+  email: string;
+  companyName: string | null;
+  vatNumber: string | null;
+  billingEmail: string | null;
 }
 
-export default function CheckoutPage({ addresses: savedAddresses, products, fgasCleared }: CheckoutPageProps) {
+interface CheckoutPageProps {
+  addresses: UserAddress[];
+  /** Live catalog — each line's deposit, badges and pack. */
+  products: StoreProduct[];
+  /** The buyer's certificate (effective status). */
+  fgas: FgasSummary | null;
+  payer: CheckoutPayer;
+  /** Receiving bank, for the payment-method row. */
+  bankName: string;
+}
+
+const INPUT = "h-10 w-full rounded-[12px] border border-slate-900/[.12] bg-white px-3 text-[13.5px] text-slate-900 placeholder:text-slate-400 focus:border-blue-600/50 focus:outline-none dark:border-white/[.14] dark:bg-white/[.04] dark:text-white";
+
+function SectionHead({ n, title, action }: { n: number; title: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h2 className="m-0 flex items-center gap-2.5 text-[15px] font-semibold tracking-[-.02em]">
+        <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[#0B1020] text-[12px] font-semibold text-white dark:bg-white dark:text-slate-900">{n}</span>
+        {title}
+      </h2>
+      {action}
+    </div>
+  );
+}
+
+export default function CheckoutPage({ addresses: savedAddresses, products, fgas, payer: initialPayer, bankName }: CheckoutPageProps) {
   const t = useTranslations("Checkout");
   const tCart = useTranslations("Cart");
+  const tDash = useTranslations("ProfileDashboard");
   const format = useFormatter();
   const router = useRouter();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const packLabel = usePackLabel();
   const [placing, setPlacing] = useState(false);
+  const fgasCleared = fgas?.status === "VERIFIED";
 
-  // Addresses created here, before the server component has caught up. They
-  // are merged in front of the props rather than replacing them, so the
-  // router.refresh() below can take over silently: once the same row arrives
-  // from the server it wins the dedupe and this list stops mattering.
+  // Addresses created here, before the server component has caught up; the
+  // refresh below takes over once the same row arrives from the server.
   const [createdAddresses, setCreatedAddresses] = useState<SavedAddress[]>([]);
   const addresses = useMemo(() => {
     const fromServer = new Set(savedAddresses.map((a) => a.id));
     return [...savedAddresses, ...createdAddresses.filter((a) => !fromServer.has(a.id))];
   }, [savedAddresses, createdAddresses]);
-
-  const [addressId, setAddressId] = useState<string | null>(
-    savedAddresses.find((a) => a.isDefault)?.id ?? savedAddresses[0]?.id ?? null
-  );
-  // With nothing saved, the form IS the shipping block — there is no empty
-  // state to dismiss and nothing else on the page the buyer could do.
+  const [addressId, setAddressId] = useState<string | null>(savedAddresses.find((a) => a.isDefault)?.id ?? savedAddresses[0]?.id ?? null);
+  // With nothing saved, the form IS the address block.
   const [addingAddress, setAddingAddress] = useState(savedAddresses.length === 0);
   const hasAddresses = addresses.length > 0;
+  const [note, setNote] = useState("");
 
-  /**
-   * A new address is selected the moment it exists, which is what unlocks
-   * the payment button — no second click, no reload. router.refresh() then
-   * re-runs the server component so the rest of the app (and a later visit
-   * to this page) sees the row without this local copy.
-   */
   const handleAddressSaved = (address: SavedAddress) => {
     setCreatedAddresses((current) => [...current, address]);
     setAddressId(address.id);
@@ -83,21 +113,37 @@ export default function CheckoutPage({ addresses: savedAddresses, products, fgas
     router.refresh();
   };
 
+  // ── Payer (invoice) details, editable in place ──
+  const [payer, setPayer] = useState(initialPayer);
+  const [editingPayer, setEditingPayer] = useState(false);
+  const [draft, setDraft] = useState({ companyName: payer.companyName ?? "", vatNumber: payer.vatNumber ?? "", billingEmail: payer.billingEmail ?? "" });
+  const [payerError, setPayerError] = useState<string | null>(null);
+  const [savingPayer, startSavePayer] = useTransition();
+  const savePayer = () =>
+    startSavePayer(async () => {
+      setPayerError(null);
+      const result = await updateBillingDetails(draft);
+      if (!result.ok) {
+        setPayerError(result.field === "vatNumber" ? t("payerErrorVat") : result.field === "billingEmail" ? t("payerErrorEmail") : t("payerError"));
+        return;
+      }
+      setPayer((p) => ({ ...p, companyName: result.companyName, vatNumber: result.vatNumber, billingEmail: result.billingEmail }));
+      setEditingPayer(false);
+      toast.success(t("payerSaved"));
+    });
+
+  // ── Basket ──
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
-  // A basket loaded from a quote is priced from its own lines (the quote's
-  // frozen figures), never re-priced from the live catalog.
   const quote = useCartStore((s) => s.quote);
   const dropQuote = useCartStore((s) => s.dropQuote);
   const hydrated = useHydrated();
   const shownItems = hydrated ? items : [];
-
   const eur = (value: number) => format.number(value, { style: "currency", currency: "EUR" });
   const bySku = new Map(products.map((p) => [p.sku, p]));
-  // An F-Gas basket without a certificate in force can't be ordered: back to
-  // the cart, which explains why and owns the upload. Tools-only and
-  // hydrocarbon baskets stay. (A line missing from the catalogue counts as
-  // F-Gas — fail safe. prepareOrder enforces the same rule.)
+
+  // An F-Gas basket without a certificate in force goes back to the cart,
+  // which explains why and owns the upload. prepareOrder enforces the same rule.
   const needsFgas = shownItems.some((i) => {
     const p = bySku.get(i.sku);
     return p ? requiresFgasCertificate(p) : true;
@@ -108,33 +154,19 @@ export default function CheckoutPage({ addresses: savedAddresses, products, fgas
   const totalLines = shownItems.map((i) => pricingLineFor(i, quote ? null : bySku.get(i.sku)));
   const { count, subtotal, depositUnits, deposit, shipping, vat, total } = calculateCartTotals(totalLines);
 
-  // Selection is only real if the row still exists — a refresh that removed
-  // an address elsewhere must re-lock the button rather than send a dead id.
+  // Selection is only real if the row still exists.
   const addressSelected = addressId !== null && addresses.some((a) => a.id === addressId);
-  const canPlace = shownItems.length > 0 && addressSelected && !placing;
+  const canPlace = shownItems.length > 0 && addressSelected && !placing && !editingPayer;
 
-  /**
-   * Hands the basket to /api/checkout, which validates it, reserves the
-   * stock and records the order as awaiting a bank transfer.
-   *
-   * Nothing is charged here, so unlike a redirect to a payment provider
-   * there is no "cancel and come back" state: once the server confirms the
-   * order exists, the basket has served its purpose and is emptied before
-   * the confirmation page opens.
-   */
   const submitting = useRef(false);
-
   const submitOrder = async () => {
-    // Synchronous latch. `placing` is state, so it only disables the buttons
-    // on the next render — a fast double tap, or one tap on each of the two
-    // CTAs, could both get through in that window and place two orders.
+    // Synchronous latch: `placing` only disables the button on the next render.
     if (submitting.current) return;
     if (!addressId) {
       toast.error(t("errorAddress"));
       return;
     }
     if (shownItems.length === 0) return;
-
     submitting.current = true;
     setPlacing(true);
     try {
@@ -145,27 +177,21 @@ export default function CheckoutPage({ addresses: savedAddresses, products, fgas
           addressId,
           items: shownItems.map((i) => ({ sku: i.sku, qty: i.qty })),
           ...(quote ? { quoteId: quote.id } : {}),
+          ...(note.trim() ? { note: note.trim() } : {}),
         }),
       });
-      const result = (await response.json()) as
-        | { ok: true; orderId: string; orderNumber: string }
-        | { ok: false; code?: string };
-
+      const result = (await response.json()) as { ok: true; orderId: string; orderNumber: string } | { ok: false; code?: string };
       if (!response.ok || !result.ok) {
         submitting.current = false;
         setPlacing(false);
         const code = "code" in result ? result.code : undefined;
-        // The quote lapsed or was already ordered: fall back to an ordinary
-        // basket so the summary shows what checkout would charge now.
         if (code === "QUOTE_INVALID") dropQuote();
         toast.error(t(ERROR_KEY[code ?? ""] ?? "errorGeneric"));
         return;
       }
-
       // The order is committed and the stock reserved — the basket is spent.
       clearCart();
       toast.success(t("toastOrderPlaced"));
-      // `placing` stays true: the page is on its way out.
       router.push({ pathname: "/checkout/success", query: { orderId: result.orderId } });
     } catch {
       submitting.current = false;
@@ -174,398 +200,303 @@ export default function CheckoutPage({ addresses: savedAddresses, products, fgas
     }
   };
 
+  const steps = [
+    { n: 1, label: t("step1"), state: "done" as const },
+    { n: 2, label: t("step2"), state: "current" as const },
+    { n: 3, label: t("step3"), state: "next" as const },
+  ];
+
   return (
-    <div className="flex-1 bg-canvas">
-      {/* Header is a desktop component — no responsive classes in it — so
-          it is gated exactly as CartPage gates it. Below md the compact
-          header inside the section is the page's chrome. */}
-      <div className="hidden md:block">
-        <Header onSignInClick={() => setIsAuthModalOpen(true)} />
-      </div>
-
-      {/* pb clears the fixed action bar (and the home indicator) on the
-          single-column breakpoints; from lg the bar is gone and the original
-          desktop rhythm is restored. */}
-      <section className="mx-auto flex max-w-[1240px] flex-col gap-6 px-4 pt-6 pb-[calc(150px+env(safe-area-inset-bottom))] lg:block lg:gap-0 lg:px-8 lg:pt-13 lg:pb-[110px]">
-        {/* Compact header for the stacked layout: a 44px back target and a
-            title that fits one line. The desktop block below is unchanged. */}
-        <div className="flex items-center gap-1 md:hidden">
-          <Link
-            href="/cart"
-            aria-label={t("backToCart")}
-            className="-ml-2.5 flex h-11 w-11 flex-none items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-slate-900/[.06] active:bg-slate-900/[.1] dark:text-slate-200 dark:hover:bg-white/[.08]"
-          >
-            <ChevronLeft size={21} strokeWidth={2.2} />
-          </Link>
+    <div className="relative overflow-x-clip">
+      <main className="relative mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-8 md:pb-24 md:pt-9" data-checkout>
+        {/* ── Header bar: title left, steps + way back right ── */}
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-checkout-header>
           <div className="min-w-0 flex-1">
-            <h1 className="m-0 truncate text-[21px] font-semibold tracking-[-.035em]">{t("title")}</h1>
-            <p className="m-0 mt-0.5 truncate text-[12px] text-slate-500 dark:text-slate-400">
-              {count === 0 ? tCart("noItemsYet") : tCart("cylinderCountShort", { count })}
+            <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] sm:text-[34px]">{t("title")}</h1>
+            <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-checkout-meta>
+              {t("lead")}
             </p>
           </div>
-        </div>
-
-        <div className="mb-9.5 hidden items-end justify-between gap-6 md:flex">
-          <div>
-            <h1 className="m-0 text-[38px] font-semibold tracking-[-.04em]">{t("title")}</h1>
-            <p className="mt-2 text-[13.5px] text-slate-500 dark:text-slate-400">
-              {count === 0 ? tCart("noItemsYet") : tCart("cylinderCountShort", { count })}
-            </p>
+          <div className="flex flex-wrap items-center gap-2 max-sm:w-full sm:flex-none lg:pt-1">
+            <ol className="m-0 flex list-none items-center gap-1 p-0" aria-label={t("stepsLabel")} data-checkout-steps>
+              {steps.map((s, i) => (
+                <li key={s.n} className="flex items-center gap-1">
+                  {i > 0 && <span aria-hidden className="h-px w-3 bg-slate-900/[.15] dark:bg-white/[.2]" />}
+                  {s.state === "done" ? (
+                    <Link href="/cart" className="inline-flex h-8 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300" data-step="done">
+                      <Check size={12} strokeWidth={3} />
+                      {s.n}. {s.label}
+                    </Link>
+                  ) : (
+                    <span
+                      aria-current={s.state === "current" ? "step" : undefined}
+                      className={`inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold ${s.state === "current" ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "border border-slate-900/[.12] text-slate-500 dark:border-white/[.14] dark:text-ink-muted"}`}
+                      data-step={s.state}
+                    >
+                      {s.state === "current" && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />}
+                      {s.n}. {s.label}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+            <Link href="/cart" className="inline-flex h-8 items-center gap-1 px-1.5 text-[12.5px] font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white" data-back-to-cart>
+              <ArrowLeft size={13} strokeWidth={2.4} />
+              {t("backToCart")}
+            </Link>
           </div>
-          <Link href="/cart" className="text-[13px] text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400">
-            {t("backToCart")}
-          </Link>
         </div>
 
         {shownItems.length === 0 ? (
-          <div className="py-17.5 text-center">
-            <p className="m-0 mb-4.5 text-sm text-slate-400 dark:text-slate-500">{tCart("cartEmpty")}</p>
+          <div className={`${SURFACE} px-5 py-14 text-center`} data-checkout-empty>
+            <p className="m-0 mb-4 text-[14px] text-slate-500 dark:text-ink-muted">{tCart("cartEmpty")}</p>
             <Link href="/products" className="text-[13.5px] font-semibold text-blue-700 dark:text-blue-400">
               {tCart("browseCylinders")}
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_.85fr] lg:gap-14">
-            <div className="flex flex-col gap-6 lg:gap-8">
-              {/* Shipping address — selectable cards plus in-place creation.
-                  A buyer with nothing saved never leaves this page: the form
-                  is already open below. */}
-              <div data-shipping-block>
-                <div className="mb-4 flex items-center justify-between gap-4">
-                  <h2 className="m-0 text-[17px] font-semibold tracking-[-.025em]">
-                    {t("shippingAddress")}
-                  </h2>
-                  {hasAddresses && !addingAddress && (
-                    <motion.button
-                      type="button"
-                      whileHover={{ y: -1 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => setAddingAddress(true)}
-                      data-add-address
-                      className="hidden h-9 flex-none items-center gap-1.5 rounded-[12px] lg:inline-flex border border-cyan-500/40 bg-cyan-500/[.08] pl-2.5 pr-3.5 text-[12.5px] font-semibold tracking-[-.015em] text-cyan-700 shadow-[0_0_22px_-10px_rgba(6,182,212,.9)] transition-colors hover:bg-cyan-500/[.14] dark:text-cyan-300"
-                    >
-                      <Plus size={14} strokeWidth={2.4} />
-                      {t("adrFormAddNew")}
-                    </motion.button>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div role="radiogroup" aria-label={t("shippingAddress")} className="flex flex-col gap-3 empty:hidden">
-                  <AnimatePresence initial={false}>
-                    {addresses.map((address) => {
-                      const selected = address.id === addressId;
-                      return (
-                        <motion.button
-                          key={address.id}
-                          layout
-                          initial={{ opacity: 0, y: -8, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                          type="button"
-                          role="radio"
-                          onClick={() => setAddressId(address.id)}
-                          aria-checked={selected}
-                          data-address-card={address.id}
-                          className="flex items-start gap-3.5 rounded-[18px] border bg-white/70 p-4.5 text-left backdrop-blur-md transition-[border-color,box-shadow] duration-200 dark:bg-white/[.04]"
-                          style={{
-                            borderColor: selected ? ACCENT : "rgba(100,116,139,.25)",
-                            boxShadow: selected ? `0 0 0 3px ${ACCENT}1f` : "none",
-                          }}
-                        >
-                          <span
-                            className={`mt-0.5 flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full border-2 transition-colors ${
-                              selected
-                                ? "border-blue-700 bg-blue-700 text-white dark:border-blue-500 dark:bg-blue-500"
-                                : "border-slate-300 text-transparent dark:border-white/25"
-                            }`}
-                          >
-                            <Check size={12} strokeWidth={3} />
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+            {/* ── Left: one divided surface ── */}
+            <div className={`min-w-0 lg:col-span-8 ${SURFACE} divide-y divide-slate-900/[.06] dark:divide-white/[.06]`} data-checkout-surface>
+              {/* 1 · Delivery address */}
+              <section className="px-5 py-5" data-shipping-block>
+                <SectionHead
+                  n={1}
+                  title={t("sectionAddress")}
+                  action={
+                    hasAddresses && !addingAddress ? (
+                      <div className="flex items-center gap-2">
+                        <Link href="/profile?tab=addresses" className="text-[12.5px] font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white" data-change-addresses>
+                          {t("changeAddresses")}
+                        </Link>
+                        <button type="button" onClick={() => setAddingAddress(true)} className={ROW_ACTION_GHOST} data-add-address>
+                          <Plus size={14} strokeWidth={2.4} />
+                          {t("adrFormAddNew")}
+                        </button>
+                      </div>
+                    ) : null
+                  }
+                />
+                <div role="radiogroup" aria-label={t("sectionAddress")} className="mt-4 flex flex-col gap-2 empty:hidden">
+                  {addresses.map((address) => {
+                    const selected = address.id === addressId;
+                    const site = "siteType" in address ? (address as UserAddress).siteType : null;
+                    return (
+                      <button
+                        key={address.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => setAddressId(address.id)}
+                        data-address-card={address.id}
+                        className={`flex items-start gap-3 rounded-[16px] border p-3.5 text-left transition-colors ${selected ? "border-blue-700 bg-blue-600/[.04] ring-2 ring-blue-600/15 dark:border-blue-400 dark:bg-blue-400/[.06]" : "border-slate-900/[.1] hover:bg-slate-900/[.02] dark:border-white/[.12] dark:hover:bg-white/[.03]"}`}
+                      >
+                        <span className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full border-2 ${selected ? "border-blue-700 bg-blue-700 text-white dark:border-blue-400 dark:bg-blue-400 dark:text-slate-900" : "border-slate-300 text-transparent dark:border-white/25"}`}>
+                          <Check size={11} strokeWidth={3} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[14px] font-semibold tracking-[-.015em]">{address.title}</span>
+                            {site && <MicroBadge data-address-site={site}>{tDash(`adrSite_${site}`)}</MicroBadge>}
+                            {address.isDefault && <MicroBadge tone="info">{t("defaultBadge")}</MicroBadge>}
                           </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="flex items-center gap-2">
-                              <span className="text-[14px] font-semibold tracking-[-.015em]">{address.title}</span>
-                              {address.isDefault && (
-                                <span className="rounded-full bg-blue-700/[.08] px-2 py-[3px] text-[10.5px] font-semibold text-blue-700 dark:bg-blue-400/10 dark:text-blue-400">
-                                  {t("defaultBadge")}
-                                </span>
-                              )}
-                            </span>
-                            <span className="mt-1 block text-[12.5px] text-slate-500 dark:text-slate-400">
-                              {address.recipientName}
-                            </span>
-                            <span className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400">
-                              <MapPin size={12} strokeWidth={2} className="flex-none" />
-                              {address.fullAddress}
-                            </span>
+                          <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
+                            <span>{address.recipientName}</span>
                             {address.phone && (
-                              <span className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400">
-                                <Phone size={12} strokeWidth={2} className="flex-none" />
+                              <span className="inline-flex items-center gap-1">
+                                <Phone size={11} strokeWidth={2.2} />
                                 {address.phone}
                               </span>
                             )}
                           </span>
-                        </motion.button>
-                      );
-                    })}
-                  </AnimatePresence>
-                  </div>
-
-                  {/* The header button is a small chip that only exists from
-                      lg; on a phone the same action is a full-width target
-                      under the address list, where a thumb already is. */}
-                  {hasAddresses && !addingAddress && (
-                    <motion.button
-                      type="button"
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setAddingAddress(true)}
-                      data-add-address-mobile
-                      className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-cyan-500/50 bg-cyan-500/[.06] text-[13.5px] font-semibold tracking-[-.015em] text-cyan-700 lg:hidden dark:text-cyan-300"
-                    >
-                      <Plus size={16} strokeWidth={2.4} />
-                      {t("adrFormAddNew")}
-                    </motion.button>
-                  )}
-
-                  <AnimatePresence initial={false}>
-                    {addingAddress && (
-                      <CheckoutAddressForm
-                        key="address-form"
-                        canCancel={hasAddresses}
-                        onCancel={() => setAddingAddress(false)}
-                        onSaved={handleAddressSaved}
-                      />
-                    )}
-                  </AnimatePresence>
+                          <span className="mt-0.5 flex items-start gap-1 text-[12.5px] text-slate-500 dark:text-ink-muted">
+                            <MapPin size={11} strokeWidth={2.2} className="mt-[3px] flex-none" />
+                            {address.fullAddress}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
+                <AnimatePresence initial={false}>
+                  {addingAddress && (
+                    <div className="mt-4">
+                      <CheckoutAddressForm key="address-form" canCancel={hasAddresses} onCancel={() => setAddingAddress(false)} onSaved={handleAddressSaved} />
+                    </div>
+                  )}
+                </AnimatePresence>
+                <label className="mt-4 block">
+                  <span className="mb-1.5 block text-[12.5px] font-semibold text-slate-600 dark:text-slate-300">{t("noteLabel")}</span>
+                  <input value={note} onChange={(e) => setNote(e.target.value.slice(0, 280))} maxLength={280} placeholder={t("notePlaceholder")} className={INPUT} data-checkout-note />
+                </label>
+              </section>
 
-              {/* Items review */}
-              <div>
-                <h2 className="m-0 mb-4 text-[17px] font-semibold tracking-[-.025em]">{t("itemsTitle")}</h2>
-                <div>
-                  {shownItems.map((item, idx) => {
-                    const catalogProduct = bySku.get(item.sku);
-                    const pricing = pricingLineFor(item, quote ? null : catalogProduct);
+              {/* 2 · Payer for the invoice + how it's paid */}
+              <section className="px-5 py-5" data-payer-block>
+                <SectionHead
+                  n={2}
+                  title={t("sectionPayer")}
+                  action={
+                    !editingPayer ? (
+                      <button type="button" onClick={() => setEditingPayer(true)} className={ROW_ACTION_GHOST} data-payer-edit>
+                        <Pencil size={13} strokeWidth={2.2} />
+                        {t("payerEdit")}
+                      </button>
+                    ) : null
+                  }
+                />
+                {editingPayer ? (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3" data-payer-form>
+                    {(["companyName", "vatNumber", "billingEmail"] as const).map((k) => (
+                      <label key={k} className="block">
+                        <span className="mb-1.5 block text-[12px] font-semibold text-slate-600 dark:text-slate-300">{t(`payer_${k}`)}</span>
+                        <input value={draft[k]} onChange={(e) => setDraft((d) => ({ ...d, [k]: e.target.value }))} type={k === "billingEmail" ? "email" : "text"} placeholder={k === "billingEmail" ? payer.email : undefined} className={INPUT} data-payer-input={k} />
+                      </label>
+                    ))}
+                    <div className="flex flex-wrap items-center gap-2 sm:col-span-3">
+                      <button type="button" onClick={savePayer} disabled={savingPayer} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-blue-700 px-4 text-[12.5px] font-semibold text-white hover:bg-blue-800 disabled:opacity-60" data-payer-save>
+                        {savingPayer && <Loader2 size={13} className="animate-spin" />}
+                        {t("payerSave")}
+                      </button>
+                      <button type="button" onClick={() => { setEditingPayer(false); setPayerError(null); }} className={ROW_ACTION_GHOST}>
+                        {t("payerCancel")}
+                      </button>
+                      {payerError && <span className="text-[12.5px] font-semibold text-red-600 dark:text-red-400" data-payer-error>{payerError}</span>}
+                    </div>
+                  </div>
+                ) : (
+                  <dl className="m-0 mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-3" data-payer-view>
+                    {[
+                      { k: "companyName", v: payer.companyName },
+                      { k: "vatNumber", v: payer.vatNumber },
+                      { k: "billingEmail", v: payer.billingEmail || payer.email },
+                    ].map(({ k, v }) => (
+                      <div key={k} className="min-w-0" data-payer-field={k}>
+                        <dt className="text-[12px] text-slate-500 dark:text-ink-muted">{t(`payer_${k}`)}</dt>
+                        <dd className={`m-0 mt-0.5 truncate text-[13.5px] font-semibold ${v ? "" : "font-normal text-slate-400"}`}>{v || t("payerNotSet")}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                <div className="mt-4 flex items-center gap-2.5 rounded-[14px] border border-slate-900/[.08] bg-slate-50/80 px-3.5 py-2.5 text-[12.5px] dark:border-white/[.08] dark:bg-white/[.03]" data-bank-pill>
+                  <Landmark size={15} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
+                  <span className="min-w-0">{t("bankPill", { bank: bankName })}</span>
+                </div>
+              </section>
+
+              {/* 3 · Lines being reserved */}
+              <section data-items-block>
+                <div className="px-5 pt-5">
+                  <SectionHead n={3} title={t("sectionItems")} />
+                </div>
+                <div className="mt-3 divide-y divide-slate-900/[.06] dark:divide-white/[.06]">
+                  {shownItems.map((item) => {
+                    const p = bySku.get(item.sku);
+                    const pricing = pricingLineFor(item, quote ? null : p);
                     const unit = lineUnitPrice(pricing);
-                    const showBreakdown = catalogProduct ? catalogProduct.pricedPerKg : pricing.weightKg !== 1;
-                    const image = catalogProduct ? imagePathForProduct(catalogProduct) : null;
+                    const perKg = p ? p.pricedPerKg : pricing.weightKg !== 1;
+                    const image = p ? imagePathForProduct(p) : null;
+                    const safety = p?.gwpClass && p.gwpClass !== "n/a" ? p.gwpClass : null;
                     return (
-                      <div
-                        key={item.sku}
-                        data-checkout-item
-                        className={`flex items-center gap-3 border-b border-slate-900/[.08] py-3.5 lg:gap-4 dark:border-white/[.08] ${
-                          idx === 0 ? "border-t dark:border-t-white/[.08]" : ""
-                        }`}
-                      >
-                        <span className="flex h-12 w-12 flex-none items-center justify-center overflow-hidden rounded-[13px] border border-slate-900/[.06] bg-slate-100 lg:h-14 lg:w-14 dark:border-white/[.06] dark:bg-white/[.05]">
-                          {image ? (
-                            // See OrderDetailView: 768x768 sources in a 48-56px
-                            // box, so the optimizer earns its keep here.
-                            <Image
-                              src={image}
-                              alt=""
-                              width={56}
-                              height={56}
-                              sizes="(min-width: 1024px) 56px, 48px"
-                              className="h-full w-full object-contain p-1"
-                            />
-                          ) : (
-                            <Package size={18} strokeWidth={1.8} className="text-slate-400 dark:text-slate-500" />
-                          )}
+                      <div key={item.sku} className="flex items-center gap-3.5 px-5 py-3.5" data-checkout-item={item.sku}>
+                        <span className="flex h-12 w-12 flex-none items-center justify-center overflow-hidden rounded-[14px] border border-slate-900/[.08] bg-slate-50 dark:border-white/[.1] dark:bg-white/[.04]">
+                          {image ? <Image src={image} alt="" width={48} height={48} sizes="48px" className="h-full w-full object-contain p-1" /> : <Package size={18} strokeWidth={1.8} className="text-slate-400" />}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-semibold tracking-[-.015em]">{item.name}</div>
-                          <div className="mt-0.5 text-[12.5px] text-slate-400 dark:text-slate-500">
-                            {item.variant}
-                            <span className="lg:hidden"> · × {item.qty}</span>
+                          <div className="truncate text-[14px] font-semibold tracking-[-.015em]">{item.name}</div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-ink-muted">
+                            <span data-line-pack>{packLabel(pricing.weightKg, p?.containerType, perKg)}</span>
+                            {safety && <MicroBadge tone={safetyTone(safety)}>{safety}</MicroBadge>}
+                            {p?.gwp != null && <MicroBadge>GWP {format.number(p.gwp)}</MicroBadge>}
                           </div>
-                          <div className="mt-0.5 text-[11.5px] leading-[1.5] text-slate-400 dark:text-slate-500" data-line-breakdown>
-                            {showBreakdown
-                              ? tCart("lineBreakdown", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg), cylinder: eur(unit) })
-                              : `${eur(unit)} ${tCart("eachSuffix")}`}
-                            {(pricing.deposit ?? 0) > 0 && (
-                              <span className="block text-emerald-700 dark:text-emerald-300/90">
-                                {tCart("depositEach", { amount: eur(pricing.deposit ?? 0) })}
-                              </span>
-                            )}
+                          {(pricing.deposit ?? 0) > 0 && <div className="mt-0.5 text-[11.5px] text-emerald-700 dark:text-emerald-400">{tCart("depositEach", { amount: eur(pricing.deposit ?? 0) })}</div>}
+                        </div>
+                        <div className="flex-none text-right">
+                          <div className="text-[14px] font-semibold tabular-nums" data-line-total>{eur(unit * item.qty)}</div>
+                          <div className="text-[12px] text-slate-500 tabular-nums dark:text-ink-muted">
+                            {item.qty} × {eur(unit)}
                           </div>
                         </div>
-                        <span className="hidden flex-none text-[13px] text-slate-500 lg:block dark:text-slate-400">
-                          × {item.qty}
-                        </span>
-                        <span className="flex-none text-right text-[13.5px] font-semibold tracking-[-.015em] tabular-nums lg:w-[92px]">
-                          {eur(unit * item.qty)}
-                        </span>
                       </div>
                     );
                   })}
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2.5 rounded-2xl bg-slate-50 px-4.5 py-3.5 text-[12.5px] leading-[1.55] text-slate-500 dark:bg-white/[.04] dark:text-slate-400">
-                <ShieldCheck size={16} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
-                {tCart("hazmatNote")}
-              </div>
+              </section>
             </div>
 
-            {/* Order summary */}
-            <div className="relative py-0 lg:sticky lg:top-24 lg:py-6.5">
-              {/* Ambient mesh: desktop only. Two 100px-blur radial gradients
-                  are a real compositing cost on a phone, behind a card that
-                  fills the screen anyway. */}
-              <div className="pointer-events-none absolute -left-[14%] -top-[4%] hidden aspect-square w-[118%] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-[.28] blur-[100px] lg:block [animation:hc-float_22s_ease-in-out_infinite] dark:opacity-[.4]" />
-              <div className="pointer-events-none absolute -bottom-[8%] -right-[16%] hidden aspect-square w-full rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-[.26] blur-[100px] lg:block [animation:hc-float_28s_ease-in-out_infinite_reverse] dark:opacity-[.38]" />
-
-              <div className="relative rounded-[22px] border border-white/75 bg-white/62 p-6 pt-6.5 shadow-[0_26px_60px_-26px_rgba(15,23,42,0.28)] backdrop-blur-md backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/60 dark:shadow-[0_26px_60px_-26px_rgba(0,0,0,0.6)]">
-                <div className="mb-5 text-[17px] font-semibold tracking-[-.025em]">
-                  {tCart("orderSummary")}
-                </div>
-                <QuoteCartBanner className="mb-5" />
-
-                <div className="flex flex-col gap-3.5">
-                  <div className="flex justify-between text-[13.5px]">
-                    <span className="text-slate-500 dark:text-slate-400">{tCart("subtotal")}</span>
-                    <span className="font-medium">{eur(subtotal)}</span>
+            {/* ── Right: the cart's summary card ── */}
+            <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4" data-checkout-summary>
+              <div className={SUMMARY_CARD}>
+                <h2 className={EYEBROW}>{tCart("orderSummary")}</h2>
+                <QuoteCartBanner className="mt-4" />
+                <dl className="m-0 mt-4 flex flex-col gap-2.5 text-[13.5px]">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-slate-600 dark:text-ink-muted">{tCart("subtotal")} · {tCart("cylinderCountShort", { count })}</dt>
+                    <dd className="m-0 font-semibold tabular-nums" data-summary-subtotal>{eur(subtotal)}</dd>
                   </div>
                   {deposit > 0 && (
-                    <div className="flex justify-between gap-3 text-[13.5px]" data-summary-deposit>
-                      <span className="min-w-0 text-slate-500 dark:text-slate-400">
+                    <div className="flex items-baseline justify-between gap-3" data-summary-deposit>
+                      <dt className="text-slate-600 dark:text-ink-muted">
                         {tCart("cylinderDeposit")}
-                        <span className="mt-0.5 block text-[11px] leading-[1.4] text-slate-400 dark:text-slate-500">
-                          {tCart("cylinderDepositDetail", { count: depositUnits })}
-                        </span>
-                      </span>
-                      <span className="flex-none font-medium">{eur(deposit)}</span>
+                        <span className="ml-1.5 text-[11.5px] text-slate-400">· {tCart("depositUnitsShort", { count: depositUnits })}</span>
+                      </dt>
+                      <dd className="m-0 font-semibold tabular-nums">{eur(deposit)}</dd>
                     </div>
                   )}
-                  <div className="flex justify-between text-[13.5px]">
-                    <span className="text-slate-500 dark:text-slate-400">{tCart("estimatedShipping")}</span>
-                    <span className="font-medium">{shipping === 0 ? tCart("free") : eur(shipping)}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-slate-600 dark:text-ink-muted">{tCart("estimatedShipping")}</dt>
+                    <dd className="m-0 font-semibold tabular-nums" data-summary-shipping>{shipping === 0 ? tCart("free") : eur(shipping)}</dd>
                   </div>
-                  <div className="flex justify-between text-[13.5px]">
-                    <span className="text-slate-500 dark:text-slate-400">{tCart("vat20")}</span>
-                    <span className="font-medium">{eur(vat)}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-slate-600 dark:text-ink-muted">{tCart("vat20")}</dt>
+                    <dd className="m-0 font-semibold tabular-nums" data-summary-vat>{eur(vat)}</dd>
                   </div>
-                  {/* Says how this will be settled before the button is
-                      pressed — nothing is charged at checkout. */}
-                  <div className="flex justify-between gap-3 text-[13.5px]" data-summary-payment="bank_transfer">
-                    <span className="text-slate-500 dark:text-slate-400">{tCart("paymentMethodTitle")}</span>
-                    <span className="flex-none text-right font-medium">{t("bankTransferLabel")}</span>
+                  <div className="flex items-baseline justify-between gap-3" data-summary-payment="bank_transfer">
+                    <dt className="text-slate-600 dark:text-ink-muted">{tCart("paymentMethodTitle")}</dt>
+                    <dd className="m-0 text-right font-semibold">{t("bankTransferShort")}</dd>
                   </div>
+                </dl>
+                <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-slate-900/[.08] pt-4 dark:border-white/[.08]">
+                  <span className="text-[15px] font-semibold tracking-[-.02em]">{tCart("total")}</span>
+                  <span className="text-[28px] font-semibold tracking-[-.04em] tabular-nums" data-summary-total>{eur(total)}</span>
                 </div>
 
-                <p
-                  className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-[11.5px] leading-[1.55] text-slate-500 dark:bg-white/[.04] dark:text-slate-400"
-                  data-bank-transfer-note
-                >
+                {fgasCleared && (
+                  <div className="mt-4">
+                    <FgasVerifiedLine fgas={fgas} />
+                  </div>
+                )}
+
+                <button type="button" disabled={!canPlace} onClick={submitOrder} className={`${PRIMARY} mt-4 whitespace-nowrap px-4`} data-pay-cta data-pay-locked={addressSelected ? undefined : "true"} title={addressSelected ? undefined : t("adrFormRequiredHint")}>
+                  {placing ? <Loader2 size={17} strokeWidth={2.2} className="animate-spin" /> : !addressSelected ? <Lock size={15} strokeWidth={2.2} /> : null}
+                  {placing ? t("placing") : t("confirmCta")}
+                  {!placing && addressSelected && <ArrowRight size={17} strokeWidth={2.2} />}
+                </button>
+                {!addressSelected && (
+                  <p className="m-0 mt-2.5 text-center text-[12px] text-amber-700 dark:text-amber-400" data-pay-locked-hint>
+                    {t("adrFormRequiredHint")}
+                  </p>
+                )}
+                <p className="m-0 mt-3 text-center text-[11.5px] leading-[1.5] text-slate-500 dark:text-ink-muted" data-bank-transfer-note>
                   {t("bankTransferNote")}
                 </p>
-
-                <div className="my-5 h-px bg-slate-900/10 dark:bg-white/10" />
-
-                <div className="mb-5 flex items-baseline justify-between">
-                  <span className="text-sm font-semibold">{tCart("total")}</span>
-                  <span className="text-[26px] font-semibold tracking-[-.035em]">{eur(total)}</span>
-                </div>
-
-                {/* Locked until an address is selected — and unlocked the
-                    instant one is saved, since handleAddressSaved selects it. */}
-                {/* Hidden — not merely visually — below lg, so the fixed bar
-                    is the only reachable Place Order at those widths. */}
-                <motion.button
-                  type="button"
-                  disabled={!canPlace}
-                  onClick={submitOrder}
-                  animate={{
-                    opacity: canPlace || placing ? 1 : 0.4,
-                    filter: canPlace || placing ? "saturate(1)" : "saturate(.5)",
-                  }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  whileTap={canPlace ? { scale: 0.99 } : undefined}
-                  data-pay-cta
-                  data-pay-locked={addressSelected ? undefined : "true"}
-                  title={addressSelected ? undefined : t("adrFormRequiredHint")}
-                  className="hidden h-[52px] w-full items-center justify-center gap-2.5 rounded-[14px] text-[15px] font-semibold tracking-[-.01em] text-white lg:flex disabled:cursor-not-allowed"
-                  style={{ background: ACCENT, boxShadow: `0 14px 30px -12px ${ACCENT}a6` }}
-                >
-                  {placing && <Loader2 size={17} strokeWidth={2.2} className="animate-spin" />}
-                  {placing ? t("placing") : t("placeOrderBankTransfer")}
-                  {!placing && !addressSelected && <Lock size={15} strokeWidth={2.2} />}
-                </motion.button>
-
-                {/* Says WHY it's locked, rather than leaving a dead button. */}
-                <AnimatePresence initial={false}>
-                  {!addressSelected && (
-                    <motion.p
-                      key="address-hint"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                      data-pay-locked-hint
-                      className="m-0 hidden overflow-hidden text-center text-[11.5px] leading-[1.55] text-amber-700 lg:block dark:text-amber-400"
-                    >
-                      <span className="block pt-3">{t("adrFormRequiredHint")}</span>
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-
-                <p className="mt-4 text-center text-[11.5px] leading-[1.55] text-slate-400 dark:text-slate-500">
+                <p className="m-0 mt-2 text-center text-[11px] leading-[1.5] text-slate-400 dark:text-ink-muted/80" data-legal-note>
                   {t("legalNote")}
                 </p>
+
+                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-900/[.07] pt-3.5 dark:border-white/[.07]" data-checkout-trust-chips>
+                  {TRUST.map(({ icon: Icon, short, long }) => (
+                    <span key={short} title={tCart(long)} className="flex items-center justify-center gap-1.5 text-center text-[11px] font-medium leading-tight text-slate-500 dark:text-ink-muted">
+                      <Icon size={12} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
+                      {tCart(short)}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            </aside>
           </div>
         )}
-      </section>
-
-      {/* ── Mobile action bar ──────────────────────────────────────────
-          Only rendered with something to buy, and gone from lg where the
-          summary card carries the CTA — so exactly one Place Order button
-          is ever reachable. */}
-      {shownItems.length > 0 && (
-        <div
-          data-checkout-bar
-          className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-900/[.08] bg-white/80 backdrop-blur-xl backdrop-saturate-150 lg:hidden dark:border-hairline dark:bg-glass"
-        >
-          <div className="mx-auto flex max-w-[1240px] flex-col gap-2.5 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{tCart("total")}</span>
-              <span className="text-[22px] font-semibold tracking-[-.035em] tabular-nums">{eur(total)}</span>
-            </div>
-
-            <motion.button
-              type="button"
-              disabled={!canPlace}
-              onClick={submitOrder}
-              animate={{
-                opacity: canPlace || placing ? 1 : 0.45,
-                filter: canPlace || placing ? "saturate(1)" : "saturate(.5)",
-              }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              whileTap={canPlace ? { scale: 0.99 } : undefined}
-              data-pay-cta-mobile
-              data-pay-locked={addressSelected ? undefined : "true"}
-              className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl text-[15px] font-semibold tracking-[-.01em] text-white disabled:cursor-not-allowed"
-              style={{ background: ACCENT, boxShadow: `0 14px 30px -12px ${ACCENT}a6` }}
-            >
-              {placing && <Loader2 size={17} strokeWidth={2.2} className="animate-spin" />}
-              {placing ? t("placing") : t("placeOrderBankTransfer")}
-              {!placing && !addressSelected && <Lock size={15} strokeWidth={2.2} />}
-            </motion.button>
-
-            {/* A disabled button with no explanation is a dead end. */}
-            {!addressSelected && (
-              <p data-pay-locked-hint-mobile className="m-0 text-center text-[11.5px] leading-[1.45] text-amber-700 dark:text-amber-400">
-                {t("adrFormRequiredHint")}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} callbackUrl="/checkout" />
+      </main>
     </div>
   );
 }

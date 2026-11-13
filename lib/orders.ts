@@ -278,6 +278,8 @@ export async function commitOrder(
      * summary showed them.
      */
     totalAmount?: number;
+    /** The buyer's delivery / PO note (Order.customerNote). */
+    customerNote?: string | null;
   }
 ): Promise<Result<{ id: string; orderNumber: string; totalAmount: number }>> {
   const totalAmount = payment.totalAmount ?? draft.totals.total;
@@ -319,6 +321,7 @@ export async function commitOrder(
             paymentMethod: payment.paymentMethod,
             paymentStatus: "PENDING",
             shippingAddress,
+            customerNote: payment.customerNote?.trim() || null,
             // The legal record of what authorised this F-Gas sale; never updated.
             authorizingCertificateId: draft.authorizingCertificate?.id ?? null,
             authorizingCertificateNumber: draft.authorizingCertificate?.number ?? null,

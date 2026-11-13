@@ -27,6 +27,7 @@ import { calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
 import { formatKg } from "@/lib/pricing";
 import { useCartStore, type CartLine } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
 import type { StoreProduct } from "@/lib/data";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
@@ -99,6 +100,7 @@ function SwipeLine({
   const pricing = pricingLineFor(item, quoted ? null : product);
   const unit = lineUnitPrice(pricing);
   const showBreakdown = product ? product.pricedPerKg : pricing.weightKg !== 1;
+  const packLabel = usePackLabel();
 
   const chips: Array<{ label: string; tone: "warn" | "ok" | "muted" }> = [];
   if (product?.gwpClass === "A2L") chips.push({ label: "A2L", tone: "warn" });
@@ -180,7 +182,7 @@ function SwipeLine({
         <div className="relative min-w-0 flex-1">
           <div className="truncate text-sm font-semibold tracking-[-.026em]">{item.name}</div>
           <div className="mt-[3px] truncate text-[11px] text-slate-400 dark:text-ink-muted">
-            {item.variant} · {item.sku}
+            {packLabel(pricing.weightKg, product?.containerType, showBreakdown)} · {item.sku}
           </div>
 
           {chips.length > 0 && (

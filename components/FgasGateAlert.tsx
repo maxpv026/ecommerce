@@ -117,7 +117,8 @@ export function FgasVerifiedLine({ fgas, compact = false }: { fgas?: FgasSummary
   const format = useFormatter();
   const number = fgas?.certificateNumber;
   const until = fgas?.expiresAt ? format.dateTime(new Date(fgas.expiresAt), { dateStyle: "medium", timeZone: "UTC" }) : null;
-  const label = number && until ? t("verifiedLineUntil", { certId: number, date: until }) : number ? t("verifiedLineId", { certId: number }) : t("verifiedLine");
+  // A date that ends in an abbreviation ("1 січ. 2030 р.") followed by the sentence's own full stop read "р.." — collapse it.
+  const label = (number && until ? t("verifiedLineUntil", { certId: number, date: until }) : number ? t("verifiedLineId", { certId: number }) : t("verifiedLine")).replace(/\.\.(?!\.)/g, ".");
   return (
     <motion.div
       {...RISE}

@@ -43,6 +43,7 @@ import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
 import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import { auditCart, type CartAuditResult, type CartAuditSuggestion } from "@/lib/actions/cartAudit";
 import { createQuote, type QuoteErrorCode } from "@/lib/actions/quotes";
 import type { StoreProduct } from "@/lib/data";
@@ -78,6 +79,7 @@ interface CartPageProps {
 
 export default function CartPage({ products, fgas = null }: CartPageProps) {
   const t = useTranslations("Cart");
+  const packLabel = usePackLabel();
   const tProducts = useTranslations("Products");
   const format = useFormatter();
   const router = useRouter();
@@ -497,7 +499,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                             <div className="min-w-0">
                               <div className="truncate text-[15px] font-semibold tracking-[-.025em]">{item.name}</div>
                               <div className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-ink-muted">
-                                {t("skuLine", { variant: item.variant, sku: item.sku })}
+                                {t("skuLine", { variant: packLabel(pricing.weightKg, product?.containerType, showBreakdown), sku: item.sku })}
                               </div>
                               {(chips.length > 0 || co2eT !== null) && (
                                 <div className="mt-1.5 flex flex-wrap gap-1.5">

@@ -43,6 +43,8 @@ const CheckoutRequest = z.object({
   addressId: z.string().min(1),
   items: z.array(z.object({ sku: z.string().min(1), qty: z.number().int().min(1).max(99) })).min(1).max(50),
   quoteId: z.string().min(1).max(64).optional(),
+  // Delivery / PO note (ramp, call-ahead, gate code, internal PO). One line.
+  note: z.string().trim().max(280).optional(),
 });
 
 const STATUS: Record<OrderErrorCode, number> = {
@@ -83,6 +85,7 @@ export async function POST(request: Request) {
   const committed = await commitOrder(draft, {
     paymentMethod: BANK_TRANSFER_METHOD,
     totalAmount: draft.totals.total,
+    customerNote: parsed.data.note ?? null,
   });
   if (!committed.ok) return fail(committed.code);
   const order = committed.value;
@@ -112,6 +115,7 @@ export async function POST(request: Request) {
         variant: product.weight,
         qty,
       })),
+      customerNote: parsed.data.note ?? null,
     }),
     `new order ${order.orderNumber}`
   );

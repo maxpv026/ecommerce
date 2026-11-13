@@ -262,18 +262,18 @@ model User {
 
   // ── Profile preferences (Settings → /profile editor) ──
   /// Monogram colour when there is no photo: slate | blue | emerald | amber | violet.
-  avatarTone          String?
+  avatarTone             String?
   /// Up to 3 characters shown instead of the derived initials ("MP", "ME").
-  avatarInitials      String?
+  avatarInitials         String?
   /// Copies of order receipts and invoices go here as well (CC).
-  billingEmail        String?
+  billingEmail           String?
   /// Where cylinder deposit refunds are paid. Validated (ISO 13616 mod-97) on save.
-  depositIban         String?
+  depositIban            String?
   /// The buyer's preferred fulfilment: DHL | FREIGHT | OWN_FLEET | PICKUP.
   /// Shown to the logistics team on the order; the carrier is still theirs to choose.
-  preferredFulfilment String?
+  preferredFulfilment    String?
   /// metric (bar · °C) | imperial (psig · °F) — engineering tools on the site.
-  preferredUnits      String?
+  preferredUnits         String?
   cylinderReturnRequests CylinderReturnRequest[]
   priceAlerts            PriceAlert[]
   insightVotes           InsightVote[]
@@ -784,21 +784,30 @@ model Order {
   // (PICKUP). Null reads as DHL: every order before this column existed
   // went by DHL. `trackingNumber` above is the waybill / CMR / TTN for any
   // carrier; `trackingUrl` overrides the registry's public tracking link.
-  shippingCarrier String?
-  carrierName     String?
-  trackingUrl     String?
+  shippingCarrier    String?
+  carrierName        String?
+  trackingUrl        String?
   // Own-fleet dispatch: who is driving what.
-  driverName      String?
-  driverPhone     String?
-  vehiclePlate    String?
+  driverName         String?
+  driverPhone        String?
+  vehiclePlate       String?
   // Delivery window, pickup address and hours, gate code — shown to the buyer.
-  deliveryNotes   String?
+  deliveryNotes      String?
+  // The buyer's own note at checkout: ramp / tail-lift, call-ahead, gate
+  // code, their internal PO number. Separate from deliveryNotes (which
+  // logistics writes) so neither side overwrites the other.
+  customerNote       String?
+  // "I've sent the bank transfer" from /checkout/success: when, and the
+  // bank's transaction reference if the buyer gave one. A report, not a
+  // settlement — paymentStatus only changes when the money is matched.
+  paymentReportedAt  DateTime?
+  paymentReportedRef String?
   // Granular stage, independent of payment (lib/shipping SHIPMENT_STAGES).
   // Null on orders placed before it: derived from `status` instead. `status`
   // is kept in step with it on every write (stageToStatus).
-  shipmentStage   String?
+  shipmentStage      String?
   // Timestamped checkpoints, oldest first: [{ stage, at, location?, note?, source }].
-  shipmentEvents  Json?
+  shipmentEvents     Json?
 
   // Shipping address chosen at checkout. Nullable: pre-checkout seed orders
   // have none, and deleting an address must not delete its order history.
