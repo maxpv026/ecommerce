@@ -3,13 +3,11 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, FileArchive, Search, X } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { FileArchive, Search, X } from "lucide-react";
 import { PILL, PILL_ON, SURFACE } from "@/components/home/ui";
 import { normalizeMark } from "@/lib/gasMarks";
 import { matchesFilter, matchesQuery, SDS_ARCHIVE_HREF, SDS_FILTERS, sortRows, type SdsFilter, type SdsRow } from "@/lib/sdsLibrary";
 import type { EmergencyLines, EmergencySource } from "@/lib/emergencyContacts";
-import type { FgasSummary } from "@/lib/fgas";
 import SdsDirectoryRow from "./SdsDirectoryRow";
 import TransportMatrix from "./TransportMatrix";
 import ComplianceCard from "./ComplianceCard";
@@ -22,7 +20,7 @@ const SdsAssistantModal = dynamic(() => import("@/components/SdsAssistantModal")
  * /compliance/sds in the Cart / Categories / Profile language: the
  * single-row header bar, one row of search + filter pills, then 8 + 4 —
  * the divided SDS directory (or the ADR / F-Gas matrix) beside the sticky
- * emergency + F-Gas card. Search, filters and the ADR drawers run over the
+ * emergency card. Search, filters and the ADR drawers run over the
  * rows the server rendered; 0 model calls.
  */
 
@@ -30,8 +28,6 @@ export interface SdsComplianceProps {
   rows: SdsRow[];
   purchased: string[];
   signedIn: boolean;
-  fgas: FgasSummary | null;
-  ytd: { year: number; massKg: number; co2eTonnes: number } | null;
   lines: EmergencyLines;
   detected: { code: string; source: EmergencySource } | null;
   /** Where "request SDS" writes to (lib/seller); null hides the button. */
@@ -39,7 +35,7 @@ export interface SdsComplianceProps {
   countryNames: Record<string, string>;
 }
 
-export default function SdsCompliance({ rows, purchased, signedIn, fgas, ytd, lines, detected, requestEmail, countryNames }: SdsComplianceProps) {
+export default function SdsCompliance({ rows, purchased, signedIn, lines, detected, requestEmail, countryNames }: SdsComplianceProps) {
   const t = useTranslations("SdsLibrary");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<SdsFilter>("all");
@@ -63,23 +59,14 @@ export default function SdsCompliance({ rows, purchased, signedIn, fgas, ytd, li
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] sm:text-[34px]">{t("title")}</h1>
             <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-sds-meta>
-              {/* A non-breaking hyphen keeps "AHRI-700" (and "F-Gas") whole when the line wraps. */}
-              {t("meta").replace(/(AHRI|F)-(700|Gas)/g, "$1\u2011$2")}
+              {t("lead")}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 max-sm:w-full sm:flex-none lg:pt-1">
+          <div className="flex-none lg:pt-1">
             <a href={SDS_ARCHIVE_HREF} download className={PILL} data-sds-action="zip">
               <FileArchive size={14} strokeWidth={2.2} />
               {t("actionZip")}
             </a>
-            <Link href="/profile?tab=fgas" className={PILL} data-sds-action="cert">
-              {t("actionCert")}
-              <ArrowRight size={14} strokeWidth={2.2} />
-            </Link>
-            <Link href="/products" className={PILL} data-sds-action="catalog">
-              {t("actionCatalog")}
-              <ArrowRight size={14} strokeWidth={2.2} />
-            </Link>
           </div>
         </div>
 
@@ -147,7 +134,7 @@ export default function SdsCompliance({ rows, purchased, signedIn, fgas, ytd, li
           </div>
 
           <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4" data-sds-aside>
-            <ComplianceCard lines={lines} detected={detected} signedIn={signedIn} fgas={fgas} ytd={ytd} countryNames={countryNames} />
+            <ComplianceCard lines={lines} detected={detected} countryNames={countryNames} />
           </aside>
         </div>
       </main>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import StockNotifyModal from "./StockNotifyModal";
@@ -14,7 +14,6 @@ import PopularSection from "./home/PopularSection";
 import EngineeringWorkbench from "./home/EngineeringWorkbench";
 import type { GreetingKey } from "@/lib/greeting";
 import { useGreeting } from "@/lib/hooks/useGreeting";
-import type { FgasSummary } from "@/lib/fgas";
 import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
 
 /**
@@ -39,7 +38,6 @@ interface DesktopHomeProps {
   alerts: MarketAlertData[];
   dashboard: ProfileDashboardData | null;
   latestOrder: UserOrder | null;
-  fgas: FgasSummary | null;
   /** Signed in, own figures still on the way: placeholders, not a stranger's zeros. */
   accountLoading: boolean;
   greetingKey: GreetingKey;
@@ -48,10 +46,9 @@ interface DesktopHomeProps {
 
 const Shimmer = ({ className }: { className: string }) => <span aria-hidden className={`block animate-pulse rounded-md bg-slate-900/[.07] dark:bg-white/[.08] ${className}`} />;
 
-export default function DesktopHome({ products, showcase, alerts, dashboard, latestOrder, fgas, accountLoading, greetingKey, sdsCount }: DesktopHomeProps) {
+export default function DesktopHome({ products, showcase, alerts, dashboard, latestOrder, accountLoading, greetingKey, sdsCount }: DesktopHomeProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
-  const format = useFormatter();
   const { data: session, status } = useSession();
   const [notifyFor, setNotifyFor] = useState<StoreProduct | null>(null);
 
@@ -60,7 +57,6 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
   const greeting = td(useGreeting(greetingKey));
   const ownDataLoading = isAuthenticated && accountLoading;
   const items: ShowcaseItem[] = showcase.flatMap((s) => (s.product ? [{ mark: s.mark, product: s.product }] : []));
-  const fgasUntil = fgas?.status === "VERIFIED" && fgas.expiresAt ? format.dateTime(new Date(fgas.expiresAt), { month: "short", year: "numeric", timeZone: "UTC" }) : null;
 
   const kpis = dashboard
     ? [
@@ -78,15 +74,8 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
           <div className="relative grid min-h-[var(--hero-h)] items-center gap-12 [--hero-h:clamp(500px,calc(100svh-300px),700px)] md:grid-cols-[1fr_1fr]">
             <motion.div initial={false} animate={{ opacity: 1 }}>
               <div className="mb-6 flex h-[30px] items-center">
-                {isAuthenticated && session?.user?.epaVerified ? (
-                  <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 py-1.5 pl-2.5 pr-3.5 text-[11.5px] font-semibold text-emerald-700 dark:text-emerald-300" data-hero-fgas>
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inset-0 animate-ping rounded-full bg-emerald-600 dark:bg-emerald-400" />
-                      <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-                    </span>
-                    {fgasUntil ? t("fgasBadgeLive", { date: fgasUntil }) : t("fgasBadgeShort")}
-                  </div>
-                ) : status === "unauthenticated" ? (
+                {/* The F-Gas status chip lived here; it is shown where it matters — /cart and /profile?tab=fgas. */}
+                {status === "unauthenticated" ? (
                   <Link href="/auth" className="inline-flex items-center gap-2 text-[12.5px] font-medium text-slate-500 hover:text-blue-700 dark:text-ink-muted dark:hover:text-blue-400">
                     {td("signInToViewEpa")}
                   </Link>
@@ -159,7 +148,6 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
         latestOrder={latestOrder}
         ownDataLoading={ownDataLoading}
         alerts={alerts}
-        fgas={fgas}
         sdsCount={sdsCount}
       />
 

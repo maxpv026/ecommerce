@@ -92,7 +92,6 @@ export default function StorePage({ featuredProducts, popularProducts, showcase,
           alerts={marketAlerts}
           dashboard={mine?.dashboard ?? null}
           latestOrder={mine?.latestOrder ?? null}
-          fgas={mine?.fgas ?? null}
           accountLoading={accountLoading}
           greetingKey={greetingKey}
           sdsCount={sdsCount}

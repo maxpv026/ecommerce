@@ -4,12 +4,9 @@ import { useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { ArrowRight, Box, Cylinder, FileText, Heart, LayoutDashboard, MapPin, Package, Receipt, Settings, ShieldCheck } from "lucide-react";
-import { Link, useRouter } from "@/i18n/navigation";
-import SmartOrderButton from "@/components/smartOrder/SmartOrderButton";
-import { Avatar } from "@/components/AvatarUploader";
+import { Box, Cylinder, FileText, Heart, LayoutDashboard, MapPin, Package, Receipt, Settings, ShieldCheck } from "lucide-react";
+import { useRouter } from "@/i18n/navigation";
 import AddressModal from "@/components/AddressModal";
-import { PILL, PRIMARY, SECONDARY, SUMMARY_CARD, EYEBROW, TrustChips } from "@/components/home/ui";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderTrackingView } from "@/lib/tracking";
 import type { ProfileHubData } from "@/lib/profileHub";
@@ -112,16 +109,8 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
   const initials = hub.preferences.avatarInitials || name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "•";
   const delivered = orders.filter((o) => o.status === "DELIVERED").length;
   const inTransit = dashboard?.activeShipments ?? orders.filter((o) => o.status === "IN_TRANSIT").length;
-  const fgasId = profile.fgas?.status === "VERIFIED" ? profile.fgas.certificateNumber : null;
   const eur = (n: number) => format.number(n, { style: "currency", currency: "EUR" });
 
-  const meta = [
-    profile.email,
-    profile.companyName || (fgasId ? `F-Gas ${fgasId}` : null),
-    t("metaDelivered", { count: delivered }),
-    t("metaCylinders", { count: hub.fleet.inPossession }),
-    "EUR (€)",
-  ].filter(Boolean);
 
   const counts: Partial<Record<ProfileTab, number>> = {
     orders: orders.length,
@@ -151,21 +140,11 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
         <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-profile-header>
           <div className="min-w-0 flex-1">
             <h1 className="m-0 truncate text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{t("title", { name })}</h1>
-            <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 tabular-nums dark:text-ink-muted" data-profile-meta>
-              {meta.join(" · ")}
+            <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-profile-meta>
+              {t("lead")}
             </p>
           </div>
-          <div className="flex flex-none flex-wrap items-center gap-2 lg:pt-1">
-            <Link href="/notifications" className={PILL} data-profile-action="settings">
-              {t("settingsSecurity")}
-              <ArrowRight size={14} strokeWidth={2.2} />
-            </Link>
-            <SmartOrderButton variant="pill" source="dashboard" label={t("importBom")} className="min-h-[38px] px-3.5" />
-            <Link href="/products" className={PILL} data-profile-action="catalog">
-              {t("toCatalog")}
-              <ArrowRight size={14} strokeWidth={2.2} />
-            </Link>
-          </div>
+          {/* No header action: "Edit profile" sits in the Overview panel, where the details it edits are. */}
         </div>
 
         {/* ── Section tabs ── */}
@@ -197,81 +176,42 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
           })}
         </nav>
 
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          <section
-            id="profile-view"
-            className={`min-w-0 scroll-mt-24 rounded-[22px] transition-shadow duration-500 lg:col-span-8 ${highlight ? "ring-2 ring-blue-500/60 ring-offset-2 ring-offset-transparent" : ""}`}
-            role="tabpanel"
-            data-profile-view={tab}
-            data-highlight={highlight ? "1" : undefined}
-          >
-            {/* The view's own anchor: /profile#addresses lands here once the view is open. */}
-            <div id={tab} className="scroll-mt-24" />
-            {tab === "overview" && <OverviewView profile={profile} prefs={hub.preferences} onEdit={() => setEditorOpen(true)} />}
-            {tab === "orders" && <OrdersView orders={orders} tracking={orderTracking} />}
-            {tab === "cylinders" && <CylindersView fleet={hub.fleet} addresses={addresses} pickup={hub.pickup} iban={hub.preferences.depositIban} onEdit={() => setEditorOpen(true)} />}
-            {tab === "addresses" && <AddressesView addresses={addresses} onEdit={(address) => setAddressModal({ address })} />}
-            {tab === "fgas" && <FgasView profile={profile} logbook={logbook} />}
-            {tab === "quotes" && <QuotesView quotes={hub.quotes} />}
-            {tab === "favorites" && <WishlistView products={hub.favorites} />}
-            {tab === "documents" && <DocumentsView docs={hub.documents} profile={profile} logbook={logbook} initialFilter={docFilter} />}
-            {tab === "security" && <SecurityView security={hub.security} />}
-          </section>
-
-          {/* ── Account summary (the cart's summary card) ── */}
-          <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4" data-profile-summary>
-            <div className={SUMMARY_CARD}>
-              <div className="flex items-center gap-3">
-                <Avatar avatarUrl={profile.avatarUrl ?? null} initials={initials} tone={hub.preferences.avatarTone} size={48} className="text-[15px]" />
-                <div className="min-w-0">
-                  <div className="truncate text-[15px] font-semibold tracking-[-.02em]">{name}</div>
-                  <div className="truncate text-[12px] text-slate-500 dark:text-ink-muted">{[profile.jobTitle, profile.companyName].filter(Boolean).join(" · ") || profile.email}</div>
+        {/* Full width: the account numbers live in the Overview tab only — the buyer's
+            summary card (F-Gas status, trust chips, checkout) belongs to /cart. */}
+        <section
+          id="profile-view"
+          className={`min-w-0 scroll-mt-24 rounded-[22px] transition-shadow duration-500 ${highlight ? "ring-2 ring-blue-500/60 ring-offset-2 ring-offset-transparent" : ""}`}
+          role="tabpanel"
+          data-profile-view={tab}
+          data-highlight={highlight ? "1" : undefined}
+        >
+          {/* The view's own anchor: /profile#addresses lands here once the view is open. */}
+          <div id={tab} className="scroll-mt-24" />
+          {tab === "overview" && (
+            <dl className="m-0 mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4" data-profile-stats>
+              {[
+                { k: "delivered", label: t("sumDelivered"), value: String(delivered) },
+                { k: "transit", label: t("sumTransit"), value: String(inTransit) },
+                { k: "cylinders", label: t("sumCylinders"), value: hub.fleet.inPossession > 0 ? `${hub.fleet.inPossession} · ${hub.fleet.refundableIsEstimate ? "≈ " : ""}${eur(hub.fleet.refundable)}` : "0" },
+                { k: "co2e", label: t("sumCo2e", { year: logbook?.year ?? new Date().getUTCFullYear() }), value: logbook ? t("tonnes", { value: format.number(logbook.co2eTonnes, { maximumFractionDigits: 2 }) }) : "—" },
+              ].map((row) => (
+                <div key={row.k} className="rounded-[22px] border border-slate-900/[.08] bg-white/75 p-5 dark:border-white/[.08] dark:bg-white/[.03]" data-summary-row={row.k}>
+                  <dt className="text-[12.5px] text-slate-500 dark:text-ink-muted">{row.label}</dt>
+                  <dd className="m-0 mt-1.5 text-[22px] font-semibold tracking-[-.03em] tabular-nums">{row.value}</dd>
                 </div>
-              </div>
-              <h2 className={`${EYEBROW} mt-5`}>{t("summaryEyebrow")}</h2>
-              <dl className="m-0 mt-3 flex flex-col gap-2.5 text-[13px]">
-                {[
-                  { k: "delivered", label: t("sumDelivered"), value: String(delivered) },
-                  { k: "transit", label: t("sumTransit"), value: String(inTransit) },
-                  { k: "cylinders", label: t("sumCylinders"), value: hub.fleet.inPossession > 0 ? `${hub.fleet.inPossession} · ${hub.fleet.refundableIsEstimate ? "≈ " : ""}${eur(hub.fleet.refundable)}` : "0" },
-                  { k: "co2e", label: t("sumCo2e", { year: logbook?.year ?? new Date().getUTCFullYear() }), value: logbook ? t("tonnes", { value: format.number(logbook.co2eTonnes, { maximumFractionDigits: 2 }) }) : "—" },
-                ].map((row) => (
-                  <div key={row.k} className="flex items-baseline justify-between gap-3" data-summary-row={row.k}>
-                    <dt className="text-slate-600 dark:text-ink-muted">{row.label}</dt>
-                    <dd className="m-0 font-semibold tabular-nums">{row.value}</dd>
-                  </div>
-                ))}
-              </dl>
-
-              <div className="mt-4">
-                {profile.fgas?.status === "VERIFIED" ? (
-                  <button type="button" onClick={() => setTab("fgas")} role="status" data-fgas-verified className="flex w-full items-start gap-2 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 py-2.5 pl-3 pr-3.5 text-left text-[11.5px] font-semibold leading-[1.45] text-emerald-700 dark:text-emerald-300">
-                    <ShieldCheck size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
-                    <span className="min-w-0 flex-1">
-                      {profile.fgas.certificateNumber && profile.fgas.expiresAt
-                        ? t("fgasVerifiedUntil", { number: profile.fgas.certificateNumber, date: format.dateTime(new Date(profile.fgas.expiresAt), { dateStyle: "medium", timeZone: "UTC" }) })
-                        : t("fgasVerified")}
-                    </span>
-                  </button>
-                ) : (
-                  <button type="button" onClick={() => setTab("fgas")} data-fgas-attention className="flex w-full items-start gap-2 rounded-[16px] border border-amber-500/30 bg-amber-500/10 py-2.5 pl-3 pr-3.5 text-left text-[11.5px] font-semibold leading-[1.45] text-amber-800 dark:text-amber-300">
-                    <ShieldCheck size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
-                    <span className="min-w-0 flex-1">{t("fgasAttention")}</span>
-                  </button>
-                )}
-              </div>
-
-              <Link href="/products" className={`mt-4 ${PRIMARY}`} data-summary-catalog>
-                {t("toCatalog")}
-                <ArrowRight size={17} strokeWidth={2} />
-              </Link>
-              <button type="button" onClick={() => setEditorOpen(true)} className={`mt-2 ${SECONDARY}`} data-edit-profile>
-                {t("editProfile")}
-              </button>
-              <TrustChips />
-            </div>
-          </aside>
-        </div>
+              ))}
+            </dl>
+          )}
+          {tab === "overview" && <OverviewView profile={profile} prefs={hub.preferences} onEdit={() => setEditorOpen(true)} />}
+          {tab === "orders" && <OrdersView orders={orders} tracking={orderTracking} />}
+          {tab === "cylinders" && <CylindersView fleet={hub.fleet} addresses={addresses} pickup={hub.pickup} iban={hub.preferences.depositIban} onEdit={() => setEditorOpen(true)} />}
+          {tab === "addresses" && <AddressesView addresses={addresses} onEdit={(address) => setAddressModal({ address })} />}
+          {tab === "fgas" && <FgasView profile={profile} logbook={logbook} />}
+          {tab === "quotes" && <QuotesView quotes={hub.quotes} />}
+          {tab === "favorites" && <WishlistView products={hub.favorites} />}
+          {tab === "documents" && <DocumentsView docs={hub.documents} profile={profile} logbook={logbook} initialFilter={docFilter} />}
+          {tab === "security" && <SecurityView security={hub.security} />}
+        </section>
       </main>
 
       {editorOpen && <ProfileEditor profile={profile} prefs={hub.preferences} initials={initials} onClose={() => setEditorOpen(false)} onSaved={onSaved} />}

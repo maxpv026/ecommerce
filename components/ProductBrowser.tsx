@@ -13,7 +13,7 @@ import MobileProductsLayout from "./MobileProductsLayout";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import { CatalogCard, CatalogRow, ROW_GRID } from "./catalog/CatalogItem";
 import { CATEGORY_LABEL_KEY } from "./ProductCard";
-import { ICON_TILE, PILL, PILL_ON, SURFACE } from "./home/ui";
+import { ICON_TILE, SURFACE } from "./home/ui";
 import { sortProducts } from "@/lib/productSort";
 import { productHasGasMark } from "@/lib/gasMarks";
 import { smartMatch } from "@/lib/actions/smartMatch";
@@ -22,7 +22,6 @@ import {
   EMPTY_FILTERS,
   GWP_LEVELS,
   KNOWN_MARKS,
-  QUICK_GASES,
   SAFETY_CLASSES,
   STOCK_LEVELS,
   USE_CASES,
@@ -59,13 +58,6 @@ import type { StoreProduct } from "@/lib/data";
 const SORTS = ["featured", "price", "gwp"] as const;
 const STOCK_KEY: Record<string, string> = { in: "stockIn", low: "stockLow", order: "stockOrder", out: "stockOut" };
 type View = "grid" | "table";
-
-const PRESETS: Array<{ key: string; filters: Partial<CatalogFilters> }> = [
-  { key: "preset_split", filters: { marks: ["R32"], use: "ac" } },
-  { key: "preset_cold", filters: { marks: ["R404A"], use: "refrigeration" } },
-  { key: "preset_auto", filters: { use: "auto" } },
-  { key: "preset_lowGwp", filters: { safety: ["A2L"], use: "ac" } },
-];
 
 interface ProductBrowserProps {
   /** The whole listed catalog (or the `?search=` result). */
@@ -204,29 +196,11 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
             <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4" data-catalog-header>
               <div className="min-w-0">
                 <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{t("title")}</h1>
-                <p className="m-0 mt-2 text-[14px] text-slate-500 tabular-nums dark:text-ink-muted" data-catalog-meta>
-                  {[t("metaCount", { count: products.length }), t("metaAhri"), t("metaAdr"), t("metaEur")].join(" · ")}
+                <p className="m-0 mt-2 text-[14px] text-slate-500 dark:text-ink-muted" data-catalog-meta>
+                  {t("lead")}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <div role="radiogroup" aria-label={t("viewLabel")} className="inline-flex rounded-full border border-slate-900/[.12] bg-white/70 p-1 dark:border-white/[.14] dark:bg-white/[.04]" data-view-switch>
-                  {(["grid", "table"] as const).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      role="radio"
-                      aria-checked={view === v}
-                      onClick={() => setView(v)}
-                      data-view={v}
-                      className={`inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold transition-colors ${
-                        view === v ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                      }`}
-                    >
-                      {v === "grid" ? <LayoutGrid size={14} strokeWidth={2} /> : <Rows3 size={14} strokeWidth={2} />}
-                      {v === "grid" ? t("viewGrid") : t("viewTable")}
-                    </button>
-                  ))}
-                </div>
                 <SmartOrderButton variant="pill" source="catalog" label={t("bulkImport")} className="min-h-[38px] px-3.5" />
               </div>
             </div>
@@ -243,53 +217,6 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
               </div>
             )}
 
-            {/* ── Quick strip: use case + gas ── */}
-            <div className="mb-6 flex flex-col gap-2.5" data-quick-strip>
-              <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t("useLabel")}>
-                <button type="button" role="radio" aria-checked={filters.use === null} onClick={() => setFilters((f) => ({ ...f, use: null }))} data-quick-use="all" className={filters.use === null ? PILL_ON : PILL}>
-                  {t("use_all")}
-                  <Count n={products.filter((p) => passes(p, filters, "use")).length} on={filters.use === null} />
-                </button>
-                {USE_CASES.map((u) => {
-                  const n = count("use", u);
-                  const on = filters.use === u;
-                  return (
-                    <button key={u} type="button" role="radio" aria-checked={on} disabled={n === 0 && !on} onClick={() => setGroup("use", u)} data-quick-use={u} className={`${on ? PILL_ON : PILL} disabled:opacity-40`}>
-                      {t(`use_${u}`)}
-                      <Count n={n} on={on} />
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5" data-quick-gases>
-                <span className="mr-1 text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("quickGasLabel")}</span>
-                {QUICK_GASES.map((m) => {
-                  const n = count("marks", m);
-                  const on = filters.marks.includes(m);
-                  const stocked = products.some((p) => productHasGasMark(p, m));
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      aria-pressed={on}
-                      disabled={!stocked && !on}
-                      title={!stocked ? t("notInCatalog") : undefined}
-                      onClick={() => setGroup("marks", m)}
-                      data-quick-gas={m}
-                      className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 font-mono text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                        on
-                          ? "border-transparent bg-blue-700 text-white"
-                          : "border-slate-900/[.12] bg-white/70 text-slate-700 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-200 dark:hover:bg-white/[.09]"
-                      }`}
-                    >
-                      {m.replace(/^R/, "R-")}
-                      <span className={`font-sans text-[10.5px] tabular-nums ${on ? "text-white/80" : "text-slate-400"}`}>{n}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               {/* ── Sidebar ── */}
               <aside className="lg:sticky lg:top-[88px] lg:col-span-3" data-filters>
@@ -302,6 +229,12 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                       </button>
                     )}
                   </div>
+                  {/* Use case (was a pill row above the grid): single-choice, same state and counts. */}
+                  <FacetSection title={t("useLabel")}>
+                    {USE_CASES.map((u) => (
+                      <FacetOption key={u} label={t(`use_${u}`)} count={count("use", u)} on={filters.use === u} onClick={() => setGroup("use", u)} data={`use:${u}`} />
+                    ))}
+                  </FacetSection>
                   {groups.map(({ group, title, values }) => (
                     <FacetSection key={group} title={title}>
                       {values.map((v) => (
@@ -356,22 +289,6 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                       {!aiPending && <ArrowRight size={14} strokeWidth={2.4} />}
                     </button>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-900/[.06] pt-3 dark:border-white/[.06]" data-match-presets>
-                    {PRESETS.map((pr) => (
-                      <button
-                        key={pr.key}
-                        type="button"
-                        onClick={() => {
-                          setFilters({ ...EMPTY_FILTERS, ...pr.filters });
-                          setNote({ kind: "local", parts: [t(pr.key)] });
-                        }}
-                        data-match-preset={pr.key}
-                        className="inline-flex h-7 items-center rounded-full border border-slate-900/[.1] bg-slate-50 px-2.5 text-[11.5px] font-medium text-slate-700 transition-colors hover:border-blue-600/30 hover:bg-white dark:border-white/[.12] dark:bg-white/[.04] dark:text-slate-300 dark:hover:bg-white/[.08]"
-                      >
-                        {t(pr.key)}
-                      </button>
-                    ))}
-                  </div>
                 </form>
                 <AnimatePresence initial={false}>
                   {note && (
@@ -400,7 +317,25 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                       </button>
                     ))}
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+    <div role="radiogroup" aria-label={t("viewLabel")} className="inline-flex rounded-full border border-slate-900/[.12] bg-white/70 p-1 dark:border-white/[.14] dark:bg-white/[.04]" data-view-switch>
+                      {(["grid", "table"] as const).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          role="radio"
+                          aria-checked={view === v}
+                          onClick={() => setView(v)}
+                          data-view={v}
+                          className={`inline-flex h-[30px] items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold transition-colors ${
+                            view === v ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                          }`}
+                        >
+                          {v === "grid" ? <LayoutGrid size={14} strokeWidth={2} /> : <Rows3 size={14} strokeWidth={2} />}
+                          {v === "grid" ? t("viewGrid") : t("viewTable")}
+                        </button>
+                      ))}
+                    </div>
                     {SORTS.map((s) => {
                       const on = sort === s && !aiSkus;
                       return (
@@ -467,10 +402,6 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
       </div>
     </div>
   );
-}
-
-function Count({ n, on }: { n: number; on: boolean }) {
-  return <span className={`rounded-full px-1.5 text-[11px] tabular-nums ${on ? "bg-white/15 dark:bg-slate-900/10" : "bg-slate-900/[.06] dark:bg-white/[.08]"}`}>{n}</span>;
 }
 
 function FacetSection({ title, children, last = false }: { title: string; children: React.ReactNode; last?: boolean }) {

@@ -39,7 +39,7 @@ export default function PopularSection({ products, onNotify }: { products: Store
       <SectionHeader
         id="popular"
         title={t("popularTitle")}
-        meta={[t("popularMeta1"), t("popularMeta2")]}
+        meta={[t("popularLead")]}
         actions={
           <>
             <div role="tablist" aria-label={t("popularTitle")} className="flex flex-wrap items-center gap-2">

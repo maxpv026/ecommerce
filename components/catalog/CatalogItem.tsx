@@ -10,15 +10,14 @@ import { MicroBadge, ROW_ACTION_DONE, ROW_ACTION_GHOST, ROW_ACTION_PRIMARY, Step
 import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { isPurchasable } from "@/lib/waitlist";
-import { applicationKey } from "@/lib/catalogFacets";
 import type { StoreProduct } from "@/lib/data";
 
 /**
  * One catalog product, two layouts — the grid card and the cart-identical
  * table row — sharing the same quantity, add-to-cart and badge logic, so a
- * figure can never differ between the two views. Badges and price lines
- * follow components/CartPage (safety class, GWP, t CO₂e, purity; cylinder
- * total, €/kg, deposit).
+ * figure can never differ between the two views. The card shows two badges
+ * (safety, GWP) and the price; the table row adds stock and the deposit
+ * line; footprint and purity are on the product page and in the cart.
  */
 
 /** Same tint rule as the cart lines: A2L emerald, A1 cyan, rest blue. */
@@ -38,9 +37,7 @@ function useCatalogItem(p: StoreProduct) {
     setFlash(true);
     window.setTimeout(() => setFlash(false), 1600);
   };
-  // Footprint of one cylinder: net kg × GWP — the cart's per-line figure.
-  const co2eT = p.pricedPerKg && p.gwp ? (p.weightKg * p.gwp) / 1000 : null;
-  return { qty, setQty, add, flash, purchasable, maxQty, co2eT, inCart: hydrated ? inCartQty : 0 };
+  return { qty, setQty, add, flash, purchasable, maxQty, inCart: hydrated ? inCartQty : 0 };
 }
 
 function Thumb({ p, size = 64 }: { p: StoreProduct; size?: number }) {
@@ -62,7 +59,7 @@ function Thumb({ p, size = 64 }: { p: StoreProduct; size?: number }) {
   );
 }
 
-function Badges({ p, co2eT, purity = true }: { p: StoreProduct; co2eT: number | null; purity?: boolean }) {
+function Badges({ p, purity = true }: { p: StoreProduct; purity?: boolean }) {
   const t = useTranslations("Products");
   const format = useFormatter();
   const stock = stockBadge(p);
@@ -70,7 +67,6 @@ function Badges({ p, co2eT, purity = true }: { p: StoreProduct; co2eT: number | 
     <div className="flex flex-wrap gap-1.5" data-item-badges>
       {p.gwpClass && p.gwpClass !== "n/a" && <MicroBadge tone={safetyTone(p.gwpClass)}>{p.gwpClass}</MicroBadge>}
       {p.gwp !== null && <MicroBadge>GWP {format.number(p.gwp)}</MicroBadge>}
-      {co2eT !== null && <MicroBadge data-item-co2e="">{t("co2eTonnes", { value: format.number(co2eT, { maximumFractionDigits: 2 }) })}</MicroBadge>}
       {purity && p.purity !== null && <MicroBadge>{t("purityBadge", { value: format.number(p.purity, { maximumFractionDigits: 2 }) })}</MicroBadge>}
       <MicroBadge tone={stock.tone}>{t(stock.key)}</MicroBadge>
     </div>
@@ -120,52 +116,91 @@ function PriceLines({ p, align = "left" }: { p: StoreProduct; align?: "left" | "
   );
 }
 
-/** Grid view card. */
+/** The grid card's two badges: safety class and GWP. Footprint, purity and deposit live on the product page and in the cart. */
+function CardBadges({ p }: { p: StoreProduct }) {
+  const format = useFormatter();
+  const safety = p.gwpClass && p.gwpClass !== "n/a" ? p.gwpClass : null;
+  if (!safety && p.gwp === null) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5" data-item-badges>
+      {safety && <MicroBadge tone={safetyTone(safety)}>{safety}</MicroBadge>}
+      {p.gwp !== null && <MicroBadge>GWP {format.number(p.gwp)}</MicroBadge>}
+    </div>
+  );
+}
+
+const DOT: Record<string, string> = { ok: "bg-emerald-500", warn: "bg-amber-500", bad: "bg-red-500", info: "bg-blue-500", muted: "bg-slate-400" };
+
+/** Grid view card — kept to what a buyer scans: picture, name and size, two badges, price, one action. */
 export function CatalogCard({ p, onNotify }: { p: StoreProduct; onNotify: (p: StoreProduct) => void }) {
   const t = useTranslations("Products");
+  const format = useFormatter();
   const item = useCatalogItem(p);
+  const increment = useCartStore((s) => s.increment);
+  const decrement = useCartStore((s) => s.decrement);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const stock = stockBadge(p);
+  const eur = (n: number) => format.number(n, { style: "currency", currency: "EUR" });
+  const weight = p.pricedPerKg ? t("cardWeight", { kg: format.number(p.weightKg, { maximumFractionDigits: 2 }) }) : null;
   return (
     <article
-      className="relative flex flex-col rounded-[22px] border border-slate-900/[.08] bg-white/75 p-4 backdrop-blur-xl backdrop-saturate-150 transition-colors hover:border-slate-900/[.16] dark:border-white/[.08] dark:bg-white/[.03] dark:hover:border-white/[.16]"
+      className="relative flex flex-col rounded-[22px] border border-slate-900/[.08] bg-white/75 p-5 backdrop-blur-xl backdrop-saturate-150 transition-colors hover:border-slate-900/[.16] dark:border-white/[.08] dark:bg-white/[.03] dark:hover:border-white/[.16]"
       data-catalog-card={p.sku}
     >
       <FavoriteButton productId={p.id} productName={p.name} size="sm" className="absolute right-3 top-3" />
-      <Link href={p.pdpHref} className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 pr-8">
+      <Link href={p.pdpHref} className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-4 pr-8">
         <Thumb p={p} />
         <span className="min-w-0">
-          <span className="block truncate text-[15px] font-semibold tracking-[-.025em]">{p.name}</span>
-          <span className="mt-0.5 block truncate text-[12px] text-slate-500 dark:text-ink-muted">
-            {p.weightLabel} · <span className="font-mono">{p.sku}</span>
+          <span className="line-clamp-2 block text-[15px] font-semibold leading-[1.3] tracking-[-.025em]" data-item-title>
+            {p.name}
+            {weight && <span className="font-normal text-slate-500 dark:text-ink-muted"> · {weight}</span>}
+          </span>
+          <span className="mt-1 flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-ink-muted" data-item-stock={stock.key}>
+            <span aria-hidden className={`h-1.5 w-1.5 flex-none rounded-full ${DOT[stock.tone] ?? DOT.muted}`} />
+            {t(stock.key)}
           </span>
         </span>
       </Link>
-      <p className="m-0 mt-3 text-[12.5px] font-medium leading-[1.4] text-slate-700 dark:text-slate-300" data-item-application>
-        {t(applicationKey(p))}
-      </p>
-      <div className="mt-2">
-        <Badges p={p} co2eT={item.co2eT} />
+      <div className="mt-4">
+        <CardBadges p={p} />
       </div>
-      <div className="mt-auto pt-3">
-        <div className="border-t border-slate-900/[.06] pt-3 dark:border-white/[.06]">
-          <PriceLines p={p} />
-        </div>
-        <div className="mt-3 flex items-center gap-2">
-          {item.purchasable ? (
-            <>
-              <Stepper value={item.qty} onChange={item.setQty} max={item.maxQty} decreaseLabel={t("qtyDecrease")} increaseLabel={t("qtyIncrease")} data-item-qty={p.sku} />
-              <AddButton item={item} className="h-9 flex-1" />
-            </>
+      <div className="mt-auto flex items-end justify-between gap-3 pt-5">
+        <div className="min-w-0">
+          {!p.pricedPerKg ? (
+            <div className="text-[18px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
+              {eur(p.pricePerKg)}
+            </div>
+          ) : p.pricePerKg <= 0 ? (
+            <div className="text-[14px] font-semibold">{t("priceOnRequest")}</div>
           ) : (
-            <button type="button" onClick={() => onNotify(p)} data-item-notify className={`${ROW_ACTION_GHOST} h-9 flex-1`}>
-              <Bell size={14} strokeWidth={2} />
-              {t("notifyCta")}
-            </button>
+            <>
+              <div className="text-[18px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
+                {eur(p.cylinderPrice)}
+              </div>
+              <div className="text-[12px] text-slate-500 tabular-nums dark:text-ink-muted" data-item-perkg>
+                {t("cardPerKg", { amount: eur(p.pricePerKg) })}
+              </div>
+            </>
           )}
         </div>
-        {item.inCart > 0 && (
-          <Link href="/cart" className="mt-2 block text-center text-[11.5px] font-medium text-emerald-700 hover:underline dark:text-emerald-400" data-item-in-cart={item.inCart}>
-            {t("alreadyInCart", { count: item.inCart })}
-          </Link>
+        {!item.purchasable ? (
+          <button type="button" onClick={() => onNotify(p)} data-item-notify className={`${ROW_ACTION_GHOST} h-9`}>
+            <Bell size={14} strokeWidth={2} />
+            {t("notifyCta")}
+          </button>
+        ) : item.inCart > 0 ? (
+          // In the cart: the stepper edits the cart line itself (to 0 removes it).
+          <Stepper
+            value={item.inCart}
+            min={0}
+            max={item.maxQty}
+            onChange={(next) => (next <= 0 ? removeItem(p.sku) : next > item.inCart ? increment(p.sku) : decrement(p.sku))}
+            decreaseLabel={t("qtyDecrease")}
+            increaseLabel={t("qtyIncrease")}
+            data-item-in-cart={String(item.inCart)}
+          />
+        ) : (
+          <AddButton item={item} className="h-9" />
         )}
       </div>
     </article>
@@ -188,10 +223,10 @@ export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: Sto
           {p.name}
         </Link>
         <div className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-ink-muted">
-          {p.weightLabel} · <span className="font-mono">{p.sku}</span> · {t(applicationKey(p))}
+          {p.weightLabel} · <span className="font-mono">{p.sku}</span>
         </div>
         <div className="mt-1.5">
-          <Badges p={p} co2eT={item.co2eT} purity={false} />
+          <Badges p={p} purity={false} />
         </div>
       </div>
       {item.purchasable ? (
@@ -215,56 +250,6 @@ export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: Sto
           </Link>
         )}
       </div>
-    </div>
-  );
-}
-
-/**
- * The compact, responsive line (/categories): the same state, badges and
- * price lines as the row above, laid out to fit an 8-column module — and to
- * wrap its buy controls onto their own line on a phone.
- */
-export function CatalogLine({ p, onNotify, size }: { p: StoreProduct; onNotify: (p: StoreProduct) => void; /** Localized pack label ("10 кг · балон"); defaults to the cart variant. */ size?: string }) {
-  const t = useTranslations("Products");
-  const item = useCatalogItem(p);
-  return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-3.5 transition-colors hover:bg-slate-900/[.02] dark:hover:bg-white/[.03]" data-catalog-line={p.sku}>
-      <Link href={p.pdpHref} aria-label={p.name} className="block flex-none">
-        <Thumb p={p} size={52} />
-      </Link>
-      <div className="min-w-0 flex-1 basis-[220px]">
-        <Link href={p.pdpHref} className="block truncate text-[14.5px] font-semibold tracking-[-.025em] hover:text-blue-700 dark:hover:text-blue-400">
-          {p.name}
-        </Link>
-        <div className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-ink-muted">
-          {size ?? p.weightLabel} · <span className="font-mono">{p.sku}</span>
-        </div>
-        <div className="mt-1.5">
-          <Badges p={p} co2eT={item.co2eT} purity={false} />
-        </div>
-      </div>
-      {/* Price and buy controls: one cluster beside the name; on a phone the price takes its own line and the controls share the next. */}
-      <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 max-md:w-full max-md:justify-between">
-        <div className="w-[176px] max-md:w-auto max-sm:w-full max-sm:[&>div]:text-left">
-          <PriceLines p={p} align="right" />
-        </div>
-        {item.purchasable ? (
-          <div className="flex w-[222px] items-center gap-2 max-sm:w-full">
-            <Stepper value={item.qty} onChange={item.setQty} max={item.maxQty} decreaseLabel={t("qtyDecrease")} increaseLabel={t("qtyIncrease")} data-item-qty={p.sku} />
-            <AddButton item={item} className="flex-1" />
-          </div>
-        ) : (
-          <button type="button" onClick={() => onNotify(p)} data-item-notify className={`${ROW_ACTION_GHOST} w-[222px] max-sm:w-full`}>
-            <Bell size={14} strokeWidth={2} />
-            {t("notifyCta")}
-          </button>
-        )}
-      </div>
-      {item.inCart > 0 && (
-        <Link href="/cart" className="w-full text-right text-[11px] font-medium text-emerald-700 hover:underline dark:text-emerald-400" data-item-in-cart={item.inCart}>
-          {t("alreadyInCart", { count: item.inCart })}
-        </Link>
-      )}
     </div>
   );
 }

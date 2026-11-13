@@ -64,8 +64,6 @@ async function SdsContent({ params }: SdsRouteProps) {
       rows={rows}
       purchased={buyer?.purchased ?? []}
       signedIn={userId !== null}
-      fgas={buyer?.fgas ?? null}
-      ytd={buyer?.ytd ?? null}
       lines={lines}
       countryNames={countryNames}
       detected={detected}

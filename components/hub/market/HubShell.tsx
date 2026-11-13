@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
-import { ArrowRight, BellRing, Scale } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { BellRing } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
 import { PILL } from "@/components/home/ui";
 import type { HubAlert, HubData, HubInsight } from "@/lib/hubData";
@@ -25,7 +24,6 @@ import { TAB_OFF, TAB_ON } from "./shared";
 
 export default function HubShell({ data, initialTab, initialGas, initialSystem }: { data: HubData; initialTab: HubTab; initialGas?: string; initialSystem?: string }) {
   const t = useTranslations("MarketHub");
-  const format = useFormatter();
   const [tab, setTab] = useState<HubTab>(initialTab);
   const [selected, setSelected] = useState(() => data.index.find((g) => g.mark === initialGas)?.mark ?? data.index.find((g) => g.available)?.mark ?? data.index[0]?.mark ?? "");
   const [alerts, setAlerts] = useState<HubAlert[]>(data.alerts);
@@ -55,17 +53,6 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
     return () => window.clearTimeout(id);
   }, [focusAlert, tab]);
 
-  const goCompare = () => {
-    setTab("compare");
-    window.setTimeout(() => document.getElementById("hub-system-input")?.focus(), 60);
-  };
-
-  const meta = [
-    t("metaIndices"),
-    t("metaRegulation"),
-    t("metaCompare"),
-    data.portfolio ? t("metaPortfolio", { value: format.number(data.portfolio.co2eTonnes, { maximumFractionDigits: 2 }) }) : null,
-  ].filter(Boolean);
   const needSignIn = () => setAuthOpen(true);
 
   return (
@@ -80,11 +67,11 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
         <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-hub-header>
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] sm:text-[34px]">{t("title")}</h1>
-            <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 tabular-nums dark:text-ink-muted" data-hub-meta>
-              {meta.join(" · ")}
+            <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-hub-meta>
+              {t("lead")}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2 max-sm:w-full sm:flex-none lg:pt-1">
+          <div className="flex-none lg:pt-1">
             <button
               type="button"
               className={PILL}
@@ -97,14 +84,6 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
               <BellRing size={14} strokeWidth={2.2} />
               {t("actionAlerts")}
             </button>
-            <button type="button" className={PILL} onClick={goCompare} data-hub-action="compare">
-              <Scale size={14} strokeWidth={2.2} />
-              {t("actionCompare")}
-            </button>
-            <Link href="/products" className={PILL} data-hub-action="catalog">
-              {t("toCatalog")}
-              <ArrowRight size={14} strokeWidth={2.2} />
-            </Link>
           </div>
         </div>
 
@@ -151,7 +130,7 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
                   <DigestFeed data={data} insights={insights} onInsights={setInsights} limit={4} onShowAll={() => setTab("digest")} onNeedSignIn={needSignIn} compact />
                 </div>
                 <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4">
-                  <PortfolioCard portfolio={data.portfolio} signedIn={data.signedIn} history={data.history} onCompare={goCompare} onNeedSignIn={needSignIn} />
+                  <PortfolioCard portfolio={data.portfolio} signedIn={data.signedIn} onNeedSignIn={needSignIn} />
                 </aside>
               </div>
             </div>
@@ -164,7 +143,7 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
                 <DigestFeed data={data} insights={insights} onInsights={setInsights} onNeedSignIn={needSignIn} />
               </div>
               <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4">
-                <PortfolioCard portfolio={data.portfolio} signedIn={data.signedIn} history={data.history} onCompare={goCompare} onNeedSignIn={needSignIn} />
+                <PortfolioCard portfolio={data.portfolio} signedIn={data.signedIn} onNeedSignIn={needSignIn} />
               </aside>
             </div>
           )}

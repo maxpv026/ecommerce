@@ -42,49 +42,27 @@ export default function SdsDirectoryRow({ row, purchased, open, onToggle, onCons
         <span className={ICON_TILE}>
           <FileText size={17} strokeWidth={1.9} />
         </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <h3 className="m-0 text-[15px] font-semibold tracking-[-.02em]">{row.label}</h3>
-            {purchased && (
-              <MicroBadge tone="ok" data-sds-purchased="1">
-                {t("purchased")}
-              </MicroBadge>
-            )}
-            {!row.inCatalog && <MicroBadge tone="muted">{t("notInCatalog")}</MicroBadge>}
-          </div>
-          <p className="m-0 mt-0.5 text-[12.5px] text-slate-500 dark:text-ink-muted">{composition(row, t)}</p>
-
-          <div className="mt-2 flex flex-wrap items-center gap-1.5" data-sds-badges>
-            <MicroBadge>CAS {row.cas.join(" · ")}</MicroBadge>
-            <MicroBadge tone="info" data-sds-un={row.un}>
-              UN {row.un}
-            </MicroBadge>
-            <MicroBadge tone={adr.adrClass === "2.1" ? "warn" : "muted"}>{t("adrClassBadge", { cls: adr.adrClass })}</MicroBadge>
-            <MicroBadge tone={safetyTone(row.safety)}>{row.safety}</MicroBadge>
-            <MicroBadge>GWP {format.number(row.gwpShown)}</MicroBadge>
-            {row.doc.status === "released" ? (
-              <MicroBadge tone="ok" data-sds-docstatus="released">
-                {issued ? t("docReleasedOn", { rev: row.doc.revision ?? "", date: issued }) : (row.doc.revision ?? "")}
-              </MicroBadge>
-            ) : row.doc.status === "placeholder" ? (
-              <MicroBadge tone="warn" data-sds-docstatus="placeholder">
-                {t("docPlaceholder")}
-              </MicroBadge>
-            ) : (
-              <MicroBadge tone="muted" data-sds-docstatus="none">
-                {t("docNone")}
-              </MicroBadge>
-            )}
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h3 className="m-0 text-[15px] font-semibold tracking-[-.02em]">{row.label}</h3>
+              <MicroBadge tone={safetyTone(row.safety)}>{row.safety}</MicroBadge>
+            </div>
+            <p className="m-0 mt-0.5 text-[12.5px] tabular-nums text-slate-500 dark:text-ink-muted" data-sds-ids>
+              CAS {row.cas.join(" · ")} · <span data-sds-un={row.un}>UN {row.un}</span>
+              {purchased && (
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400" data-sds-purchased="1">
+                  {" "}· {t("purchased")}
+                </span>
+              )}
+              {!row.inCatalog && <span> · {t("notInCatalog")}</span>}
+            </p>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="flex flex-none flex-wrap items-center gap-2">
             <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={drawerId} className={ROW_ACTION_GHOST} data-sds-expand={row.label}>
-              {t("expand")}
+              {t("expandShort")}
               <ChevronDown size={14} strokeWidth={2.2} className={`transition-transform ${open ? "rotate-180" : ""}`} />
-            </button>
-            <button type="button" onClick={onConsult} className={ROW_ACTION_GHOST} data-sds-ask={row.label}>
-              <LifeBuoy size={14} strokeWidth={2.2} />
-              {t("consultant")}
             </button>
             {row.doc.href ? (
               <a href={row.doc.href} download className={ROW_ACTION_PRIMARY} data-sds-download={row.label}>
@@ -104,6 +82,31 @@ export default function SdsDirectoryRow({ row, purchased, open, onToggle, onCons
 
       {open && (
         <div id={drawerId} className="border-t border-slate-900/[.06] bg-slate-50/70 px-5 py-4 dark:border-white/[.06] dark:bg-white/[.02]" data-sds-drawer={row.label}>
+          {/* What the row no longer shows: composition, GWP and EU status, the sheet's status, the consultant. */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2" data-sds-drawer-head>
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[12.5px]">
+              <span className="mr-1 text-slate-600 dark:text-slate-300">{composition(row, t)}</span>
+              <MicroBadge>GWP {format.number(row.gwpShown)}</MicroBadge>
+              <MicroBadge tone={EU_TONE[row.eu]}>{tHub(`eu_${row.eu}`)}</MicroBadge>
+              {row.doc.status === "released" ? (
+                <MicroBadge tone="ok" data-sds-docstatus="released">
+                  {issued ? t("docReleasedOn", { rev: row.doc.revision ?? "", date: issued }) : (row.doc.revision ?? "")}
+                </MicroBadge>
+              ) : row.doc.status === "placeholder" ? (
+                <MicroBadge tone="warn" data-sds-docstatus="placeholder">
+                  {t("docPlaceholder")}
+                </MicroBadge>
+              ) : (
+                <MicroBadge tone="muted" data-sds-docstatus="none">
+                  {t("docNone")}
+                </MicroBadge>
+              )}
+            </div>
+            <button type="button" onClick={onConsult} className={ROW_ACTION_GHOST} data-sds-ask={row.label}>
+              <LifeBuoy size={14} strokeWidth={2.2} />
+              {t("consultant")}
+            </button>
+          </div>
           <div className="grid gap-4 md:grid-cols-3">
             {/* ADR */}
             <div className="min-w-0">
@@ -166,7 +169,7 @@ export default function SdsDirectoryRow({ row, purchased, open, onToggle, onCons
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-slate-900/[.06] pt-3 dark:border-white/[.06]">
             <span className="text-[12px] text-slate-500 dark:text-ink-muted">
-              {tHub(`eu_${row.eu}`)} · {t("drawerNote")}
+              {t("drawerNote")}
             </span>
             {row.inCatalog ? (
               <Link href={`/products?gasType=${encodeURIComponent(row.key)}`} className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-blue-700 hover:underline dark:text-blue-400" data-sds-catalog={row.key}>

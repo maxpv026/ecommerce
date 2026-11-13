@@ -10,11 +10,8 @@ import { buildSafetyDataSheet } from "@/lib/sdsPdf";
 import { LISTED } from "@/lib/productFamily";
 import { regulationStatus } from "@/lib/regulation";
 import { countryFromPhone } from "@/lib/country";
-import { getFgasSummary } from "@/lib/fgasAccount";
-import { getCustomerComplianceSummary } from "@/lib/compliance";
 import { parseLocalLines, type EmergencyLines } from "@/lib/emergencyContacts";
 import { GAS_SAFETY, type SdsRow } from "@/lib/sdsLibrary";
-import type { FgasSummary } from "@/lib/fgas";
 
 /**
  * The /compliance/sds rows: the quick-spec table (lib/sdsLibrary) joined to
@@ -111,27 +108,15 @@ export function sdsEmergencyLines(): EmergencyLines {
 export interface BuyerCompliance {
   /** normalizeMark keys of every gas this buyer has ordered. */
   purchased: string[];
-  fgas: FgasSummary | null;
-  ytd: { year: number; massKg: number; co2eTonnes: number } | null;
   /** lib/userCountry's stored resolution. */
   countryCode: string | null;
 }
 
 export async function getBuyerCompliance(userId: string): Promise<BuyerCompliance> {
-  const [items, fgas, compliance, user] = await Promise.all([
+  const [items, user] = await Promise.all([
     prisma.orderItem.findMany({ where: { order: { userId } }, select: { product: { select: { name: true, sku: true } } } }),
-    getFgasSummary(userId),
-    getCustomerComplianceSummary(userId).catch((error) => {
-      console.error("[sds] compliance summary failed:", error);
-      return null;
-    }),
     prisma.user.findUnique({ where: { id: userId }, select: { countryCode: true } }),
   ]);
   const purchased = [...new Set(items.map((i) => gasMarkForProduct(i.product)).filter((m): m is NonNullable<typeof m> => m !== null).map((m) => normalizeMark(m)))];
-  return {
-    purchased,
-    fgas,
-    ytd: compliance ? { year: compliance.generatedAt.getUTCFullYear(), massKg: compliance.yearToDate.massKg, co2eTonnes: compliance.yearToDate.co2eKg / 1000 } : null,
-    countryCode: user?.countryCode ?? null,
-  };
+  return { purchased, countryCode: user?.countryCode ?? null };
 }

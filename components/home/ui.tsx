@@ -1,8 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslations } from "next-intl";
-import { FlaskConical, Lock, Minus, Plus, Truck } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 
 /**
  * The Cart / Settings design language, as primitives for the home page.
@@ -114,26 +113,6 @@ export function SectionHeader({ title, meta, actions, id }: { title: string; met
         <p className="m-0 mt-2 text-[14px] text-slate-500 dark:text-ink-muted">{meta.filter(Boolean).join(" · ")}</p>
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </div>
-  );
-}
-
-/** The cart's three trust chips, one row inside a summary card. */
-export function TrustChips() {
-  const t = useTranslations("HomeDesktop");
-  const chips = [
-    { icon: FlaskConical, short: "trustCoa", long: "assuranceCoa" },
-    { icon: Truck, short: "trustAdr", long: "assuranceFreight" },
-    { icon: Lock, short: "trustFgas", long: "assuranceFgas" },
-  ] as const;
-  return (
-    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-900/[.07] pt-3.5 dark:border-white/[.07]" data-trust-chips>
-      {chips.map(({ icon: Icon, short, long }) => (
-        <span key={short} title={t(long)} className="flex items-center justify-center gap-1.5 text-center text-[11px] font-medium leading-tight text-slate-500 dark:text-ink-muted">
-          <Icon size={12} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />
-          {t(short)}
-        </span>
-      ))}
     </div>
   );
 }

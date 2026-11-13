@@ -9,7 +9,7 @@ import { isPurchasable } from "@/lib/waitlist";
 import { PT_GASES, PT_MAX_C, PT_MIN_C, barAbsToPsig, saturationBarAbs } from "@/lib/refrigerantPT";
 import type { StoreProduct } from "@/lib/data";
 import type { ShowcaseItem } from "./HeroShowcase";
-import { EYEBROW, ICON_TILE, MicroBadge, PRIMARY, ROW, ROW_ACTION_DONE, ROW_ACTION_GHOST, ROW_ACTION_PRIMARY, SURFACE, SUMMARY_CARD, SectionHeader, Stepper, TrustChips, safetyTone } from "./ui";
+import { EYEBROW, ICON_TILE, MicroBadge, PRIMARY, ROW, ROW_ACTION_DONE, ROW_ACTION_GHOST, ROW_ACTION_PRIMARY, SURFACE, SUMMARY_CARD, SectionHeader, Stepper, safetyTone } from "./ui";
 
 /**
  * Engineering workbench — everything here is arithmetic in the browser:
@@ -72,7 +72,7 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
 
   return (
     <section className="pt-16" data-home-section="workbench">
-      <SectionHeader id="workbench" title={t("benchTitle")} meta={[t("benchMeta1"), t("benchMeta2"), t("benchMeta3")]} />
+      <SectionHeader id="workbench" title={t("benchTitle")} meta={[t("benchLead")]} />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {/* ── Left: P-T comparator ── */}
@@ -276,7 +276,6 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
             ) : (
               <p className="m-0 mt-3 text-[13px] text-slate-500 dark:text-ink-muted">{t("estUnavailable")}</p>
             )}
-            <TrustChips />
           </div>
         </aside>
       </div>

@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
-import { ArrowRight, ArrowUpRight, Calculator, Check, FileText, History, Loader2, RotateCw, Search, ShieldAlert, ShieldCheck, Truck, Upload } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Calculator, Check, FileText, Loader2, RotateCw, Search, Truck, Upload } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { calculateCharge, type ChargeCalculation } from "@/lib/actions/chargeCalculator";
 import CalculatedChargeCard from "@/components/CalculatedChargeCard";
@@ -13,14 +12,12 @@ import { STAGE_SEQUENCE } from "@/lib/shipping/carriers";
 import { cartLineFromOrderItem, useCartStore } from "@/lib/store/cart";
 import { isPurchasable } from "@/lib/waitlist";
 import { cylinderGasPrice } from "@/lib/pricing";
-import type { FgasSummary } from "@/lib/fgas";
 import type { MarketAlertData, StoreProduct, UserOrder } from "@/lib/data";
 import type { ShowcaseItem } from "./HeroShowcase";
 import {
   EYEBROW,
   ICON_TILE,
   MicroBadge,
-  PILL,
   PRIMARY,
   ROW,
   ROW_ACTION_DONE,
@@ -31,7 +28,6 @@ import {
   SUMMARY_CARD,
   SectionHeader,
   Stepper,
-  TrustChips,
   safetyTone,
   stockBadge,
 } from "./ui";
@@ -65,16 +61,14 @@ export interface OperationsSectionProps {
   latestOrder: UserOrder | null;
   ownDataLoading: boolean;
   alerts: MarketAlertData[];
-  fgas: FgasSummary | null;
   sdsCount: number;
 }
 
-export default function OperationsSection({ showcase, known, latestOrder, ownDataLoading, alerts, fgas, sdsCount }: OperationsSectionProps) {
+export default function OperationsSection({ showcase, known, latestOrder, ownDataLoading, alerts, sdsCount }: OperationsSectionProps) {
   const t = useTranslations("HomeDesktop");
   const td = useTranslations("Dashboard");
   const tc = useTranslations("ChargeCalc");
   const format = useFormatter();
-  const { status } = useSession();
   const addItem = useCartStore((s) => s.addItem);
   const eur = (n: number) => format.number(n, { style: "currency", currency: "EUR" });
 
@@ -145,18 +139,10 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
       <SectionHeader
         id="operations"
         title={t("opsTitle")}
-        meta={[t("opsMeta1"), t("opsMeta2"), t("opsMeta3")]}
+        meta={[t("opsLead")]}
         actions={
           <>
             <SmartOrderButton variant="pill" source="dashboard" label={t("importBom")} className="min-h-[38px] px-3.5" />
-            <Link href="/compliance/sds" className={PILL} data-ops-action="sds">
-              <FileText size={15} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
-              {t("sdsLibrary")}
-            </Link>
-            <Link href="/profile/orders" className={PILL} data-ops-action="history">
-              <History size={15} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
-              {t("orderHistory")}
-            </Link>
           </>
         }
       />
@@ -423,11 +409,6 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
               </div>
             )}
 
-            {/* F-Gas standing — the cart's emerald banner when verified */}
-            <div className="mt-4" data-ops-fgas={status === "authenticated" ? (fgas?.status ?? (ownDataLoading ? "loading" : "unknown")) : status}>
-              <FgasStatusBanner status={status} fgas={fgas} loading={ownDataLoading} />
-            </div>
-
             <Link href="/hub" className={`mt-4 ${PRIMARY}`} data-ops-hub>
               {t("openHub")}
               <ArrowRight size={17} strokeWidth={2} />
@@ -435,7 +416,6 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
             <Link href="/profile/settings" className={`mt-2 ${SECONDARY}`} data-ops-alerts>
               {t("managePriceAlerts")}
             </Link>
-            <TrustChips />
           </div>
         </aside>
       </div>
@@ -449,35 +429,3 @@ const TAG_KEY: Record<MarketAlertData["tag"], string> = {
   SUPPLY: "tagSupply",
   INDUSTRY_NEWS: "tagIndustryNews",
 };
-
-function FgasStatusBanner({ status, fgas, loading }: { status: "authenticated" | "unauthenticated" | "loading"; fgas: FgasSummary | null; loading: boolean }) {
-  const t = useTranslations("HomeDesktop");
-  const format = useFormatter();
-  const box = "flex w-full items-start gap-2 rounded-[16px] border py-2.5 pl-3 pr-3.5 text-[11.5px] font-semibold leading-[1.45]";
-  if (status === "loading" || (status === "authenticated" && !fgas && loading)) return <Shimmer className="h-[38px] w-full rounded-[16px]" />;
-  if (status === "unauthenticated") {
-    return (
-      <Link href="/auth" className={`${box} border-slate-900/[.1] bg-slate-900/[.03] text-slate-600 hover:bg-slate-900/[.05] dark:border-white/[.1] dark:bg-white/[.04] dark:text-slate-300`}>
-        <ShieldCheck size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
-        <span className="min-w-0 flex-1">{t("fgasSignedOut")}</span>
-      </Link>
-    );
-  }
-  if (fgas?.status === "VERIFIED") {
-    const until = fgas.expiresAt ? format.dateTime(new Date(fgas.expiresAt), { dateStyle: "medium", timeZone: "UTC" }) : null;
-    return (
-      <div role="status" data-fgas-verified className={`${box} border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300`}>
-        <ShieldCheck size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
-        <span className="min-w-0 flex-1">
-          {fgas.certificateNumber && until ? t("fgasVerifiedUntil", { number: fgas.certificateNumber, date: until }) : t("fgasVerified")}
-        </span>
-      </div>
-    );
-  }
-  return (
-    <Link href="/profile/compliance" className={`${box} border-amber-500/30 bg-amber-500/10 text-amber-800 hover:bg-amber-500/15 dark:text-amber-300`}>
-      <ShieldAlert size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
-      <span className="min-w-0 flex-1">{fgas?.status === "PENDING_REVIEW" ? t("fgasPending") : t("fgasMissing")}</span>
-    </Link>
-  );
-}

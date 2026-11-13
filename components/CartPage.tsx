@@ -20,6 +20,7 @@ import {
   Plus,
   RefreshCcw,
   ShoppingCart,
+  ScanSearch,
   Sparkles,
   Trash2,
   TriangleAlert,
@@ -199,11 +200,9 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
     const p = bySku.get(i.sku);
     return p?.pricedPerKg ? n + p.weightKg * i.qty : n;
   }, 0);
-  const cartCo2eT = shownItems.reduce((n, i) => n + (lineCo2eT(i, bySku.get(i.sku)) ?? 0), 0);
   const metaLine = [
     t("metaItems", { count }),
     netKg > 0 ? t("metaNetKg", { kg: formatKg(netKg) }) : null,
-    cartCo2eT > 0 ? t("co2eTonnes", { value: format.number(cartCo2eT, { maximumFractionDigits: 2 }) }) : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -342,7 +341,6 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
               </div>
               {!empty && (
                 <div className="flex flex-wrap items-center gap-2" data-cart-toolbar>
-                  <SmartOrderButton variant="pill" source="cart" label={t("bulkImport")} className="min-h-[38px] px-3.5" />
                   <button
                     type="button"
                     onClick={runAudit}
@@ -350,22 +348,8 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                     data-audit-run
                     className="inline-flex min-h-[38px] items-center gap-2 rounded-full border border-slate-900/[.12] bg-white/70 px-3.5 text-[13px] font-semibold tracking-[-.01em] text-slate-800 transition-colors hover:bg-slate-900/[.04] disabled:opacity-70 dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-100 dark:hover:bg-white/[.09]"
                   >
-                    {thinking ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} strokeWidth={2} className="text-violet-600 dark:text-violet-300" />}
+                    {thinking ? <Loader2 size={15} className="animate-spin" /> : <ScanSearch size={15} strokeWidth={2} />}
                     {thinking ? t("auditAnalysing") : audited ? t("auditRerun") : t("auditRun")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      clear();
-                      setAuditPhase("idle");
-                      setFindings([]);
-                      setSuggestions([]);
-                    }}
-                    data-clear-cart
-                    className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-slate-500 transition-colors hover:bg-red-500/[.08] hover:text-red-600 dark:text-ink-muted dark:hover:text-red-400"
-                  >
-                    <Trash2 size={14} strokeWidth={2} />
-                    {t("clearCart")}
                   </button>
                 </div>
               )}
@@ -590,13 +574,29 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                       })}
                     </AnimatePresence>
 
-                    {/* footer: back to the catalogue · bulk import */}
+                    {/* footer: back to the catalogue · bulk import · clear */}
                     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-900/[.06] bg-slate-900/[.015] px-5 py-3 dark:border-white/[.06] dark:bg-white/[.02]" data-cart-lines-footer>
                       <Link href="/products" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-600 hover:text-slate-900 dark:text-ink-muted dark:hover:text-slate-100">
                         <ArrowLeft size={14} strokeWidth={2} />
                         {t("continueShopping")}
                       </Link>
-                      <SmartOrderButton variant="link" source="cart" label={t("bulkFormats")} className="text-[13px]" />
+                      <div className="flex flex-wrap items-center gap-3">
+                        <SmartOrderButton variant="link" source="cart" label={t("bulkFormats")} className="text-[13px]" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clear();
+                          setAuditPhase("idle");
+                          setFindings([]);
+                          setSuggestions([]);
+                        }}
+                        data-clear-cart
+                        className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full px-2.5 text-[13px] font-medium text-slate-500 transition-colors hover:bg-red-500/[.08] hover:text-red-600 dark:text-ink-muted dark:hover:text-red-400"
+                      >
+                        <Trash2 size={14} strokeWidth={2} />
+                        {t("clearCart")}
+                      </button>
+                      </div>
                     </div>
                   </div>
 

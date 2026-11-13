@@ -1,34 +1,18 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { ArrowRight, LogIn, ShieldCheck } from "lucide-react";
-import { Link } from "@/i18n/navigation";
-import { EYEBROW, PRIMARY, SUMMARY_CARD, TrustChips } from "@/components/home/ui";
-import { HFC_QUOTA } from "@/lib/regulation";
+import { LogIn } from "lucide-react";
+import { EYEBROW, SUMMARY_CARD } from "@/components/home/ui";
 import type { HubPortfolio } from "@/lib/hubData";
-import type { PricePoint } from "@/lib/priceHistory";
-import { gasColor, gasSlot, labelMark } from "./shared";
+import { gasColor, gasSlot } from "./shared";
 
 /**
  * The right card on the exchange and digest tabs: what this buyer has been
- * supplied (from the same ledger as the F-Gas logbook), its CO₂e, 12-month
- * spend, and a brief built by rules from those figures — the regulation that
- * touches each gas they hold (lib/regulation), the Annex VII quota step, and
- * their gases' recorded price movement. No model, no invented outlook.
+ * supplied (from the same ledger as the F-Gas logbook) — the gas mix and four
+ * numbers. Compliance status and trust badges belong to /cart; comparing
+ * gases is its own tab.
  */
-export default function PortfolioCard({
-  portfolio,
-  signedIn,
-  history,
-  onCompare,
-  onNeedSignIn,
-}: {
-  portfolio: HubPortfolio | null;
-  signedIn: boolean;
-  history: Record<string, PricePoint[]>;
-  onCompare: () => void;
-  onNeedSignIn: () => void;
-}) {
+export default function PortfolioCard({ portfolio, signedIn, onNeedSignIn }: { portfolio: HubPortfolio | null; signedIn: boolean; onNeedSignIn: () => void }) {
   const t = useTranslations("MarketHub");
   const format = useFormatter();
   const n1 = (n: number) => format.number(n, { maximumFractionDigits: 1 });
@@ -39,29 +23,6 @@ export default function PortfolioCard({
   const mass = gases.reduce((s, g) => s + g.massKg, 0);
   const byMass = [...gases].sort((a, b) => b.massKg - a.massKg);
   const [a, b] = byMass;
-
-  // ── The brief: at most three lines, each from a rule ──
-  const brief: string[] = [];
-  if (portfolio && byMass.length > 0) {
-    const top = [...gases].sort((x, y) => y.co2eTonnes - x.co2eTonnes)[0]!;
-    const share = portfolio.co2eTonnes > 0 ? Math.round((top.co2eTonnes / portfolio.co2eTonnes) * 100) : 0;
-    if (share > 0) brief.push(t("brief_top", { gas: top.gas, share }));
-    const banned = gases.find((g) => (g.gwp ?? 0) >= 2500);
-    const restricted = gases.find((g) => (g.gwp ?? 0) >= 750 && (g.gwp ?? 0) < 2500);
-    if (banned) brief.push(t("brief_2500", { gas: banned.gas, gwp: banned.gwp ?? 0 }));
-    else if (restricted) brief.push(t("brief_750", { gas: restricted.gas, gwp: restricted.gwp ?? 0 }));
-    const moved = gases
-      .map((g) => ({ g, pts: history[labelMark(g.gas)] ?? [] }))
-      .find(({ pts }) => pts.length >= 2 && pts[0]!.perKg !== pts[pts.length - 1]!.perKg);
-    if (moved) {
-      const first = moved.pts[0]!;
-      const last = moved.pts[moved.pts.length - 1]!;
-      const pct = ((last.perKg - first.perKg) / first.perKg) * 100;
-      brief.push(t("brief_price", { gas: moved.g.gas, pct: `${pct > 0 ? "+" : ""}${n1(pct)}`, date: format.dateTime(new Date(`${first.day}T00:00:00Z`), { dateStyle: "medium", timeZone: "UTC" }) }));
-    } else if (gases.some((g) => (g.gwp ?? 0) >= 150)) {
-      brief.push(t("brief_quota", { from: n1(HFC_QUOTA[0]!.tonnes / 1e6), to: n1(HFC_QUOTA[1]!.tonnes / 1e6) }));
-    }
-  }
 
   return (
     <div className={SUMMARY_CARD} data-hub-portfolio={signedIn ? (gases.length ? "data" : "empty") : "guest"}>
@@ -113,35 +74,9 @@ export default function PortfolioCard({
             ))}
           </dl>
 
-          {brief.length > 0 && (
-            <ul className="m-0 mt-4 flex list-none flex-col gap-2 p-0" data-hub-brief>
-              {brief.map((line) => (
-                <li key={line} className="flex gap-2 text-[12.5px] leading-[1.5] text-slate-700 dark:text-slate-300">
-                  <span className="mt-[7px] h-1.5 w-1.5 flex-none rounded-full bg-blue-600 dark:bg-blue-400" />
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <Link
-            href="/profile?tab=documents&docs=fgas"
-            className="mt-4 flex items-start gap-2 rounded-[16px] border border-emerald-500/30 bg-emerald-500/10 py-2.5 pl-3 pr-3.5 text-[11.5px] font-semibold leading-[1.45] text-emerald-700 dark:text-emerald-300"
-            data-hub-compliance
-          >
-            <ShieldCheck size={13} strokeWidth={2.2} className="mt-[2px] flex-none" />
-            <span>{t("complianceBox", { lines: portfolio!.lines })}</span>
-          </Link>
         </>
       )}
 
-      <button type="button" onClick={onCompare} className={`${PRIMARY} mt-4`} data-hub-cta-compare>
-        {t("ctaCompare")}
-        <ArrowRight size={16} strokeWidth={2.4} />
-      </button>
-      <div className="mt-4">
-        <TrustChips />
-      </div>
     </div>
   );
 }
