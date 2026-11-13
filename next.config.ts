@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
   // production while working perfectly in local dev.
   outputFileTracingIncludes: {
     "/api/invoices/**": ["./public/fonts/**"],
+    // The SDS archive zips the static sheets from public/sds with fs.
+    "/api/documents/sds-archive": ["./public/sds/*.pdf"],
     "/**": ["./public/fonts/**"],
   },
 

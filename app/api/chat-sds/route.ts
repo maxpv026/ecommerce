@@ -3,7 +3,9 @@ import { ASSISTANT_UNAVAILABLE, CHAT_STREAM_TIMEOUT, timeoutAsUnavailable } from
 import { openai } from "@ai-sdk/openai";
 import { logAiUsage } from "@/lib/ai/budget";
 import { boundTranscript } from "@/lib/aiMessages";
-import { SDS_DOCUMENTS } from "@/lib/sds";
+import { GAS_SAFETY } from "@/lib/sdsLibrary";
+import { normalizeMark } from "@/lib/gasMarks";
+import { routing } from "@/i18n/routing";
 
 /**
  * The SDS page's per-refrigerant safety assistant.
@@ -14,36 +16,47 @@ import { SDS_DOCUMENTS } from "@/lib/sds";
  * there is no path by which a question about first aid comes back with an
  * upsell.
  *
- * The gas name is not taken on trust: it is matched against the SDS catalog
- * before it reaches the prompt, so a crafted request can't rewrite the
- * assistant's subject.
+ * The gas name is not taken on trust: it is matched against the SDS
+ * library (lib/sdsLibrary) before it reaches the prompt, so a crafted
+ * request can't rewrite the assistant's subject. Same for the language: only
+ * a locale the site serves is named in the prompt.
  */
 
 export const maxDuration = 30;
 
-const systemPromptFor = (gas: string) =>
+/** The emergency line printed on the sheets (SDS §1.4); none configured → 112 alone. */
+const emergencyLine = () => {
+  const phone = process.env.SDS_EMERGENCY_PHONE?.trim();
+  return phone ? `our 24-hour emergency line ${phone}, or 112 for anything life-threatening` : "112";
+};
+
+const systemPromptFor = (gas: string, language: string) =>
   `You are an expert HVAC Safety Assistant. The user is asking about the refrigerant ${gas}. Provide short, highly accurate, safety-focused answers based on standard SDS (Safety Data Sheet) knowledge. Focus on first aid, flammability, and handling. Warn the user to always consult the official PDF.
 
 Additional rules:
 - Answer only about ${gas} and general refrigerant safety. If asked about anything else — pricing, availability, ordering, unrelated topics — say that this assistant only covers safety for ${gas} and point them at the main assistant or their account manager.
 - Be concise: a few short sentences or a tight bulleted list. A technician may be reading this at a job site.
-- If a question implies an active emergency (exposure, frostbite, inhalation, a leak in a confined space), lead with the immediate action, then say to call emergency services — NCEC +44 1865 407 333 in Europe, or 112 for anything life-threatening.
+- If a question implies an active emergency (exposure, frostbite, inhalation, a leak in a confined space), lead with the immediate action, then say to call emergency services — ${emergencyLine()}.
 - Never invent figures. Exposure limits, flash points, autoignition and boiling temperatures, pressures and concentrations vary between suppliers and revisions — if you are not certain a number matches THIS product's current SDS, describe the hazard qualitatively and send the user to the PDF for the value rather than quoting one.
-- Close every substantive answer by reminding the user that the official SDS PDF is the controlled document and takes precedence over anything you say.`;
+- Close every substantive answer by reminding the user that the official SDS PDF is the controlled document and takes precedence over anything you say.
+- Reply in ${language}, whatever language the question is in, unless the user explicitly asks for another one. Keep UN numbers, H/P codes and refrigerant designations as written.`;
 
-/** The gas must be one this page actually publishes an SDS for. */
+/** The gas must be one the SDS page lists. */
 function resolveGas(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
-  const wanted = raw.trim().toLowerCase();
+  const wanted = normalizeMark(raw.trim());
   if (!wanted) return null;
-  const match = SDS_DOCUMENTS.find(
-    (doc) => doc.gas.toLowerCase() === wanted || doc.name.toLowerCase() === wanted
-  );
-  return match?.gas ?? null;
+  return GAS_SAFETY.find((g) => normalizeMark(g.key) === wanted || normalizeMark(g.label) === wanted)?.label ?? null;
+}
+
+/** "uk" → "Ukrainian"; an unknown or missing locale → English. */
+function languageFor(raw: unknown): string {
+  const locale = typeof raw === "string" && (routing.locales as readonly string[]).includes(raw) ? raw : "en";
+  return new Intl.DisplayNames(["en"], { type: "language" }).of(locale) ?? "English";
 }
 
 export async function POST(req: Request) {
-  let body: { messages?: unknown; gas?: unknown };
+  let body: { messages?: unknown; gas?: unknown; locale?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -72,7 +85,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: systemPromptFor(gas),
+    system: systemPromptFor(gas, languageFor(body.locale)),
     messages: await convertToModelMessages(messages),
     maxOutputTokens: 700,
     timeout: CHAT_STREAM_TIMEOUT,
@@ -83,6 +96,6 @@ export async function POST(req: Request) {
   });
 
   // A stable code to the browser, never the provider's raw message; the modal
-  // shows its own localized "unavailable — open the PDF / call NCEC" notice.
+  // shows its own localized "unavailable — open the PDF / call the emergency line" notice.
   return createUIMessageStreamResponse({ stream: timeoutAsUnavailable(result.toUIMessageStream({ onError: () => ASSISTANT_UNAVAILABLE })) });
 }

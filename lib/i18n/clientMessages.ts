@@ -62,7 +62,7 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "Analytics", //       profile/compliance
   "ProductDetail", //   products/[id]
   "Pdp", //             products/[id]
-  "MarketHub", //       hub, categories (oil / EU labels)
+  "MarketHub", //       hub, categories, compliance/sds (oil / EU labels)
   "CategoryExplorer", // categories
   "Admin", //           admin
   "AdminInventory", //  admin/inventory
@@ -73,6 +73,7 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "AdminCountry", //    admin/users, admin/orders
   "ProfileHub", //      profile
   "SdsAssistant", //    compliance/sds
+  "SdsLibrary", //      compliance/sds
   "FgasGate", //        cart
   "SecurityCenter", //  profile/**, notifications (settings + security)
 ] as const;

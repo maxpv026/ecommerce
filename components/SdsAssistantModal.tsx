@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useChat } from "@ai-sdk/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { DefaultChatTransport } from "ai";
 import Markdown from "react-markdown";
-import { ArrowUp, FileText, Sparkles, TriangleAlert, X } from "lucide-react";
+import { ArrowUp, FileText, LifeBuoy, TriangleAlert, X } from "lucide-react";
 
 /**
  * Per-refrigerant safety assistant, opened from a row on the SDS page.
@@ -20,33 +20,27 @@ import { ArrowUp, FileText, Sparkles, TriangleAlert, X } from "lucide-react";
  * differ.
  */
 
-const SUGGESTIONS = [
-  "What do I do for skin contact?",
-  "Is it flammable?",
-  "How should I store the cylinder?",
-] as const;
+const SUGGESTIONS = ["suggestSkin", "suggestFlammable", "suggestStorage"] as const;
 
 interface SdsAssistantModalProps {
   open: boolean;
   /** Refrigerant designation, e.g. "R-32". */
   gas: string;
-  /** Full catalog name, shown as the subtitle. */
-  documentName: string;
-  /** Public path to the controlled PDF, linked from the footer. */
-  pdfHref: string;
+  /** The sheet's download link, linked from the footer; null when we hold none. */
+  pdfHref: string | null;
   onClose: () => void;
 }
 
 export default function SdsAssistantModal({
   open,
   gas,
-  documentName,
   pdfHref,
   onClose,
 }: SdsAssistantModalProps) {
   const [draft, setDraft] = useState("");
   const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat-sds" }));
-  const tErr = useTranslations("SdsAssistant");
+  const t = useTranslations("SdsAssistant");
+  const locale = useLocale();
   const { messages, sendMessage, status, error } = useChat({ transport });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +78,7 @@ export default function SdsAssistantModal({
     setDraft("");
     // `gas` rides along on every turn; the route re-validates it against the
     // SDS catalog rather than trusting it.
-    void sendMessage({ text: trimmed }, { body: { gas } });
+    void sendMessage({ text: trimmed }, { body: { gas, locale } });
   };
 
   return (
@@ -106,35 +100,25 @@ export default function SdsAssistantModal({
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label={`AI Safety Assistant: ${gas}`}
+            aria-label={t("title", { gas })}
             data-sds-assistant={gas}
             className="relative flex h-[min(640px,88vh)] w-[560px] max-w-full flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white/90 shadow-[0_50px_100px_-40px_rgba(15,23,42,.45)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-[#141518]/90 dark:shadow-[0_60px_120px_-45px_rgba(0,0,0,.9)]"
           >
-            {/* violet / cyan aura, matching the Ask AI trigger */}
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -left-24 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(circle,var(--orb-violet),transparent_68%)] opacity-[.10] blur-[70px] dark:opacity-30"
-            />
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -right-24 top-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,var(--orb-cyan),transparent_68%)] opacity-[.10] blur-[70px] dark:opacity-25"
-            />
-
             {/* header */}
             <div className="relative flex flex-none items-start gap-3 border-b border-slate-200 p-5 dark:border-white/10">
-              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[14px] bg-[linear-gradient(140deg,#7c3aed,#22d3ee)] text-white shadow-[0_14px_28px_-14px_rgba(124,58,237,.9)]">
-                <Sparkles size={18} strokeWidth={2} />
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[12px] border border-slate-900/[.08] bg-slate-50 text-slate-600 dark:border-white/[.1] dark:bg-white/[.05] dark:text-slate-300">
+                <LifeBuoy size={18} strokeWidth={2} />
               </span>
               <div className="min-w-0 flex-1">
                 <h2 className="m-0 truncate text-[15px] font-semibold tracking-[-.025em] text-slate-900 dark:text-white">
-                  AI Safety Assistant: {gas}
+                  {t("title", { gas })}
                 </h2>
-                <p className="mb-0 mt-0.5 truncate text-[11.5px] text-slate-600 dark:text-slate-400">{documentName}</p>
+                <p className="mb-0 mt-0.5 truncate text-[11.5px] text-slate-600 dark:text-slate-400">{t("subtitle")}</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={t("close")}
                 data-sds-assistant-close
                 className="flex h-9 w-9 flex-none items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-900/[.06] hover:text-slate-900 dark:hover:bg-white/10 dark:hover:text-white"
               >
@@ -149,22 +133,21 @@ export default function SdsAssistantModal({
                   <div className="flex items-start gap-2.5 rounded-[16px] border border-amber-300 bg-amber-50 p-3.5 dark:border-amber-400/25 dark:bg-amber-400/[.08]">
                     <TriangleAlert size={15} strokeWidth={2} className="mt-px flex-none text-amber-600 dark:text-amber-400" />
                     <p className="m-0 text-[12px] leading-[1.55] text-amber-800 dark:text-amber-200/90">
-                      Guidance only. The official SDS PDF is the controlled document — always check
-                      it before handling, and call emergency services for any active incident.
+                      {t("disclaimer")}
                     </p>
                   </div>
 
-                  <p className="mb-3 mt-5 text-[10.5px] tracking-[.08em] text-slate-600 dark:text-slate-400">SUGGESTED</p>
+                  <p className="mb-3 mt-5 text-[10.5px] tracking-[.08em] text-slate-600 dark:text-slate-400">{t("suggested")}</p>
                   <div className="flex flex-col gap-2">
                     {SUGGESTIONS.map((s) => (
                       <button
                         key={s}
                         type="button"
-                        onClick={() => ask(s)}
+                        onClick={() => ask(t(s))}
                         data-sds-suggestion
-                        className="rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-left text-[12.5px] text-slate-700 transition-colors hover:border-cyan-500/40 hover:bg-white hover:text-slate-900 dark:border-white/10 dark:bg-white/[.03] dark:text-slate-300 dark:hover:border-cyan-400/30 dark:hover:bg-white/[.07] dark:hover:text-white"
+                        className="rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-left text-[12.5px] text-slate-700 transition-colors hover:border-blue-600/40 hover:bg-white hover:text-slate-900 dark:border-white/10 dark:bg-white/[.03] dark:text-slate-300 dark:hover:border-blue-400/30 dark:hover:bg-white/[.07] dark:hover:text-white"
                       >
-                        {s}
+                        {t(s)}
                       </button>
                     ))}
                   </div>
@@ -203,7 +186,7 @@ export default function SdsAssistantModal({
                         {[0, 0.16, 0.32].map((delay) => (
                           <span
                             key={delay}
-                            className="h-[5px] w-[5px] rounded-full bg-cyan-600 dark:bg-cyan-400"
+                            className="h-[5px] w-[5px] rounded-full bg-blue-600 dark:bg-blue-400"
                             style={{ animation: `hc-dots 1.2s ease-in-out ${delay}s infinite` }}
                           />
                         ))}
@@ -223,7 +206,7 @@ export default function SdsAssistantModal({
                     data-sds-error
                     className="rounded-[14px] border border-red-200 bg-red-50 px-3.5 py-3 text-[12.5px] leading-[1.5] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
                   >
-                    {tErr("assistantUnavailable")}
+                    {t("unavailable")}
                   </div>
                 )}
               </div>
@@ -236,36 +219,38 @@ export default function SdsAssistantModal({
                   e.preventDefault();
                   ask(draft);
                 }}
-                className="flex items-center gap-2 rounded-[16px] border border-slate-200 bg-slate-50 px-3.5 py-2 transition-colors focus-within:border-cyan-500/45 dark:border-white/10 dark:bg-white/[.04] dark:focus-within:border-cyan-400/40"
+                className="flex items-center gap-2 rounded-[16px] border border-slate-200 bg-slate-50 px-3.5 py-2 transition-colors focus-within:border-blue-600/45 dark:border-white/10 dark:bg-white/[.04] dark:focus-within:border-blue-400/40"
               >
                 <input
                   ref={inputRef}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder={`Ask about ${gas} safety…`}
-                  aria-label={`Ask about ${gas} safety`}
+                  placeholder={t("placeholder", { gas })}
+                  aria-label={t("placeholder", { gas })}
                   data-sds-input
                   className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-white dark:placeholder:text-slate-500"
                 />
                 <button
                   type="submit"
                   disabled={busy || draft.trim().length === 0}
-                  aria-label="Send"
+                  aria-label={t("send")}
                   data-sds-send
-                  className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-[linear-gradient(140deg,#7c3aed,#22d3ee)] text-white transition-opacity disabled:opacity-35"
+                  className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-blue-700 text-white transition-opacity hover:bg-blue-800 disabled:opacity-35"
                 >
                   <ArrowUp size={15} strokeWidth={2.4} />
                 </button>
               </form>
 
-              <a
-                href={pdfHref}
-                download
-                className="mt-3 flex items-center justify-center gap-2 text-[11.5px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-              >
-                <FileText size={13} strokeWidth={2} />
-                Open the official SDS for {gas}
-              </a>
+              {pdfHref && (
+                <a
+                  href={pdfHref}
+                  download
+                  className="mt-3 flex items-center justify-center gap-2 text-[11.5px] font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                >
+                  <FileText size={13} strokeWidth={2} />
+                  {t("openPdf", { gas })}
+                </a>
+              )}
             </div>
           </motion.div>
         </motion.div>

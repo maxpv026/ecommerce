@@ -89,7 +89,16 @@ export default auth((req) => {
   // guards above can run.
   if (pathname.startsWith("/api/")) return finish(NextResponse.next());
   const localeMatch = pathname.match(LOCALE_PREFIX_PATTERN);
-  const locale = localeMatch ? localeMatch[1] : routing.defaultLocale;
+
+  // An unprefixed URL ("/", "/profile/settings", a bare link in an e-mail)
+  // goes to next-intl first: it picks the language — NEXT_LOCALE cookie,
+  // then Accept-Language (q-weighted, "uk-UA" → uk, "pt-BR" → pt), then
+  // English — and redirects to the prefixed URL, whose request runs the
+  // gates below. Gating here instead used to answer with a hardcoded
+  // "/en/auth", so a Ukrainian browser following an unprefixed link to a
+  // protected page landed on the English sign-in.
+  if (!localeMatch) return finish(handleI18nRouting(req));
+  const locale = localeMatch[1];
   const pathWithoutLocale = stripLocalePrefix(pathname);
   const isProtected = PROTECTED_SEGMENTS.some((prefix) => pathWithoutLocale.startsWith(prefix));
 

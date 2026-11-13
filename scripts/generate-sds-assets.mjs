@@ -1,9 +1,10 @@
 // Generates the placeholder SDS assets served from /public/sds:
-// one PDF per document in lib/sds.ts, plus a ZIP of all of them.
+// one PDF per document in lib/sds.ts. (The "download all" ZIP is built per
+// request by app/api/documents/sds-archive, from the same list.)
 //
 //   node scripts/generate-sds-assets.mjs
 //
-// Everything is written with Node builtins — no PDF or ZIP dependency — so
+// Everything is written with Node builtins — no PDF dependency — so
 // the assets are reproducible from source. They are deliberately obvious
 // placeholders: each page says so, because a document that looks like a real
 // safety data sheet but isn't is worse than no document at all.
@@ -13,7 +14,6 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { crc32 } from "node:zlib";
 
 const OUT_DIR = join(process.cwd(), "public", "sds");
 
@@ -25,11 +25,8 @@ const DOCUMENTS = [
   { file: "R-134a-SDS.pdf", name: "R-134a Standard", cas: "811-97-2", revision: "SDS v3.0 · Mar 2026", hazard: "A1 — non-flammable. Asphyxiant in confined spaces." },
   { file: "R-404A-SDS.pdf", name: "R-404A Reclaimed", cas: "Mixture (AHRI-700)", revision: "SDS v1.8 · Aug 2025", hazard: "A1 — non-flammable. Reclaimed to AHRI-700 purity." },
   { file: "R-407C-SDS.pdf", name: "R-407C Service", cas: "Mixture (354-33-6 / 811-97-2)", revision: "SDS v2.2 · Dec 2025", hazard: "A1 — non-flammable. Asphyxiant in confined spaces." },
-  { file: "R-454B-SDS.pdf", name: "R-454B Low GWP", cas: "Mixture (75-10-5 / 116-14-3)", revision: "SDS v1.3 · Feb 2026", hazard: "A2L — mildly flammable. Keep away from ignition sources." },
   { file: "R-1234yf-SDS.pdf", name: "R-1234yf", cas: "754-12-1", revision: "SDS v1.6 · Nov 2025", hazard: "A2L — mildly flammable. Keep away from ignition sources." },
 ];
-
-const ZIP_NAME = "my-energy-sds-all.zip";
 
 // ---------------------------------------------------------------------------
 // PDF
@@ -91,78 +88,6 @@ function buildPdf(doc) {
 }
 
 // ---------------------------------------------------------------------------
-// ZIP (stored, i.e. uncompressed — these files are tiny)
-// ---------------------------------------------------------------------------
-
-/** MS-DOS date/time, as ZIP has recorded timestamps since 1980. */
-function dosDateTime(date) {
-  const time = (date.getHours() << 11) | (date.getMinutes() << 5) | (Math.floor(date.getSeconds() / 2) & 0x1f);
-  const day = ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
-  return { time, day };
-}
-
-function buildZip(entries, now = new Date()) {
-  const { time, day } = dosDateTime(now);
-  const locals = [];
-  const central = [];
-  let offset = 0;
-
-  for (const { name, data } of entries) {
-    const nameBuf = Buffer.from(name, "utf8");
-    const sum = crc32(data);
-
-    const local = Buffer.alloc(30);
-    local.writeUInt32LE(0x04034b50, 0); // local file header signature
-    local.writeUInt16LE(20, 4); // version needed
-    local.writeUInt16LE(0, 6); // flags
-    local.writeUInt16LE(0, 8); // method 0 = stored
-    local.writeUInt16LE(time, 10);
-    local.writeUInt16LE(day, 12);
-    local.writeUInt32LE(sum, 14);
-    local.writeUInt32LE(data.length, 18); // compressed size
-    local.writeUInt32LE(data.length, 22); // uncompressed size
-    local.writeUInt16LE(nameBuf.length, 26);
-    local.writeUInt16LE(0, 28); // extra length
-    locals.push(local, nameBuf, data);
-
-    const dir = Buffer.alloc(46);
-    dir.writeUInt32LE(0x02014b50, 0); // central directory signature
-    dir.writeUInt16LE(20, 4); // version made by
-    dir.writeUInt16LE(20, 6); // version needed
-    dir.writeUInt16LE(0, 8);
-    dir.writeUInt16LE(0, 10);
-    dir.writeUInt16LE(time, 12);
-    dir.writeUInt16LE(day, 14);
-    dir.writeUInt32LE(sum, 16);
-    dir.writeUInt32LE(data.length, 20);
-    dir.writeUInt32LE(data.length, 24);
-    dir.writeUInt16LE(nameBuf.length, 28);
-    dir.writeUInt16LE(0, 30); // extra
-    dir.writeUInt16LE(0, 32); // comment
-    dir.writeUInt16LE(0, 34); // disk number
-    dir.writeUInt16LE(0, 36); // internal attrs
-    dir.writeUInt32LE(0, 38); // external attrs
-    dir.writeUInt32LE(offset, 42); // offset of local header
-    central.push(dir, nameBuf);
-
-    offset += local.length + nameBuf.length + data.length;
-  }
-
-  const centralBuf = Buffer.concat(central);
-  const end = Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50, 0); // end of central directory
-  end.writeUInt16LE(0, 4);
-  end.writeUInt16LE(0, 6);
-  end.writeUInt16LE(entries.length, 8);
-  end.writeUInt16LE(entries.length, 10);
-  end.writeUInt32LE(centralBuf.length, 12);
-  end.writeUInt32LE(offset, 16);
-  end.writeUInt16LE(0, 20);
-
-  return Buffer.concat([...locals, centralBuf, end]);
-}
-
-// ---------------------------------------------------------------------------
 
 mkdirSync(OUT_DIR, { recursive: true });
 
@@ -172,9 +97,5 @@ const entries = DOCUMENTS.map((doc) => {
   return { name: doc.file, data };
 });
 
-const zip = buildZip(entries);
-writeFileSync(join(OUT_DIR, ZIP_NAME), zip);
-
 console.log(`Wrote ${entries.length} PDFs to public/sds:`);
 for (const e of entries) console.log(`  ${e.name.padEnd(20)} ${e.data.length} bytes`);
-console.log(`  ${ZIP_NAME.padEnd(20)} ${zip.length} bytes`);
