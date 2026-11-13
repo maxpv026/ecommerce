@@ -513,3 +513,31 @@ body {
     margin: 14mm;
   }
 }
+
+/* Market hub charts — the dataviz reference palette (validated: adjacent CVD ΔE ≥ 8,
+   normal-vision ΔE ≥ 15, light and dark steps chosen per surface). A gas keeps its
+   slot everywhere on /hub; slots are never re-ranked. */
+.hub-viz {
+  --hv-1: #2a78d6;
+  --hv-2: #eb6834;
+  --hv-3: #1baf7a;
+  --hv-4: #eda100;
+  --hv-5: #e87ba4;
+  --hv-6: #008300;
+  --hv-7: #6250d6;
+  --hv-8: #e34948;
+  --hv-grid: rgba(15, 23, 42, 0.07);
+  --hv-axis: #64748b;
+}
+.dark .hub-viz {
+  --hv-1: #3987e5;
+  --hv-2: #d95926;
+  --hv-3: #199e70;
+  --hv-4: #c98500;
+  --hv-5: #d55181;
+  --hv-6: #008300;
+  --hv-7: #9085e9;
+  --hv-8: #e66767;
+  --hv-grid: rgba(255, 255, 255, 0.08);
+  --hv-axis: #94a3b8;
+}

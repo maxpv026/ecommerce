@@ -62,3 +62,22 @@ export const barAbsToPsig = (barAbs: number) => (barAbs - ATM_BAR) * PSI_PER_BAR
 
 /** Gauge pressure in bar (bar g). */
 export const barAbsToBarG = (barAbs: number) => barAbs - ATM_BAR;
+
+/**
+ * Two more gases for the hub's comparator and diagnostics, fitted the same way
+ * (CoolProp 8.0, −40…+60 °C). Not in PT_GASES, so the home workbench's five
+ * rows are unchanged. R-407C has a large glide (≈7 K): this is its bubble
+ * (liquid) curve — dew pressure at the same temperature is lower.
+ */
+export const PT_EXTRA: readonly PtGas[] = [
+  { mark: null, label: "R-1234yf", A: 4.179171, B: 916.5197, C: 249.0589, maxErrPct: 0.385, nbpC: -29.46, tcC: 94.7, safety: "A2L", gwpFallback: 4 },
+  { mark: null, label: "R-407C", A: 4.34023, B: 908.1641, C: 253.2377, maxErrPct: 0.332, nbpC: -43.63, tcC: 86.2, safety: "A1", gwpFallback: 1774 },
+];
+
+/** Every fitted gas by label ("R-410A"). */
+export const PT_BY_LABEL: Readonly<Record<string, PtGas>> = Object.fromEntries([...PT_GASES, ...PT_EXTRA].map((g) => [g.label, g]));
+
+/** Saturation temperature (°C) at a given absolute pressure — the inverse of the Antoine fit. */
+export function saturationTempC(gas: Pick<PtGas, "A" | "B" | "C">, barAbs: number): number {
+  return gas.B / (gas.A - Math.log10(barAbs)) - gas.C;
+}

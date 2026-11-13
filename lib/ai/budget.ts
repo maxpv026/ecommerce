@@ -37,7 +37,6 @@ export const MAX_OUTPUT = {
   homeAssistant: 120,
   recommendations: 120,
   localization: 1200,
-  briefing: 450,
   ecoReport: 450,
   pdfText: 2000,
 } as const;

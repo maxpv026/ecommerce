@@ -13,6 +13,7 @@ import { updateInventory } from "@/lib/actions/adminInventory";
 import { isPricedPerKg } from "@/lib/pricing";
 import { after } from "next/server";
 import { isPriceDrop, notifyPriceDrop, type PriceSnapshot } from "@/lib/priceDrop";
+import { onPriceChange } from "@/lib/priceHistory";
 
 /**
  * Product sizes ("variants") for the admin inventory screen.
@@ -202,6 +203,13 @@ export async function upsertVariant(raw: VariantInputData): Promise<VariantResul
     after(() =>
       notifyPriceDrop(productId, previous, nextPrice).catch((error) => console.error(`[price-drop] ${productId} failed:`, error))
     );
+  }
+
+  // Any price change (or a new size) goes into the market hub's price record
+  // and is checked against buyers' target alerts — after the response.
+  if (!before || before.pricePerKg !== input.pricePerKg) {
+    const productId = id;
+    after(() => onPriceChange([productId]));
   }
 
   refresh();

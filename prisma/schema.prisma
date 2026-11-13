@@ -275,6 +275,9 @@ model User {
   /// metric (bar · °C) | imperial (psig · °F) — engineering tools on the site.
   preferredUnits      String?
   cylinderReturnRequests CylinderReturnRequest[]
+  priceAlerts            PriceAlert[]
+  insightVotes           InsightVote[]
+  insightBookmarks       InsightBookmark[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1286,4 +1289,66 @@ model CylinderReturnRequest {
   updatedAt     DateTime  @updatedAt
 
   @@index([userId, createdAt(sort: Desc)])
+}
+
+/// One recorded price of one product (lib/priceHistory). Written whenever a
+/// price changes (admin edit, CRM push) and once a day by the snapshot cron —
+/// the market hub's price chart draws only these rows, so its history starts
+/// on the day recording began rather than being reconstructed.
+model PriceSnapshot {
+  id         String   @id @default(cuid())
+  productId  String
+  sku        String
+  /// Refrigerant mark ("R32"), so the chart can follow a gas across sizes.
+  mark       String?
+  pricePerKg Decimal  @db.Decimal(12, 2)
+  inStock    Boolean
+  /// "change" (a price moved) | "daily" (the cron's reading)
+  source     String
+  recordedAt DateTime @default(now())
+
+  @@index([mark, recordedAt])
+  @@index([productId, recordedAt])
+}
+
+/// "Tell me when R-32 is below X €/kg." Checked whenever a price snapshot is
+/// recorded; emailed once, then marked triggered.
+model PriceAlert {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mark        String
+  targetPerKg Decimal   @db.Decimal(12, 2)
+  triggeredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, mark])
+  @@index([mark, triggeredAt])
+}
+
+/// A signed-in buyer's read on one news item: UP (shortage / rising), DOWN, FLAT.
+model InsightVote {
+  id        String   @id @default(cuid())
+  insightId String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  choice    String
+  createdAt DateTime @default(now())
+
+  @@unique([insightId, userId])
+  @@index([insightId])
+}
+
+/// A news item a buyer saved. Title and link are copied: feed items are not rows of ours.
+model InsightBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  insightId String
+  title     String
+  link      String?
+  source    String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, insightId])
 }

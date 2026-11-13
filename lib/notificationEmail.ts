@@ -238,6 +238,44 @@ export async function sendReplenishmentEmail(input: {
  * buyer's opt-in at send time, like the other preference-gated emails: an
  * opt-out a moment ago wins over a batch selected before it.
  */
+/**
+ * A target the buyer set on the market hub ("tell me when R-32 is ≤ €X/kg")
+ * has been reached. Asked for explicitly, once, so it isn't gated on the
+ * favourites price-drop preference; the alert is spent after this mail.
+ */
+export async function sendPriceAlertEmail(input: { userId: string; gas: string; productId: string; target: number; perKg: number }): Promise<NotificationSendResult> {
+  if (!(input.perKg > 0)) return { status: "skipped", reason: "INVALID_INPUT" };
+  const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, name: true, locale: true } });
+  if (!user) return { status: "skipped", reason: "NOT_FOUND" };
+  if (!user.email) return { status: "skipped", reason: "NO_EMAIL" };
+  try {
+    const c = await emailContext(user.locale, "PriceAlertEmail");
+    const price = c.money(input.perKg);
+    const target = c.money(input.target);
+    const subject = cleanHeader(c.t("subject", { gas: input.gas, price }));
+    const name = user.name?.trim();
+    const { html, text } = c.render({
+      subject,
+      preview: c.t("preview", { gas: input.gas, price, target }),
+      reference: c.t("badge").toLocaleUpperCase(c.locale),
+      kicker: { label: c.t("kicker", { gas: input.gas }), tone: "success" },
+      heading: c.t("heading", { gas: input.gas, price }),
+      blocks: [
+        { kind: "text", text: name ? c.t("greeting", { name }) : c.t("greetingNoName") },
+        { kind: "text", text: c.rich("body", { gas: input.gas, price, target }, ["price"]) },
+        { kind: "cta", label: c.t("cta"), href: c.url(`/products/${input.productId}`), note: c.t("ctaNote") },
+        { kind: "text", tone: "small", text: [{ a: c.t("manage"), href: c.url("/hub") }] },
+      ],
+      footer: { reason: c.t("reason") },
+    });
+    const delivery = await sendHtmlEmail({ to: user.email, subject, html, text });
+    return { status: "sent", messageId: delivery.messageId };
+  } catch (error) {
+    console.error(`[price-alert-email] send failed for user ${input.userId}:`, error);
+    return { status: "failed", error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 export async function sendPriceDropEmail(input: {
   userId: string;
   productId: string;

@@ -2,10 +2,8 @@ import "server-only";
 
 import { cache } from "react";
 import prisma from "@/lib/prisma";
-import { HIGH_GWP_THRESHOLD } from "@/lib/compliance";
 import { getMarketAlerts } from "@/lib/data";
-import type { MarketAlertTag } from "@/lib/services/newsFetcher";
-import { LISTED } from "@/lib/productFamily";
+import { classifyHeadline, type MarketAlertTag } from "@/lib/services/newsFetcher";
 
 /**
  * The hub's market intelligence, from two sources merged into one shape.
@@ -35,7 +33,14 @@ export interface InsightItem {
   /** Present on feed rows only — every one is a link out. */
   link?: string;
   source?: string;
+  /** REGULATION / PRICE_TREND / SUPPLY / INDUSTRY_NEWS — the feed's headline category (curated rows: the same rule). */
+  category: MarketAlertTag;
+  /** The story is about equipment (compressors, heat pumps, chillers…) — the hub's "Equipment" filter. */
+  equipment: boolean;
 }
+
+const EQUIPMENT = /compressor|heat[-\s]?pumps?|chiller|condens(er|ing unit)|evaporator|\bvalves?\b|refrigerat(ed|ion) (cabinet|display|unit)s?|\bVRF\b|split (system|unit)|monobloc|air[-\s]?condition(er|ing) unit|launch(es|ed)?\b|new range|unveil/i;
+export const isEquipmentStory = (text: string) => EQUIPMENT.test(text);
 
 /**
  * Feed category → severity.
@@ -115,6 +120,8 @@ export const getMarketInsights = cache(async function getMarketInsights(
       tags: row.tags.length > 0 ? row.tags : refrigerantsMentioned(`${row.title} ${row.content}`),
       publishedAt: row.publishedAt.toISOString(),
       origin: "curated" as const,
+      category: classifyHeadline(row.title).tag,
+      equipment: isEquipmentStory(`${row.title} ${row.content}`),
     })),
     ...alerts.map((a) => ({
       id: a.id,
@@ -126,6 +133,8 @@ export const getMarketInsights = cache(async function getMarketInsights(
       origin: "feed" as const,
       link: a.link,
       source: a.source,
+      category: a.tag,
+      equipment: isEquipmentStory(`${a.title} ${a.body}`),
     })),
   ];
 
@@ -162,54 +171,3 @@ export function prioritiseForRefrigerants(
     ...insights.filter((i) => !matchedIds.has(i.id) && i.severity !== "HIGH"),
   ].slice(0, limit);
 }
-
-/* ── Ticker ───────────────────────────────────────────────────────────── */
-
-export interface TickerRow {
-  refrigerant: string;
-  /** Live catalogue rate, EUR per kg. */
-  pricePerKg: number;
-  gwp: number | null;
-  /** At or above the Art. 13 GWP limit for virgin HFC servicing. */
-  highGwp: boolean;
-  available: boolean;
-}
-
-/**
- * The ticker's contents.
- *
- * Every figure is a live catalogue row. What it deliberately does NOT carry is
- * a price movement — no "R-404A ▲ 4.2%". `Product.pricePerKg` is a single
- * current value with no history stored anywhere, so a percentage change would
- * have to be invented, and an invented number on something styled like a
- * market ticker is the most believable kind of wrong. Price history is the
- * missing input; until it exists this is a live rate board, which is honest
- * and still useful.
- *
- * `cache()`-wrapped for the same reason as getMarketInsights: the ticker and
- * the briefing both want these rates within one render.
- */
-export const getTickerRows = cache(async function getTickerRows(): Promise<TickerRow[]> {
-  const rows = await prisma.product.findMany({
-    where: { ...LISTED, category: { in: ["cylinders", "blends"] }, pricePerKg: { gt: 0 } },
-    select: { name: true, pricePerKg: true, gwp: true, inStock: true, stockQuantity: true },
-    orderBy: { name: "asc" },
-  });
-
-  // One entry per refrigerant mark, cheapest rate wins — several pack sizes of
-  // the same gas would otherwise repeat down the ticker.
-  const byMark = new Map<string, TickerRow>();
-  for (const r of rows) {
-    const mark = r.name.split(" ")[0] || r.name;
-    const row: TickerRow = {
-      refrigerant: mark,
-      pricePerKg: r.pricePerKg,
-      gwp: r.gwp,
-      highGwp: r.gwp !== null && r.gwp >= HIGH_GWP_THRESHOLD,
-      available: r.inStock && r.stockQuantity > 0,
-    };
-    const seen = byMark.get(mark);
-    if (!seen || row.pricePerKg < seen.pricePerKg) byMark.set(mark, row);
-  }
-  return [...byMark.values()];
-});

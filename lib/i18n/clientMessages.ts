@@ -36,6 +36,7 @@ export const SERVER_ONLY_NAMESPACES = [
   "StockEmail",
   "OrderEmail",
   "PriceDropEmail",
+  "PriceAlertEmail",
   "BroadcastEmail",
   "SupportEmail",
   "Trust",
@@ -58,10 +59,10 @@ export const ROUTE_SCOPED_NAMESPACES = [
   "FgasProfile", //     profile
   "Profile", //         profile
   "Compliance", //      profile/compliance
-  "Analytics", //       hub, profile/compliance
+  "Analytics", //       profile/compliance
   "ProductDetail", //   products/[id]
   "Pdp", //             products/[id]
-  "Hub", //             hub
+  "MarketHub", //       hub
   "Admin", //           admin
   "AdminInventory", //  admin/inventory
   "AdminRbac", //       admin

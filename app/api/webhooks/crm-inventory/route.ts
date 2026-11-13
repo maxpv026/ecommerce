@@ -7,6 +7,7 @@ import { CATALOG_COUNTS_TAG } from "@/lib/cacheTags";
 import { notifyBackInStock, type StockNotifyResult } from "@/lib/stockNotify";
 import { after } from "next/server";
 import { isPriceDrop, notifyPriceDrop } from "@/lib/priceDrop";
+import { onPriceChange } from "@/lib/priceHistory";
 
 /**
  * CRM → storefront inventory webhook.
@@ -182,6 +183,11 @@ export async function POST(request: Request) {
         }
       });
     }
+
+    // Every moved price joins the hub's price record and is checked against
+    // buyers' target alerts — after the response, like the emails above.
+    const repriced = results.flatMap((r) => (r.status === "updated" && r.pricePerKg !== r.previousPricePerKg ? [r.id] : []));
+    if (repriced.length > 0) after(() => onPriceChange(repriced));
 
     const status = updated === results.length ? 200 : updated > 0 ? 207 : 404;
     return json(

@@ -11,7 +11,8 @@ import { routing } from "@/i18n/routing";
  *
  * ── Why this is a second pass and not a prompt line ────────────────────
  *
- * The obvious way to localise `generateEcoReport` and `getPersonalizedFeed`
+ * The obvious way to localise `generateEcoReport` (and the hub briefing it was
+ * written alongside, since replaced by a rule-built one)
  * is one line in the system prompt: "write in locale X". It works, and it
  * quietly disables the only safety net either of them has.
  *
