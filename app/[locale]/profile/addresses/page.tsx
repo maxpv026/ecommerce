@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import MobileAddressesLayout from "@/components/MobileAddressesLayout";
+import DesktopRedirect from "@/components/DesktopRedirect";
+import MobileAddresses from "@/components/profile/hub/MobileAddresses";
 import { auth } from "@/auth";
 import { getUserAddresses } from "@/lib/data";
-import AppChrome from "@/components/AppChrome";
 
 export const metadata: Metadata = {
-  title: "Saved Addresses — My Energy",
-  description: "Manage your saved delivery addresses for My Energy cylinder shipments.",
+  title: "Addresses — My Energy",
+  description: "Delivery and site addresses for My Energy cylinder shipments.",
 };
 
 export default async function AddressesPage() {
@@ -14,10 +14,12 @@ export default async function AddressesPage() {
   const addresses = session?.user?.id ? await getUserAddresses(session.user.id) : [];
 
   return (
-    <AppChrome>
-      <div className="mx-auto w-full md:max-w-[620px] md:py-10">
-      <MobileAddressesLayout addresses={addresses} />
+    <>
+      {/* Desktop manages addresses in the profile's Addresses tab. */}
+      <DesktopRedirect to="/profile?tab=addresses" />
+      <div className="md:hidden">
+        <MobileAddresses addresses={addresses} />
       </div>
-    </AppChrome>
+    </>
   );
 }

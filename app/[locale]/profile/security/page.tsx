@@ -23,7 +23,7 @@ export default async function SecurityPage() {
         <AccountSettingsPage {...data} focus="security" />
       </div>
       <div className="block md:hidden">
-        <MobileSecurityLayout security={data.security} email={data.profile?.email ?? ""} now={data.now} />
+        <MobileSecurityLayout security={data.security} email={data.profile?.email ?? ""} now={data.now} passwordChangedAt={data.profile?.passwordChangedAt ?? null} />
       </div>
     </>
   );

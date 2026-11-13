@@ -10,6 +10,8 @@ import SmartRestockStrip from "./profile/SmartRestockStrip";
 import MobileProfileLayout from "./MobileProfileLayout";
 import MobileProfileSignedOutLayout from "./MobileProfileSignedOutLayout";
 import ProfileHub, { type LogbookSummary } from "./profile/hub/ProfileHub";
+import DocumentsView from "./profile/hub/DocumentsView";
+import MobileSubPageHeader from "./MobileSubPageHeader";
 import type { ProfileTab } from "@/lib/profileTabs";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { ActiveRestockAlert } from "@/lib/smartRestock";
@@ -30,6 +32,7 @@ interface AccountLayoutClientProps {
   /** Preferences, cylinder fleet, quotes, favourites, security (lib/profileHub). */
   hub?: ProfileHubData | null;
   initialTab?: ProfileTab;
+  initialDocFilter?: string;
 }
 
 export default function AccountLayoutClient({
@@ -43,6 +46,7 @@ export default function AccountLayoutClient({
   logbook = null,
   hub = null,
   initialTab = "overview",
+  initialDocFilter,
 }: AccountLayoutClientProps) {
   const t = useTranslations("ProfileHub");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -84,6 +88,7 @@ export default function AccountLayoutClient({
               logbook={logbook}
               hub={hub}
               initialTab={initialTab}
+              initialDocFilter={initialDocFilter}
             />
           </>
         ) : (
@@ -99,7 +104,15 @@ export default function AccountLayoutClient({
       </div>
 
       <div className="block md:hidden">
-        {isAuthenticated ? (
+        {isAuthenticated && initialTab === "documents" && profile && hub ? (
+          // The phone gets the same real document centre (it replaced the old /profile/docs stub).
+          <div className="min-h-screen pb-[calc(110px+env(safe-area-inset-bottom))]" data-mobile-documents>
+            <MobileSubPageHeader title={t("tab_documents")} />
+            <div className="px-4 pt-2">
+              <DocumentsView docs={hub.documents} profile={profile} logbook={logbook} initialFilter={initialDocFilter === "sds" || initialDocFilter === "invoices" || initialDocFilter === "fgas" ? initialDocFilter : "all"} />
+            </div>
+          </div>
+        ) : isAuthenticated ? (
           <>
             <SmartRestockStrip alerts={restockAlerts} className="px-4 pt-4" />
             <MobileProfileLayout dashboardData={dashboardData} profile={profile} orders={orders} addresses={addresses} />

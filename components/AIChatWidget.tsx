@@ -7,7 +7,7 @@ import { usePathname } from "@/i18n/navigation";
 import { Bot, Send, Sparkles, UserRound, X } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { ASSISTANT_VISIBLE_PATHS, OPEN_AI_CHAT_EVENT, type OpenAiChatDetail } from "@/lib/aiChatEvents";
+import { ASSISTANT_VISIBLE_PATHS, OPEN_AI_CHAT_EVENT, takePendingAiChat, type OpenAiChatDetail } from "@/lib/aiChatEvents";
 import { useCartStore } from "@/lib/store/cart";
 import { isPurchasable } from "@/lib/waitlist";
 import type { StoreProduct } from "@/lib/data";
@@ -205,13 +205,23 @@ export default function AIChatWidget() {
   // unlike calling setState directly in an effect body. Re-subscribes when
   // `send` changes so a prefilled send always carries the current page.
   useEffect(() => {
-    const handleOpen = (e: Event) => {
+    const open = (detail: OpenAiChatDetail | null | undefined) => {
       setIsOpen(true);
-      const prefillText = (e as CustomEvent<OpenAiChatDetail>).detail?.prefillText;
-      if (prefillText) send(prefillText);
+      if (detail?.prefillText) send(detail.prefillText);
+    };
+    const handleOpen = (e: Event) => {
+      takePendingAiChat(); // handled live — don't replay it on the next mount
+      open((e as CustomEvent<OpenAiChatDetail>).detail);
     };
     window.addEventListener(OPEN_AI_CHAT_EVENT, handleOpen);
-    return () => window.removeEventListener(OPEN_AI_CHAT_EVENT, handleOpen);
+    // A tap that happened while this widget was still loading. Deferred a
+    // tick: a setState from a timer, not from the effect body.
+    const early = takePendingAiChat();
+    const id = early ? window.setTimeout(() => open(early), 0) : undefined;
+    return () => {
+      window.removeEventListener(OPEN_AI_CHAT_EVENT, handleOpen);
+      if (id !== undefined) window.clearTimeout(id);
+    };
   }, [send]);
 
   if (!isVisible) return null;

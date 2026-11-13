@@ -184,7 +184,7 @@ export default function QuoteDocument({ quote, seller }: { quote: QuoteView; sel
               <p className="m-0 mt-3 text-[12px] text-amber-700 print:hidden dark:text-amber-400">
                 {t.rich("missingCompany", {
                   link: (chunks) => (
-                    <Link href="/profile/company" className="font-semibold underline">
+                    <Link href="/profile?tab=company" className="font-semibold underline">
                       {chunks}
                     </Link>
                   ),

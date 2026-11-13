@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
-import MobileCompanyLayout from "@/components/MobileCompanyLayout";
+import { redirect } from "@/i18n/navigation";
 
-export const metadata: Metadata = {
-  title: "Company & VAT — My Energy",
-  description: "Company profile and VAT verification details for your My Energy account.",
-};
-
-export default function CompanyPage() {
-  return (
-    <div className="block md:hidden">
-      <MobileCompanyLayout />
-    </div>
-  );
+/**
+ * Company & VAT live on /profile: the overview (desktop) and the Company tab (phone) show the real account row. This route used to render a phone-only card with an invented company, VAT number and "VIES verified" status.
+ */
+export default async function Redirect({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: { pathname: "/profile", query: { tab: "company" } }, locale });
 }

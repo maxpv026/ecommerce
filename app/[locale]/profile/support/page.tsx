@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import DesktopRedirect from "@/components/DesktopRedirect";
 import MobileSupportLayout from "@/components/MobileSupportLayout";
 
 export const metadata: Metadata = {
@@ -8,8 +9,12 @@ export const metadata: Metadata = {
 
 export default function SupportPage() {
   return (
-    <div className="block md:hidden">
-      <MobileSupportLayout />
-    </div>
+    <>
+      {/* Desktop has no help screen of its own: the profile, with the chat launcher on the storefront pages. */}
+      <DesktopRedirect to="/profile" />
+      <div className="block md:hidden">
+        <MobileSupportLayout />
+      </div>
+    </>
   );
 }

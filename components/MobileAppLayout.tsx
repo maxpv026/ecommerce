@@ -544,7 +544,7 @@ export default function MobileAppLayout({
                 </span>
                 <motion.div whileTap={{ scale: 0.95 }} className="flex flex-none">
                   <Link
-                    href="/profile/docs"
+                    href="/profile?tab=documents"
                     aria-label={tm("certDownloadAria")}
                     className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-slate-100 text-slate-700 dark:bg-white/[.07] dark:text-slate-100"
                   >

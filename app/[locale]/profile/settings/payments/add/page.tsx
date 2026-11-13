@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
-import MobileAddCardLayout from "@/components/MobileAddCardLayout";
+import { redirect } from "@/i18n/navigation";
 
-export const metadata: Metadata = {
-  title: "Add Card — My Energy",
-  description: "Add a new payment method to your My Energy account.",
-};
-
-export default function AddCardPage() {
-  return (
-    <div className="block md:hidden">
-      <MobileAddCardLayout />
-    </div>
-  );
+/**
+ * There are no saved cards (payment is SEPA bank transfer); this route used to be an "add card" form that stored nothing.
+ */
+export default async function Redirect({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: { pathname: "/profile" }, locale });
 }

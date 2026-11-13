@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
-import MobileEmailLayout from "@/components/MobileEmailLayout";
+import { redirect } from "@/i18n/navigation";
 
-export const metadata: Metadata = {
-  title: "Email Address — My Energy",
-  description: "Update the email address on your My Energy account.",
-};
-
-export default function EmailSettingsPage() {
-  return (
-    <div className="block md:hidden">
-      <MobileEmailLayout />
-    </div>
-  );
+/**
+ * The sign-in email is shown on /profile. This route used to show a hardcoded third-party address and a form whose "save" changed nothing.
+ */
+export default async function Redirect({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: { pathname: "/profile" }, locale });
 }

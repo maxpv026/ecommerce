@@ -47,7 +47,7 @@ export default function AddressesView({ addresses, onEdit }: { addresses: UserAd
           const Icon = a.siteType ? SITE_ICON[a.siteType] : MapPin;
           const lines = a.street ? [a.street, [a.postalCode, a.city].filter(Boolean).join(" "), a.country].filter(Boolean).join(", ") : a.fullAddress;
           return (
-            <div key={a.id} className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4 border-b border-slate-900/[.06] px-5 py-4 last:border-b-0 dark:border-white/[.06]" data-address-row={a.id}>
+            <div key={a.id} className="grid grid-cols-[40px_minmax(0,1fr)] items-center gap-x-4 gap-y-2 border-b sm:grid-cols-[40px_minmax(0,1fr)_auto] border-slate-900/[.06] px-5 py-4 last:border-b-0 dark:border-white/[.06]" data-address-row={a.id}>
               <span className={ICON_TILE}>
                 <Icon size={17} strokeWidth={1.9} />
               </span>
@@ -64,7 +64,7 @@ export default function AddressesView({ addresses, onEdit }: { addresses: UserAd
                 {a.phone && <div className="mt-0.5 text-[12px] text-slate-500 tabular-nums dark:text-ink-muted">{a.phone}</div>}
               </div>
               {confirming === a.id ? (
-                <div className="flex items-center gap-1.5" data-address-confirm>
+                <div className="col-span-2 flex items-center justify-end gap-1.5 sm:col-span-1" data-address-confirm>
                   <span className="text-[12px] text-slate-600 dark:text-slate-300">{t("addressDeleteConfirm")}</span>
                   <button type="button" onClick={() => setConfirming(null)} className={ROW_ACTION_GHOST}>
                     {t("cancel")}
@@ -74,7 +74,7 @@ export default function AddressesView({ addresses, onEdit }: { addresses: UserAd
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5">
+                <div className="col-span-2 flex items-center justify-end gap-1.5 sm:col-span-1">
                   {!a.isDefault && (
                     <button type="button" disabled={pending} onClick={() => run(() => setDefaultAddress(a.id), t("addressDefaultSet"))} className={ROW_ACTION_GHOST} data-address-set-default>
                       {t("addressMakeDefault")}

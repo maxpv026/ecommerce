@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
-import MobilePasswordLayout from "@/components/MobilePasswordLayout";
+import { redirect } from "@/i18n/navigation";
 
-export const metadata: Metadata = {
-  title: "Change Password — My Energy",
-  description: "Update the password on your My Energy account.",
-};
-
-export default function PasswordSettingsPage() {
-  return (
-    <div className="block md:hidden">
-      <MobilePasswordLayout />
-    </div>
-  );
+/**
+ * Password changes happen on /profile/security (desktop and phone), through the real emailed-code flow. This route used to be a form whose "save" only navigated back.
+ */
+export default async function Redirect({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: { pathname: "/profile/security" }, locale });
 }

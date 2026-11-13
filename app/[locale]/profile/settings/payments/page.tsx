@@ -1,15 +1,9 @@
-import type { Metadata } from "next";
-import MobilePaymentMethodsLayout from "@/components/MobilePaymentMethodsLayout";
+import { redirect } from "@/i18n/navigation";
 
-export const metadata: Metadata = {
-  title: "Payment Methods — My Energy",
-  description: "Manage the payment methods on file for your My Energy account.",
-};
-
-export default function PaymentMethodsPage() {
-  return (
-    <div className="block md:hidden">
-      <MobilePaymentMethodsLayout />
-    </div>
-  );
+/**
+ * Orders are paid by SEPA bank transfer — there are no saved cards. This route used to list two invented cards.
+ */
+export default async function Redirect({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: { pathname: "/profile" }, locale });
 }

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronRight, KeyRound, Lock } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { ChevronRight, KeyRound } from "lucide-react";
 import MobileSubPageHeader from "./MobileSubPageHeader";
 import DeviceSessions from "./security/DeviceSessions";
+import ChangePasswordFlow from "./ChangePasswordFlow";
 import TwoFactorManager from "./security/TwoFactorManager";
 import type { SecurityState } from "@/lib/actions/security";
 
@@ -15,8 +15,7 @@ import type { SecurityState } from "@/lib/actions/security";
  * same step-up-guarded actions as desktop Settings. Nothing here is sample
  * data; a guest (no session) sees nothing to manage.
  */
-export default function MobileSecurityLayout({ security, email, now }: { security: SecurityState | null; email: string; now: number }) {
-  const t = useTranslations("SecurityCenter");
+export default function MobileSecurityLayout({ security, email, now, passwordChangedAt = null }: { security: SecurityState | null; email: string; now: number; passwordChangedAt?: string | null }) {
   const tA = useTranslations("AccountSettings");
   const [state, setState] = useState(security);
   const [managing, setManaging] = useState(false);
@@ -48,13 +47,10 @@ export default function MobileSecurityLayout({ security, email, now }: { securit
             <ChevronRight size={16} className="flex-none text-slate-400" />
           </button>
 
-          <Link href="/profile/settings/password" className="mx-4 flex items-center gap-3 rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-900">
-            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-slate-900/[.08] bg-slate-50 text-slate-500 dark:border-white/[.08] dark:bg-white/[.04]">
-              <Lock size={17} />
-            </span>
-            <span className="min-w-0 flex-1 text-[14px] font-semibold tracking-[-.02em]">{t("changePassword")}</span>
-            <ChevronRight size={16} className="flex-none text-slate-400" />
-          </Link>
+          {/* The real flow (emailed code, then the new password) — the same component as desktop Settings. */}
+          <div className="mx-4 rounded-3xl bg-white p-4 shadow-sm dark:bg-slate-900" data-mobile-password>
+            <ChangePasswordFlow email={email} passwordChangedAt={passwordChangedAt} disabled={!email} compact />
+          </div>
 
           <div className="mx-4 overflow-hidden rounded-3xl bg-white shadow-sm dark:bg-slate-900 [&_ul]:pl-5">
             <DeviceSessions sessions={state.sessions} now={now} onChange={setState} />

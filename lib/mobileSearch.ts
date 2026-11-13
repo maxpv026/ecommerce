@@ -1,5 +1,5 @@
 import { MOBILE_CATALOG } from "./mobileCatalog";
-import { SDS_DOCS } from "./mobileDocs";
+import { SDS_DOCUMENTS } from "./sds";
 import { ACTIVE_ORDER, PAST_ORDERS } from "./mobileOrders";
 
 export const RECENT_SEARCHES: string[] = ["R-410A", "SDS R-32", "ORD-8341", "ISO Tank"];
@@ -28,12 +28,13 @@ export function searchAll(rawQuery: string): SearchResult[] {
     href: `/product/${entry.productId}?weight=${entry.weightId}`,
   }));
 
-  const docResults: SearchResult[] = SDS_DOCS.filter((doc) => doc.name.toLowerCase().includes(q)).map((doc) => ({
+  // The real SDS library (lib/sds) — the sheets the Documents tab lists.
+  const docResults: SearchResult[] = SDS_DOCUMENTS.filter((doc) => `${doc.name} ${doc.gas}`.toLowerCase().includes(q)).map((doc) => ({
     id: `doc-${doc.id}`,
     type: "Documents",
-    title: doc.name,
-    subtitle: doc.meta,
-    href: "/profile/docs?tab=sds",
+    title: `${doc.gas} SDS`,
+    subtitle: doc.doc,
+    href: "/profile?tab=documents&docs=sds",
   }));
 
   const allOrders = [

@@ -8,10 +8,28 @@ export interface OpenAiChatDetail {
   prefillText?: string;
 }
 
+/**
+ * The widget is loaded lazily (AIChatWidgetMount → next/dynamic), so a tap
+ * in the first moments after page load can fire the event before anything
+ * listens. The request is therefore also parked here, and the widget picks it
+ * up when it mounts (takePendingAiChat) — the tap is never silently lost.
+ */
+let pending: { detail: OpenAiChatDetail; at: number } | null = null;
+/** A parked request only counts while the page that made it is still loading. */
+const PENDING_TTL_MS = 10_000;
+
 export function openAiChat(prefillText?: string) {
   if (typeof window !== "undefined") {
+    pending = { detail: { prefillText }, at: Date.now() };
     window.dispatchEvent(new CustomEvent<OpenAiChatDetail>(OPEN_AI_CHAT_EVENT, { detail: { prefillText } }));
   }
+}
+
+/** The open request made before the widget was listening, once. */
+export function takePendingAiChat(): OpenAiChatDetail | null {
+  const p = pending;
+  pending = null;
+  return p && Date.now() - p.at < PENDING_TTL_MS ? p.detail : null;
 }
 
 /**
@@ -59,6 +77,7 @@ export const ASSISTANT_VISIBLE_PATHS = [
   // already reading F-Gas figures, so they are the likeliest place for a
   // question the knowledge base can answer.
   "/profile/compliance",
-  "/profile/docs",
+  // The phone help screen: its "chat with support" button opens this widget.
+  "/profile/support",
 ];
 

@@ -22,7 +22,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     icon: "file-text",
     label: "sdsLibraryLabel",
     note: "sdsLibraryNote",
-    href: "/profile/docs?tab=sds",
+    href: "/profile?tab=documents&docs=sds",
   },
   // Replaces the barcode-scanner tile, which was a niche utility holding a
   // slot in a four-tile grid. Links straight to the carbon record rather than

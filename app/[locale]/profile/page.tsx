@@ -23,7 +23,7 @@ export const metadata: Metadata = {
  * order that isn't yours could then only change the UI, not the 200 status.
  * See app/[locale]/page.tsx for the full reasoning and the measurement.
  */
-export default function ProfilePage({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string }> }) {
+export default function ProfilePage({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string; docs?: string }> }) {
   return (
     <Suspense fallback={<PageSkeleton rows={4} />}>
       <ProfileContent searchParams={searchParams} />
@@ -31,7 +31,7 @@ export default function ProfilePage({ searchParams }: { searchParams: Promise<{ 
   );
 }
 
-async function ProfileContent({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string }> }) {
+async function ProfileContent({ searchParams }: { searchParams: Promise<{ tab?: string; section?: string; docs?: string }> }) {
   // ?tab=orders opens that view; ?section= is the older spelling some links still use.
   const sp = await searchParams;
   const wanted = sp.tab ?? sp.section ?? "";
@@ -83,6 +83,7 @@ async function ProfileContent({ searchParams }: { searchParams: Promise<{ tab?: 
       logbook={logbook}
       hub={hub}
       initialTab={initialTab}
+      initialDocFilter={sp.docs}
     />
   );
 }

@@ -8,6 +8,9 @@ import { listDeviceSessions } from "@/lib/deviceSessions";
 import { pickupDefaults } from "@/lib/shipping/resolve";
 import type { AvatarTone, FulfilmentPref, UnitPref } from "@/lib/profilePrefs";
 import { isAvatarTone, FULFILMENT_PREFS, UNIT_PREFS } from "@/lib/profilePrefs";
+import { SDS_ASSET_DIR, SDS_DOCUMENTS } from "@/lib/sds";
+import { gasMarkForProduct } from "@/lib/productMedia";
+import { normalizeMark } from "@/lib/gasMarks";
 
 /**
  * Everything the /profile hub shows beyond the account row and the orders —
@@ -56,6 +59,36 @@ export interface SecuritySummary {
   passwordChangedAt: string | null;
 }
 
+export interface InvoiceDoc {
+  id: string;
+  invoiceNumber: string;
+  issuedAt: string;
+  status: string;
+  orderId: string;
+  orderNumber: string;
+  totalAmount: number;
+  paymentStatus: string;
+  orderStatus: string;
+}
+
+export interface SdsDoc {
+  name: string;
+  gas: string;
+  version: string;
+  category: string;
+  /** Public file under /sds. */
+  href: string;
+  /** The buyer has ordered this gas / saved a product of it. */
+  purchased: boolean;
+  saved: boolean;
+}
+
+export interface DocumentCenter {
+  invoices: InvoiceDoc[];
+  /** Ordered and saved gases first, then the rest of the library. */
+  sds: SdsDoc[];
+}
+
 export interface ProfileHubData {
   preferences: ProfilePreferences;
   fleet: CylinderFleet;
@@ -63,12 +96,13 @@ export interface ProfileHubData {
   favorites: StoreProduct[];
   security: SecuritySummary;
   pickup: { location: string | null; hours: string | null };
+  documents: DocumentCenter;
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function getProfileHub(userId: string): Promise<ProfileHubData> {
-  const [user, ledger, quotes, favorites, devices, requests] = await Promise.all([
+  const [user, ledger, quotes, favorites, devices, requests, invoices, boughtProducts] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -90,7 +124,27 @@ export async function getProfileHub(userId: string): Promise<ProfileHubData> {
     getFavoriteProducts(userId),
     listDeviceSessions(userId, null),
     prisma.cylinderReturnRequest.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.invoice.findMany({
+      where: { order: { userId } },
+      orderBy: { issuedAt: "desc" },
+      select: { id: true, invoiceNumber: true, issuedAt: true, status: true, order: { select: { id: true, orderNumber: true, totalAmount: true, paymentStatus: true, status: true } } },
+    }),
+    prisma.orderItem.findMany({ where: { order: { userId } }, select: { product: { select: { name: true, sku: true } } } }),
   ]);
+
+  // SDS: which gases this buyer has bought or saved, matched on the mark ("R-410A" ↔ R410A).
+  const markKey = (s: string) => normalizeMark(s);
+  const bought = new Set(boughtProducts.map((i) => gasMarkForProduct(i.product)).filter(Boolean).map((m) => markKey(m!)));
+  const saved = new Set(favorites.map((p) => gasMarkForProduct(p)).filter(Boolean).map((m) => markKey(m!)));
+  const sds = SDS_DOCUMENTS.map((d) => ({
+    name: d.name,
+    gas: d.gas,
+    version: d.doc,
+    category: d.category,
+    href: `${SDS_ASSET_DIR}/${d.file}`,
+    purchased: bought.has(markKey(d.gas)),
+    saved: saved.has(markKey(d.gas)),
+  })).sort((a, b) => Number(b.purchased) - Number(a.purchased) || Number(b.saved) - Number(a.saved));
 
   // Per-type breakdown and the deposit actually charged, from the orders whose
   // ledger rows issued cylinders.
@@ -160,5 +214,19 @@ export async function getProfileHub(userId: string): Promise<ProfileHubData> {
       passwordChangedAt: user?.passwordChangedAt?.toISOString() ?? null,
     },
     pickup: pickupDefaults(),
+    documents: {
+      invoices: invoices.map((i) => ({
+        id: i.id,
+        invoiceNumber: i.invoiceNumber,
+        issuedAt: i.issuedAt.toISOString(),
+        status: i.status,
+        orderId: i.order.id,
+        orderNumber: i.order.orderNumber,
+        totalAmount: Number(i.order.totalAmount),
+        paymentStatus: i.order.paymentStatus,
+        orderStatus: i.order.status,
+      })),
+      sds,
+    },
   };
 }

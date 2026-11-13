@@ -1,16 +1,9 @@
-import type { Metadata } from "next";
-import MobileOptionListLayout from "@/components/MobileOptionListLayout";
-import { CURRENCY_OPTIONS, DEFAULT_CURRENCY_ID } from "@/lib/mobilePreferences";
+import { redirect } from "@/i18n/navigation";
 
-export const metadata: Metadata = {
-  title: "Currency — My Energy",
-  description: "Choose your preferred currency for the My Energy app.",
-};
-
-export default function CurrencySettingsPage() {
-  return (
-    <div className="block md:hidden">
-      <MobileOptionListLayout title="Currency" options={CURRENCY_OPTIONS} defaultId={DEFAULT_CURRENCY_ID} />
-    </div>
-  );
+/**
+ * Prices are in EUR only; this route used to offer USD/GBP/UAH/PLN choices that changed nothing.
+ */
+export default async function Redirect({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  redirect({ href: { pathname: "/profile" }, locale });
 }

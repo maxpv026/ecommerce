@@ -9,7 +9,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import SmartOrderButton from "@/components/smartOrder/SmartOrderButton";
 import { Avatar } from "@/components/AvatarUploader";
 import AddressModal from "@/components/AddressModal";
-import { PILL, PILL_ON, PRIMARY, SECONDARY, SUMMARY_CARD, EYEBROW, TrustChips } from "@/components/home/ui";
+import { PILL, PRIMARY, SECONDARY, SUMMARY_CARD, EYEBROW, TrustChips } from "@/components/home/ui";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderTrackingView } from "@/lib/tracking";
 import type { ProfileHubData } from "@/lib/profileHub";
@@ -22,6 +22,7 @@ import FgasView from "./FgasView";
 import QuotesView from "./QuotesView";
 import WishlistView from "./WishlistView";
 import SecurityView from "./SecurityView";
+import DocumentsView, { DOC_FILTERS, documentCount, type DocFilter } from "./DocumentsView";
 import ProfileEditor from "./ProfileEditor";
 
 /**
@@ -51,6 +52,8 @@ export interface ProfileHubProps {
   logbook: LogbookSummary | null;
   hub: ProfileHubData;
   initialTab: ProfileTab;
+  /** ?docs= — which document group the Documents tab opens on. */
+  initialDocFilter?: string;
 }
 
 const TAB_ICON: Record<ProfileTab, typeof Box> = {
@@ -61,10 +64,11 @@ const TAB_ICON: Record<ProfileTab, typeof Box> = {
   fgas: ShieldCheck,
   quotes: Receipt,
   favorites: Heart,
+  documents: FileText,
   security: Settings,
 };
 
-export default function ProfileHub({ profile, orders, orderTracking, addresses, dashboard, logbook, hub, initialTab }: ProfileHubProps) {
+export default function ProfileHub({ profile, orders, orderTracking, addresses, dashboard, logbook, hub, initialTab, initialDocFilter }: ProfileHubProps) {
   const t = useTranslations("ProfileHub");
   const format = useFormatter();
   const router = useRouter();
@@ -98,6 +102,7 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
     if (tab === "overview") params.delete("tab");
     else params.set("tab", tab);
     params.delete("section");
+    if (tab !== "documents") params.delete("docs");
     const qs = params.toString();
     const next = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash === `#${tab}` ? window.location.hash : ""}`;
     if (next !== `${window.location.pathname}${window.location.search}${window.location.hash}`) window.history.replaceState(window.history.state, "", next);
@@ -124,7 +129,9 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
     addresses: addresses.length,
     quotes: hub.quotes.length,
     favorites: hub.favorites.length,
+    documents: documentCount(hub.documents, Boolean(profile.certificateDocumentHref)),
   };
+  const docFilter: DocFilter = (DOC_FILTERS as readonly string[]).includes(initialDocFilter ?? "") ? (initialDocFilter as DocFilter) : "all";
 
   const onSaved = () => {
     toast.success(t("savedToast"));
@@ -162,24 +169,32 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
         </div>
 
         {/* ── Section tabs ── */}
-        <nav className="mb-6 flex flex-wrap items-center gap-2" role="tablist" aria-label={t("sectionsLabel")} data-profile-tabs>
+        {/* One row: all nine views. Never wraps — on a narrow window it scrolls sideways instead. */}
+        <nav className="-mx-1 mb-6 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label={t("sectionsLabel")} data-profile-tabs>
           {PROFILE_TABS.map((id) => {
             const Icon = TAB_ICON[id];
             const on = tab === id;
             const n = counts[id];
             return (
-              <button key={id} type="button" role="tab" aria-selected={on} onClick={() => setTab(id)} data-profile-tab={id} className={on ? PILL_ON : PILL}>
-                <Icon size={15} strokeWidth={2} />
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setTab(id)}
+                data-profile-tab={id}
+                className={`inline-flex h-9 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[12.5px] font-semibold tracking-[-.01em] transition-colors ${
+                  on
+                    ? "border-transparent bg-[#0B1020] text-white dark:bg-white dark:text-slate-900"
+                    : "border-slate-900/[.12] bg-white/70 text-slate-800 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-100 dark:hover:bg-white/[.09]"
+                }`}
+              >
+                <Icon size={14} strokeWidth={2} />
                 {t(`tab_${id}`)}
                 {n !== undefined && n > 0 && <span className={`rounded-full px-1.5 text-[11px] tabular-nums ${on ? "bg-white/15 dark:bg-slate-900/10" : "bg-slate-900/[.06] dark:bg-white/[.08]"}`}>{n}</span>}
               </button>
             );
           })}
-          <Link href="/profile/docs" className={PILL} data-profile-tab="documents">
-            <FileText size={15} strokeWidth={2} />
-            {t("tab_documents")}
-            <ArrowRight size={13} strokeWidth={2.2} />
-          </Link>
         </nav>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
@@ -199,6 +214,7 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
             {tab === "fgas" && <FgasView profile={profile} logbook={logbook} />}
             {tab === "quotes" && <QuotesView quotes={hub.quotes} />}
             {tab === "favorites" && <WishlistView products={hub.favorites} />}
+            {tab === "documents" && <DocumentsView docs={hub.documents} profile={profile} logbook={logbook} initialFilter={docFilter} />}
             {tab === "security" && <SecurityView security={hub.security} />}
           </section>
 

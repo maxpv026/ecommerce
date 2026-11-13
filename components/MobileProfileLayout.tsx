@@ -177,10 +177,11 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
     href?: string;
     value?: string;
   }> = [
-    { id: "security", icon: ShieldCheck, tint: "#34d399", label: t("rowSecurity"), note: t("rowSecurityNote"), href: "/profile/settings/password" },
+    { id: "security", icon: ShieldCheck, tint: "#34d399", label: t("rowSecurity"), note: t("rowSecurityNote"), href: "/profile/security" },
     { id: "notifications", icon: Bell, tint: "#2563eb", label: t("rowNotifications"), note: t("rowNotificationsNote"), href: "/notifications" },
     { id: "language", icon: Globe, tint: "#60a5fa", label: t("rowLanguage"), note: "", href: "/profile/settings/language", value: activeLanguage },
-    { id: "currency", icon: Euro, tint: "#a78bfa", label: t("rowCurrency"), note: "", href: "/profile/settings/currency", value: "EUR (€)" },
+    // Prices are in EUR only — shown as a fact, not as a choice that changes nothing.
+    { id: "currency", icon: Euro, tint: "#a78bfa", label: t("rowCurrency"), note: "", value: "EUR (€)" },
   ];
 
   return (
@@ -657,25 +658,29 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
                 </span>
               </button>
 
-              {settingsRows.slice(2).map((row, i, arr) => (
-                <Link
-                  key={row.id}
-                  href={row.href!}
-                  className={`flex min-h-[60px] w-full items-center gap-3 px-[15px] py-3 ${
-                    i === arr.length - 1 ? "" : "border-b border-slate-900/[.08] dark:border-hairline"
-                  }`}
-                >
-                  <span
-                    className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl border"
-                    style={{ background: `${row.tint}22`, borderColor: `${row.tint}44` }}
-                  >
-                    <row.icon size={15} strokeWidth={1.9} style={{ color: row.tint }} />
-                  </span>
-                  <span className="min-w-0 flex-1 text-[13px] font-semibold tracking-[-.022em]">{row.label}</span>
-                  {row.value && <span className="max-w-[40%] truncate text-xs font-semibold text-slate-500 dark:text-ink-muted">{row.value}</span>}
-                  <ChevronRight size={14} strokeWidth={2} className="flex-none text-slate-400 dark:text-ink-muted" />
-                </Link>
-              ))}
+              {settingsRows.slice(2).map((row, i, arr) => {
+                const cls = `flex min-h-[60px] w-full items-center gap-3 px-[15px] py-3 ${i === arr.length - 1 ? "" : "border-b border-slate-900/[.08] dark:border-hairline"}`;
+                const body = (
+                  <>
+                    <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-xl border" style={{ background: `${row.tint}22`, borderColor: `${row.tint}44` }}>
+                      <row.icon size={15} strokeWidth={1.9} style={{ color: row.tint }} />
+                    </span>
+                    <span className="min-w-0 flex-1 text-[13px] font-semibold tracking-[-.022em]">{row.label}</span>
+                    {row.value && <span className="max-w-[40%] truncate text-xs font-semibold text-slate-500 dark:text-ink-muted">{row.value}</span>}
+                    {row.href && <ChevronRight size={14} strokeWidth={2} className="flex-none text-slate-400 dark:text-ink-muted" />}
+                  </>
+                );
+                // A row without a destination is information, not a link.
+                return row.href ? (
+                  <Link key={row.id} href={row.href} className={cls}>
+                    {body}
+                  </Link>
+                ) : (
+                  <div key={row.id} className={cls} data-setting-static={row.id}>
+                    {body}
+                  </div>
+                );
+              })}
             </div>
             {/* Sign out belongs with the settings, not under every tab. */}
             <div className="pt-[22px]">

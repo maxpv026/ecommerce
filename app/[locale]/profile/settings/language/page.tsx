@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import DesktopRedirect from "@/components/DesktopRedirect";
 import MobileLanguageSwitcherLayout from "@/components/MobileLanguageSwitcherLayout";
 
 export const metadata: Metadata = {
@@ -8,8 +9,12 @@ export const metadata: Metadata = {
 
 export default function LanguageSettingsPage() {
   return (
-    <div className="block md:hidden">
-      <MobileLanguageSwitcherLayout />
-    </div>
+    <>
+      {/* Desktop changes the interface language in Settings. */}
+      <DesktopRedirect to="/profile/settings" />
+      <div className="block md:hidden">
+        <MobileLanguageSwitcherLayout />
+      </div>
+    </>
   );
 }
