@@ -1,9 +1,7 @@
 import type { MobileCatalogEntry } from "./types";
 
-// EU-priced mobile catalog. First four entries mirror lib/mobileHome.ts's
-// FEATURED_PRODUCTS (same underlying products, same source of truth for the
-// mobile/EU experience); this list additionally carries the bulk tiers and
-// the productId/weightId pair each card deep-links to on the PDP.
+// EU-priced mobile catalog: carries the bulk tiers and the
+// productId/weightId pair each card deep-links to on the PDP.
 // `price` is a plain EUR amount, formatted per-locale at render time.
 export const MOBILE_CATALOG: MobileCatalogEntry[] = [
   { id: 1, name: "R-410A Premium", type: "R-410A", weight: 25, price: 189, tag: "Top", productId: 1, weightId: "25" },

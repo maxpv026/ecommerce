@@ -2,8 +2,12 @@
   "Nav": {
     "home": "首页",
     "catalog": "产品目录",
+    "hub": "市场",
     "cart": "购物车",
-    "profile": "个人中心"
+    "profile": "个人中心",
+    "search": "搜索",
+    "ariaLabel": "主要导航",
+    "cartWithCount": "购物车, {count, plural, other {# 件}}"
   },
   "Header": {
     "favoritesAria": "收藏夹",

@@ -49,15 +49,17 @@ interface AvatarProps {
   className?: string;
   /** Monogram colour (lib/profilePrefs); the brand gradient when unset. */
   tone?: string | null;
+  /** Background + text classes for a monogram with no chosen tone (default: the brand gradient). */
+  fallbackClassName?: string;
 }
 
 /** The circle itself: photo when there is one (and it loads), initials otherwise. */
-export function Avatar({ avatarUrl, initials, size, className = "", tone = null }: AvatarProps) {
+export function Avatar({ avatarUrl, initials, size, className = "", tone = null, fallbackClassName = "bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] text-white" }: AvatarProps) {
   const [broken, setBroken] = useState<string | null>(null);
   return (
     <span
       data-avatar-tone={tone ?? "default"}
-      className={`relative flex flex-none items-center justify-center overflow-hidden rounded-full font-semibold ${isAvatarTone(tone) ? AVATAR_TONE_CLASS[tone] : "bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] text-white"} ${className}`}
+      className={`relative flex flex-none items-center justify-center overflow-hidden rounded-full font-semibold ${isAvatarTone(tone) ? AVATAR_TONE_CLASS[tone] : fallbackClassName} ${className}`}
       style={{ width: size, height: size }}
     >
       {avatarUrl && broken !== avatarUrl ? (

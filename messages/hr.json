@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Početna",
     "catalog": "Katalog",
+    "hub": "Tržište",
     "cart": "Košarica",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Traži",
+    "ariaLabel": "Glavna navigacija",
+    "cartWithCount": "Košarica, {count, plural, one {# stavka} few {# stavke} other {# stavki}}"
   },
   "Header": {
     "favoritesAria": "Favoriti",

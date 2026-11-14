@@ -84,12 +84,14 @@ export default function HeroBackground({ children }: HeroBackgroundProps) {
         </div>
       </motion.div>
 
-      {/* Mouse spotlight — soft blue/violet glow that trails the cursor. */}
+      {/* Mouse spotlight — soft blue/violet glow that trails the cursor. Not on
+          phones: a tap fires mouse events too, and the 440 px circle followed
+          the finger out past the screen edge (horizontal scroll). */}
       <motion.div
         aria-hidden
         data-hero-spotlight
         style={{ left: spotlightX, top: spotlightY, opacity: isHovering ? 1 : 0 }}
-        className="pointer-events-none absolute h-[440px] w-[440px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.65)_0%,rgba(139,92,246,0.4)_45%,transparent_75%)] blur-[70px] transition-opacity duration-500 ease-out"
+        className="pointer-events-none absolute h-[440px] w-[440px] -translate-x-1/2 max-md:hidden -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.65)_0%,rgba(139,92,246,0.4)_45%,transparent_75%)] blur-[70px] transition-opacity duration-500 ease-out"
       />
 
       {children}

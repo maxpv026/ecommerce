@@ -65,7 +65,8 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
       <main className="relative mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-8 md:pb-24 md:pt-9" data-market-hub>
         {/* ── Header bar (cart layout) ── */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-hub-header>
-          <div className="min-w-0 flex-1">
+          {/* Full row on phones: as flex-1 (basis 0) it never wrapped and the title was crushed beside the pill. */}
+          <div className="min-w-0 flex-1 max-sm:basis-full">
             <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] sm:text-[34px]">{t("title")}</h1>
             <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-hub-meta>
               {t("lead")}

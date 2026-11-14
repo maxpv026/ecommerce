@@ -67,13 +67,13 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
     : null;
 
   return (
-    <main className="mx-auto max-w-7xl px-8 pb-28" data-home>
+    <main className="mx-auto max-w-7xl px-4 pb-16 sm:px-8 sm:pb-28" data-home>
       {/* ── Hero ── */}
-      <section className="pt-8" data-home-section="hero">
+      <section className="pt-5 md:pt-8" data-home-section="hero">
         <HeroBackground>
-          <div className="relative grid min-h-[var(--hero-h)] items-center gap-12 [--hero-h:clamp(500px,calc(100svh-300px),700px)] md:grid-cols-[1fr_1fr]">
-            <motion.div initial={false} animate={{ opacity: 1 }}>
-              <div className="mb-6 flex h-[30px] items-center">
+          <div className="relative grid min-h-[var(--hero-h)] items-center gap-12 [--hero-h:clamp(500px,calc(100svh-300px),700px)] grid-cols-1 max-md:min-h-0 max-md:gap-6 md:grid-cols-[1fr_1fr]">
+            <motion.div initial={false} animate={{ opacity: 1 }} className="min-w-0">
+              <div className="mb-6 flex h-[30px] items-center max-md:mb-3 max-md:h-auto">
                 {/* The F-Gas status chip lived here; it is shown where it matters — /cart and /profile?tab=fgas. */}
                 {status === "unauthenticated" ? (
                   <Link href="/auth" className="inline-flex items-center gap-2 text-[12.5px] font-medium text-slate-500 hover:text-blue-700 dark:text-ink-muted dark:hover:text-blue-400">
@@ -82,7 +82,7 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
                 ) : null}
               </div>
 
-              <h1 className="text-5xl font-semibold leading-none tracking-[-0.048em] text-balance md:text-[60px]">
+              <h1 className="text-[40px] font-semibold leading-none tracking-[-0.048em] text-balance sm:text-5xl md:text-[60px]">
                 {isAuthenticated && heroName ? (
                   <>
                     {greeting},
@@ -93,21 +93,21 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
                   greeting
                 )}
               </h1>
-              <p className="mt-6 max-w-[452px] text-[16.5px] leading-relaxed text-slate-600 text-pretty dark:text-ink-muted">{t("heroSubtitle")}</p>
+              <p className="mt-6 max-w-[452px] text-[16.5px] leading-relaxed text-slate-600 text-pretty max-md:mt-4 max-md:text-[15px] dark:text-ink-muted">{t("heroSubtitle")}</p>
 
-              <div className="mt-8 flex items-center gap-2.5">
-                <Link href="/products" className="flex h-12 items-center gap-2.5 rounded-[14px] bg-blue-700 px-6 text-[14.5px] font-semibold tracking-[-.02em] text-white transition-colors hover:bg-blue-800">
+              <div className="mt-8 flex items-center gap-2.5 max-md:mt-6 max-sm:flex-col max-sm:items-stretch" data-hero-ctas>
+                <Link href="/products" className="flex h-12 items-center gap-2.5 rounded-[14px] bg-blue-700 px-6 max-sm:justify-center text-[14.5px] font-semibold tracking-[-.02em] text-white transition-colors hover:bg-blue-800">
                   {t("browseCylinders")}
                   <ArrowRight className="h-4 w-4" strokeWidth={2.2} />
                 </Link>
-                <a href="#bento" className="flex h-12 items-center rounded-[14px] border border-slate-900/[.12] bg-white/80 px-5 text-[14.5px] font-semibold tracking-[-.02em] text-slate-800 transition-colors hover:bg-white dark:border-white/[.14] dark:bg-white/[.05] dark:text-slate-100 dark:hover:bg-white/[.09]">
+                <a href="#bento" className="flex h-12 items-center rounded-[14px] border border-slate-900/[.12] bg-white/80 px-5 max-sm:justify-center text-[14.5px] font-semibold tracking-[-.02em] text-slate-800 transition-colors hover:bg-white dark:border-white/[.14] dark:bg-white/[.05] dark:text-slate-100 dark:hover:bg-white/[.09]">
                   {t("openCalculator")}
                 </a>
               </div>
 
               {/* KPI micro-cards — each opens where its number comes from */}
               {ownDataLoading && !dashboard && (
-                <div className="mt-10 grid max-w-[480px] grid-cols-3 gap-2.5" data-stats-loading>
+                <div className="mt-10 grid max-w-[480px] grid-cols-3 gap-2.5 max-md:mt-6 max-sm:gap-2" data-stats-loading>
                   {[0, 1, 2].map((i) => (
                     <div key={i} className="rounded-[16px] border border-slate-900/[.08] bg-white/60 px-4 py-3 dark:border-white/[.08] dark:bg-white/[.03]">
                       <Shimmer className="h-[26px] w-10" />
@@ -117,17 +117,17 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
                 </div>
               )}
               {kpis && (
-                <div className="mt-10 grid max-w-[480px] grid-cols-3 gap-2.5" data-hero-kpis>
+                <div className="mt-10 grid max-w-[480px] grid-cols-3 gap-2.5 max-md:mt-6 max-sm:gap-2" data-hero-kpis>
                   {kpis.map((k) => (
                     <Link
                       key={k.key}
                       href={k.href}
                       data-hero-kpi={k.key}
-                      className="group relative rounded-[16px] border border-slate-900/[.08] bg-white/75 px-4 py-3 backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-blue-600/30 hover:shadow-[0_18px_36px_-24px_rgba(29,78,216,.55)] dark:border-white/[.08] dark:bg-white/[.03] dark:hover:border-blue-400/30"
+                      className="group relative rounded-[16px] border border-slate-900/[.08] bg-white/75 px-4 py-3 backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-blue-600/30 hover:shadow-[0_18px_36px_-24px_rgba(29,78,216,.55)] dark:border-white/[.08] dark:bg-white/[.03] dark:hover:border-blue-400/30 max-sm:px-3"
                     >
                       <ArrowUpRight size={13} strokeWidth={2.2} className="absolute right-2.5 top-2.5 text-slate-300 transition-colors group-hover:text-blue-600 dark:text-slate-600 dark:group-hover:text-blue-400" />
-                      <div className="text-[24px] font-semibold tabular-nums tracking-[-0.04em]">{k.value}</div>
-                      <div className="mt-0.5 text-[10.5px] font-semibold tracking-[.06em] text-slate-400 dark:text-ink-muted">{k.label}</div>
+                      <div className="text-[24px] font-semibold tabular-nums tracking-[-0.04em] max-sm:text-[21px]">{k.value}</div>
+                      <div className="mt-0.5 text-[10.5px] font-semibold tracking-[.06em] text-slate-400 max-sm:text-[9.5px] max-sm:leading-[1.25] dark:text-ink-muted">{k.label}</div>
                     </Link>
                   ))}
                 </div>
@@ -135,7 +135,7 @@ export default function DesktopHome({ products, showcase, alerts, dashboard, lat
             </motion.div>
 
             {/* 3D stage + gas dock */}
-            <div className="relative h-[calc(var(--hero-h)+40px)]">
+            <div className="relative h-[calc(var(--hero-h)+40px)] max-md:h-auto">
               <HeroShowcase items={items} onNotify={setNotifyFor} />
             </div>
           </div>

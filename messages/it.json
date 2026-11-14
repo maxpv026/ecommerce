@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Home",
     "catalog": "Catalogo",
+    "hub": "Mercato",
     "cart": "Carrello",
-    "profile": "Profilo"
+    "profile": "Profilo",
+    "search": "Cerca",
+    "ariaLabel": "Navigazione principale",
+    "cartWithCount": "Carrello, {count, plural, one {# articolo} many {# articoli} other {# articoli}}"
   },
   "Header": {
     "favoritesAria": "Preferiti",

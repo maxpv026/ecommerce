@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Acasă",
     "catalog": "Catalog",
+    "hub": "Piață",
     "cart": "Coș",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Caută",
+    "ariaLabel": "Navigare principală",
+    "cartWithCount": "Coș, {count, plural, one {# articol} few {# articole} other {# articole} }"
   },
   "Header": {
     "favoritesAria": "Favorite",

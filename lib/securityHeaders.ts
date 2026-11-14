@@ -131,13 +131,12 @@ export function securityHeaders(): HttpHeader[] {
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     {
-      // Camera: this origin only — the mobile barcode scanner
-      // (components/BarcodeScannerModal) reads cylinder labels with it, and
-      // `camera=()` made getUserMedia fail even after the user allowed it.
-      // Frames and other origins still get nothing. The rest are unused and
-      // denied outright, so a compromised script can't reach for them.
+      // Every device API is unused and denied outright, so a compromised
+      // script can't reach for one. (The camera was allowed for the old
+      // mobile home's barcode scanner, removed with it in 2026-11. File
+      // inputs that open the camera — F-Gas uploads — don't need it.)
       key: "Permissions-Policy",
-      value: "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+      value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
     },
     {
       // Keeps this origin out of any other site's browsing-context group,

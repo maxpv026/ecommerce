@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Avaleht",
     "catalog": "Katalog",
+    "hub": "Turg",
     "cart": "Ostukorv",
-    "profile": "Profiil"
+    "profile": "Profiil",
+    "search": "Otsi",
+    "ariaLabel": "Peamine navigeerimine",
+    "cartWithCount": "Ostukorv, {count, plural, one {# ese} other {# eset}}"
   },
   "Header": {
     "favoritesAria": "Lemmikud",

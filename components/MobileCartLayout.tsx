@@ -703,7 +703,7 @@ export default function MobileCartLayout({
 
       {/* sticky total bar above the global bottom nav */}
       {!empty && (
-        <div className="fixed bottom-[calc(80px+env(safe-area-inset-bottom))] left-0 z-[90] w-full border-t border-slate-900/[.08] bg-white/90 px-[18px] pb-3.5 pt-3.5 shadow-[0_-18px_44px_-26px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-[#141518]/90">
+        <div className="fixed bottom-[calc(64px+env(safe-area-inset-bottom))] left-0 z-[90] w-full border-t border-slate-900/[.08] bg-white/90 px-[18px] pb-3.5 pt-3.5 shadow-[0_-18px_44px_-26px_rgba(0,0,0,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-[#141518]/90">
           {/* F-Gas gate — directly above the total so it reads as its condition */}
           <AnimatePresence mode="wait" initial={false}>
             {fgasGate && (

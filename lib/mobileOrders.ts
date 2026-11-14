@@ -19,7 +19,7 @@ export interface ActiveOrder {
 }
 
 // Mobile-only EU order history — independent of the desktop account's
-// ACCOUNT_ORDERS (lib/account.ts) and Home's ACTIVE_SHIPMENT (lib/mobileHome.ts),
+// ACCOUNT_ORDERS (lib/account.ts),
 // same per-page divergence precedent as the rest of the mobile app shell.
 export const ACTIVE_ORDER: ActiveOrder = {
   id: "#ORD-8472-EU",

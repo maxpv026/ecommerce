@@ -132,13 +132,15 @@ export interface ActiveShipment {
   progressPercent: number;
 }
 
-export type MobileTabId = "home" | "catalog" | "cart" | "profile";
-export type MobileTabIconKey = "home" | "layout-grid" | "shopping-cart" | "user";
+export type MobileTabId = "home" | "catalog" | "hub" | "cart" | "profile";
+export type MobileTabIconKey = "home" | "layout-grid" | "hub" | "shopping-cart" | "user";
 
 export interface MobileTab {
   id: MobileTabId;
   href: string;
   icon: MobileTabIconKey;
+  /** Other routes that mark this tab active. */
+  also?: string[];
 }
 
 export interface MobileCatalogEntry {

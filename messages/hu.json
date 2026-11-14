@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Kezdőlap",
     "catalog": "Katalógus",
+    "hub": "Piac",
     "cart": "Kosár",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Keresés",
+    "ariaLabel": "Fő navigáció",
+    "cartWithCount": "Kosár, {count, plural, one {# tétel} other {# tétel} }"
   },
   "Header": {
     "favoritesAria": "Kedvencek",

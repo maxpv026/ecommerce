@@ -2,8 +2,12 @@
   "Nav": {
     "home": "홈",
     "catalog": "카탈로그",
+    "hub": "허브",
     "cart": "장바구니",
-    "profile": "프로필"
+    "profile": "프로필",
+    "search": "검색",
+    "ariaLabel": "주 내비게이션",
+    "cartWithCount": "장바구니, {count, plural, other {#개}}"
   },
   "Header": {
     "favoritesAria": "즐겨찾기",

@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Home",
     "catalog": "Catalog",
+    "hub": "Hub",
     "cart": "Cart",
-    "profile": "Profile"
+    "profile": "Profile",
+    "search": "Search",
+    "ariaLabel": "Main navigation",
+    "cartWithCount": "Cart, {count, plural, one {# item} other {# items}}"
   },
   "Header": {
     "favoritesAria": "Favorites",

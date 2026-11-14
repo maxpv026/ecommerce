@@ -457,7 +457,7 @@ export default function CalculatedChargeCard({
         </div>
 
         {/* ── Right: what to buy ── */}
-        <div className="flex min-w-0 flex-col rounded-[16px] border border-slate-900/[.09] dark:border-white/10 bg-slate-900/[.03] dark:bg-white/[.04] p-4" data-charge-buy>
+        <div className="flex min-w-0 flex-col rounded-[16px] border border-slate-900/[.09] dark:border-white/10 bg-slate-900/[.03] dark:bg-white/[.04] p-4 max-sm:p-3.5" data-charge-buy>
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-[11px] font-semibold tracking-[.08em] text-slate-500 dark:text-white/55 uppercase">{t("needLabel")}</span>
             <span className="whitespace-nowrap text-[12px] text-slate-500 dark:text-white/55 tabular-nums">

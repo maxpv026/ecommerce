@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Начало",
     "catalog": "Каталог",
+    "hub": "Хъб",
     "cart": "Количка",
-    "profile": "Профил"
+    "profile": "Профил",
+    "search": "Търсене",
+    "ariaLabel": "Основна навигация",
+    "cartWithCount": "Кошница, {count, plural, one {# артикул} other {# артикула}}"
   },
   "Header": {
     "favoritesAria": "Предпочитани",

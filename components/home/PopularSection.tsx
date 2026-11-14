@@ -35,16 +35,17 @@ export default function PopularSection({ products, onNotify }: { products: Store
   const tabLabel: Record<Tab, string> = { all: t("tabAll"), lowGwp: t("tabLowGwp"), standard: t("tabStandard"), equipment: t("tabEquipment") };
 
   return (
-    <section className="pt-16" data-home-section="popular">
+    <section className="pt-16 max-sm:pt-12" data-home-section="popular">
       <SectionHeader
         id="popular"
         title={t("popularTitle")}
         meta={[t("popularLead")]}
         actions={
-          <>
-            <div role="tablist" aria-label={t("popularTitle")} className="flex flex-wrap items-center gap-2">
+          // One row that scrolls sideways on phones, edge to edge; wraps as before on wider screens.
+          <div className="scrollbar-hide flex flex-wrap items-center gap-2 max-sm:-mx-4 max-sm:w-[calc(100%+2rem)] max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4" data-popular-filters>
+            <div role="tablist" aria-label={t("popularTitle")} className="flex flex-wrap items-center gap-2 max-sm:flex-none max-sm:flex-nowrap">
               {TABS.map((id) => (
-                <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} data-popular-tab={id} className={tab === id ? PILL_ON : PILL}>
+                <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} data-popular-tab={id} className={`${tab === id ? PILL_ON : PILL} max-sm:flex-none max-sm:whitespace-nowrap`}>
                   {tabLabel[id]}
                   <span className={`rounded-full px-1.5 text-[11px] tabular-nums ${tab === id ? "bg-white/15 dark:bg-slate-900/10" : "bg-slate-900/[.06] dark:bg-white/[.08]"}`}>
                     {products.filter((p) => inTab(p, id)).length}
@@ -52,11 +53,11 @@ export default function PopularSection({ products, onNotify }: { products: Store
                 </button>
               ))}
             </div>
-            <Link href="/products" className={`${PILL} text-blue-700 dark:text-blue-400`} data-popular-catalog>
+            <Link href="/products" className={`${PILL} text-blue-700 max-sm:flex-none max-sm:whitespace-nowrap dark:text-blue-400`} data-popular-catalog>
               {t("fullCatalog")}
               <ArrowRight size={14} strokeWidth={2.4} />
             </Link>
-          </>
+          </div>
         }
       />
 

@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Il-Bidu",
     "catalog": "Katalgu",
+    "hub": "Suq",
     "cart": "Karrettun",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Fittex",
+    "ariaLabel": "Navigazzjoni prinċipali",
+    "cartWithCount": "Cart, {count, plural, one {# item} two {# items} few {# items} many {# items} other {# items}}"
   },
   "Header": {
     "favoritesAria": "Favoriti",

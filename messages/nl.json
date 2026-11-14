@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Home",
     "catalog": "Catalogus",
+    "hub": "Hub",
     "cart": "Winkelwagen",
-    "profile": "Profiel"
+    "profile": "Profiel",
+    "search": "Zoeken",
+    "ariaLabel": "Hoofdnavigatie",
+    "cartWithCount": "Winkelwagentje, {count, plural, one {# item} other {# items}}"
   },
   "Header": {
     "favoritesAria": "Favorieten",

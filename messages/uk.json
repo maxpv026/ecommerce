@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Головна",
     "catalog": "Каталог",
+    "hub": "Хаб",
     "cart": "Кошик",
-    "profile": "Профіль"
+    "profile": "Профіль",
+    "search": "Пошук",
+    "ariaLabel": "Основна навігація",
+    "cartWithCount": "Кошик, {count, plural, one {# товар} few {# товари} many {# товарів} other {# товару}}"
   },
   "Header": {
     "favoritesAria": "Обране",

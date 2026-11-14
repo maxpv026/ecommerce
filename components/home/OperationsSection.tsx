@@ -135,7 +135,7 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
   const indexRows = INDEX_MARKS.map((m) => showcase.find((s) => s.mark === m)).filter((s): s is ShowcaseItem => Boolean(s));
 
   return (
-    <section id="bento" className="scroll-mt-24 pt-16" data-home-section="operations">
+    <section id="bento" className="scroll-mt-24 pt-16 max-sm:pt-12" data-home-section="operations">
       <SectionHeader
         id="operations"
         title={t("opsTitle")}
@@ -190,7 +190,7 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
               </button>
             </form>
             {!calc && (
-              <div className="mt-3 flex flex-wrap gap-2" data-calc-presets>
+              <div className="scrollbar-hide mt-3 flex flex-wrap gap-2 max-sm:-mx-5 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-5" data-calc-presets>
                 {CALC_CHIP_KEYS.map((key) => tc(key)).map((c) => (
                   <button
                     key={c}
@@ -199,7 +199,7 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
                       setCalcQuery(c);
                       runCalc(c);
                     }}
-                    className="inline-flex h-8 items-center rounded-full border border-slate-900/[.1] bg-slate-50 px-3 font-mono text-[11.5px] tracking-[-.01em] text-slate-700 transition-colors hover:border-blue-600/30 hover:bg-white dark:border-white/[.12] dark:bg-white/[.04] dark:text-slate-300 dark:hover:bg-white/[.08]"
+                    className="inline-flex h-8 items-center rounded-full border border-slate-900/[.1] bg-slate-50 px-3 max-sm:flex-none max-sm:whitespace-nowrap font-mono text-[11.5px] tracking-[-.01em] text-slate-700 transition-colors hover:border-blue-600/30 hover:bg-white dark:border-white/[.12] dark:bg-white/[.04] dark:text-slate-300 dark:hover:bg-white/[.08]"
                   >
                     {c}
                   </button>
@@ -211,12 +211,13 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
                 {calcError}
               </p>
             )}
-            {calc && <CalculatedChargeCard key={calc.query} calc={calc} onClose={() => setCalc(null)} className="mt-4" />}
+            {/* Phones: borrow the row's gutter so the nested result fits its buttons on one line. */}
+            {calc && <CalculatedChargeCard key={calc.query} calc={calc} onClose={() => setCalc(null)} className="mt-4 max-sm:-mx-3 max-sm:p-4" />}
           </div>
 
           {/* Zone 2 · operations rows */}
           {/* Quick reorder */}
-          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4`} data-ops-card="reorder">
+          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4 max-sm:gap-x-3 max-sm:gap-y-3`} data-ops-card="reorder">
             <span className={ICON_TILE}>
               <RotateCw size={17} strokeWidth={1.9} />
             </span>
@@ -243,7 +244,7 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
               )}
             </div>
             {reorderLine && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 max-sm:col-span-3 max-sm:justify-between" data-reorder-actions>
                 <Stepper value={qty} onChange={setReorderQty} decreaseLabel={t("qtyDecrease")} increaseLabel={t("qtyIncrease")} data-reorder-qty />
                 <div className="w-[92px] text-right">
                   <div className="text-[14.5px] font-semibold tabular-nums tracking-[-.02em]" data-reorder-price>
@@ -261,7 +262,7 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
           </div>
 
           {/* Track delivery */}
-          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4`} data-ops-card="track">
+          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4 max-sm:gap-x-3 max-sm:gap-y-3`} data-ops-card="track">
             <span className={ICON_TILE}>
               <Truck size={17} strokeWidth={1.9} />
             </span>
@@ -292,14 +293,14 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
                 <div className="mt-0.5 text-[12px] text-slate-500 dark:text-ink-muted">{t("trackNone")}</div>
               )}
             </div>
-            <Link href={latestOrder ? `/profile/orders/${latestOrder.id}` : "/products"} className={ROW_ACTION_GHOST} data-track-link>
+            <Link href={latestOrder ? `/profile/orders/${latestOrder.id}` : "/products"} className={`${ROW_ACTION_GHOST} max-sm:col-span-2 max-sm:col-start-2 max-sm:justify-self-start`} data-track-link>
               {latestOrder ? t("trackDetails") : td("exploreProductsCta")}
               <ArrowRight size={14} strokeWidth={2.4} />
             </Link>
           </div>
 
           {/* Smart bulk order */}
-          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4`} data-ops-card="bulk">
+          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4 max-sm:gap-x-3 max-sm:gap-y-3`} data-ops-card="bulk">
             <span className={ICON_TILE}>
               <Upload size={17} strokeWidth={1.9} />
             </span>
@@ -312,11 +313,11 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
                 ))}
               </div>
             </div>
-            <SmartOrderButton variant="pill" source="dashboard" label={t("bulkOpen")} className="min-h-[36px] px-3.5 text-[12.5px]" />
+            <SmartOrderButton variant="pill" source="dashboard" label={t("bulkOpen")} className="min-h-[36px] px-3.5 text-[12.5px] max-sm:col-span-2 max-sm:col-start-2 max-sm:justify-self-start" />
           </div>
 
           {/* SDS library */}
-          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4`} data-ops-card="sds">
+          <div className={`${ROW} grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-4 max-sm:gap-x-3 max-sm:gap-y-3`} data-ops-card="sds">
             <span className={ICON_TILE}>
               <FileText size={17} strokeWidth={1.9} />
             </span>
@@ -339,7 +340,7 @@ export default function OperationsSection({ showcase, known, latestOrder, ownDat
                 ))}
               </div>
             </div>
-            <Link href="/compliance/sds" className={ROW_ACTION_GHOST} data-sds-all>
+            <Link href="/compliance/sds" className={`${ROW_ACTION_GHOST} max-sm:col-span-2 max-sm:col-start-2 max-sm:justify-self-start`} data-sds-all>
               {t("sdsAll")}
               <ArrowRight size={14} strokeWidth={2.4} />
             </Link>

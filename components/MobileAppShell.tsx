@@ -42,7 +42,8 @@ export default function MobileAppShell({ children }: MobileAppShellProps) {
     <>
       <main
         className={`flex flex-1 flex-col ${
-          navVisible ? "pb-[calc(90px+env(safe-area-inset-bottom))] md:pb-0" : ""
+          // The dock is 64 px + the safe area (MobileBottomNav MOBILE_NAV_HEIGHT); 12 px of air above it.
+          navVisible ? "pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0" : ""
         }`}
       >
         {children}

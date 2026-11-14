@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
+import MobileTopBar from "./MobileTopBar";
 
 /**
  * The app header for pages that were rendering without one.
@@ -22,11 +23,12 @@ import AuthModal from "./AuthModal";
  * open, which is why this exists instead of a bare `<Header />`: three pages
  * would otherwise each carry the same piece of modal state.
  *
- * Desktop only, deliberately. On mobile these pages have their own bar and the
- * global bottom nav; a second sticky header would eat a third of a phone
- * screen and collide with the one the page already draws.
+ * The desktop header only, deliberately: the phone layouts draw their own bar,
+ * and a second sticky header would collide with it. Pages that are the same
+ * responsive design at every width (no phone bar of their own) pass
+ * `mobileTopBar` for the app bar instead (components/MobileTopBar).
  */
-export default function AppChrome({ children }: { children: ReactNode }) {
+export default function AppChrome({ children, mobileTopBar = false }: { children: ReactNode; mobileTopBar?: boolean }) {
   const [authOpen, setAuthOpen] = useState(false);
 
   return (
@@ -41,6 +43,8 @@ export default function AppChrome({ children }: { children: ReactNode }) {
       <div className="hidden md:contents">
         <Header onSignInClick={() => setAuthOpen(true)} />
       </div>
+      {/* Pages with no bar of their own on phones (the hub, categories, SDS) take the app bar. */}
+      {mobileTopBar && <MobileTopBar />}
       {children}
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </>

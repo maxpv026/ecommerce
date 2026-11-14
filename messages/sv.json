@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Hem",
     "catalog": "Katalog",
+    "hub": "Hubb",
     "cart": "Varukorg",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Sök",
+    "ariaLabel": "Huvudnavigering",
+    "cartWithCount": "Varukorg, {count, plural, one {# artikel} other {# artiklar}}"
   },
   "Header": {
     "favoritesAria": "Favoriter",

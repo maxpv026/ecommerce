@@ -71,7 +71,7 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
   const deposit = p ? p.cylinderDeposit * n : 0;
 
   return (
-    <section className="pt-16" data-home-section="workbench">
+    <section className="pt-16 max-sm:pt-12" data-home-section="workbench">
       <SectionHeader id="workbench" title={t("benchTitle")} meta={[t("benchLead")]} />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
@@ -131,7 +131,7 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
           </div>
 
           {/* Column heads */}
-          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)_.75fr_.6fr_auto] gap-4 border-b border-slate-900/[.06] bg-slate-900/[.015] px-5 py-2 text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-white/[.06] dark:bg-white/[.02] dark:text-ink-muted">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)_.75fr_.6fr_auto] gap-4 border-b max-sm:hidden border-slate-900/[.06] bg-slate-900/[.015] px-5 py-2 text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-white/[.06] dark:bg-white/[.02] dark:text-ink-muted">
             <span>{t("colGas")}</span>
             <span>{t("colPressure")}</span>
             <span>{t("colBoiling")}</span>
@@ -141,13 +141,13 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
           {rows.map(({ g, bar, psig, product }) => {
             const gwp = product?.gwp ?? g.gwpFallback ?? null;
             return (
-              <div key={g.label} className={`${ROW} grid grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)_.75fr_.6fr_auto] items-center gap-4`} data-pt-row={g.label}>
+              <div key={g.label} className={`${ROW} grid grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)_.75fr_.6fr_auto] items-center gap-4 max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-x-3 max-sm:gap-y-2`} data-pt-row={g.label}>
                 <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                   <span className="text-[14.5px] font-semibold tracking-[-.02em]">{g.label}</span>
                   <MicroBadge tone={safetyTone(g.safety)}>{g.safety}</MicroBadge>
                   {!product && <MicroBadge>{t("notStocked")}</MicroBadge>}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 max-sm:col-span-2">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[16px] font-semibold tabular-nums tracking-[-.03em]" data-pt-bar>
                       {num(bar, 2)}
@@ -161,11 +161,15 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
                     <span className="block h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 transition-[width] duration-300" style={{ width: `${(bar / maxBar) * 100}%` }} />
                   </div>
                 </div>
-                <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-300" data-pt-nbp>
+                <span className="text-[13px] tabular-nums text-slate-700 max-sm:text-[12px] max-sm:text-slate-500 dark:text-slate-300" data-pt-nbp>
+                  <span className="sm:hidden">{t("colBoiling")}: </span>
                   {num(g.nbpC, 1)} °C
                 </span>
-                <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-300">{gwp !== null ? format.number(gwp) : "—"}</span>
-                <div className="flex w-[176px] justify-end gap-1.5">
+                <span className="text-[13px] tabular-nums text-slate-700 max-sm:text-right max-sm:text-[12px] max-sm:text-slate-500 dark:text-slate-300">
+                  <span className="sm:hidden">GWP </span>
+                  {gwp !== null ? format.number(gwp) : "—"}
+                </span>
+                <div className="flex w-[176px] justify-end gap-1.5 max-sm:col-start-2 max-sm:row-start-1 max-sm:w-auto">
                   {product ? (
                     <>
                       {isPurchasable(product) && (
@@ -174,7 +178,7 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
                           {addedSku === product.sku ? t("added") : t("toCart")}
                         </button>
                       )}
-                      <Link href={product.pdpHref} className={ROW_ACTION_GHOST} data-pt-view={product.sku}>
+                      <Link href={product.pdpHref} className={`${ROW_ACTION_GHOST} max-sm:hidden`} data-pt-view={product.sku}>
                         {t("view")}
                       </Link>
                     </>

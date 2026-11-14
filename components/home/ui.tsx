@@ -107,12 +107,12 @@ export function Stepper({
 /** Section header, cart style: bold title + middle-dot metadata left, pill actions right — one row. */
 export function SectionHeader({ title, meta, actions, id }: { title: string; meta: Array<string | null | false>; actions?: ReactNode; id?: string }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4" data-section-header={id}>
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 max-sm:mb-4 max-sm:gap-y-3" data-section-header={id}>
       <div className="min-w-0">
-        <h2 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em]">{title}</h2>
-        <p className="m-0 mt-2 text-[14px] text-slate-500 dark:text-ink-muted">{meta.filter(Boolean).join(" · ")}</p>
+        <h2 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] max-sm:text-[24px]">{title}</h2>
+        <p className="m-0 mt-2 text-[14px] text-slate-500 max-sm:text-[13.5px] dark:text-ink-muted">{meta.filter(Boolean).join(" · ")}</p>
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 max-sm:w-full max-sm:min-w-0">{actions}</div>}
     </div>
   );
 }

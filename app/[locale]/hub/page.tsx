@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: HubRouteProps): Promise<Metad
  */
 export default function HubRoute({ searchParams }: HubRouteProps) {
   return (
-    <AppChrome>
+    <AppChrome mobileTopBar>
       <Suspense fallback={<PageSkeleton rows={4} />}>
         <HubContent searchParams={searchParams} />
       </Suspense>

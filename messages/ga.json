@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Baile",
     "catalog": "Catalóg",
+    "hub": "Margadh",
     "cart": "Cairt",
-    "profile": "Próifíl"
+    "profile": "Próifíl",
+    "search": "Cuardaigh",
+    "ariaLabel": "Príomh-naveagadh",
+    "cartWithCount": "Cart, {count, plural, one {# earra} two {# earraí} few {# earraí} many {# earraí} other {# earraí}}"
   },
   "Header": {
     "favoritesAria": "Roghanna",

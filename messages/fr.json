@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Accueil",
     "catalog": "Catalogue",
+    "hub": "Marché",
     "cart": "Panier",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Rechercher",
+    "ariaLabel": "Navigation principale",
+    "cartWithCount": "Panier, {count, plural, one {# article} many {# articles} other {# articles}}"
   },
   "Header": {
     "favoritesAria": "Favoris",

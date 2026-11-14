@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Ana Sayfa",
     "catalog": "Katalog",
+    "hub": "Pazar",
     "cart": "Sepet",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Ara",
+    "ariaLabel": "Ana navigasyon",
+    "cartWithCount": "Sepet, {count, plural, one {# ürün} other {# ürün}}"
   },
   "Header": {
     "favoritesAria": "Favoriler",

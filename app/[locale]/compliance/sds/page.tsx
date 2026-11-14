@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: SdsRouteProps): Promise<Metad
  */
 export default function SdsRoute({ params }: SdsRouteProps) {
   return (
-    <AppChrome>
+    <AppChrome mobileTopBar>
       <Suspense fallback={<PageSkeleton rows={5} />}>
         <SdsContent params={params} />
       </Suspense>

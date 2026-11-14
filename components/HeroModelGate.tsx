@@ -10,9 +10,9 @@ import dynamic from "next/dynamic";
  * plus the model, an HDRI and the Draco decoder. It used to be imported as
  * soon as DesktopHome rendered, which had two costs, both measured:
  *
- *   - Phones downloaded the whole chunk. The desktop tree is in the DOM on
- *     every viewport (hidden with CSS below md), so the dynamic import fired
- *     for a canvas nobody could see.
+ *   - Phones downloaded the whole chunk. Below md the home now shows the
+ *     still render of the same model instead (components/home/HeroShowcase),
+ *     so the 3D is never imported there.
  *   - On desktop, parsing it competed with hydration of the page itself.
  *
  * Now the import starts only when (1) the viewport is the desktop one, and

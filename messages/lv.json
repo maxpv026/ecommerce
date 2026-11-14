@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Sākums",
     "catalog": "Katalogs",
+    "hub": "Tirgus",
     "cart": "Grozs",
-    "profile": "Profils"
+    "profile": "Profils",
+    "search": "Meklēt",
+    "ariaLabel": "Galvenā navigācija",
+    "cartWithCount": "Groza, {count, plural, zero {# preces} one {# prece} other {# preces}}"
   },
   "Header": {
     "favoritesAria": "Izlase",

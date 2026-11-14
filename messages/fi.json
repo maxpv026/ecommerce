@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Koti",
     "catalog": "Luettelo",
+    "hub": "Markkinat",
     "cart": "Ostoskori",
-    "profile": "Profiili"
+    "profile": "Profiili",
+    "search": "Hae",
+    "ariaLabel": "Päävalikko",
+    "cartWithCount": "Ostoskori, {count, plural, one {# tuote} other {# tuotetta}}"
   },
   "Header": {
     "favoritesAria": "Suosikit",

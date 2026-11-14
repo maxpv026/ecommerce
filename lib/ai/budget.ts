@@ -34,7 +34,6 @@ export const MAX_OUTPUT = {
   compatibility: 450,
   broadcastDraft: 900,
   smartMatch: 250,
-  homeAssistant: 120,
   recommendations: 120,
   localization: 1200,
   pdfText: 2000,

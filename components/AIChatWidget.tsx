@@ -51,7 +51,8 @@ const lastServerTime = (messages: SupportUIMessage[]) =>
 export default function AIChatWidget() {
   const pathname = usePathname();
   const isVisible = ASSISTANT_VISIBLE_PATHS.includes(pathname);
-  const fabOffset = "bottom-[120px] md:bottom-6";
+  // Phones: 12 px above the 64 px dock (MobileBottomNav), tucked to the edge.
+  const fabOffset = "bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6";
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("support");
   const [draft, setDraft] = useState("");
@@ -229,7 +230,7 @@ export default function AIChatWidget() {
   return (
     <>
       <div
-        className={`fixed right-6 z-[100] transition-[opacity,transform] duration-300 ease-[cubic-bezier(.4,0,.2,1)] ${fabOffset}`}
+        className={`fixed z-[100] transition-[opacity,transform] duration-300 ease-[cubic-bezier(.4,0,.2,1)] ${fabOffset}`}
         style={{
           opacity: isOpen ? 0 : 1,
           transform: isOpen ? "scale(.85)" : "scale(1)",
@@ -243,9 +244,10 @@ export default function AIChatWidget() {
             setUnread(false);
           }}
           aria-label={unread ? t("openUnread") : t("open")}
-          className="relative flex h-[58px] w-[58px] items-center justify-center rounded-full bg-blue-600/90 text-white shadow-[0_18px_40px_-14px_rgba(29,78,216,0.55)] backdrop-blur-md backdrop-saturate-150 transition-[transform,box-shadow,background-color] duration-200 hover:scale-[1.06] hover:bg-blue-600 hover:shadow-[0_22px_46px_-14px_rgba(29,78,216,0.65)]"
+          data-chat-fab
+          className="relative flex h-11 w-11 items-center justify-center rounded-full bg-blue-600/90 md:h-[58px] md:w-[58px] text-white shadow-[0_18px_40px_-14px_rgba(29,78,216,0.55)] backdrop-blur-md backdrop-saturate-150 transition-[transform,box-shadow,background-color] duration-200 hover:scale-[1.06] hover:bg-blue-600 hover:shadow-[0_22px_46px_-14px_rgba(29,78,216,0.65)]"
         >
-          <Bot size={22} strokeWidth={1.8} />
+          <Bot strokeWidth={1.8} className="h-[18px] w-[18px] md:h-[22px] md:w-[22px]" />
           {unread && <span data-chat-unread className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500" />}
         </button>
       </div>

@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Pradžia",
     "catalog": "Katalogas",
+    "hub": "Rinka",
     "cart": "Krepšelis",
-    "profile": "Profilis"
+    "profile": "Profilis",
+    "search": "Ieškoti",
+    "ariaLabel": "Pagrindinė navigacija",
+    "cartWithCount": "Krepšelis, {count, plural, one {# prekė} few {# prekės} many {# prekių} other {# prekių}}"
   },
   "Header": {
     "favoritesAria": "Mėgstamiausi",

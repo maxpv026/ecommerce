@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Hjem",
     "catalog": "Katalog",
+    "hub": "Hub",
     "cart": "Kurv",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Søg",
+    "ariaLabel": "Hovednavigation",
+    "cartWithCount": "Kurv, {count, plural, one {# vare} other {# varer}}"
   },
   "Header": {
     "favoritesAria": "Favoritter",

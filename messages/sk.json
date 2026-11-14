@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Domov",
     "catalog": "Katalóg",
+    "hub": "Trh",
     "cart": "Košík",
-    "profile": "Profil"
+    "profile": "Profil",
+    "search": "Hľadať",
+    "ariaLabel": "Hlavná navigácia",
+    "cartWithCount": "Košík, {count, plural, one {# položka} few {# položky} many {# položiek} other {# položiek}}"
   },
   "Header": {
     "favoritesAria": "Obľúbené",

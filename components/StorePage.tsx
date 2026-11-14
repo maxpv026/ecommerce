@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Header from "./Header";
 import DesktopHome from "./DesktopHome";
-import MobileAppLayout from "./MobileAppLayout";
+import MobileTopBar from "./MobileTopBar";
 import AuthModal from "./AuthModal";
 import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, UserProfileData } from "@/lib/data";
 import type { FgasSummary } from "@/lib/fgas";
@@ -77,39 +77,27 @@ export default function StorePage({ featuredProducts, popularProducts, showcase,
   const mine = status === "authenticated" && account?.userId === userId ? account.data : null;
   // Signed in (or still finding out) and this buyer's data is not here yet.
   const accountLoading = status === "loading" || (status === "authenticated" && !mine);
-  const products = mine?.recommendedProducts.length ? mine.recommendedProducts : featuredProducts;
   // Desktop grid: this buyer's recommendations first, then the wider pick.
   const popular = [...(mine?.recommendedProducts ?? []), ...popularProducts].filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i);
 
   return (
     <div className="flex-1 bg-canvas">
-      {/* Desktop / tablet — real dashboard-style home */}
-      <div className="hidden md:block">
+      {/* One home at every width: the desktop Header above md, the phone app
+          bar below it, and the same four sections underneath (they adapt). */}
+      <div className="hidden md:contents">
         <Header onSignInClick={() => setIsAuthModalOpen(true)} />
-        <DesktopHome
-          products={popular}
-          showcase={showcase}
-          alerts={marketAlerts}
-          dashboard={mine?.dashboard ?? null}
-          latestOrder={mine?.latestOrder ?? null}
-          accountLoading={accountLoading}
-          greetingKey={greetingKey}
-          sdsCount={sdsCount}
-        />
       </div>
-
-      {/* Native-app-style mobile home */}
-      <div className="block md:hidden">
-        <MobileAppLayout
-          featuredProducts={products}
-          marketAlerts={marketAlerts}
-          dashboard={mine?.dashboard ?? null}
-          orders={mine?.orders ?? []}
-          certificate={mine?.certificate ?? null}
-          jobTitle={mine?.jobTitle ?? null}
-          greetingKey={greetingKey}
-        />
-      </div>
+      <MobileTopBar />
+      <DesktopHome
+        products={popular}
+        showcase={showcase}
+        alerts={marketAlerts}
+        dashboard={mine?.dashboard ?? null}
+        latestOrder={mine?.latestOrder ?? null}
+        accountLoading={accountLoading}
+        greetingKey={greetingKey}
+        sdsCount={sdsCount}
+      />
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>

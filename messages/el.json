@@ -2,8 +2,12 @@
   "Nav": {
     "home": "Αρχική",
     "catalog": "Κατάλογος",
+    "hub": "Αγορά",
     "cart": "Καλάθι",
-    "profile": "Προφίλ"
+    "profile": "Προφίλ",
+    "search": "Αναζήτηση",
+    "ariaLabel": "Κύρια πλοήγηση",
+    "cartWithCount": "Καλάθι, {count, plural, one {# είδος} other {# είδη}}"
   },
   "Header": {
     "favoritesAria": "Αγαπημένα",

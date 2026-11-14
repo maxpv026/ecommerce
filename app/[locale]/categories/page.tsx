@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: CategoriesRouteProps): Promis
  */
 export default function CategoriesRoute() {
   return (
-    <AppChrome>
+    <AppChrome mobileTopBar>
       <Suspense fallback={<PageSkeleton rows={4} />}>
         <CategoriesContent />
       </Suspense>
