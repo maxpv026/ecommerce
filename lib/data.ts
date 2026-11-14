@@ -136,7 +136,10 @@ function toStoreProduct(product: {
  * client-side sorts in the browsers re-apply the same rule as their primary
  * key (see sortProducts in lib/productSort.ts).
  */
-const IN_STOCK_FIRST = [{ inStock: "desc" as const }, { createdAt: "asc" as const }];
+// sku last: the seeded catalog shares createdAt values, and without a final
+// key Postgres returned tied rows in physical order — the catalog reshuffled
+// whenever a row was rewritten (a stock update).
+const IN_STOCK_FIRST = [{ inStock: "desc" as const }, { createdAt: "asc" as const }, { sku: "asc" as const }];
 
 export interface ProductQuery {
   /** Refrigerant marks from `?gasType=`; empty or omitted means no constraint. */

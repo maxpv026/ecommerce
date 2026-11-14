@@ -984,7 +984,12 @@
     "outOfStock": "Stoc epuizat",
     "lead": "Agenți frigorifici, amestecuri și echipamente de service — în stoc și la comandă.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtre",
+    "showResults": "Arată {count, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}",
+    "closeFilters": "Închideți filtrele",
+    "bulkImportShort": "Importați BOM / CSV",
+    "viewTableShort": "Tabel"
   },
   "ProductDetail": {
     "crumbRoot": "Lista de produse",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Configurați alerte de preț",
     "toCatalog": "Accesați catalogul",
     "modesLabel": "Moduri Hub",
-    "tab_exchange": "📊 Schimb & indici",
+    "tab_exchange": "📊 Piață & indici",
     "tab_compare": "🔍 Comparația gazelor & compatibilitatea sistemelor",
     "tab_challenge": "🕹️ Provocarea inginerescă & simulator",
     "tab_digest": "📰 Digestul industriei",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Epuizat",
     "terminalTitle": "Index {gas}",
+    "perKgFrom": "pe kg · cea mai mică rată de cumpărare a buteliei pentru {sizes, plural, one {# dimensiune} few {# dimensiuni} other {# de dimensiuni}}",
     "timeframe": "Interval de timp",
     "frame_1m": "1M",
-    "perKgFrom": "per kg · cea mai mică rată de cumpărare disponibilă pentru {sizes, plural, one {# dimensiune} few {# dimensiuni} other {# dimensiuni}}",
     "frame_3m": "3M",
     "frame_1y": "1Y",
     "frame_quota": "Previziune cotă 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Resetare",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Prețuri, reglementări și știri pentru gazele pe care le cumpărați.",
+    "tabShort_exchange": "📊 Piață",
+    "tabShort_compare": "🔍 Compatibilitate",
+    "tabShort_challenge": "🕹️ Practicum",
+    "tabShort_digest": "📰 Rezumat",
+    "deltaFlat": "Fără schimbare",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# răspuns corect} few {# răspunsuri corecte} other {# răspunsuri corecte}} pentru „{rank}”"
   },
   "PriceAlertEmail": {

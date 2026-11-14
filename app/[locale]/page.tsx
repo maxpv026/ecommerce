@@ -43,8 +43,7 @@ async function HomeContent() {
   // No auth() here: that one call forced the most-visited page to render on
   // every request. The shell is the same for everyone; the signed-in parts
   // come from /api/home/account in the browser (components/StorePage).
-  const [featuredProducts, popularProducts, marketAlerts, showcase] = await Promise.all([
-    getFeaturedProducts(4),
+  const [popularProducts, marketAlerts, showcase] = await Promise.all([
     // The desktop Popular grid filters by category tabs, so it needs more than four.
     getFeaturedProducts(12),
     getMarketAlerts(),
@@ -53,7 +52,6 @@ async function HomeContent() {
 
   return (
     <StorePage
-      featuredProducts={featuredProducts}
       popularProducts={popularProducts}
       showcase={showcase}
       marketAlerts={marketAlerts}

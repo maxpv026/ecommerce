@@ -984,7 +984,12 @@
     "outOfStock": "Out of stock → Rupture de stock",
     "lead": "Réfrigérants, mélanges et équipements de service — en stock et à commander.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtres",
+    "showResults": "Afficher {count, plural, one {# résultat} many {# résultats} other {# résultats}}",
+    "closeFilters": "Fermer les filtres",
+    "bulkImportShort": "Importer BOM / CSV",
+    "viewTableShort": "Table"
   },
   "ProductDetail": {
     "crumbRoot": "Liste des produits",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Configurer des alertes de prix",
     "toCatalog": "Aller au catalogue",
     "modesLabel": "Modes du Hub",
-    "tab_exchange": "📊 Échange & indices",
+    "tab_exchange": "📊 Marché & indices",
     "tab_compare": "🔍 Comparaison des gaz & compatibilité des systèmes",
     "tab_challenge": "🕹️ Défi d'ingénierie & simulateur",
     "tab_digest": "📰 Digest de l'industrie",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Hors",
     "terminalTitle": "Indice {gas}",
+    "perKgFrom": "par kg · tarif de bouteille le plus bas disponible parmi {sizes, plural, one {# taille} many {# tailles} other {# tailles}}",
     "timeframe": "Horizon temporel",
     "frame_1m": "1M",
-    "perKgFrom": "par kg · tarif d'achat le plus bas parmi {sizes, plural, one {# taille} many {# tailles} other {# tailles}}",
     "frame_3m": "3M",
     "frame_1y": "1A",
     "frame_quota": "Prévisions de quota 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Réinitialiser",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Prix, réglementation et actualités pour les gaz que vous achetez.",
+    "tabShort_exchange": "📊 Marché",
+    "tabShort_compare": "🔍 Compatibilité",
+    "tabShort_challenge": "🕹️ Pratique",
+    "tabShort_digest": "📰 Digest",
+    "deltaFlat": "Aucun changement",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# bonne réponse} many {# bonnes réponses} other {# bonnes réponses}} pour “{rank}”"
   },
   "PriceAlertEmail": {

@@ -984,7 +984,12 @@
     "outOfStock": "Nie je na sklade",
     "lead": "Chladivá, zmesi a servisné zariadenia — na sklade a na objednávku.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtre",
+    "showResults": "Zobraziť {count, plural, one {# výsledok} few {# výsledky} many {# výsledkov} other {# výsledkov}}",
+    "closeFilters": "Zavrieť filtre",
+    "bulkImportShort": "Importovať BOM / CSV",
+    "viewTableShort": "Tabuľka"
   },
   "ProductDetail": {
     "crumbRoot": "Zoznam produktov",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Mimo",
     "terminalTitle": "{gas} index",
+    "perKgFrom": "za kg · najnižšia cena fľaše dostupná v {sizes, plural, one {# veľkosti} few {# veľkostiach} many {# veľkostí} other {# veľkostí}}",
     "timeframe": "Časový rámec",
     "frame_1m": "1M",
-    "perKgFrom": "za kg · najnižšia kúpa z {sizes, plural, one {# veľkosti} few {# veľkosti} many {# veľkostí} other {# veľkostí}}",
     "frame_3m": "3M",
     "frame_1y": "1R",
     "frame_quota": "Výhľad kvót 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Resetovať",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Ceny, regulácie a novinky pre plyny, ktoré kupujete.",
+    "tabShort_exchange": "📊 Burza",
+    "tabShort_compare": "🔍 Kompatibilita",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Prehľad",
+    "deltaFlat": "Žiadna zmena",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# správna odpoveď} few {# správne odpovede} many {# správnych odpovedí} other {# správnych odpovedí}} na „{rank}“"
   },
   "PriceAlertEmail": {

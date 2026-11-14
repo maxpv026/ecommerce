@@ -1,13 +1,15 @@
 import { auth } from "@/auth";
-import { getProfileDashboardData, getRecommendedProducts, getUserOrders, getUserProfile } from "@/lib/data";
+import { getProfileDashboardData, getUserOrders } from "@/lib/data";
 
 /**
- * GET /api/home/account — the signed-in parts of the home page.
+ * GET /api/home/account — the signed-in figures on the home page: the KPI
+ * cards and the latest order (quick reorder, tracking).
  *
  * The home page itself is static (ISR): it renders the same shell for
  * everyone and never blocks on auth(). A signed-in buyer's browser fetches
- * this once the session is known and swaps in their recommendations,
- * dashboard figures, orders and certificate. Per-user, so never cached.
+ * this once the session is known. Database reads only (~0.3 s) — the
+ * recommendations, which may wait on a model, are /api/home/recommendations,
+ * so they can't hold the KPI cards on their skeletons. Per-user, never cached.
  */
 export const dynamic = "force-dynamic";
 
@@ -15,24 +17,6 @@ export async function GET() {
   const userId = (await auth())?.user?.id;
   if (!userId) return Response.json({ ok: false }, { status: 401, headers: { "Cache-Control": "no-store" } });
 
-  const [recommendedProducts, dashboard, orders, profile] = await Promise.all([
-    getRecommendedProducts(userId, 4),
-    getProfileDashboardData(userId),
-    getUserOrders(userId),
-    getUserProfile(userId),
-  ]);
-  return Response.json(
-    {
-      ok: true,
-      recommendedProducts,
-      dashboard,
-      latestOrder: orders[0] ?? null,
-      orders: orders.slice(0, 4),
-      certificate: profile?.certificate ?? null,
-      // Effective F-Gas standing for the home summary card (lib/fgasAccount).
-      fgas: profile?.fgas ?? null,
-      jobTitle: profile?.jobTitle ?? null,
-    },
-    { headers: { "Cache-Control": "private, no-store" } }
-  );
+  const [dashboard, orders] = await Promise.all([getProfileDashboardData(userId), getUserOrders(userId)]);
+  return Response.json({ ok: true, dashboard, latestOrder: orders[0] ?? null }, { headers: { "Cache-Control": "private, no-store" } });
 }

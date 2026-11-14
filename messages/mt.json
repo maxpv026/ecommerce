@@ -984,7 +984,12 @@
     "outOfStock": "Maħżen vojt",
     "lead": "Refriġeranti, taħlitiet u tagħmir tas-servizz — fil-maħżen u għall-ordni.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtri",
+    "showResults": "Uri {count, plural, one {# riżultat} two {# riżultati} few {# riżultati} many {# riżultati} other {# riżultati}}",
+    "closeFilters": "Magħluq il-filtri",
+    "bulkImportShort": "Importa BOM / CSV",
+    "viewTableShort": "Tabella"
   },
   "ProductDetail": {
     "crumbRoot": "Lista tal-prodotti",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Stabbilixxi allerti tal-prezz",
     "toCatalog": "Mur fil-katalgu",
     "modesLabel": "Modalitajiet tal-Hub",
-    "tab_exchange": "📊 Skambju & indiċi",
+    "tab_exchange": "📊 Suq & indiċi",
     "tab_compare": "🔍 Paragun tal-gass & kompatibbiltà tas-sistemi",
     "tab_challenge": "🕹️ Sfida inġinerija & simulator",
     "tab_digest": "📰 Ġurnal tal-industrija",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Barra",
     "terminalTitle": "{gas} indeks",
-    "perKgFrom": "per kg · l-ogħla rata xierqa minn {sizes, plural, one {# daqs} two {# daqs} few {# daqs} many {# daqs} other {# daqs} }",
+    "perKgFrom": "kull kg · l-inqas rata ta' xiri ta' ċilindru disponibbli madwar {sizes, plural, one {# daqs} two {# daqs} few {# daqs} many {# daqs} other {# daqs}}",
     "timeframe": "Perjodu ta' żmien",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,6 +3058,12 @@
     "reset": "Irrisettja",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Prezzijiet, regolamenti u aħbarijiet għall-gassijiet li tixtri.",
+    "tabShort_exchange": "📊 Suq",
+    "tabShort_compare": "🔍 Kompatibbiltà",
+    "tabShort_challenge": "🕹️ Pratika",
+    "tabShort_digest": "📰 Digeżt",
+    "deltaFlat": "Ebda bidla",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# risposta korretta} two {# risposti korretti} few {# risposti korretti} many {# risposti korretti} other {# risposti korretti}} għal “{rank}”"
   },
   "PriceAlertEmail": {

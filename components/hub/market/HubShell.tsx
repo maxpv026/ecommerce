@@ -88,8 +88,9 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
           </div>
         </div>
 
-        {/* ── Mode tabs: one row; scrolls sideways rather than wrapping ── */}
-        <nav className="-mx-1 mb-6 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label={t("modesLabel")} data-hub-tabs>
+        {/* ── Mode tabs: one row on wider screens; a 2×2 grid of short labels on
+            phones, so all four are on screen (the long names ran off the edge). ── */}
+        <nav className="-mx-1 mb-6 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] max-sm:mx-0 max-sm:grid max-sm:grid-cols-2 max-sm:gap-2 max-sm:overflow-visible max-sm:px-0 [&::-webkit-scrollbar]:hidden" role="tablist" aria-label={t("modesLabel")} data-hub-tabs>
           {HUB_TABS.map((id) => {
             return (
               <button
@@ -99,9 +100,11 @@ export default function HubShell({ data, initialTab, initialGas, initialSystem }
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
                 data-hub-tab={id}
-                className={`inline-flex h-9 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[12.5px] font-semibold tracking-[-.01em] transition-colors ${tab === id ? TAB_ON : TAB_OFF}`}
+                title={t(`tab_${id}`)}
+                className={`inline-flex h-9 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[12.5px] font-semibold tracking-[-.01em] transition-colors max-sm:h-10 max-sm:min-w-0 max-sm:justify-center ${tab === id ? TAB_ON : TAB_OFF}`}
               >
-                {t(`tab_${id}`)}
+                <span className="max-sm:hidden">{t(`tab_${id}`)}</span>
+                <span className="truncate sm:hidden">{t(`tabShort_${id}`)}</span>
               </button>
             );
           })}

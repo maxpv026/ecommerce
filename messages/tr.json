@@ -984,7 +984,12 @@
     "outOfStock": "Stokta yok",
     "lead": "Soğutucu akışkanlar, karışımlar ve servis ekipmanları — stokta ve sipariş için.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtreler",
+    "showResults": "Sonuçları Göster {count, plural, one {# sonuç} other {# sonuç}}",
+    "closeFilters": "Filtreleri Kapat",
+    "bulkImportShort": "BOM / CSV İçe Aktar",
+    "viewTableShort": "Tablo"
   },
   "ProductDetail": {
     "crumbRoot": "Ürün Listesi",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Dışarıda",
     "terminalTitle": "{gas} endeksi",
-    "perKgFrom": "kg başına · {sizes, plural, one {# boyut} other {# boyut}} arasında en düşük satın alınabilir oran",
+    "perKgFrom": "kg başına · {sizes, plural, one {# boyut} other {# boyut}} için en düşük satın alınabilir tüp oranı",
     "timeframe": "Zaman dilimi",
     "frame_1m": "1A",
     "frame_3m": "3A",
@@ -3053,7 +3058,13 @@
     "progressLocal": "İlerleme bu cihazda kaydediliyor.",
     "reset": "Sıfırla",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Aldığınız gazlar için fiyatlar, düzenlemeler ve haberler."
+    "lead": "Aldığınız gazlar için fiyatlar, düzenlemeler ve haberler.",
+    "tabShort_exchange": "📊 Borsa",
+    "tabShort_compare": "🔍 Uyumluluk",
+    "tabShort_challenge": "🕹️ Uygulama",
+    "tabShort_digest": "📰 Özet",
+    "deltaFlat": "Değişiklik yok",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Fiyat alarmı",

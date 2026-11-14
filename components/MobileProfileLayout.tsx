@@ -13,7 +13,6 @@ import {
   Bell,
   Briefcase,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   Euro,
   Globe,
@@ -37,6 +36,7 @@ import { LANGUAGE_OPTIONS } from "@/lib/languageNames";
 import RecordsCard from "./profile/RecordsCard";
 import ProfileEditDrawer from "./ProfileEditDrawer";
 import { useThemeChoice } from "@/lib/hooks/useThemeChoice";
+import MobileTopBar from "./MobileTopBar";
 import AvatarUploader from "./AvatarUploader";
 import type { ProfileDashboardData, UserAddress, UserOrder, UserProfileData } from "@/lib/data";
 import type { OrderStatus } from "@/lib/generated/prisma/enums";
@@ -193,25 +193,8 @@ export default function MobileProfileLayout({ dashboardData, profile, orders, ad
         <div className="absolute -bottom-[120px] left-[8%] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,var(--orb-emerald),rgba(52,211,153,0)_68%)] opacity-[.16] blur-[84px] [animation:hc-breathe_13s_ease-in-out_infinite]" />
       </div>
 
-      {/* sticky glass header */}
-      <div className="sticky top-0 z-[80] bg-white/80 px-[18px] pb-2.5 pt-3 backdrop-blur-xl backdrop-saturate-150 dark:bg-[#090A0C]/[.82]">
-        <div className="flex items-center gap-2.5">
-          <motion.div whileTap={{ scale: 0.9 }} className="flex flex-none">
-            <Link
-              href="/"
-              aria-label={t("backAria")}
-              className="-ml-[11px] flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-slate-900/[.06] dark:hover:bg-white/10"
-            >
-              <ChevronLeft size={20} strokeWidth={2} />
-            </Link>
-          </motion.div>
-          <span className="min-w-0 flex-1 text-center text-[16.5px] font-semibold tracking-[-.03em]">{t("title")}</span>
-          {/* Balances the back button so the title stays centred now the
-              settings gear is gone. It carries the same -11px pull, or the
-              title would sit 5px left of centre. */}
-          <span aria-hidden className="-mr-[11px] h-11 w-11 flex-none" />
-        </div>
-      </div>
+      {/* The app bar every storefront page shares on phones (the old back-arrow sub-header hid search, language and theme). */}
+      <MobileTopBar />
 
       <div className="relative pb-[calc(118px+env(safe-area-inset-bottom))]">
         {/* hero card */}

@@ -132,6 +132,7 @@ export default function PriceTerminal({
 function PriceLine({ points, days, eur, day, historyStart, current }: { points: PricePoint[]; days: number; eur: (n: number) => string; day: (iso: string) => string; historyStart: string | null; current: number }) {
   const t = useTranslations("MarketHub");
   const [ref, width] = useWidth<HTMLDivElement>();
+  const pct = useFormatter();
   const [hover, setHover] = useState<number | null>(null);
   // The window ends at the latest recorded day (the cron records daily), so
   // the render is the same on the server and in the browser.
@@ -142,7 +143,12 @@ function PriceLine({ points, days, eur, day, historyStart, current }: { points: 
     return points.filter((p) => p.day >= since);
   }, [points, days]);
 
+  // Phones: a 192 px chart (the 228 px box was mostly empty at 390).
+  const h = width > 0 && width < 520 ? 192 : H;
   const values = shown.length ? shown.map((p) => p.perKg) : [current];
+  // Change across the window, from recorded points only (none until there are two).
+  // Only when every point in the window is a buyable price — otherwise the "change" would be an availability switch.
+  const delta = shown.length >= 2 && shown.every((p) => p.buyable) ? ((shown[shown.length - 1]!.perKg - shown[0]!.perKg) / shown[0]!.perKg) * 100 : null;
   let lo = Math.min(...values);
   let hi = Math.max(...values);
   if (hi - lo < 0.01) {
@@ -156,7 +162,7 @@ function PriceLine({ points, days, eur, day, historyStart, current }: { points: 
   const ticks = [lo + (hi - lo) * 0.1, (lo + hi) / 2, hi - (hi - lo) * 0.1];
   const left = gutter(ticks.map(eur));
   const innerW = Math.max(0, width - left - PAD.right);
-  const innerH = H - PAD.top - PAD.bottom;
+  const innerH = h - PAD.top - PAD.bottom;
   const x = (i: number) => left + (shown.length <= 1 ? innerW / 2 : (i / (shown.length - 1)) * innerW);
   const y = (v: number) => PAD.top + innerH - ((v - lo) / (hi - lo)) * innerH;
   const path = shown.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.perKg).toFixed(1)}`).join(" ");
@@ -170,9 +176,23 @@ function PriceLine({ points, days, eur, day, historyStart, current }: { points: 
   };
 
   return (
-    <div ref={ref} className="relative" style={{ height: H }} data-hub-chart="price" data-points={shown.length}>
+    <div ref={ref} className="relative" style={{ height: h }} data-hub-chart="price" data-points={shown.length}>
+      {delta !== null && (
+        <span
+          className={`absolute right-1 top-0 z-[1] rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+            Math.abs(delta) < 0.05
+              ? "border-slate-900/[.08] bg-slate-100 text-slate-600 dark:border-white/[.1] dark:bg-white/[.06] dark:text-ink-muted"
+              : delta < 0
+                ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                : "border-red-500/25 bg-red-500/[.08] text-red-700 dark:text-red-300"
+          }`}
+          data-hub-delta={delta.toFixed(2)}
+        >
+          {Math.abs(delta) < 0.05 ? t("deltaFlat") : `${delta < 0 ? "▼" : "▲"} ${t("deltaValue", { value: pct.number(Math.abs(delta), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) })}`}
+        </span>
+      )}
       {width > 0 && (
-        <svg width={width} height={H} role="img" aria-label={t("chartAria", { n: shown.length })} className="block">
+        <svg width={width} height={h} role="img" aria-label={t("chartAria", { n: shown.length })} className="block">
           {ticks.map((v) => (
             <g key={v}>
               <line x1={left} x2={width - PAD.right} y1={y(v)} y2={y(v)} stroke="var(--hv-grid)" />
@@ -182,14 +202,19 @@ function PriceLine({ points, days, eur, day, historyStart, current }: { points: 
             </g>
           ))}
           {shown.length > 1 && <path d={path} fill="none" stroke="var(--hv-1)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />}
-          {shown.length === 1 && <circle cx={x(0)} cy={y(shown[0]!.perKg)} r={5} fill="var(--hv-1)" stroke="var(--surface-1, #fff)" strokeWidth={2} />}
+          {/* While the record is short, every recorded day is a visible dot — the line joins readings, it doesn't invent between them. */}
+          {shown.length <= 31 &&
+            shown.map((p, i) => (
+              // Hollow: nothing was buyable that day — the lowest listed rate, not a market price.
+              <circle key={p.day} cx={x(i)} cy={y(p.perKg)} r={shown.length === 1 ? 5 : 3.5} fill={p.buyable ? "var(--hv-1)" : "var(--surface-1, #fff)"} stroke={p.buyable ? "var(--surface-1, #fff)" : "var(--hv-1)"} strokeWidth={2} data-hub-point={p.day} data-buyable={p.buyable ? "1" : "0"} />
+            ))}
           {shown.length > 0 && (
             <>
-              <text x={left} y={H - 6} fontSize="11" fill="var(--hv-axis)">
+              <text x={left} y={h - 6} fontSize="11" fill="var(--hv-axis)">
                 {day(shown[0]!.day)}
               </text>
               {shown.length > 1 && (
-                <text x={width - PAD.right} y={H - 6} fontSize="11" fill="var(--hv-axis)" textAnchor="end">
+                <text x={width - PAD.right} y={h - 6} fontSize="11" fill="var(--hv-axis)" textAnchor="end">
                   {day(shown[shown.length - 1]!.day)}
                 </text>
               )}

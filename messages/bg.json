@@ -984,7 +984,12 @@
     "outOfStock": "Изчерпано",
     "lead": "Хладилни агенти, смеси и сервизно оборудване — налични и за поръчка.",
     "cardWeight": "{kg} кг",
-    "cardPerKg": "{amount}/кг"
+    "cardPerKg": "{amount}/кг",
+    "filtersButton": "Филтри",
+    "showResults": "Покажи {count, plural, one {# резултат} other {# резултата}}",
+    "closeFilters": "Затвори филтрите",
+    "bulkImportShort": "Импорт на BOM / CSV",
+    "viewTableShort": "Таблица"
   },
   "ProductDetail": {
     "crumbRoot": "Списък с продукти",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Изчерпано",
     "terminalTitle": "{gas} индекс",
-    "perKgFrom": "на кг · най-ниска цена за покупка сред {sizes, plural, one {# размер} other {# размера}}",
+    "perKgFrom": "на кг · най-ниска цена на бутилка за покупка в {sizes, plural, one {# размер} other {# размера}}",
     "timeframe": "Времеви интервал",
     "frame_1m": "1М",
     "frame_3m": "3М",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Напредъкът се запазва на това устройство.",
     "reset": "Нулиране",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Цени, регулации и новини за газовете, които купувате."
+    "lead": "Цени, регулации и новини за газовете, които купувате.",
+    "tabShort_exchange": "📊 Борса",
+    "tabShort_compare": "🔍 Съвместимост",
+    "tabShort_challenge": "🕹️ Практикум",
+    "tabShort_digest": "📰 Резюме",
+    "deltaFlat": "Няма промяна",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Цена на известие",

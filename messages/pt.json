@@ -984,7 +984,12 @@
     "outOfStock": "Fora de estoque",
     "lead": "Refrigerantes, misturas e equipamentos de serviço — em stock e por encomendar.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtros",
+    "showResults": "Mostrar {count, plural, one {# resultado} many {# resultados} other {# resultados}}",
+    "closeFilters": "Fechar filtros",
+    "bulkImportShort": "Importar BOM / CSV",
+    "viewTableShort": "Tabela"
   },
   "ProductDetail": {
     "crumbRoot": "Lista de produtos",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Defina alertas de preços",
     "toCatalog": "Ir para o catálogo",
     "modesLabel": "Modos do Hub",
-    "tab_exchange": "📊 Câmbio & índices",
+    "tab_exchange": "📊 Mercado & índices",
     "tab_compare": "🔍 Comparação de gases & compatibilidade de sistemas",
     "tab_challenge": "🕹️ Desafio de engenharia & simulador",
     "tab_digest": "📰 Digestivo da indústria",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Fora",
     "terminalTitle": "Índice de {gas}",
+    "perKgFrom": "por kg · menor taxa de compra disponível para cilindros em {sizes, plural, one {# tamanho} many {# tamanhos} other {# tamanhos}}",
     "timeframe": "Período",
     "frame_1m": "1M",
-    "perKgFrom": "por kg · menor taxa de compra disponível em {sizes, plural, one {# tamanho} many {# tamanhos} other {# tamanhos}}",
     "frame_3m": "3M",
     "frame_1y": "1A",
     "frame_quota": "Perspetiva de quota 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Reiniciar",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Preços, regulamentação e notícias sobre os gases que compra.",
+    "tabShort_exchange": "📊 Mercado",
+    "tabShort_compare": "🔍 Compatibilidade",
+    "tabShort_challenge": "🕹️ Prática",
+    "tabShort_digest": "📰 Resumo",
+    "deltaFlat": "Sem alteração",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# resposta correta} many {# respostas corretas} other {# respostas corretas}} para “{rank}”"
   },
   "PriceAlertEmail": {

@@ -984,7 +984,12 @@
     "outOfStock": "Není skladem",
     "lead": "Chladiva, směsi a servisní zařízení — skladem a na objednávku.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtry",
+    "showResults": "Zobrazit {count, plural, one {# výsledek} few {# výsledky} many {# výsledků} other {# výsledků}}",
+    "closeFilters": "Zavřít filtry",
+    "bulkImportShort": "Importovat BOM / CSV",
+    "viewTableShort": "Tabulka"
   },
   "ProductDetail": {
     "crumbRoot": "Seznam produktů",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Vyprodáno",
     "terminalTitle": "{gas} index",
+    "perKgFrom": "za kg · nejnižší cena lahve dostupné v {sizes, plural, one {# velikosti} few {# velikostech} many {# velikostech} other {# velikostech}}",
     "timeframe": "Časový rámec",
     "frame_1m": "1M",
-    "perKgFrom": "za kg · nejnižší kupní cena napříč {sizes, plural, one {# velikostí} few {# velikosti} many {# velikosti} other {# velikostí}}",
     "frame_3m": "3M",
     "frame_1y": "1Y",
     "frame_quota": "Přehled kvót 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Resetovat",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Ceny, regulace a novinky pro plyny, které kupujete.",
+    "tabShort_exchange": "📊 Burza",
+    "tabShort_compare": "🔍 Kompatibilita",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Přehled",
+    "deltaFlat": "Žádná změna",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# správná odpověď} few {# správné odpovědi} many {# správných odpovědí} other {# správných odpovědí}} k „{rank}“"
   },
   "PriceAlertEmail": {

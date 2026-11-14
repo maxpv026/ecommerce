@@ -984,7 +984,12 @@
     "outOfStock": "Немає в наявності",
     "lead": "Холодоагенти, суміші та сервісне обладнання — у наявності й під замовлення.",
     "cardWeight": "{kg} кг",
-    "cardPerKg": "{amount}/кг"
+    "cardPerKg": "{amount}/кг",
+    "filtersButton": "Фільтри",
+    "showResults": "Показати {count, plural, one {# результат} few {# результати} many {# результатів} other {# результату}}",
+    "closeFilters": "Закрити фільтри",
+    "bulkImportShort": "Імпорт BOM / CSV",
+    "viewTableShort": "Таблиця"
   },
   "ProductDetail": {
     "crumbRoot": "Список товарів",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Немає",
     "terminalTitle": "Індекс {gas}",
-    "perKgFrom": "за кг · найнижча ціна серед {sizes, plural, one {# фасування} few {# фасувань} many {# фасувань} other {# фасування}}, доступних до замовлення",
+    "perKgFrom": "за кг · найнижча ціна балона серед {sizes, plural, one {# фасування} few {# фасувань} many {# фасувань} other {# фасування}}, доступних до замовлення",
     "timeframe": "Період",
     "frame_1m": "1М",
     "frame_3m": "3М",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Прогрес зберігається на цьому пристрої.",
     "reset": "Скинути",
     "cylinderPrice": "{kg} кг · {price}/кг",
-    "lead": "Ціни, регулювання та новини про ваші гази."
+    "lead": "Ціни, регулювання та новини про ваші гази.",
+    "tabShort_exchange": "📊 Біржа",
+    "tabShort_compare": "🔍 Сумісність",
+    "tabShort_challenge": "🕹️ Практикум",
+    "tabShort_digest": "📰 Дайджест",
+    "deltaFlat": "Без змін",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Цінове сповіщення",

@@ -984,7 +984,12 @@
     "outOfStock": "Udsolgt",
     "lead": "Kølemidler, blandinger og serviceudstyr — på lager og til bestilling.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtre",
+    "showResults": "Vis {count, plural, one {# resultat} other {# resultater}}",
+    "closeFilters": "Luk filtre",
+    "bulkImportShort": "Importér BOM / CSV",
+    "viewTableShort": "Tabel"
   },
   "ProductDetail": {
     "crumbRoot": "Produktliste",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Opsæt prisalarmer",
     "toCatalog": "Gå til katalog",
     "modesLabel": "Hub-tilstande",
-    "tab_exchange": "📊 Udveksling & indekser",
+    "tab_exchange": "📊 Marked & indekser",
     "tab_compare": "🔍 Gassammenligning & systemkompatibilitet",
     "tab_challenge": "🕹️ Ingeniørmæssig udfordring & simulator",
     "tab_digest": "📰 Brancheoversigt",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Ude",
     "terminalTitle": "{gas} indeks",
-    "perKgFrom": "pr. kg · laveste købsrate på tværs af {sizes, plural, one {# størrelse} other {# størrelser}}",
+    "perKgFrom": "pr. kg · laveste købsrate for cylinder på tværs af {sizes, plural, one {# størrelse} other {# størrelser}}",
     "timeframe": "Tidsramme",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Fremskridt gemmes på denne enhed.",
     "reset": "Nulstil",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Priser, regulering og nyheder for de gasser, du køber."
+    "lead": "Priser, regulering og nyheder for de gasser, du køber.",
+    "tabShort_exchange": "📊 Marked",
+    "tabShort_compare": "🔍 Kompatibilitet",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Digest",
+    "deltaFlat": "Ingen ændring",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Prissignal",

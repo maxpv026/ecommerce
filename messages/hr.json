@@ -984,7 +984,12 @@
     "outOfStock": "Nema na skladištu",
     "lead": "Rashladni mediji, mješavine i oprema — na skladištu i za narudžbu.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtri",
+    "showResults": "Prikaži {count, plural, one {# rezultat} few {# rezultata} other {# rezultata}}",
+    "closeFilters": "Zatvori filtre",
+    "bulkImportShort": "Uvezi BOM / CSV",
+    "viewTableShort": "Tablica"
   },
   "ProductDetail": {
     "crumbRoot": "Popis proizvoda",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Nema",
     "terminalTitle": "{gas} indeks",
+    "perKgFrom": "po kg · najniža cijena boce koja se može kupiti među {sizes, plural, one {# veličinom} few {# veličine} other {# veličina}}",
     "timeframe": "Vremenski okvir",
     "frame_1m": "1M",
-    "perKgFrom": "po kg · najniža kupovna cijena za {sizes, plural, one {# veličinu} few {# veličine} other {# veličina}}",
     "frame_3m": "3M",
     "frame_1y": "1G",
     "frame_quota": "Izgled kvote 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Resetiraj",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Cijene, regulative i novosti za plinove koje kupujete.",
+    "tabShort_exchange": "📊 Burza",
+    "tabShort_compare": "🔍 Kompatibilnost",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Pregled",
+    "deltaFlat": "Nema promjene",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# točan odgovor} few {# točna odgovora} other {# točnih odgovora}} za “{rank}”"
   },
   "PriceAlertEmail": {

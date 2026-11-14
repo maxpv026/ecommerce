@@ -6,13 +6,10 @@ import Header from "./Header";
 import DesktopHome from "./DesktopHome";
 import MobileTopBar from "./MobileTopBar";
 import AuthModal from "./AuthModal";
-import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder, UserProfileData } from "@/lib/data";
-import type { FgasSummary } from "@/lib/fgas";
+import type { MarketAlertData, ProfileDashboardData, StoreProduct, UserOrder } from "@/lib/data";
 import type { GreetingKey } from "@/lib/greeting";
 
 interface StorePageProps {
-  /** The static catalogue picks every visitor sees (cached, tag PRODUCTS_TAG). */
-  featuredProducts: StoreProduct[];
   /** A larger pick for the desktop Popular grid and its category tabs. */
   popularProducts: StoreProduct[];
   /** One catalog cylinder per hero gas (lib/data getHomeShowcase). */
@@ -25,13 +22,8 @@ interface StorePageProps {
 }
 
 interface AccountData {
-  recommendedProducts: StoreProduct[];
   dashboard: ProfileDashboardData | null;
   latestOrder: UserOrder | null;
-  orders: UserOrder[];
-  certificate: UserProfileData["certificate"];
-  jobTitle: string | null;
-  fgas?: FgasSummary | null;
 }
 
 /**
@@ -47,18 +39,22 @@ interface AccountData {
  * skeleton → page, two full re-renders and ~350 ms of nothing on every
  * signed-in visit.
  */
-export default function StorePage({ featuredProducts, popularProducts, showcase, marketAlerts, greetingKey, sdsCount }: StorePageProps) {
+export default function StorePage({ popularProducts, showcase, marketAlerts, greetingKey, sdsCount }: StorePageProps) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { status, data: session } = useSession();
   const userId = session?.user?.id ?? null;
   const [account, setAccount] = useState<{ userId: string; data: AccountData } | null>(null);
+  const [recs, setRecs] = useState<{ userId: string; products: StoreProduct[] } | null>(null);
 
   useEffect(() => {
     if (status !== "authenticated" || !userId) return;
     let cancelled = false;
-    // Every outcome settles: a failed or refused fetch falls back to the
-    // public shell rather than leaving a signed-in buyer on the skeleton.
-    const fallback: AccountData = { recommendedProducts: featuredProducts, dashboard: null, latestOrder: null, orders: [], certificate: null, jobTitle: null };
+    // Two requests on purpose. The figures (KPIs, last order) are three
+    // queries, ~0.3 s; the recommendations may wait on a model call (capped
+    // at 2.5 s, lib/data). In one response the KPI cards sat as skeletons for
+    // the slow half — seconds on a phone. Every outcome settles: a failed
+    // fetch falls back to the public shell rather than a stuck skeleton.
+    const fallback: AccountData = { dashboard: null, latestOrder: null };
     fetch("/api/home/account", { cache: "no-store" })
       .then((res) => (res.ok ? (res.json() as Promise<AccountData & { ok: boolean }>) : null))
       .then((body) => {
@@ -67,10 +63,16 @@ export default function StorePage({ featuredProducts, popularProducts, showcase,
       .catch(() => {
         if (!cancelled) setAccount({ userId, data: fallback });
       });
+    fetch("/api/home/recommendations", { cache: "no-store" })
+      .then((res) => (res.ok ? (res.json() as Promise<{ ok: boolean; products: StoreProduct[] }>) : null))
+      .then((body) => {
+        if (!cancelled && body?.ok) setRecs({ userId, products: body.products });
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [status, userId, featuredProducts]);
+  }, [status, userId]);
 
   // Only data fetched for THIS session counts (a sign-out or account switch
   // must not keep showing the previous buyer's dashboard).
@@ -78,7 +80,8 @@ export default function StorePage({ featuredProducts, popularProducts, showcase,
   // Signed in (or still finding out) and this buyer's data is not here yet.
   const accountLoading = status === "loading" || (status === "authenticated" && !mine);
   // Desktop grid: this buyer's recommendations first, then the wider pick.
-  const popular = [...(mine?.recommendedProducts ?? []), ...popularProducts].filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i);
+  const mineRecs = status === "authenticated" && recs?.userId === userId ? recs.products : [];
+  const popular = [...mineRecs, ...popularProducts].filter((p, i, all) => all.findIndex((q) => q.id === p.id) === i);
 
   return (
     <div className="flex-1 bg-canvas">

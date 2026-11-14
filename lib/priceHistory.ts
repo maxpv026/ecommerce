@@ -15,10 +15,17 @@ import { sendPriceAlertEmail } from "@/lib/notificationEmail";
  * (b) once a day by /api/cron/price-snapshot for every gas size. The chart
  * draws only these rows and says on which day its record begins.
  *
- * The per-gas "index" is the lowest €/kg among the sizes of that gas that can
- * be bought right now — what "from €X/kg" means on the catalog. When no size
- * is purchasable it falls back to the lowest listed rate, flagged as such.
+ * The per-gas "index" is the lowest €/kg among the CYLINDER sizes of that gas
+ * that can be bought right now — what "from €X/kg" means on the catalog. When
+ * no size is purchasable it falls back to the lowest listed rate, flagged as
+ * such. Bulk containers (isotanks, ton tanks — isBulkSize) are a different
+ * market and stay out: a 1000 kg R-32 isotank at €15/kg made the R-32 index
+ * read €15 while every cylinder a technician can carry cost €25.
  */
+
+/** Above this a size is bulk (isotank / ton tank), not a cylinder. */
+export const BULK_MIN_KG = 200;
+export const isBulkSize = (p: { weightKg: number; containerType?: string | null }) => p.weightKg >= BULK_MIN_KG || /isotank|ton(ne)?\s*tank/i.test(p.containerType ?? "");
 
 export interface GasIndex {
   /** Catalog mark ("R410A"). */
@@ -72,7 +79,10 @@ export async function getGasIndex(): Promise<GasIndex[]> {
   const out: GasIndex[] = [];
   for (const [mark, sizes] of byMark) {
     const buyable = sizes.filter(isPurchasable);
-    const pool = buyable.length ? buyable : sizes;
+    // The index follows buyable cylinders; bulk only when it is the one thing that can be bought.
+    const retail = sizes.filter((s) => !isBulkSize(s));
+    const retailBuyable = retail.filter(isPurchasable);
+    const pool = retailBuyable.length ? retailBuyable : buyable.length ? buyable : retail.length ? retail : sizes;
     const best = pool.reduce((a, b) => (b.pricePerKg < a.pricePerKg ? b : a));
     const smallest = buyable.length ? buyable.reduce((a, b) => (b.weightKg < a.weightKg || (b.weightKg === a.weightKg && b.pricePerKg < a.pricePerKg) ? b : a)) : null;
     out.push({
@@ -126,23 +136,37 @@ export interface PricePoint {
   /** ISO day (UTC), "2026-11-13". */
   day: string;
   perKg: number;
+  /**
+   * Some size could be bought that day. False: the value is the lowest LISTED
+   * rate (nothing purchasable) — not comparable with a buyable day, so no
+   * change is computed across the two (a cylinder coming back into stock
+   * is not a price rise).
+   */
+  buyable: boolean;
 }
 
 /**
  * Daily index per gas from the recorded snapshots: for each day, the lowest
- * €/kg of a purchasable size (or of any size, if none was purchasable that
- * day) — the same rule as getGasIndex, applied to the record.
+ * €/kg of a purchasable cylinder size (or of any cylinder size, if none was
+ * purchasable that day) — the same rule as getGasIndex, applied to the
+ * record, bulk sizes left out the same way.
  */
 export async function getPriceHistory(sinceDays = 400): Promise<{ series: Record<string, PricePoint[]>; firstDay: string | null }> {
   const since = new Date(Date.now() - sinceDays * 86_400_000);
   const rows = await prisma.priceSnapshot.findMany({
     where: { recordedAt: { gte: since }, mark: { not: null } },
-    select: { mark: true, pricePerKg: true, inStock: true, recordedAt: true },
+    select: { productId: true, mark: true, pricePerKg: true, inStock: true, recordedAt: true },
     orderBy: { recordedAt: "asc" },
   });
+  const bulkIds = new Set(
+    (await prisma.product.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.productId))] } }, select: { id: true, weightKg: true, containerType: true } }))
+      .filter(isBulkSize)
+      .map((p) => p.id)
+  );
   const cell = new Map<string, { buyable: number | null; any: number }>();
   let firstDay: string | null = null;
   for (const r of rows) {
+    if (bulkIds.has(r.productId)) continue;
     const day = r.recordedAt.toISOString().slice(0, 10);
     firstDay ??= day;
     const key = `${r.mark}|${day}`;
@@ -155,7 +179,7 @@ export async function getPriceHistory(sinceDays = 400): Promise<{ series: Record
   const series: Record<string, PricePoint[]> = {};
   for (const [key, c] of cell) {
     const [mark, day] = key.split("|") as [string, string];
-    (series[mark] ??= []).push({ day, perKg: c.buyable ?? c.any });
+    (series[mark] ??= []).push({ day, perKg: c.buyable ?? c.any, buyable: c.buyable !== null });
   }
   for (const list of Object.values(series)) list.sort((a, b) => a.day.localeCompare(b.day));
   return { series, firstDay };

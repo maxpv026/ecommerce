@@ -984,7 +984,12 @@
     "outOfStock": "缺货",
     "lead": "制冷剂、混合物和服务设备 — 现货及可订购。",
     "cardWeight": "{kg} 千克",
-    "cardPerKg": "{amount}/千克"
+    "cardPerKg": "{amount}/千克",
+    "filtersButton": "筛选",
+    "showResults": "显示 {count, plural, other {# 个结果}}",
+    "closeFilters": "关闭筛选",
+    "bulkImportShort": "导入 BOM / CSV",
+    "viewTableShort": "表格"
   },
   "ProductDetail": {
     "crumbRoot": "产品目录",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "设置价格提醒",
     "toCatalog": "前往目录",
     "modesLabel": "中心模式",
-    "tab_exchange": "📊 交易与指数",
+    "tab_exchange": "📊 市场与指数",
     "tab_compare": "🔍 气体比较与系统兼容性",
     "tab_challenge": "🕹️ 工程挑战与模拟器",
     "tab_digest": "📰 行业摘要",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "缺货",
     "terminalTitle": "{gas} 指数",
+    "perKgFrom": "每千克 · 在 {sizes, plural, other {# 种规格}} 中最低可购钢瓶价格",
     "timeframe": "时间范围",
     "frame_1m": "1个月",
-    "perKgFrom": "每千克 · 在 {sizes, plural, other {# 种规格}} 中最低可购价格",
     "frame_3m": "3M",
     "frame_1y": "1Y",
     "frame_quota": "2026–2030 配额展望",
@@ -3053,6 +3058,12 @@
     "reset": "重置",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "您购买的气体的价格、法规和新闻。",
+    "tabShort_exchange": "📊 市场",
+    "tabShort_compare": "🔍 兼容性",
+    "tabShort_challenge": "🕹️ 实践",
+    "tabShort_digest": "📰 摘要",
+    "deltaFlat": "无变化",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, other {# 个正确答案}} 到 “{rank}”"
   },
   "PriceAlertEmail": {

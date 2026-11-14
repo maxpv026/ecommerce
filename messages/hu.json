@@ -984,7 +984,12 @@
     "outOfStock": "Nincs raktáron",
     "lead": "Hűtőközegek, keverékek és szolgáltatási berendezések — készleten és rendelésre.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Szűrők",
+    "showResults": "Mutasd a {count, plural, one {# eredményt} other {# eredményt}}",
+    "closeFilters": "Szűrők bezárása",
+    "bulkImportShort": "BOM / CSV importálása",
+    "viewTableShort": "Táblázat"
   },
   "ProductDetail": {
     "crumbRoot": "Terméklista",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Készleten kívül",
     "terminalTitle": "{gas} index",
-    "perKgFrom": "kg-onként · legalacsonyabb vásárolható ár {sizes, plural, one {# méret} other {# méret}}",
+    "perKgFrom": "kg-onként · a legolcsóbb vásárolható palack ár {sizes, plural, one {# méret} other {# méret}} esetén",
     "timeframe": "Időkeret",
     "frame_1m": "1H",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "A haladás ezen az eszközön van nyilvántartva.",
     "reset": "Visszaállítás",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Árak, szabályozás és hírek a vásárolt gázokról."
+    "lead": "Árak, szabályozás és hírek a vásárolt gázokról.",
+    "tabShort_exchange": "📊 Tőzsde",
+    "tabShort_compare": "🔍 Kompatibilitás",
+    "tabShort_challenge": "🕹️ Gyakorlat",
+    "tabShort_digest": "📰 Összefoglaló",
+    "deltaFlat": "Nincs változás",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Árfigyelmeztetés",

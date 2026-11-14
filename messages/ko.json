@@ -984,7 +984,12 @@
     "outOfStock": "재고 없음",
     "lead": "냉매, 혼합물 및 서비스 장비 — 재고 및 주문 가능.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "필터",
+    "showResults": "Show {count, plural, other {#개 결과}}",
+    "closeFilters": "필터 닫기",
+    "bulkImportShort": "BOM / CSV 가져오기",
+    "viewTableShort": "표 보기"
   },
   "ProductDetail": {
     "crumbRoot": "제품 목록",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "품절",
     "terminalTitle": "{gas} 지수",
+    "perKgFrom": "per kg · 최저 구매 가능한 실린더 요금 {sizes, plural, other {#개 크기}}",
     "timeframe": "기간",
     "frame_1m": "1개월",
-    "perKgFrom": "kg당 · {sizes, plural, other {#개 크기}}에서 가장 낮은 구매 가능 요금",
     "frame_3m": "3M",
     "frame_1y": "1Y",
     "frame_quota": "2026–2030 쿼터 전망",
@@ -3053,6 +3058,12 @@
     "reset": "재설정",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "구매하는 가스에 대한 가격, 규제 및 뉴스를 확인하세요.",
+    "tabShort_exchange": "📊 거래소",
+    "tabShort_compare": "🔍 호환성",
+    "tabShort_challenge": "🕹️ 실습",
+    "tabShort_digest": "📰 요약",
+    "deltaFlat": "변동 없음",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, other {#개의 정답}} to “{rank}”"
   },
   "PriceAlertEmail": {

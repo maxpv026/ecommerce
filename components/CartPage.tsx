@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
-import MobileCartLayout from "./MobileCartLayout";
+import MobileTopBar from "./MobileTopBar";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import FgasGateAlert, { FgasVerifiedLine, fgasGateFor } from "./FgasGateAlert";
 import { useFgasModal } from "@/lib/fgasModalEvents";
@@ -39,7 +39,6 @@ import type { FgasSummary } from "@/lib/fgas";
 import QuoteCartBanner from "./QuoteCartBanner";
 import ProductThumbnail from "./ProductThumbnail";
 import { calculateCartTotals, lineUnitPrice, pricingLineFor } from "@/lib/cart";
-import { formatKg } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
 import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
@@ -202,9 +201,11 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
     const p = bySku.get(i.sku);
     return p?.pricedPerKg ? n + p.weightKg * i.qty : n;
   }, 0);
+  // Locale-formatted kilograms ("13,61 кг", "13.61 kg") — formatKg is the English-only "13.61 kg".
+  const kgText = (kg: number) => format.number(kg, { style: "unit", unit: "kilogram", maximumFractionDigits: 2 });
   const metaLine = [
     t("metaItems", { count }),
-    netKg > 0 ? t("metaNetKg", { kg: formatKg(netKg) }) : null,
+    netKg > 0 ? t("metaNetKg", { kg: kgText(netKg) }) : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -317,8 +318,13 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
 
   return (
     <div className="flex-1 bg-canvas">
-      <div className="hidden md:block">
+      {/* One cart at every width (the separate phone cart is gone): the desktop
+          Header above md, the phone app bar below it. */}
+      <div className="hidden md:contents">
         <Header onSignInClick={() => openAuth("inline")} />
+      </div>
+      <MobileTopBar />
+      <div>
 
         <div className="relative overflow-x-clip">
           {/* Ambient glow field from the design: cyan / violet / blue orbs */}
@@ -331,12 +337,12 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="relative mx-auto max-w-7xl px-8 pb-24 pt-9"
+            className="relative mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-8 sm:pb-24 sm:pt-9"
           >
             {/* ── Header bar: what is in the cart · the tools that act on it ── */}
             <div className={`mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 ${empty ? "mx-auto max-w-3xl" : ""}`}>
               <div className="min-w-0">
-                <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{empty ? t("headEmpty") : t("yourCart")}</h1>
+                <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em] max-sm:text-[28px]">{empty ? t("headEmpty") : t("yourCart")}</h1>
                 <p className="m-0 mt-2 text-[14px] text-slate-500 tabular-nums dark:text-ink-muted" data-cart-meta>
                   {empty ? t("sublineEmpty") : metaLine}
                 </p>
@@ -381,7 +387,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                   </Link>
                 </motion.div>
                 <SmartOrderButton variant="panel" source="cart" />
-                <div className="grid grid-cols-3 gap-3" data-cart-trust>
+                <div className="grid grid-cols-3 gap-3 max-sm:grid-cols-1" data-cart-trust>
                   {TRUST.map(({ icon: Icon, short, long }) => (
                     <span
                       key={short}
@@ -409,14 +415,14 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                         data-cart-audit
                         className={`mb-4 rounded-[18px] border px-4 py-3.5 ${
                           optimised
-                            ? "border-violet-500/30 bg-violet-500/[.07]"
+                            ? "border-blue-600/25 bg-blue-600/[.06] dark:border-blue-400/30 dark:bg-blue-500/[.1]"
                             : auditPhase === "unavailable"
                               ? "border-slate-900/[.1] bg-white/70 dark:border-white/[.1] dark:bg-white/[.04]"
                               : "border-emerald-500/30 bg-emerald-500/[.07]"
                         }`}
                       >
                         <div className="flex items-start gap-3">
-                          <Sparkles size={16} strokeWidth={2} className={`mt-0.5 flex-none ${optimised ? "text-violet-600 dark:text-violet-300" : "text-emerald-600 dark:text-emerald-400"}`} />
+                          <ScanSearch size={16} strokeWidth={2} className={`mt-0.5 flex-none ${optimised ? "text-blue-700 dark:text-blue-300" : "text-emerald-600 dark:text-emerald-400"}`} />
                           <div className="min-w-0 flex-1">
                             <div className="text-[13.5px] font-semibold tracking-[-.015em]" data-audit-title>
                               {optimised
@@ -474,11 +480,12 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                             exit={{ opacity: 0, x: 30, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }}
                             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                             data-cart-line={item.sku}
-                            className="grid grid-cols-[64px_minmax(0,1fr)_auto_170px_36px] items-center gap-4 border-b border-slate-900/[.06] px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-900/[.02] dark:border-white/[.06] dark:hover:bg-white/[.03]"
+                            // Phones: thumb · name · remove (row 1), stepper ↔ price (row 2).
+                            className="grid grid-cols-[64px_minmax(0,1fr)_auto_170px_36px] items-center gap-4 border-b border-slate-900/[.06] px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-900/[.02] max-sm:grid-cols-[56px_minmax(0,1fr)_36px] max-sm:gap-x-3 max-sm:gap-y-3 max-sm:px-4 dark:border-white/[.06] dark:hover:bg-white/[.03]"
                           >
                             {/* 1 · visual */}
                             <span
-                              className="relative h-16 w-16 overflow-hidden rounded-2xl border bg-slate-50 dark:bg-white/[.04]"
+                              className="relative h-16 w-16 overflow-hidden rounded-2xl border bg-slate-50 max-sm:h-14 max-sm:w-14 dark:bg-white/[.04]"
                               style={{ borderColor: `${tint}55` }}
                               data-line-thumb
                             >
@@ -517,8 +524,10 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                               )}
                             </div>
 
+                            {/* 3 + 4 share one row on phones; on wider screens they are two grid cells (contents). */}
+                            <div className="sm:contents max-sm:col-span-3 max-sm:row-start-2 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3">
                             {/* 3 · quantity */}
-                            <div className="flex h-9 items-center gap-0.5 rounded-full border border-slate-900/[.1] bg-slate-50 px-0.5 dark:border-white/[.12] dark:bg-white/[.05]">
+                            <div className="flex h-9 flex-none items-center gap-0.5 rounded-full border border-slate-900/[.1] bg-slate-50 px-0.5 dark:border-white/[.12] dark:bg-white/[.05]">
                               <motion.button
                                 type="button"
                                 whileTap={{ scale: 0.9 }}
@@ -543,13 +552,13 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                             </div>
 
                             {/* 4 · price — the maths behind it, and the deposit */}
-                            <div className="text-right">
+                            <div className="min-w-0 text-right">
                               <div className="text-[16px] font-semibold tracking-[-.03em] tabular-nums" data-line-total>
                                 {eur(unit * item.qty)}
                               </div>
                               <div className="truncate text-[11.5px] leading-[1.45] text-slate-500 dark:text-ink-muted" data-line-breakdown>
                                 {showBreakdown
-                                  ? t("lineBreakdownShort", { perKg: eur(pricing.pricePerKg), weight: formatKg(pricing.weightKg) })
+                                  ? t("lineBreakdownShort", { perKg: eur(pricing.pricePerKg), weight: kgText(pricing.weightKg) })
                                   : `${eur(unit)} ${t("eachSuffix")}`}
                               </div>
                               {(pricing.deposit ?? 0) > 0 && (
@@ -559,6 +568,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                                 </div>
                               )}
                             </div>
+                            </div>
 
                             {/* remove — always visible */}
                             <button
@@ -567,7 +577,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                               aria-label={t("removeItemAria", { item: item.name })}
                               title={t("removeItemAria", { item: item.name })}
                               data-line-remove
-                              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-red-500/[.1] hover:text-red-600 dark:text-ink-muted dark:hover:text-red-400"
+                              className="flex h-9 w-9 items-center max-sm:col-start-3 max-sm:row-start-1 justify-center rounded-full text-slate-400 transition-colors hover:bg-red-500/[.1] hover:text-red-600 dark:text-ink-muted dark:hover:text-red-400"
                             >
                               <Trash2 size={15} strokeWidth={2} />
                             </button>
@@ -577,7 +587,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                     </AnimatePresence>
 
                     {/* footer: back to the catalogue · bulk import · clear */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-900/[.06] bg-slate-900/[.015] px-5 py-3 dark:border-white/[.06] dark:bg-white/[.02]" data-cart-lines-footer>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-900/[.06] bg-slate-900/[.015] px-5 py-3 max-sm:px-4 dark:border-white/[.06] dark:bg-white/[.02]" data-cart-lines-footer>
                       <Link href="/products" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-600 hover:text-slate-900 dark:text-ink-muted dark:hover:text-slate-100">
                         <ArrowLeft size={14} strokeWidth={2} />
                         {t("continueShopping")}
@@ -611,7 +621,7 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                           exit={{ opacity: 0, y: 10 }}
                           transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                           data-ai-suggestions
-                          className="mt-1.5 rounded-3xl border border-[rgba(124,58,237,.3)] bg-white/70 p-5 shadow-[0_0_30px_-14px_rgba(124,58,237,.5)] backdrop-blur-xl backdrop-saturate-150 dark:bg-glass"
+                          className="mt-1.5 rounded-3xl border border-blue-600/25 bg-white/70 p-5 shadow-[0_0_30px_-14px_rgba(48,86,181,.45)] backdrop-blur-xl backdrop-saturate-150 max-sm:p-4 dark:border-blue-400/25 dark:bg-glass"
                         >
                           <div className="mb-3.5 flex items-baseline justify-between gap-3.5">
                             <span className="text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">
@@ -637,8 +647,8 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
                                   data-suggestion={s.sku}
                                   className="flex items-center gap-3 rounded-[18px] border border-slate-900/[.07] bg-slate-100 p-[13px] dark:border-hairline dark:bg-surface-3"
                                 >
-                                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-[rgba(167,139,250,.34)] bg-[rgba(124,58,237,.16)]">
-                                    <Icon size={16} strokeWidth={2} className="text-[#6d28d9] dark:text-[#c4b5fd]" />
+                                  <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-blue-600/20 bg-blue-600/[.08] dark:border-blue-400/25 dark:bg-blue-500/[.12]">
+                                    <Icon size={16} strokeWidth={2} className="text-blue-700 dark:text-blue-300" />
                                   </span>
                                   <span className="min-w-0 flex-1">
                                     <span className="block text-[13px] font-semibold tracking-[-.02em]">{product.name}</span>
@@ -836,21 +846,6 @@ export default function CartPage({ products, fgas = null }: CartPageProps) {
         </div>
       </div>
 
-      <div className="block md:hidden">
-        <MobileCartLayout
-          products={products}
-          onCheckout={goToCheckout}
-          onGenerateQuote={generateQuote}
-          quoteLocked={quoteLocked}
-          quoting={quoting}
-          fgasGate={fgasGate}
-          checkoutLocked={checkoutLocked}
-          fgasVerified={hasGasLines && fgasCleared}
-          fgas={fgas}
-          onLogIn={() => openAuth("inline")}
-          onUploadCertificate={openFgas}
-        />
-      </div>
 
       <AuthModal
         isOpen={isAuthModalOpen}

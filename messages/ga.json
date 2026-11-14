@@ -984,7 +984,12 @@
     "outOfStock": "As stoc",
     "lead": "Fuaraithigh, meascáin agus trealamh seirbhíse — ar stoc agus le hordú.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Scagairí",
+    "showResults": "Taispeáin {count, plural, one {# toradh} two {# thoradh} few {# thoradh} many {# torthaí} other {# torthaí}}",
+    "closeFilters": "Dún scagairí",
+    "bulkImportShort": "Importáil BOM / CSV",
+    "viewTableShort": "Tábla"
   },
   "ProductDetail": {
     "crumbRoot": "Liosta táirgí",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Socraigh foláireamh praghais",
     "toCatalog": "Téigh chuig an gcatagóir",
     "modesLabel": "Móidí lárionaid",
-    "tab_exchange": "📊 Malartú & táscairí",
+    "tab_exchange": "📊 Margadh & táscairí",
     "tab_compare": "🔍 Comparáid gáis & comhoiriúnacht córais",
     "tab_challenge": "🕹️ Dúshlán innealtóireachta & simléir",
     "tab_digest": "📰 Tuairisc an tionscail",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "As",
     "terminalTitle": "táscaire {gas}",
+    "perKgFrom": "in aghaidh kg · an ráta sorcóra is ísle atá le ceannach ar fud {sizes, plural, one {# méid} two {# méideanna} few {# méideanna} many {# méideanna} other {# méideanna}}",
     "timeframe": "Amlíne",
     "frame_1m": "1M",
-    "perKgFrom": "per kg · an ráta is ísle atá le ceannaigh ar fud {sizes, plural, one {# méid} two {# méid} few {# méid} many {# méideanna} other {# méideanna}}",
     "frame_3m": "3M",
     "frame_1y": "1B",
     "frame_quota": "Tuairim Quota 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Athshocrú",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Praghsanna, rialacháin agus nuacht maidir leis na gáis a cheannaíonn tú.",
+    "tabShort_exchange": "📊 Margadh",
+    "tabShort_compare": "🔍 Comhoiriúnacht",
+    "tabShort_challenge": "🕹️ Cleachtadh",
+    "tabShort_digest": "📰 Achoimre",
+    "deltaFlat": "Níl aon athrú",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# freagra ceart} two {# freagra ceart} few {# freagra ceart} many {# freagra ceart} other {# freagra ceart} } go “{rank}”"
   },
   "PriceAlertEmail": {

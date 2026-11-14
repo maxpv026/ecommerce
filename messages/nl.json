@@ -984,7 +984,12 @@
     "outOfStock": "Niet op voorraad",
     "lead": "Koudemiddelen, mengsels en service-apparatuur — op voorraad en te bestellen.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filters",
+    "showResults": "Toon {count, plural, one {# resultaat} other {# resultaten}}",
+    "closeFilters": "Sluit filters",
+    "bulkImportShort": "Import BOM / CSV",
+    "viewTableShort": "Tabel"
   },
   "ProductDetail": {
     "crumbRoot": "Productlijst",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Uit",
     "terminalTitle": "{gas} index",
-    "perKgFrom": "per kg · laagste koopbare tarief over {sizes, plural, one {# maat} other {# maten}}",
+    "perKgFrom": "per kg · laagste koopbare cilinderprijs over {sizes, plural, one {# maat} other {# maten}}",
     "timeframe": "Tijdskader",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Voortgang wordt op dit apparaat bijgehouden.",
     "reset": "Resetten",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Prijzen, regelgeving en nieuws voor de gassen die u koopt."
+    "lead": "Prijzen, regelgeving en nieuws voor de gassen die u koopt.",
+    "tabShort_exchange": "📊 Beurs",
+    "tabShort_compare": "🔍 Compatibiliteit",
+    "tabShort_challenge": "🕹️ Practicum",
+    "tabShort_digest": "📰 Digest",
+    "deltaFlat": "Geen verandering",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Prijswaarschuwing",

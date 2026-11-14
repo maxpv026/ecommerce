@@ -984,7 +984,12 @@
     "outOfStock": "Loppu varastosta",
     "lead": "Kylmäaineet, seokset ja huoltolaitteet — varastossa ja tilattavissa.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Suodattimet",
+    "showResults": "Näytä {count, plural, one {# tulos} other {# tulosta}}",
+    "closeFilters": "Sulje suodattimet",
+    "viewTableShort": "Taulukko",
+    "bulkImportShort": "Tuo BOM / CSV"
   },
   "ProductDetail": {
     "crumbRoot": "Tuoteluettelo",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Aseta hintahälytykset",
     "toCatalog": "Siirry luetteloon",
     "modesLabel": "Keskuksen tilat",
-    "tab_exchange": "📊 Vaihto & indeksit",
+    "tab_exchange": "📊 Markkinat & indeksit",
     "tab_compare": "🔍 Kaasujen vertailu & järjestelmäyhteensopivuus",
     "tab_challenge": "🕹️ Insinöörin haaste & simulaattori",
     "tab_digest": "📰 Alan uutiskatsaus",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Loppu",
     "terminalTitle": "{gas} indeksi",
-    "perKgFrom": "per kg · alhaisin ostettavissa oleva hinta {sizes, plural, one {# koko} other {# kokoa}}",
+    "perKgFrom": "per kg · alhaisin ostettavissa oleva pullohinta {sizes, plural, one {# koko} other {# kokoa}}",
     "timeframe": "Aikaväli",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Edistymistä seurataan tällä laitteella.",
     "reset": "Nollaa",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Hinnat, sääntely ja uutiset ostamillesi kaasuilla."
+    "lead": "Hinnat, sääntely ja uutiset ostamillesi kaasuilla.",
+    "tabShort_exchange": "📊 Markkinat",
+    "tabShort_compare": "🔍 Yhteensopivuus",
+    "tabShort_challenge": "🕹️ Harjoitus",
+    "tabShort_digest": "📰 Tiivistelmä",
+    "deltaFlat": "Ei muutosta",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Hinta-alertti",

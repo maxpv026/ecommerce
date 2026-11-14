@@ -984,7 +984,12 @@
     "outOfStock": "Out of stock",
     "lead": "Refrigerants, blends and service equipment — in stock and to order.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filters",
+    "showResults": "Show {count, plural, one {# result} other {# results}}",
+    "closeFilters": "Close filters",
+    "bulkImportShort": "Import BOM / CSV",
+    "viewTableShort": "Table"
   },
   "ProductDetail": {
     "crumbRoot": "Product List",
@@ -2785,7 +2790,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Out",
     "terminalTitle": "{gas} index",
-    "perKgFrom": "per kg · lowest buyable rate across {sizes, plural, one {# size} other {# sizes}}",
+    "perKgFrom": "per kg · lowest buyable cylinder rate across {sizes, plural, one {# size} other {# sizes}}",
     "timeframe": "Timeframe",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3052,7 +3057,13 @@
     "progressLocal": "Progress is kept on this device.",
     "reset": "Reset",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Prices, regulation and news for the gases you buy."
+    "lead": "Prices, regulation and news for the gases you buy.",
+    "tabShort_exchange": "📊 Exchange",
+    "tabShort_compare": "🔍 Compatibility",
+    "tabShort_challenge": "🕹️ Practicum",
+    "tabShort_digest": "📰 Digest",
+    "deltaFlat": "No change",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Price alert",

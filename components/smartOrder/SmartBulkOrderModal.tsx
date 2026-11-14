@@ -272,7 +272,7 @@ export default function SmartBulkOrderModal() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.2 } }}
-          className="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/60 backdrop-blur-sm sm:items-center sm:p-4"
+          className="fixed inset-0 z-[140] flex items-end justify-center bg-slate-950/60 backdrop-blur-sm sm:items-center sm:p-4"
           onClick={hide}
         >
           <motion.div
@@ -649,7 +649,8 @@ export default function SmartBulkOrderModal() {
             </div>
 
             {/* ── Footer ── */}
-            <div className="flex flex-none flex-col gap-3 border-t border-slate-200 bg-white px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-white/[0.08] dark:bg-[#0A0D12]">
+            {/* Phones: the sheet ends at the screen edge, so the footer keeps the home-indicator inset clear of its buttons. */}
+            <div className="flex flex-none flex-col gap-3 border-t border-slate-200 bg-white px-5 py-3.5 max-sm:pb-[calc(14px+env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-white/[0.08] dark:bg-[#0A0D12]" data-smart-order-footer>
               {lines ? (
                 <>
                   <div className={`text-[11.5px] leading-[1.5] ${MUTED}`} data-smart-summary>

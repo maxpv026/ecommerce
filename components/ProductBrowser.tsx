@@ -5,15 +5,15 @@ import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Check, ChevronDown, LayoutGrid, Loader2, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, LayoutGrid, ListFilter, Loader2, Rows3, Search, SlidersHorizontal, X } from "lucide-react";
 import Header from "./Header";
 import AuthModal from "./AuthModal";
 import StockNotifyModal from "./StockNotifyModal";
-import MobileProductsLayout from "./MobileProductsLayout";
+import MobileTopBar from "./MobileTopBar";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
 import { CatalogCard, CatalogRow, ROW_GRID } from "./catalog/CatalogItem";
 import { CATEGORY_LABEL_KEY } from "./ProductCard";
-import { ICON_TILE, SURFACE } from "./home/ui";
+import { ICON_TILE, PILL, SURFACE } from "./home/ui";
 import { sortProducts } from "@/lib/productSort";
 import { productHasGasMark } from "@/lib/gasMarks";
 import { smartMatch } from "@/lib/actions/smartMatch";
@@ -39,7 +39,8 @@ import {
 import type { StoreProduct } from "@/lib/data";
 
 /**
- * /products on desktop, in the Cart / Settings design language: the cart's
+ * /products — one page at every width (the separate phone catalog is gone),
+ * in the Cart / Settings design language: the cart's
  * header bar (34 px title, middle-dot meta, pills on the same row),
  * max-w-7xl, 22 px surfaces, cart micro-badges, and a table view that is
  * the cart's line layout.
@@ -49,6 +50,9 @@ import type { StoreProduct } from "@/lib/data";
  * mirrored into the URL (replaceState) so a filtered view can be shared and
  * other pages can deep-link (?gasType=R32, ?category=equipment, ?use=ac).
  * Only `?search=` is applied on the server, with the header search's clause.
+ *
+ * Below lg the filter sidebar is a bottom sheet behind a "Filters (N)" pill —
+ * the same groups, counts and state as the desktop sidebar.
  *
  * The match bar reads gas codes, use cases, cylinder sizes and safety
  * classes locally (matchLocally); its presets are plain filter sets. Only a
@@ -78,6 +82,20 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
   const [view, setView] = useState<View>(() => (searchParams.get("view") === "table" ? "table" : "grid"));
   const [sort, setSort] = useState<(typeof SORTS)[number]>("featured");
   const [gasExpanded, setGasExpanded] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  // The filter sheet (below lg) owns the screen while open: no page scroll behind it, Esc closes it.
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSheetOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [sheetOpen]);
 
   // ── Match bar ──
   const [query, setQuery] = useState("");
@@ -176,14 +194,15 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
     ...(["cat", "weight", "safety", "gwp", "stock"] as const).flatMap((group) => filters[group].map((value) => ({ group, value }))),
   ];
 
-  // Mobile keeps its own layout; it gets the gas filter from the same state.
-  const mobileProducts = filters.marks.length ? products.filter((p) => filters.marks.some((m) => productHasGasMark(p, m))) : products;
-  const mobileCounts = Object.fromEntries(KNOWN_MARKS.map((m) => [m, products.filter((p) => productHasGasMark(p, m)).length]));
+  const activeCount = activeFilterCount(filters);
 
   return (
     <div className="flex-1 bg-canvas">
-      <div className="hidden md:block">
+      <div className="hidden md:contents">
         <Header onSignInClick={() => setIsAuthModalOpen(true)} />
+      </div>
+      <MobileTopBar />
+      <div>
 
         <div className="relative overflow-x-clip">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -191,17 +210,24 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
             <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.16] blur-[120px]" />
           </div>
 
-          <main className="relative mx-auto max-w-7xl px-8 pb-24 pt-9" data-catalog>
+          <main className="relative mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-8 sm:pb-24 sm:pt-9" data-catalog>
             {/* ── Header bar (cart layout) ── */}
             <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4" data-catalog-header>
               <div className="min-w-0">
-                <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{t("title")}</h1>
+                <h1 className="m-0 text-[34px] font-semibold leading-[1.1] tracking-[-.04em] max-sm:text-[28px]">{t("title")}</h1>
                 <p className="m-0 mt-2 text-[14px] text-slate-500 dark:text-ink-muted" data-catalog-meta>
                   {t("lead")}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <SmartOrderButton variant="pill" source="catalog" label={t("bulkImport")} className="min-h-[38px] px-3.5" />
+                {/* Same modal; the phone label is short enough to share the row with Filters. */}
+                <SmartOrderButton variant="pill" source="catalog" label={t("bulkImport")} className="min-h-[38px] px-3.5 max-sm:hidden" />
+                <SmartOrderButton variant="pill" source="catalog" label={t("bulkImportShort")} className="min-h-[38px] px-3.5 sm:hidden" />
+                <button type="button" onClick={() => setSheetOpen(true)} className={`${PILL} lg:hidden`} aria-haspopup="dialog" data-filters-open={activeCount}>
+                  <ListFilter size={15} strokeWidth={2} />
+                  {t("filtersButton")}
+                  {activeCount > 0 && <span className="rounded-full bg-blue-700 px-1.5 text-[11px] tabular-nums text-white">{activeCount}</span>}
+                </button>
               </div>
             </div>
 
@@ -219,15 +245,28 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
 
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               {/* ── Sidebar ── */}
-              <aside className="lg:sticky lg:top-[88px] lg:col-span-3" data-filters>
-                <div className="scrollbar-slim rounded-[22px] border border-slate-900/[.1] bg-white/80 p-5 shadow-[0_24px_60px_-44px_rgba(2,4,10,.55)] backdrop-blur-xl backdrop-saturate-150 lg:max-h-[calc(100vh-112px)] lg:overflow-y-auto dark:border-white/[.1] dark:bg-white/[.04]">
+              {sheetOpen && <div aria-hidden className="fixed inset-0 z-[125] bg-slate-950/40 backdrop-blur-[2px] lg:hidden" onClick={() => setSheetOpen(false)} data-filters-backdrop />}
+              <aside
+                className={`lg:sticky lg:top-[88px] lg:col-span-3 ${sheetOpen ? "max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-[130] max-lg:[animation:hc-sheet-up_.3s_cubic-bezier(.2,.8,.2,1)_both]" : "max-lg:hidden"}`}
+                role={sheetOpen ? "dialog" : undefined}
+                aria-modal={sheetOpen ? true : undefined}
+                aria-label={sheetOpen ? t("filtersTitle") : undefined}
+                data-filters
+                data-filters-sheet={sheetOpen ? "open" : "closed"}
+              >
+                <div className="scrollbar-slim rounded-[22px] border border-slate-900/[.1] bg-white/80 p-5 shadow-[0_24px_60px_-44px_rgba(2,4,10,.55)] backdrop-blur-xl backdrop-saturate-150 lg:max-h-[calc(100vh-112px)] lg:overflow-y-auto max-lg:max-h-[82vh] max-lg:overflow-y-auto max-lg:rounded-b-none max-lg:bg-white max-lg:pb-0 dark:border-white/[.1] dark:bg-white/[.04] max-lg:dark:bg-[#0E1117]">
                   <div className="mb-3 flex items-baseline justify-between gap-3">
                     <h2 className="m-0 text-[12px] font-semibold uppercase tracking-[.08em] text-slate-500 dark:text-ink-muted">{t("filtersTitle")}</h2>
-                    {activeFilterCount(filters) > 0 && (
-                      <button type="button" onClick={resetAll} className="text-[12px] font-semibold text-blue-700 dark:text-blue-400" data-filters-reset>
-                        {t("clearAll")}
+                    <span className="flex items-center gap-3">
+                      {activeCount > 0 && (
+                        <button type="button" onClick={resetAll} className="text-[12px] font-semibold text-blue-700 dark:text-blue-400" data-filters-reset>
+                          {t("clearAll")}
+                        </button>
+                      )}
+                      <button type="button" onClick={() => setSheetOpen(false)} aria-label={t("closeFilters")} className="flex h-8 w-8 items-center justify-center self-center rounded-full text-slate-500 hover:bg-slate-900/[.06] lg:hidden dark:hover:bg-white/10" data-filters-close>
+                        <X size={16} strokeWidth={2.2} />
                       </button>
-                    )}
+                    </span>
                   </div>
                   {/* Use case (was a pill row above the grid): single-choice, same state and counts. */}
                   <FacetSection title={t("useLabel")}>
@@ -253,6 +292,12 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                       </button>
                     )}
                   </FacetSection>
+                  {/* The sheet's way back to the list, with the count it will show. */}
+                  <div className="sticky bottom-0 -mx-5 border-t border-slate-900/[.07] bg-white px-5 pb-[calc(14px+env(safe-area-inset-bottom))] pt-3 lg:hidden dark:border-white/[.08] dark:bg-[#0E1117]">
+                    <button type="button" onClick={() => setSheetOpen(false)} className="flex h-12 w-full items-center justify-center rounded-[14px] bg-blue-700 text-[15px] font-semibold text-white hover:bg-blue-800" data-filters-apply={rows.length}>
+                      {t("showResults", { count: rows.length })}
+                    </button>
+                  </div>
                 </div>
               </aside>
 
@@ -266,11 +311,12 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                   className={`${SURFACE} px-4 py-3.5`}
                   data-match-bar
                 >
-                  <div className="flex items-center gap-3">
-                    <span className={ICON_TILE}>
+                  {/* Phones: the input gets the full width, the button goes under it. */}
+                  <div className="flex items-center gap-3 max-sm:flex-wrap">
+                    <span className={`${ICON_TILE} max-sm:hidden`}>
                       <SlidersHorizontal size={17} strokeWidth={1.9} />
                     </span>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 max-sm:basis-full">
                       <label htmlFor="catalog-match" className="block text-[12px] font-semibold text-slate-700 dark:text-slate-200">
                         {t("matchTitle")}
                       </label>
@@ -283,7 +329,7 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                         className="mt-0.5 w-full border-0 bg-transparent text-[13.5px] tracking-[-.01em] outline-none placeholder:text-slate-400"
                       />
                     </div>
-                    <button type="submit" disabled={!query.trim() || aiPending} data-match-submit className="inline-flex h-10 flex-none items-center gap-1.5 rounded-[12px] bg-blue-700 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-blue-800 disabled:opacity-50">
+                    <button type="submit" disabled={!query.trim() || aiPending} data-match-submit className="inline-flex h-10 flex-none items-center gap-1.5 rounded-[12px] bg-blue-700 px-4 max-sm:w-full max-sm:justify-center text-[13px] font-semibold text-white transition-colors hover:bg-blue-800 disabled:opacity-50">
                       {aiPending ? <Loader2 size={14} className="animate-spin" /> : null}
                       {t("matchButton")}
                       {!aiPending && <ArrowRight size={14} strokeWidth={2.4} />}
@@ -317,8 +363,9 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                       </button>
                     ))}
                   </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
-    <div role="radiogroup" aria-label={t("viewLabel")} className="inline-flex rounded-full border border-slate-900/[.12] bg-white/70 p-1 dark:border-white/[.14] dark:bg-white/[.04]" data-view-switch>
+                  {/* Phones: view switch + sorts on one row that scrolls, edge to edge. */}
+                  <div className="scrollbar-hide flex flex-wrap items-center gap-1.5 max-sm:-mx-4 max-sm:w-[calc(100%+2rem)] max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4" data-catalog-tools>
+                    <div role="radiogroup" aria-label={t("viewLabel")} className="inline-flex flex-none rounded-full border border-slate-900/[.12] bg-white/70 p-1 dark:border-white/[.14] dark:bg-white/[.04]" data-view-switch>
                       {(["grid", "table"] as const).map((v) => (
                         <button
                           key={v}
@@ -332,14 +379,21 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                           }`}
                         >
                           {v === "grid" ? <LayoutGrid size={14} strokeWidth={2} /> : <Rows3 size={14} strokeWidth={2} />}
-                          {v === "grid" ? t("viewGrid") : t("viewTable")}
+                          {v === "grid" ? (
+                            t("viewGrid")
+                          ) : (
+                            <>
+                              <span className="max-sm:hidden">{t("viewTable")}</span>
+                              <span className="sm:hidden">{t("viewTableShort")}</span>
+                            </>
+                          )}
                         </button>
                       ))}
                     </div>
                     {SORTS.map((s) => {
                       const on = sort === s && !aiSkus;
                       return (
-                        <button key={s} type="button" onClick={() => setSort(s)} aria-pressed={on} data-sort={s} className={`h-8 rounded-full px-3 text-[12px] font-semibold transition-colors ${on ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "border border-slate-900/[.12] text-slate-600 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:text-slate-300 dark:hover:bg-white/[.06]"}`}>
+                        <button key={s} type="button" onClick={() => setSort(s)} aria-pressed={on} data-sort={s} className={`h-8 flex-none whitespace-nowrap rounded-full px-3 text-[12px] font-semibold transition-colors ${on ? "bg-[#0B1020] text-white dark:bg-white dark:text-slate-900" : "border border-slate-900/[.12] text-slate-600 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:text-slate-300 dark:hover:bg-white/[.06]"}`}>
                           {t(`sort_${s}`)}
                         </button>
                       );
@@ -348,7 +402,7 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                 </div>
 
                 {aiPending ? (
-                  <div className="mt-4 grid grid-cols-3 gap-4" data-skeletons>
+                  <div className="mt-4 grid grid-cols-3 gap-4 max-sm:grid-cols-1" data-skeletons>
                     {[0, 1, 2].map((i) => (
                       <div key={i} className="h-[260px] animate-pulse rounded-[22px] border border-slate-900/[.06] bg-white/60 dark:border-white/[.06] dark:bg-white/[.03]" />
                     ))}
@@ -369,7 +423,7 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                   </div>
                 ) : (
                   <div className={`mt-4 ${SURFACE}`} data-product-table>
-                    <div className={`${ROW_GRID} border-b border-slate-900/[.06] bg-slate-900/[.015] px-5 py-2 text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-white/[.06] dark:bg-white/[.02] dark:text-ink-muted`}>
+                    <div className={`${ROW_GRID} border-b border-slate-900/[.06] bg-slate-900/[.015] px-5 py-2 max-sm:hidden text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-white/[.06] dark:bg-white/[.02] dark:text-ink-muted`}>
                       <span />
                       <span>{t("colProduct")}</span>
                       <span className="w-[84px] text-center">{t("colQty")}</span>
@@ -390,16 +444,6 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
         <StockNotifyModal isOpen={notifyFor !== null} onClose={() => setNotifyFor(null)} productId={notifyFor?.id ?? ""} productName={notifyFor?.name ?? ""} />
       </div>
 
-      <div className="block md:hidden">
-        <MobileProductsLayout
-          products={mobileProducts}
-          initialCategory={filters.cat[0] ?? null}
-          gasMarks={filters.marks}
-          gasMarkCounts={mobileCounts}
-          onToggleGasMark={(m) => setGroup("marks", m)}
-          gasMarksPending={false}
-        />
-      </div>
     </div>
   );
 }

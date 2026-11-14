@@ -984,7 +984,12 @@
     "outOfStock": "Slut i lager",
     "lead": "Köldmedier, blandningar och serviceutrustning — i lager och att beställa.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtrera",
+    "showResults": "Visa {count, plural, one {# resultat} other {# resultat}}",
+    "closeFilters": "Stäng filter",
+    "bulkImportShort": "Importera BOM / CSV",
+    "viewTableShort": "Tabell"
   },
   "ProductDetail": {
     "crumbRoot": "Produktlista",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Ställ in prisaviseringar",
     "toCatalog": "Gå till katalog",
     "modesLabel": "Hub-lägen",
-    "tab_exchange": "📊 Utbyte & index",
+    "tab_exchange": "📊 Marknad & index",
     "tab_compare": "🔍 Gasjämförelse & systemkompatibilitet",
     "tab_challenge": "🕹️ Ingenjörsutmaning & simulator",
     "tab_digest": "📰 Branschnyheter",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Slut",
     "terminalTitle": "{gas} index",
-    "perKgFrom": "per kg · lägsta köpbara pris över {sizes, plural, one {# storlek} other {# storlekar}}",
+    "perKgFrom": "per kg · lägsta köpbara cylinderrate över {sizes, plural, one {# storlek} other {# storlekar}}",
     "timeframe": "Tidsram",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Framsteg sparas på denna enhet.",
     "reset": "Återställ",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Priser, reglering och nyheter för de gaser du köper."
+    "lead": "Priser, reglering och nyheter för de gaser du köper.",
+    "tabShort_exchange": "📊 Marknad",
+    "tabShort_compare": "🔍 Kompatibilitet",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Sammanfattning",
+    "deltaFlat": "Ingen förändring",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Prisvarning",

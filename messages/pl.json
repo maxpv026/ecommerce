@@ -984,7 +984,12 @@
     "outOfStock": "Brak w magazynie",
     "lead": "Czynniki chłodnicze, mieszanki i sprzęt serwisowy — dostępne w magazynie i do zamówienia.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtry",
+    "showResults": "Pokaż {count, plural, one {# wynik} few {# wyniki} many {# wyniki} other {# wyników}}",
+    "closeFilters": "Zamknij filtry",
+    "bulkImportShort": "Importuj BOM / CSV",
+    "viewTableShort": "Tabela"
   },
   "ProductDetail": {
     "crumbRoot": "Lista produktów",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Ustaw powiadomienia o cenach",
     "toCatalog": "Przejdź do katalogu",
     "modesLabel": "Tryby hubu",
-    "tab_exchange": "📊 Wymiana i indeksy",
+    "tab_exchange": "📊 Rynek i indeksy",
     "tab_compare": "🔍 Porównanie gazów i kompatybilność systemów",
     "tab_challenge": "🕹️ Wyzwanie inżynieryjne i symulator",
     "tab_digest": "📰 Przegląd branżowy",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Brak",
     "terminalTitle": "Indeks {gas}",
+    "perKgFrom": "za kg · najniższa cena butli dostępnej w {sizes, plural, one {# rozmiarze} few {# rozmiarach} many {# rozmiarach} other {# rozmiarów}}",
     "timeframe": "Okres czasu",
     "frame_1m": "1M",
-    "perKgFrom": "za kg · najniższa cena zakupu wśród {sizes, plural, one {# rozmiaru} few {# rozmiary} many {# rozmiarów} other {# rozmiarów}}",
     "frame_3m": "3M",
     "frame_1y": "1Y",
     "frame_quota": "Prognoza limitu",
@@ -3053,6 +3058,12 @@
     "reset": "Resetuj",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Ceny, regulacje i wiadomości dotyczące gazów, które kupujesz.",
+    "tabShort_exchange": "📊 Rynek",
+    "tabShort_compare": "🔍 Kompatybilność",
+    "tabShort_challenge": "🕹️ Praktyka",
+    "tabShort_digest": "📰 Podsumowanie",
+    "deltaFlat": "Brak zmian",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# poprawna odpowiedź} few {# poprawne odpowiedzi} many {# poprawnych odpowiedzi} other {# poprawnych odpowiedzi}} do „{rank}”"
   },
   "PriceAlertEmail": {

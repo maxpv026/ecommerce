@@ -984,7 +984,12 @@
     "outOfStock": "Nicht auf Lager",
     "lead": "Kältemittel, Gemische und Serviceausrüstung — auf Lager und zur Bestellung.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filter",
+    "showResults": "Ergebnisse anzeigen {count, plural, one {# Ergebnis} other {# Ergebnisse}}",
+    "closeFilters": "Filter schließen",
+    "bulkImportShort": "BOM / CSV importieren",
+    "viewTableShort": "Tabelle"
   },
   "ProductDetail": {
     "crumbRoot": "Produktliste",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Ausverkauft",
     "terminalTitle": "{gas} Index",
-    "perKgFrom": "pro kg · niedrigster kaufbarer Preis über {sizes, plural, one {# Größe} other {# Größen}}",
+    "perKgFrom": "pro kg · niedrigster kaufbarer Flaschenpreis über {sizes, plural, one {# Größe} other {# Größen}}",
     "timeframe": "Zeitrahmen",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Fortschritt wird auf diesem Gerät gespeichert.",
     "reset": "Zurücksetzen",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Preise, Vorschriften und Neuigkeiten zu den Gasen, die Sie kaufen."
+    "lead": "Preise, Vorschriften und Neuigkeiten zu den Gasen, die Sie kaufen.",
+    "tabShort_exchange": "📊 Börse",
+    "tabShort_compare": "🔍 Kompatibilität",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Digest",
+    "deltaFlat": "Keine Änderung",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Preiswarnung",

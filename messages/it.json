@@ -984,7 +984,12 @@
     "outOfStock": "Esaurito",
     "lead": "Refrigeranti, miscele e attrezzature di servizio — in stock e da ordinare.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtri",
+    "showResults": "Mostra {count, plural, one {# risultato} many {# risultati} other {# risultati}}",
+    "closeFilters": "Chiudi filtri",
+    "bulkImportShort": "Importa BOM / CSV",
+    "viewTableShort": "Tabella"
   },
   "ProductDetail": {
     "crumbRoot": "Elenco prodotti",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Imposta avvisi sui prezzi",
     "toCatalog": "Vai al catalogo",
     "modesLabel": "Modalità Hub",
-    "tab_exchange": "📊 Scambio e indici",
+    "tab_exchange": "📊 Mercato e indici",
     "tab_compare": "🔍 Confronto gas e compatibilità dei sistemi",
     "tab_challenge": "🕹️ Sfida ingegneristica e simulatore",
     "tab_digest": "📰 Digest dell'industria",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Esaurito",
     "terminalTitle": "Indice {gas}",
+    "perKgFrom": "per kg · prezzo più basso per bombola acquistabile tra {sizes, plural, one {# dimensione} many {# dimensioni} other {# dimensioni}}",
     "timeframe": "Intervallo di tempo",
     "frame_1m": "1M",
-    "perKgFrom": "per kg · prezzo d'acquisto più basso per {sizes, plural, one {# dimensione} many {# dimensioni} other {# dimensioni}}",
     "frame_3m": "3M",
     "frame_1y": "1Y",
     "frame_quota": "Quota prospettica 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Ripristina",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Prezzi, regolamenti e notizie sui gas che acquisti.",
+    "tabShort_exchange": "📊 Mercato",
+    "tabShort_compare": "🔍 Compatibilità",
+    "tabShort_challenge": "🕹️ Pratica",
+    "tabShort_digest": "📰 Riepilogo",
+    "deltaFlat": "Nessuna variazione",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# risposta corretta} many {# risposte corrette} other {# risposte corrette}} per “{rank}”"
   },
   "PriceAlertEmail": {

@@ -984,7 +984,12 @@
     "outOfStock": "Lao puudumine",
     "lead": "Külmaained, segud ja teenindusseadmed — laos ja tellimiseks.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtrid",
+    "showResults": "Näita {count, plural, one {# tulemus} other {# tulemust}}",
+    "closeFilters": "Sulge filtrid",
+    "bulkImportShort": "Impordi BOM / CSV",
+    "viewTableShort": "Tabel"
   },
   "ProductDetail": {
     "crumbRoot": "Tootenimekiri",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Seadistage hinnateated",
     "toCatalog": "Mine katalooge",
     "modesLabel": "Keskuse režiimid",
-    "tab_exchange": "📊 Vahetus ja indeksid",
+    "tab_exchange": "📊 Turg ja indeksid",
     "tab_compare": "🔍 Gaaside võrdlus ja süsteemi ühilduvus",
     "tab_challenge": "🕹️ Inseneritehniline väljakutse ja simulaator",
     "tab_digest": "📰 Tööstuse ülevaade",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Lao puudumine",
     "terminalTitle": "{gas} indeks",
-    "perKgFrom": "kg kohta · madalaim ostetav hind {sizes, plural, one {# suurus} other {# suurust}}",
+    "perKgFrom": "kg kohta · madalaim ostetav ballooni hind {sizes, plural, one {# suurus} other {# suurust}}",
     "timeframe": "Ajakava",
     "frame_1m": "1K",
     "frame_3m": "3M",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Edenemine salvestatakse sellele seadmele.",
     "reset": "Nulli seadmine",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Hinnad, regulatsioon ja uudised teie ostetavate gaaside kohta."
+    "lead": "Hinnad, regulatsioon ja uudised teie ostetavate gaaside kohta.",
+    "tabShort_exchange": "📊 Turg",
+    "tabShort_compare": "🔍 Ühilduvus",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Kokkuvõte",
+    "deltaFlat": "Muutust ei ole",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Hinnateade",

@@ -984,7 +984,12 @@
     "outOfStock": "Agotado",
     "lead": "Refrigerantes, mezclas y equipos de servicio — en stock y por encargar.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtros",
+    "showResults": "Mostrar {count, plural, one {# resultado} many {# resultados} other {# resultados}}",
+    "closeFilters": "Cerrar filtros",
+    "bulkImportShort": "Importar BOM / CSV",
+    "viewTableShort": "Tabla"
   },
   "ProductDetail": {
     "crumbRoot": "Lista de productos",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Configurar alertas de precios",
     "toCatalog": "Ir al catálogo",
     "modesLabel": "Modos del Hub",
-    "tab_exchange": "📊 Intercambio e índices",
+    "tab_exchange": "📊 Mercado e índices",
     "tab_compare": "🔍 Comparación de gases y compatibilidad de sistemas",
     "tab_challenge": "🕹️ Desafío de ingeniería y simulador",
     "tab_digest": "📰 Resumen de la industria",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Fuera",
     "terminalTitle": "Índice de {gas}",
+    "perKgFrom": "por kg · tarifa más baja de cilindro comprable en {sizes, plural, one {# tamaño} many {# tamaños} other {# tamaños}}",
     "timeframe": "Marco temporal",
     "frame_1m": "1M",
-    "perKgFrom": "por kg · tarifa mínima comprable en {sizes, plural, one {# tamaño} many {# tamaños} other {# tamaños}}",
     "frame_3m": "3M",
     "frame_1y": "1A",
     "frame_quota": "Perspectiva de cuota 2026–2030",
@@ -3053,7 +3058,13 @@
     "progressLocal": "El progreso se mantiene en este dispositivo.",
     "reset": "Reiniciar",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Precios, regulaciones y noticias sobre los gases que compras."
+    "lead": "Precios, regulaciones y noticias sobre los gases que compras.",
+    "tabShort_exchange": "📊 Mercado",
+    "tabShort_compare": "🔍 Compatibilidad",
+    "tabShort_challenge": "🕹️ Práctica",
+    "tabShort_digest": "📰 Resumen",
+    "deltaFlat": "Sin cambio",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Alerta de precio",

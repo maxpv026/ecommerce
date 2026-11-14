@@ -984,7 +984,12 @@
     "outOfStock": "Ni na voljo",
     "lead": "Hladiva, mešanice in servisna oprema — na voljo in za naročilo.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtri",
+    "showResults": "Prikaži {count, plural, one {# rezultat} two {# rezultata} few {# rezultati} other {# rezultatov}}",
+    "closeFilters": "Zapri filtre",
+    "bulkImportShort": "Uvozi BOM / CSV",
+    "viewTableShort": "Tabela"
   },
   "ProductDetail": {
     "crumbRoot": "Seznam izdelkov",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Nastavite opozorila za cene",
     "toCatalog": "Pojdite v katalog",
     "modesLabel": "Načini hub-a",
-    "tab_exchange": "📊 Menjava in indeksi",
+    "tab_exchange": "📊 Trg in indeksi",
     "tab_compare": "🔍 Primerjava plinov in združljivost sistemov",
     "tab_challenge": "🕹️ Inženirski izziv in simulator",
     "tab_digest": "📰 Industrijski pregled",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Izven",
     "terminalTitle": "{gas} indeks",
-    "perKgFrom": "na kg · najnižja kupna cena za {sizes, plural, one {# velikost} two {# velikosti} few {# velikosti} other {# velikosti}}",
+    "perKgFrom": "na kg · najnižja cena jeklenke za nakup v {sizes, plural, one {# velikosti} two {# velikostih} few {# velikosti} other {# velikostih}}",
     "timeframe": "Časovni okvir",
     "frame_1m": "1M",
     "frame_3m": "3M",
@@ -3053,6 +3058,12 @@
     "reset": "Ponastavi",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Cene, predpisi in novice za pline, ki jih kupujete.",
+    "tabShort_exchange": "📊 Trg",
+    "tabShort_compare": "🔍 Združljivost",
+    "tabShort_challenge": "🕹️ Praktikum",
+    "tabShort_digest": "📰 Povzetek",
+    "deltaFlat": "Brez sprememb",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# pravilen odgovor} two {# pravilna odgovora} few {# pravilni odgovori} other {# pravilnih odgovorov}} do “{rank}”"
   },
   "PriceAlertEmail": {

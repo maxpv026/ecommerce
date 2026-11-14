@@ -984,7 +984,12 @@
     "outOfStock": "Išparduota",
     "lead": "Šaltnešiai, mišiniai ir aptarnavimo įranga — sandėlyje ir užsakymui.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtrai",
+    "showResults": "Rodyti {count, plural, one {# rezultatas} few {# rezultatai} many {# rezultatų} other {# rezultatų}}",
+    "closeFilters": "Uždaryti filtrus",
+    "bulkImportShort": "Importuoti BOM / CSV",
+    "viewTableShort": "Lentelė"
   },
   "ProductDetail": {
     "crumbRoot": "Produktų sąrašas",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Iš",
     "terminalTitle": "{gas} indeksas",
+    "perKgFrom": "už kg · mažiausia perkamų balionų kaina per {sizes, plural, one {# dydį} few {# dydžius} many {# dydžių} other {# dydžių}}",
     "timeframe": "Laiko intervalas",
     "frame_1m": "1M",
-    "perKgFrom": "per kg · mažiausia perkamų kainų norma visose {sizes, plural, one {# dydis} few {# dydžiai} many {# dydžių} other {# dydžių}}",
     "frame_3m": "3M",
     "frame_1y": "1M",
     "frame_quota": "Kvietimų prognozė 2026–2030",
@@ -3052,6 +3057,12 @@
     "reset": "Atstatyti",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Kainos, reglamentai ir naujienos apie jūsų perkamus dujas.",
+    "tabShort_exchange": "📊 Birža",
+    "tabShort_compare": "🔍 Suderinamumas",
+    "tabShort_challenge": "🕹️ Praktika",
+    "tabShort_digest": "📰 Apžvalga",
+    "deltaFlat": "Nėra pokyčių",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# teisingas atsakymas} few {# teisingi atsakymai} many {# teisingų atsakymų} other {# teisingų atsakymų}} iki „{rank}“",
     "votes": "{n, plural, one {# balsas} few {# balsai} many {# balso} other {# balsų}}"
   },

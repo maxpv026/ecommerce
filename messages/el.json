@@ -984,7 +984,12 @@
     "outOfStock": "Εξαντλημένο",
     "lead": "Ψυκτικά, μίγματα και εξοπλισμός υπηρεσιών — σε απόθεμα και προς παραγγελία.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Φίλτρα",
+    "showResults": "Εμφάνιση {count, plural, one {# αποτελέσματος} other {# αποτελεσμάτων}}",
+    "closeFilters": "Κλείσιμο φίλτρων",
+    "bulkImportShort": "Εισαγωγή BOM / CSV",
+    "viewTableShort": "Πίνακας"
   },
   "ProductDetail": {
     "crumbRoot": "Λίστα προϊόντων",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Ρυθμίστε ειδοποιήσεις τιμών",
     "toCatalog": "Μετάβαση στον κατάλογο",
     "modesLabel": "Λειτουργίες Hub",
-    "tab_exchange": "📊 Ανταλλαγή & δείκτες",
+    "tab_exchange": "📊 Αγορά & δείκτες",
     "tab_compare": "🔍 Σύγκριση αερίων & συμβατότητα συστημάτων",
     "tab_challenge": "🕹️ Μηχανική πρόκληση & προσομοιωτής",
     "tab_digest": "📰 Ενημέρωση βιομηχανίας",
@@ -2786,7 +2791,7 @@
     "gwpShort": "GWP {value}",
     "outShort": "Εκτός",
     "terminalTitle": "Δείκτης {gas}",
-    "perKgFrom": "ανά kg · η χαμηλότερη τιμή αγοράς σε {sizes, plural, one {# μέγεθος} other {# μεγέθη}}",
+    "perKgFrom": "ανά kg · χαμηλότερη τιμή αγοράς φιάλης σε {sizes, plural, one {# μέγεθος} other {# μεγέθη}}",
     "timeframe": "Χρονικό διάστημα",
     "frame_1m": "1Μ",
     "frame_3m": "3Μ",
@@ -3053,7 +3058,13 @@
     "progressLocal": "Η πρόοδος διατηρείται σε αυτή τη συσκευή.",
     "reset": "Επαναφορά",
     "cylinderPrice": "{kg} kg · {price}/kg",
-    "lead": "Τιμές, κανονισμοί και νέα για τα αέρια που αγοράζετε."
+    "lead": "Τιμές, κανονισμοί και νέα για τα αέρια που αγοράζετε.",
+    "tabShort_exchange": "📊 Αγορά",
+    "tabShort_compare": "🔍 Συμβατότητα",
+    "tabShort_challenge": "🕹️ Πρακτική",
+    "tabShort_digest": "📰 Περίληψη",
+    "deltaFlat": "Καμία αλλαγή",
+    "deltaValue": "{value} %"
   },
   "PriceAlertEmail": {
     "badge": "Ειδοποίηση τιμής",

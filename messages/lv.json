@@ -984,7 +984,12 @@
     "outOfStock": "Nav noliktavā",
     "lead": "Aukstumaģenti, maisījumi un apkalpošanas aprīkojums — pieejami noliktavā un pasūtīšanai.",
     "cardWeight": "{kg} kg",
-    "cardPerKg": "{amount}/kg"
+    "cardPerKg": "{amount}/kg",
+    "filtersButton": "Filtri",
+    "showResults": "Rādīt {count, plural, zero {# rezultāti} one {# rezultāts} other {# rezultāti}}",
+    "closeFilters": "Aizvērt filtrus",
+    "bulkImportShort": "Importēt BOM / CSV",
+    "viewTableShort": "Tabula"
   },
   "ProductDetail": {
     "crumbRoot": "Produktu saraksts",
@@ -2774,7 +2779,7 @@
     "actionAlerts": "Iestatīt cenu brīdinājumus",
     "toCatalog": "Doties uz katalogu",
     "modesLabel": "Centra režīmi",
-    "tab_exchange": "📊 Apmaiņa un indeksi",
+    "tab_exchange": "📊 Tirgus un indeksi",
     "tab_compare": "🔍 Gāzu salīdzinājums un sistēmu saderība",
     "tab_challenge": "🕹️ Inženiertehniskais izaicinājums un simulators",
     "tab_digest": "📰 Nozares apskats",
@@ -2786,9 +2791,9 @@
     "gwpShort": "GWP {value}",
     "outShort": "Izpārdots",
     "terminalTitle": "{gas} indekss",
+    "perKgFrom": "par kg · zemākā pirkuma cena baloniem visās {sizes, plural, zero {# izmēri} one {# izmērs} other {# izmēri}}",
     "timeframe": "Laika posms",
     "frame_1m": "1M",
-    "perKgFrom": "par kg · zemākā pirkuma cena visās {sizes, plural, zero {# izmēri} one {# izmērs} other {# izmēri}}",
     "frame_3m": "3M",
     "frame_1y": "1G",
     "frame_quota": "Kvotas prognoze 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Atjaunot",
     "cylinderPrice": "{kg} kg · {price}/kg",
     "lead": "Cenas, regulējums un jaunumi par iegādātajām gāzēm.",
+    "tabShort_exchange": "📊 Tirgus",
+    "tabShort_compare": "🔍 Saderība",
+    "tabShort_challenge": "🕹️ Praktikums",
+    "tabShort_digest": "📰 Kopsavilkums",
+    "deltaFlat": "Nav izmaiņu",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, zero {# pareizu atbilžu} one {# pareiza atbilde} other {# pareizas atbildes}} uz “{rank}”"
   },
   "PriceAlertEmail": {

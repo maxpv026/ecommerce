@@ -214,7 +214,11 @@ export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: Sto
   const t = useTranslations("Products");
   const item = useCatalogItem(p);
   return (
-    <div className={`${ROW_GRID} border-b border-slate-900/[.06] px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-900/[.02] dark:border-white/[.06] dark:hover:bg-white/[.03]`} data-catalog-row={p.sku}>
+    // Phones restack the five cells: thumb · name (row 1), stepper · price (row 2), action (row 3).
+    <div
+      className={`${ROW_GRID} border-b border-slate-900/[.06] px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-900/[.02] max-sm:grid-cols-[64px_minmax(0,1fr)_auto] max-sm:gap-x-3 max-sm:gap-y-3 max-sm:px-4 max-sm:[&>*:nth-child(2)]:col-span-2 max-sm:[&>*:nth-child(3)]:col-span-2 max-sm:[&>*:nth-child(3)]:justify-self-start max-sm:[&>*:nth-child(5)]:col-span-3 dark:border-white/[.06] dark:hover:bg-white/[.03]`}
+      data-catalog-row={p.sku}
+    >
       <Link href={p.pdpHref} aria-label={p.name} className="block">
         <Thumb p={p} />
       </Link>

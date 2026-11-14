@@ -984,7 +984,12 @@
     "outOfStock": "Нет в наличии",
     "lead": "Хладагенты, смеси и сервисное оборудование — в наличии и под заказ.",
     "cardWeight": "{kg} кг",
-    "cardPerKg": "{amount}/кг"
+    "cardPerKg": "{amount}/кг",
+    "filtersButton": "Фильтры",
+    "showResults": "Показать {count, plural, one {# результат} few {# результата} many {# результатов} other {# результатов}}",
+    "closeFilters": "Закрыть фильтры",
+    "bulkImportShort": "Импорт BOM / CSV",
+    "viewTableShort": "Таблица"
   },
   "ProductDetail": {
     "crumbRoot": "Список товаров",
@@ -2786,9 +2791,9 @@
     "gwpShort": "ПГП {value}",
     "outShort": "Нет",
     "terminalTitle": "Индекс {gas}",
+    "perKgFrom": "за кг · самая низкая цена на баллон среди {sizes, plural, one {# размера} few {# размера} many {# размеров} other {# размеров}}",
     "timeframe": "Период",
     "frame_1m": "1М",
-    "perKgFrom": "за кг · самая низкая цена покупки среди {sizes, plural, one {# размера} few {# размера} many {# размеров} other {# размеров}}",
     "frame_3m": "3М",
     "frame_1y": "1Г",
     "frame_quota": "Прогноз квоты 2026–2030",
@@ -3053,6 +3058,12 @@
     "reset": "Сбросить",
     "cylinderPrice": "{kg} кг · {price}/кг",
     "lead": "Цены, регулирование и новости по газам, которые вы покупаете.",
+    "tabShort_exchange": "📊 Биржа",
+    "tabShort_compare": "🔍 Совместимость",
+    "tabShort_challenge": "🕹️ Практикум",
+    "tabShort_digest": "📰 Обзор",
+    "deltaFlat": "Нет изменений",
+    "deltaValue": "{value} %",
     "toNextRank": "{n, plural, one {# правильный ответ} few {# правильных ответа} many {# правильных ответов} other {# правильных ответов}} к «{rank}»"
   },
   "PriceAlertEmail": {
