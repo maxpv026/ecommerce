@@ -2324,7 +2324,12 @@
     "bodyVariant": "Zahtevali ste obvestilo, ko bo {product} ({variant}) ponovno na zalogi. Zdaj je. Zaloge so omejene in hitro poidejo, zato naročite kmalu, če ga še potrebujete.",
     "cta": "Oglejte si izdelek →",
     "ctaNote": "To e-poštno sporočilo ne rezervira zaloge; razpoložljivost je potrjena pri blagajni.",
-    "reason": "To prejemate enkrat, ker ste se pridružili čakalnemu seznamu za ta izdelek. Niste naročeni na nič drugega in o tem vam ne bomo več pošiljali e-pošte."
+    "reason": "To prejemate enkrat, ker ste se pridružili čakalnemu seznamu za ta izdelek. Niste naročeni na nič drugega in o tem vam ne bomo več pošiljali e-pošte.",
+    "inStockBadge": "Na voljo",
+    "factPerKg": "Cena na kg",
+    "factDeposit": "Vložek za jeklenko",
+    "factDepositNote": "Vrnjen ob vračilu prazne jeklenke",
+    "priceNote": "Cene ne vključujejo DDV in veljajo od tega e-sporočila; cena ob zaključku nakupa se uporablja."
   },
   "OrderEmail": {
     "subject": "Naročilo {order} potrjeno — račun {invoice}",

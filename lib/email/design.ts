@@ -82,8 +82,16 @@ export interface EmailChrome {
   links: Array<{ label: string; href: string }>;
   /** "My Energy · Address line · …", the legal sender. */
   sender: string;
-  /** The brand wordmark. */
+  /** The brand wordmark (alt text of the logo, and the footer). */
   brand: string;
+  /**
+   * The header logo: an absolute https URL (lib/email/context — always the
+   * production host, so mail sent from a preview or dev machine still shows
+   * it). A 300 × 64 PNG on a white rounded tile, shown at 150 × 32: seamless
+   * on the white card, still legible where a client darkens the card but not
+   * the image (Gmail apps). Null falls back to the drawn ring + wordmark.
+   */
+  logoUrl?: string | null;
 }
 
 export interface EmailDoc {
@@ -458,10 +466,15 @@ function renderHtml(doc: EmailDoc, chrome: EmailChrome): string {
   const header = `<tr><td class="me-pad me-line" style="padding:18px 32px;border-bottom:1px solid ${C.border}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%"><tr>
 <td valign="middle" style="vertical-align:middle">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+${
+  chrome.logoUrl
+    ? // width/height attributes for Outlook; the inline style for everyone else; alt text styled like the wordmark for clients that block images.
+      `<a href="${safeHref(chrome.links[0]?.href ?? "#")}" target="_blank" style="text-decoration:none;display:inline-block"><img class="me-ink" src="${safeHref(chrome.logoUrl)}" width="150" height="32" alt="${escapeHtml(chrome.brand)}" style="display:block;width:150px;max-width:150px;height:32px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;font-family:${FONT};font-size:16px;line-height:32px;font-weight:600;color:${C.ink}"></a>`
+    : `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td valign="middle" width="14" style="width:14px;vertical-align:middle;padding:0"><div class="me-ring" style="width:8px;height:8px;border:3px solid ${C.ink};border-radius:50%;font-size:0;line-height:0">&nbsp;</div></td>
 <td valign="middle" class="me-ink" style="vertical-align:middle;padding:0 0 0 10px;font-family:${FONT};font-size:15.5px;line-height:20px;font-weight:650;letter-spacing:-0.02em;color:${C.ink};white-space:nowrap">${escapeHtml(chrome.brand)}</td>
-</tr></table>
+</tr></table>`
+}
 </td>
 <td valign="middle" align="right" style="vertical-align:middle;text-align:right;padding-left:12px"><span class="me-badge" style="display:inline-block;padding:4px 9px;border:1px solid ${C.border};border-radius:6px;background-color:${C.soft};color:#475569;font-family:${MONO};font-size:11px;line-height:15px;font-weight:600;letter-spacing:.04em;white-space:nowrap">${escapeHtml(doc.reference)}</span></td>
 </tr></table>

@@ -26,6 +26,9 @@ export async function emailContext(locale: string | null | undefined, namespace?
   const seller = sellerDetails();
   const chrome = {
     brand: "My Energy",
+    // Always the production host (public/images/logo.png): mail sent from a
+    // preview or dev machine must still show it. EMAIL_LOGO_URL overrides.
+    logoUrl: process.env.EMAIL_LOGO_URL?.trim() || "https://www.myeenergy.com/images/logo.png",
     tagline: s("tagline"),
     regulation: s("regulation"),
     links: [

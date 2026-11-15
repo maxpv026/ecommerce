@@ -1,8 +1,9 @@
 import "server-only";
 
 import type { PrismaClient } from "./generated/prisma/client";
-import { sendBackInStockEmail } from "./mail";
-import { routing } from "@/i18n/routing";
+import { sendBackInStockEmail, type StockEmailProduct } from "./mail";
+import { cylinderGasPrice, isPricedPerKg } from "./pricing";
+import { absoluteUrl } from "@/lib/siteUrl";
 
 // Back-in-stock dispatch, driven by the CRM webhook when a product goes from
 // unavailable to purchasable.
@@ -29,32 +30,18 @@ export interface StockNotifyResult {
   remaining: number;
 }
 
+/**
+ * The product page in the subscriber's language, on the canonical host —
+ * the same helper every other email uses (lib/siteUrl absoluteUrl: an
+ * unknown or junk locale falls back to the default).
+ */
 function productUrl(productId: string, locale: string): string {
-  // Wrapped because this is the one line that reads the environment, and it
-  // runs inside a webhook where a throw would be logged as "dispatch failed"
-  // with no clue which part broke. A usable link beats an exception.
-  try {
-    const base = (process.env.NEXT_PUBLIC_SITE_URL || process.env.AUTH_URL || "http://localhost:3000").replace(/\/+$/, "");
-    if (!process.env.NEXT_PUBLIC_SITE_URL && !process.env.AUTH_URL) {
-      console.warn(
-        "[RESTOCK] Neither NEXT_PUBLIC_SITE_URL nor AUTH_URL is set — the email link will point at localhost."
-      );
-    }
-    // Re-checked here as well as at subscribe time. The column predates the
-    // validation and holds whatever was written before it existed, and this
-    // string goes into a link we send to a person — so a row carrying junk
-    // falls back to the default rather than shipping a broken or hostile URL.
-    const segment = (routing.locales as readonly string[]).includes(locale) ? locale : routing.defaultLocale;
-    return `${base}/${segment}/products/${productId}`;
-  } catch (error) {
-    console.error("[RESTOCK] FAILED to build the product URL; falling back to a bare path:", error);
-    return `/${routing.defaultLocale}/products/${productId}`;
-  }
+  return absoluteUrl(`/products/${productId}`, locale);
 }
 
 async function sendInBatches(
   jobs: Array<{ id: string; email: string; url: string; locale: string }>,
-  product: { name: string; variant: string }
+  product: { name: string; details: StockEmailProduct | null }
 ): Promise<{ sentIds: string[]; failedIds: string[] }> {
   const sentIds: string[] = [];
   const failedIds: string[] = [];
@@ -135,9 +122,13 @@ export async function notifyBackInStock(
       return { ...empty, remaining };
     }
 
+    // Today's catalog facts for the email (price, pack size, safety, GWP) —
+    // read once per restock. Missing row or columns: the email still goes,
+    // without the product line, rather than not at all.
+    const details = await loadStockEmailProduct(prisma, product.id);
     const { sentIds, failedIds } = await sendInBatches(
       batch.map((s) => ({ id: s.id, email: s.email, url: productUrl(product.id, s.locale), locale: s.locale })),
-      { name: product.name, variant: product.weight }
+      { name: product.name, details }
     );
 
     // Release the failures so a later restock picks them up again.
@@ -155,5 +146,30 @@ export async function notifyBackInStock(
   } catch (error) {
     console.error(`[RESTOCK] FAILED dispatch for ${product.sku}:`, error);
     return empty;
+  }
+}
+
+async function loadStockEmailProduct(prisma: PrismaClient, productId: string): Promise<StockEmailProduct | null> {
+  try {
+    const p = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { sku: true, weightKg: true, containerType: true, category: true, pricePerKg: true, cylinderDeposit: true, gwpClass: true, gwp: true },
+    });
+    if (!p) return null;
+    const pricedPerKg = isPricedPerKg(p.category);
+    return {
+      sku: p.sku,
+      weightKg: p.weightKg,
+      containerType: p.containerType,
+      pricedPerKg,
+      pricePerKg: p.pricePerKg,
+      price: pricedPerKg ? cylinderGasPrice(p.pricePerKg, p.weightKg) : p.pricePerKg,
+      deposit: pricedPerKg ? Number(p.cylinderDeposit) : 0,
+      safety: p.gwpClass,
+      gwp: p.gwp,
+    };
+  } catch (error) {
+    console.error("[RESTOCK] could not load the product facts for the email:", error);
+    return null;
   }
 }

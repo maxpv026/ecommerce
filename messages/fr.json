@@ -2324,7 +2324,12 @@
     "bodyVariant": "Vous avez demandé à être informé lorsque {product} ({variant}) serait de retour en stock. C'est le cas. Le stock est limité et se vend rapidement, alors commandez bientôt si vous en avez encore besoin.",
     "cta": "Voir le produit →",
     "ctaNote": "Cet e-mail ne réserve pas le stock ; la disponibilité est confirmée lors du paiement.",
-    "reason": "Vous recevez ceci une fois parce que vous avez rejoint la liste d'attente pour ce produit. Vous n'êtes abonné à rien d'autre, et nous ne vous enverrons plus d'e-mails à ce sujet."
+    "reason": "Vous recevez ceci une fois parce que vous avez rejoint la liste d'attente pour ce produit. Vous n'êtes abonné à rien d'autre, et nous ne vous enverrons plus d'e-mails à ce sujet.",
+    "inStockBadge": "En stock",
+    "factPerKg": "Prix par kg",
+    "factDeposit": "Dépôt de bouteille",
+    "factDepositNote": "Remboursé lors du retour de la bouteille vide",
+    "priceNote": "Les prix s'entendent hors TVA et sont valables à partir de cet e-mail ; le prix au moment du paiement s'applique."
   },
   "OrderEmail": {
     "subject": "Commande {order} confirmée — facture {invoice}",

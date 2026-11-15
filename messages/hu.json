@@ -2324,7 +2324,12 @@
     "bodyVariant": "Kérte, hogy értesítsük, amikor {product} ({variant}) újra készleten van. Most érkezett meg. A készlet korlátozott és gyorsan fogy, ezért rendeljen hamar, ha még szüksége van rá.",
     "cta": "Tekintse meg a terméket →",
     "ctaNote": "Ez az e-mail nem foglal készletet; a rendelkezésre állás a fizetéskor kerül megerősítésre.",
-    "reason": "Ezt az e-mailt egyszer kapja meg, mert feliratkozott a várólistára ehhez a termékhez. Nem iratkozott fel másra, és nem küldünk Önnek több e-mailt erről."
+    "reason": "Ezt az e-mailt egyszer kapja meg, mert feliratkozott a várólistára ehhez a termékhez. Nem iratkozott fel másra, és nem küldünk Önnek több e-mailt erről.",
+    "inStockBadge": "Raktáron",
+    "factPerKg": "Ár kg-onként",
+    "factDeposit": "Palack letét",
+    "factDepositNote": "Visszatérítendő, amikor a használt palack visszakerül",
+    "priceNote": "Az árak az ÁFA-t nem tartalmazzák, és az e-mail időpontjában érvényesek; a pénztárnál érvényes ár érvényes."
   },
   "OrderEmail": {
     "subject": "{order} rendelés megerősítve — {invoice} számla",

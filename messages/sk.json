@@ -2324,7 +2324,12 @@
     "bodyVariant": "Požiadali ste o informovanie, keď bude {product} ({variant}) opäť na sklade. Práve sa tak stalo. Zásoby sú obmedzené a rýchlo sa míňajú, takže ak ho ešte potrebujete, objednajte čoskoro.",
     "cta": "Zobraziť produkt →",
     "ctaNote": "Tento e-mail nezarezervuje zásoby; dostupnosť je potvrdená pri pokladni.",
-    "reason": "Tento e-mail dostávate raz, pretože ste sa prihlásili na čakací zoznam pre tento produkt. Nie ste prihlásení na nič iné a nebudeme vás o ňom znova informovať."
+    "reason": "Tento e-mail dostávate raz, pretože ste sa prihlásili na čakací zoznam pre tento produkt. Nie ste prihlásení na nič iné a nebudeme vás o ňom znova informovať.",
+    "inStockBadge": "Na sklade",
+    "factPerKg": "Cena za kg",
+    "factDeposit": "Záloha na fľašu",
+    "factDepositNote": "Vrátená pri vrátení prázdnej fľaše",
+    "priceNote": "Ceny sú bez DPH a platia k tomuto e-mailu; cena pri pokladni sa uplatňuje."
   },
   "OrderEmail": {
     "subject": "Objednávka {order} potvrdená — faktúra {invoice}",

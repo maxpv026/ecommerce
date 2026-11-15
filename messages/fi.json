@@ -2324,7 +2324,12 @@
     "bodyVariant": "Pyysit ilmoitusta, kun {product} ({variant}) on jälleen varastossa. Nyt se on. Varasto on rajallinen ja liikkuu nopeasti, joten tilaa pian, jos tarvitset sitä vielä.",
     "cta": "Katso tuote →",
     "ctaNote": "Tämä sähköposti ei varaa varastoa; saatavuus vahvistetaan kassalla.",
-    "reason": "Saat tämän kerran, koska liityit tämän tuotteen odotuslistalle. Et ole tilannut mitään muuta, emmekä lähetä sinulle sähköpostia siitä uudelleen."
+    "reason": "Saat tämän kerran, koska liityit tämän tuotteen odotuslistalle. Et ole tilannut mitään muuta, emmekä lähetä sinulle sähköpostia siitä uudelleen.",
+    "inStockBadge": "Varastossa",
+    "factPerKg": "Hinta per kg",
+    "factDeposit": "Pullon pantti",
+    "factDepositNote": "Hyvitetään, kun tyhjät pullot palautetaan",
+    "priceNote": "Hinnat eivät sisällä ALV:tä ja ovat tämän sähköpostin mukaisia; kassalla sovelletaan hintaa."
   },
   "OrderEmail": {
     "subject": "Tilaus {order} vahvistettu — lasku {invoice}",

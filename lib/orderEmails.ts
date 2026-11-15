@@ -2,6 +2,7 @@ import "server-only";
 
 import prisma from "@/lib/prisma";
 import { sendHtmlEmail, type MailDelivery } from "@/lib/mail";
+import { emailPacker, type PackSource } from "@/lib/email/pack";
 import { emailContext, type EmailContext } from "@/lib/email/context";
 import type { Block, ItemLine } from "@/lib/email/design";
 import { orderBreakdown } from "@/lib/orderTotals";
@@ -42,7 +43,8 @@ async function loadOrder(orderId: string) {
           priceAtPurchase: true,
           depositAtPurchase: true,
           gwpAtPurchase: true,
-          product: { select: { name: true, sku: true, weight: true, gwpClass: true, gwp: true } },
+          weightKgAtPurchase: true,
+          product: { select: { name: true, sku: true, weight: true, gwpClass: true, gwp: true, weightKg: true, containerType: true, category: true } },
         },
       },
     },
@@ -51,7 +53,7 @@ async function loadOrder(orderId: string) {
 
 type LoadedOrder = NonNullable<Awaited<ReturnType<typeof loadOrder>>>;
 
-function itemLines(c: EmailContext, order: LoadedOrder, withMoney: boolean): ItemLine[] {
+function itemLines(c: EmailContext, order: LoadedOrder, withMoney: boolean, pack: (p: PackSource) => string): ItemLine[] {
   return order.items.map((item) => {
     const unit = Number(item.priceAtPurchase);
     const gwp = item.gwpAtPurchase ?? item.product.gwp;
@@ -59,7 +61,7 @@ function itemLines(c: EmailContext, order: LoadedOrder, withMoney: boolean): Ite
     return {
       name: item.product.name,
       qty: item.quantity,
-      meta: [item.product.weight, c.s("sku", { sku: item.product.sku }), ...(withMoney ? [c.s("perUnit", { price: c.money(unit) })] : [])].filter(Boolean),
+      meta: [pack({ weightKg: item.weightKgAtPurchase || item.product.weightKg, containerType: item.product.containerType, category: item.product.category }), c.s("sku", { sku: item.product.sku }), ...(withMoney ? [c.s("perUnit", { price: c.money(unit) })] : [])].filter(Boolean),
       badges: compliance ? [{ label: compliance, tone: "neutral" as const }] : [],
       total: withMoney ? c.money(unit * item.quantity) : undefined,
     };
@@ -126,7 +128,7 @@ async function confirmation(orderId: string, invoicePdf: Buffer | null): Promise
     heading: name ? c.t("heading", { name }) : c.t("headingNoName"),
     blocks: [
       { kind: "text", text: c.rich(invoicePdf ? "intro" : "introNoPdf", { order: order.orderNumber, invoice }, ["order", "invoice"]) },
-      { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, true) },
+      { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, true, await emailPacker(c.locale)) },
       ledger(c, b),
       {
         kind: "facts",
@@ -268,7 +270,7 @@ export async function sendOrderStatusEmail(orderId: string, kind: FulfilmentEmai
         { kind: "text", text: c.rich(copy.body, { order: o, carrier }, ["order"]) },
         facts,
         ...(view.notes ? ([{ kind: "callout", tone: "neutral", title: c.t("fieldNotes"), text: view.notes }] satisfies Block[]) : []),
-        { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, false) },
+        { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, false, await emailPacker(c.locale)) },
         ...(kind === "DELIVERED" && deposits > 0
           ? ([{ kind: "callout", tone: "brand", title: c.t("depositTitle"), text: c.t("deliveredReturn", { count: deposits, amount: c.money(depositSum) }) }] satisfies Block[])
           : []),
@@ -326,7 +328,7 @@ export async function sendPaymentReceivedEmail(orderId: string): Promise<boolean
             { label: c.t("paidAmount"), value: c.money(b.total) },
           ],
         },
-        { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, false) },
+        { kind: "items", qtyLabel: c.s("qty"), lines: itemLines(c, order, false, await emailPacker(c.locale)) },
         { kind: "cta", label: c.t("cta"), href: c.url(`/profile/orders/${order.id}`) },
       ],
       footer: { reason: c.t("reason") },

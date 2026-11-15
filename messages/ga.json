@@ -2324,7 +2324,12 @@
     "bodyVariant": "D'iarr tú a bheith curtha ar an eolas nuair a tháinig {product} ({variant}) ar ais i stoc. Tá sé díreach tar éis teacht. Tá an stoc teoranta agus bogann sé go tapa, mar sin ordaigh go luath má tá sé uait fós.",
     "cta": "Féach ar an táirge →",
     "ctaNote": "Ní chuireann an ríomhphost seo stoc in áirithe; deimhnítear infhaighteacht ag an tseiceáil.",
-    "reason": "Tá tú ag fáil seo uair amháin toisc gur tháinig tú isteach ar an liosta feithimh don táirge seo. Níl tú liostáilte le haghaidh aon rud eile, agus ní chuirfimid ríomhphost chugat faoi arís."
+    "reason": "Tá tú ag fáil seo uair amháin toisc gur tháinig tú isteach ar an liosta feithimh don táirge seo. Níl tú liostáilte le haghaidh aon rud eile, agus ní chuirfimid ríomhphost chugat faoi arís.",
+    "inStockBadge": "Ar fáil",
+    "factPerKg": "Praghas in aghaidh kg",
+    "factDeposit": "Taisce sorcóra",
+    "factDepositNote": "Aisíocadh nuair a thagann an sorcóir folamh ar ais",
+    "priceNote": "Ní chuimsíonn na praghsanna CBL agus tá siad mar atá sa ríomhphost seo; tá an praghas ag an gcóireáil."
   },
   "OrderEmail": {
     "subject": "Ordú {order} deimhnithe — sonrasc {invoice}",

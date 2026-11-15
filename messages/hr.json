@@ -2324,7 +2324,12 @@
     "bodyVariant": "Zatražili ste obavijest kada {product} ({variant}) bude ponovno na zalihama. Upravo je stigao. Zalihe su ograničene i brzo se kreću, stoga naručite uskoro ako vam je još uvijek potreban.",
     "cta": "Pogledajte proizvod →",
     "ctaNote": "Ova e-poruka ne rezervira zalihe; dostupnost se potvrđuje pri naplati.",
-    "reason": "Ovu poruku primate jer ste se pridružili listi čekanja za ovaj proizvod. Niste pretplaćeni na ništa drugo i nećemo vam više slati e-poruke o tome."
+    "reason": "Ovu poruku primate jer ste se pridružili listi čekanja za ovaj proizvod. Niste pretplaćeni na ništa drugo i nećemo vam više slati e-poruke o tome.",
+    "inStockBadge": "Na skladištu",
+    "factPerKg": "Cijena po kg",
+    "factDeposit": "Depozit za bocu",
+    "factDepositNote": "Vraća se kada se prazna boca vrati",
+    "priceNote": "Cijene ne uključuju PDV i važe od ovog e-maila; cijena pri naplati se primjenjuje."
   },
   "OrderEmail": {
     "subject": "Narudžba {order} potvrđena — račun {invoice}",

@@ -2324,7 +2324,12 @@
     "bodyVariant": "{product} ({variant}) tekrar stoklara girdiğinde bilgilendirilmek istediniz. Şimdi stokta. Stok sınırlıdır ve hızla tükenir, bu yüzden hala ihtiyacınız varsa yakında sipariş verin.",
     "cta": "Ürünü görüntüle →",
     "ctaNote": "Bu e-posta stok ayırmaz; uygunluk ödeme sırasında onaylanır.",
-    "reason": "Bu ürünü bekleme listesine eklediğiniz için bu e-postayı alıyorsunuz. Başka bir şeye abone değilsiniz ve bu konuda tekrar e-posta almayacaksınız."
+    "reason": "Bu ürünü bekleme listesine eklediğiniz için bu e-postayı alıyorsunuz. Başka bir şeye abone değilsiniz ve bu konuda tekrar e-posta almayacaksınız.",
+    "inStockBadge": "Stokta",
+    "factPerKg": "Kg başına fiyat",
+    "factDeposit": "Tüp depozitosu",
+    "factDepositNote": "Boş tüp geri geldiğinde iade edilir",
+    "priceNote": "Fiyatlar KDV hariçtir ve bu e-postaya göredir; ödeme sırasında geçerli fiyat uygulanır."
   },
   "OrderEmail": {
     "subject": "Sipariş {order} onaylandı — fatura {invoice}",

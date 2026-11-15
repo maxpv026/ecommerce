@@ -6,7 +6,8 @@ import { tidyDots } from "@/lib/emailTranslator";
 import { emailContext } from "@/lib/email/context";
 import type { Block } from "@/lib/email/design";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
-import { cylinderGasPrice } from "@/lib/pricing";
+import { cylinderGasPrice, isPricedPerKg } from "@/lib/pricing";
+import { emailPacker } from "@/lib/email/pack";
 import { LISTED } from "@/lib/productFamily";
 import { isPurchasable } from "@/lib/waitlist";
 
@@ -156,7 +157,7 @@ export async function sendReplenishmentEmail(input: {
     }),
     prisma.product.findUnique({
       where: { id: input.productId, ...LISTED },
-      select: { sku: true, name: true, weight: true, gwpClass: true, gwp: true, pricePerKg: true, weightKg: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
+      select: { sku: true, name: true, gwpClass: true, gwp: true, pricePerKg: true, weightKg: true, containerType: true, category: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
     }),
   ]);
   if (!user) return { status: "skipped", reason: "NOT_FOUND" };
@@ -174,6 +175,9 @@ export async function sendReplenishmentEmail(input: {
     const qty = Math.min(99, Math.max(1, input.recommendedQty));
     const oneClick = unsubscribeUrl(input.userId, "restockReminders");
     const label = `${product.name} (${product.sku})`;
+    const pack = (await emailPacker(locale))(product);
+    // "{price} per {variant}" needs a size; a per-unit item is named by its SKU.
+    const variant = isPricedPerKg(product.category) ? pack : product.sku;
 
     const cadence = input.fixedDays
       ? t("bodyFixed", { product: label, days: input.fixedDays, lastDate: date(input.lastOrderedAt ?? input.predictedDate) })
@@ -184,8 +188,8 @@ export async function sendReplenishmentEmail(input: {
           date: date(input.predictedDate),
         });
     const price = deposit > 0
-      ? t("bodyPriceDeposit", { price: unitPrice, variant: product.weight, deposit: c.money(deposit), qty })
-      : t("bodyPrice", { price: unitPrice, variant: product.weight, qty });
+      ? t("bodyPriceDeposit", { price: unitPrice, variant, deposit: c.money(deposit), qty })
+      : t("bodyPrice", { price: unitPrice, variant, qty });
     const compliance = [product.gwpClass?.trim(), product.gwp ? c.s("gwp", { value: product.gwp }) : ""].filter(Boolean).join(" · ");
 
     const subject = cleanHeader((input.test ? "[TEST] " : "") + t("subject", { product: label }));
@@ -205,7 +209,7 @@ export async function sendReplenishmentEmail(input: {
             {
               name: product.name,
               qty,
-              meta: [product.weight, c.s("sku", { sku: product.sku }), c.s("perUnit", { price: unitPrice })].filter(Boolean),
+              meta: [pack, c.s("sku", { sku: product.sku }), c.s("perUnit", { price: unitPrice })].filter(Boolean),
               badges: compliance ? [{ label: compliance, tone: "neutral" }] : [],
               total: c.money(unit * qty),
             },
@@ -286,7 +290,7 @@ export async function sendPriceDropEmail(input: {
 
   const [user, product] = await Promise.all([
     prisma.user.findUnique({ where: { id: input.userId }, select: { email: true, name: true, locale: true, notifyPriceDrops: true } }),
-    prisma.product.findUnique({ where: { id: input.productId, ...LISTED }, select: { sku: true, name: true, weight: true, gwpClass: true, gwp: true } }),
+    prisma.product.findUnique({ where: { id: input.productId, ...LISTED }, select: { sku: true, name: true, gwpClass: true, gwp: true, weightKg: true, containerType: true, category: true } }),
   ]);
   if (!user) return { status: "skipped", reason: "NOT_FOUND" };
   if (!user.notifyPriceDrops) return { status: "skipped", reason: "OPTED_OUT" };
@@ -304,6 +308,8 @@ export async function sendPriceDropEmail(input: {
     const subject = cleanHeader(c.t("subject", { product: product.name, sku: product.sku, price: newPrice }));
     const name = user.name?.trim();
     const compliance = [product.gwpClass?.trim(), product.gwp ? c.s("gwp", { value: product.gwp }) : ""].filter(Boolean).join(" · ");
+    const pack = (await emailPacker(c.locale))(product);
+    const variant = isPricedPerKg(product.category) ? pack : product.sku;
     const { html, text } = c.render({
       subject,
       preview: c.t("preview", { product: product.name, price: newPrice, old: oldPrice }),
@@ -312,14 +318,14 @@ export async function sendPriceDropEmail(input: {
       heading: product.name,
       blocks: [
         { kind: "text", text: name ? c.t("greeting", { name }) : c.t("greetingNoName") },
-        { kind: "text", text: c.rich("body", { product: product.name, variant: product.weight, price: newPrice, old: oldPrice }, ["price"]) },
+        { kind: "text", text: c.rich("body", { product: product.name, variant, price: newPrice, old: oldPrice }, ["price"]) },
         {
           kind: "items",
           qtyLabel: c.s("qty"),
           lines: [
             {
               name: product.name,
-              meta: [product.weight, c.s("sku", { sku: product.sku }), c.t("exVat")].filter(Boolean),
+              meta: [pack, c.s("sku", { sku: product.sku }), c.t("exVat")].filter(Boolean),
               badges: [{ label: savingLabel, tone: "success" }, ...(compliance ? [{ label: compliance, tone: "neutral" as const }] : [])],
               was: oldPrice,
               total: newPrice,

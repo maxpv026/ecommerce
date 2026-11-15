@@ -6,6 +6,7 @@ import { tidyDots } from "@/lib/emailTranslator";
 import { unsubscribeUrl } from "@/lib/unsubscribe";
 import { emailContext } from "@/lib/email/context";
 import type { ItemLine } from "@/lib/email/design";
+import { emailPacker } from "@/lib/email/pack";
 import { calculateCartTotals, VAT_RATE, type CartPricingLine } from "@/lib/cart";
 import { cylinderGasPrice } from "@/lib/pricing";
 import { LISTED } from "@/lib/productFamily";
@@ -131,12 +132,13 @@ export async function sendCartReminderEmail(userId: string, options: { test?: bo
 
   const products = await prisma.product.findMany({
     where: { ...LISTED, sku: { in: items.map((i) => i.sku) } },
-    select: { sku: true, name: true, weight: true, gwpClass: true, gwp: true, pricePerKg: true, weightKg: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
+    select: { sku: true, name: true, gwpClass: true, gwp: true, pricePerKg: true, weightKg: true, containerType: true, category: true, cylinderDeposit: true, inStock: true, stockQuantity: true },
   });
   const bySku = new Map(products.map((p) => [p.sku, p]));
 
   try {
     const c = await emailContext(user.locale, "CartReminderEmail");
+    const pack = await emailPacker(c.locale);
 
     const priced: CartPricingLine[] = [];
     const lines: ItemLine[] = [];
@@ -157,7 +159,7 @@ export async function sendCartReminderEmail(userId: string, options: { test?: bo
       lines.push({
         name: p.name,
         qty: item.qty,
-        meta: [p.weight, c.s("sku", { sku: p.sku }), c.s("perUnit", { price: c.money(unit) })].filter(Boolean),
+        meta: [pack(p), c.s("sku", { sku: p.sku }), c.s("perUnit", { price: c.money(unit) })].filter(Boolean),
         badges: [{ label: `● ${stock.label}`, tone: stock.tone }, ...(compliance ? [{ label: compliance, tone: "neutral" as const }] : [])],
         total: c.money(unit * item.qty),
         muted: !available,

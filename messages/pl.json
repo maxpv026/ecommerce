@@ -2324,7 +2324,12 @@
     "bodyVariant": "Prosiłeś o powiadomienie, gdy {product} ({variant}) będzie ponownie dostępny. Właśnie jest. Stan ograniczony i szybko się zmienia, więc zamów szybko, jeśli nadal go potrzebujesz.",
     "cta": "Zobacz produkt →",
     "ctaNote": "Ten e-mail nie rezerwuje stanu; dostępność jest potwierdzana przy kasie.",
-    "reason": "Otrzymujesz to jednorazowo, ponieważ dołączyłeś do listy oczekujących na ten produkt. Nie jesteś zapisany na nic innego i nie będziemy Cię o tym ponownie informować."
+    "reason": "Otrzymujesz to jednorazowo, ponieważ dołączyłeś do listy oczekujących na ten produkt. Nie jesteś zapisany na nic innego i nie będziemy Cię o tym ponownie informować.",
+    "inStockBadge": "Dostępne",
+    "factPerKg": "Cena za kg",
+    "factDeposit": "Kaucja za butlę",
+    "factDepositNote": "Zwracana po zwrocie pustej butli",
+    "priceNote": "Ceny nie zawierają VAT i są zgodne z tą wiadomością; cena przy kasie ma zastosowanie."
   },
   "OrderEmail": {
     "subject": "Zamówienie {order} potwierdzone — faktura {invoice}",

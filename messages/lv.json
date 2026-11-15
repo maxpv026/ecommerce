@@ -2324,7 +2324,12 @@
     "bodyVariant": "Jūs lūdzāt informēt, kad {product} ({variant}) atgriezīsies noliktavā. Tas tikko notika. Krājumi ir ierobežoti un ātri izpārdodas, tāpēc pasūtiet drīz, ja jums tas joprojām ir nepieciešams.",
     "cta": "Skatīt produktu →",
     "ctaNote": "Šis e-pasts neuztur krājumus; pieejamība tiek apstiprināta pie izrakstīšanās.",
-    "reason": "Jūs saņemat šo vienreiz, jo pievienojāties šī produkta gaidīšanas sarakstam. Jūs neesat abonējis neko citu, un mēs par to vairs nesūtīsim e-pastus."
+    "reason": "Jūs saņemat šo vienreiz, jo pievienojāties šī produkta gaidīšanas sarakstam. Jūs neesat abonējis neko citu, un mēs par to vairs nesūtīsim e-pastus.",
+    "inStockBadge": "Krājumā",
+    "factPerKg": "Cena par kg",
+    "factDeposit": "Balona depozīts",
+    "factDepositNote": "Atmaksāts, kad tukšais balons tiek atgriezts",
+    "priceNote": "Cenas ir bez PVN un ir spēkā šajā e-pastā; cena pie norēķina ir spēkā."
   },
   "OrderEmail": {
     "subject": "Pasūtījums {order} apstiprināts — rēķins {invoice}",

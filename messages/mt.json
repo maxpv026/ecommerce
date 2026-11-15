@@ -2324,7 +2324,12 @@
     "bodyVariant": "Int tlabt biex tiġi infurmat meta {product} ({variant}) jerġa' jidħol fl-istokk. Għadu kif ġara. L-istokk huwa limitat u jiċċaqlaq malajr, għalhekk ordna dalwaqt jekk għad għandek bżonnu.",
     "cta": "Ara l-prodott →",
     "ctaNote": "Din l-email ma tirriservax l-istokk; id-disponibbiltà tiġi kkonfermata fil-checkout.",
-    "reason": "Qed tirċievi dan darba biss għax ingħaqadt mal-lista ta' stennija għal dan il-prodott. M'intix abbunat għal xi ħaġa oħra, u ma nibgħatulekx email dwarha mill-ġdid."
+    "reason": "Qed tirċievi dan darba biss għax ingħaqadt mal-lista ta' stennija għal dan il-prodott. M'intix abbunat għal xi ħaġa oħra, u ma nibgħatulekx email dwarha mill-ġdid.",
+    "inStockBadge": "Fil-ħażna",
+    "factPerKg": "Prezz kull kg",
+    "factDeposit": "Depożitu tal-ċilindru",
+    "factDepositNote": "Rifondat meta l-ċilindru vojt jerġa' jiġi lura",
+    "priceNote": "Il-prezzijiet ma jinkludux VAT u huma skont dan l-email; il-prezz fil-ħlas japplika."
   },
   "OrderEmail": {
     "subject": "Ordni {order} ikkonfermata — fattura {invoice}",

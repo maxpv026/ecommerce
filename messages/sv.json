@@ -2324,7 +2324,12 @@
     "bodyVariant": "Du bad om att bli informerad när {product} ({variant}) kom tillbaka i lager. Det har den nu. Lagret är begränsat och går snabbt åt, så beställ snart om du fortfarande behöver det.",
     "cta": "Visa produkten →",
     "ctaNote": "Detta e-postmeddelande reserverar inte lagret; tillgängligheten bekräftas vid kassan.",
-    "reason": "Du får detta en gång eftersom du gick med på väntelistan för denna produkt. Du är inte prenumererad på något annat, och vi kommer inte att e-posta dig om det igen."
+    "reason": "Du får detta en gång eftersom du gick med på väntelistan för denna produkt. Du är inte prenumererad på något annat, och vi kommer inte att e-posta dig om det igen.",
+    "inStockBadge": "I lager",
+    "factPerKg": "Pris per kg",
+    "factDeposit": "Cylinderdepositum",
+    "factDepositNote": "Återbetalas när den tomma cylindern kommer tillbaka",
+    "priceNote": "Priser exklusive moms och gäller från detta e-postmeddelande; priset vid kassan gäller."
   },
   "OrderEmail": {
     "subject": "Order {order} bekräftad — faktura {invoice}",

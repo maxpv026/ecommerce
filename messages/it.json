@@ -2324,7 +2324,12 @@
     "bodyVariant": "Hai chiesto di essere avvisato quando {product} ({variant}) sarebbe tornato disponibile. Ora lo è. Lo stock è limitato e si esaurisce rapidamente, quindi ordina presto se ne hai ancora bisogno.",
     "cta": "Visualizza il prodotto →",
     "ctaNote": "Questa email non riserva lo stock; la disponibilità è confermata al checkout.",
-    "reason": "Ricevi questa email una volta perché ti sei iscritto alla lista d'attesa per questo prodotto. Non sei iscritto ad altro, e non ti invieremo altre email a riguardo."
+    "reason": "Ricevi questa email una volta perché ti sei iscritto alla lista d'attesa per questo prodotto. Non sei iscritto ad altro, e non ti invieremo altre email a riguardo.",
+    "inStockBadge": "Disponibile",
+    "factPerKg": "Prezzo per kg",
+    "factDeposit": "Deposito bombola",
+    "factDepositNote": "Rimborsato al ritorno della bombola vuota",
+    "priceNote": "I prezzi sono esclusi IVA e sono quelli di questa email; il prezzo al checkout si applica."
   },
   "OrderEmail": {
     "subject": "Ordine {order} confermato — fattura {invoice}",

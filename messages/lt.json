@@ -2324,7 +2324,12 @@
     "bodyVariant": "Jūs prašėte pranešti, kai {product} ({variant}) vėl bus sandėlyje. Dabar jis yra. Atsargos ribotos ir greitai juda, tad užsisakykite greitai, jei jums dar reikia.",
     "cta": "Peržiūrėti produktą →",
     "ctaNote": "Šis el. laiškas nerezervuoja atsargų; prieinamumas patvirtinamas atsiskaitymo metu.",
-    "reason": "Šį el. laišką gaunate, nes prisijungėte prie šio produkto laukimo sąrašo. Jūs nesate užsiprenumeravę nieko kito, ir mes jums apie tai daugiau nerašysime."
+    "reason": "Šį el. laišką gaunate, nes prisijungėte prie šio produkto laukimo sąrašo. Jūs nesate užsiprenumeravę nieko kito, ir mes jums apie tai daugiau nerašysime.",
+    "inStockBadge": "Sandėlyje",
+    "factPerKg": "Kaina už kg",
+    "factDeposit": "Baliono užstatas",
+    "factDepositNote": "Grąžinamas, kai tuščias balionas grąžinamas",
+    "priceNote": "Kainos be PVM ir galioja nuo šio el. pašto; kaina kasoje taikoma."
   },
   "OrderEmail": {
     "subject": "Užsakymas {order} patvirtintas — sąskaita {invoice}",

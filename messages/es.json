@@ -2324,7 +2324,12 @@
     "bodyVariant": "Solicitó ser informado cuando {product} ({variant}) volviera a estar en stock. Acaba de hacerlo. El stock es limitado y se mueve rápidamente, así que haga su pedido pronto si aún lo necesita.",
     "cta": "Ver el producto →",
     "ctaNote": "Este correo electrónico no reserva stock; la disponibilidad se confirma al finalizar la compra.",
-    "reason": "Está recibiendo esto una vez porque se unió a la lista de espera para este producto. No está suscrito a nada más y no le enviaremos correos electrónicos sobre esto nuevamente."
+    "reason": "Está recibiendo esto una vez porque se unió a la lista de espera para este producto. No está suscrito a nada más y no le enviaremos correos electrónicos sobre esto nuevamente.",
+    "inStockBadge": "En stock",
+    "factPerKg": "Precio por kg",
+    "factDeposit": "Depósito del cilindro",
+    "factDepositNote": "Reembolsado cuando el cilindro vacío regresa",
+    "priceNote": "Los precios excluyen IVA y son a partir de este correo; el precio en el pago se aplica."
   },
   "OrderEmail": {
     "subject": "Pedido {order} confirmado — factura {invoice}",

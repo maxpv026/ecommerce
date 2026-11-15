@@ -2324,7 +2324,12 @@
     "bodyVariant": "Požádali jste o informaci, když bude {product} ({variant}) opět skladem. Právě je. Zásoby jsou omezené a rychle se prodávají, takže pokud ho stále potřebujete, objednejte brzy.",
     "cta": "Zobrazit produkt →",
     "ctaNote": "Tento e-mail nezaručuje rezervaci zásob; dostupnost je potvrzena při pokladně.",
-    "reason": "Tento e-mail dostáváte jednorázově, protože jste se přihlásili na čekací seznam pro tento produkt. Nejste přihlášeni k ničemu jinému a nebudeme vás o něm znovu informovat."
+    "reason": "Tento e-mail dostáváte jednorázově, protože jste se přihlásili na čekací seznam pro tento produkt. Nejste přihlášeni k ničemu jinému a nebudeme vás o něm znovu informovat.",
+    "inStockBadge": "Skladem",
+    "factPerKg": "Cena za kg",
+    "factDeposit": "Záloha na lahev",
+    "factDepositNote": "Vrátí se při vrácení prázdné lahve",
+    "priceNote": "Ceny jsou bez DPH a platí k tomuto e-mailu; cena při pokladně se použije."
   },
   "OrderEmail": {
     "subject": "Objednávka {order} potvrzena — faktura {invoice}",

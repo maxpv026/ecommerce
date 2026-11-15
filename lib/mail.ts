@@ -1,6 +1,8 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { emailContext } from "@/lib/email/context";
+import { emailPacker } from "@/lib/email/pack";
+import type { Block } from "@/lib/email/design";
 
 // Email delivery. Every message's body comes from the shared design system
 // in lib/email (design.ts renders, context.ts localizes); this module is the
@@ -122,8 +124,14 @@ function fromAddress(): string {
   // login is literally "resend" and whose From must be on the verified domain.
   // Otherwise derive it from SMTP_USER, which Gmail rewrites the header to anyway.
   const explicit = process.env.EMAIL_FROM?.trim() || process.env.SMTP_FROM?.trim();
-  return explicit || `"My Energy" <${process.env.SMTP_USER}>`;
+  if (explicit) return explicit;
+  // Resend may only send from the verified domain: never fall back to an SMTP
+  // login there. (Gmail rewrites the From to its account anyway.)
+  return mailTransport() === "resend" ? DEFAULT_FROM : `"My Energy" <${process.env.SMTP_USER}>`;
 }
+
+/** The production sender on the domain verified at Resend. */
+export const DEFAULT_FROM = "My Energy <orders@myeenergy.com>";
 
 const replyTo = () => process.env.EMAIL_REPLY_TO?.trim() || undefined;
 
@@ -202,9 +210,27 @@ export interface MailDelivery {
   messageId: string;
 }
 
+/** The catalog facts a back-in-stock email shows (lib/stockNotify loads them once per restock). */
+export interface StockEmailProduct {
+  sku: string;
+  weightKg: number;
+  containerType: string | null;
+  /** Gas sold by weight (cylinders, blends) — the price is per kg × net weight. */
+  pricedPerKg: boolean;
+  pricePerKg: number;
+  /** The whole cylinder (gas only), or the unit price for equipment. */
+  price: number;
+  deposit: number;
+  safety: string | null;
+  gwp: number | null;
+}
+
 /**
  * Tells one waitlist subscriber that a product is purchasable again, in the
- * language they subscribed in.
+ * language they subscribed in — the same design as the order emails (lib/email):
+ * one product line with the localized pack size ("13,61 кг · балон", not the
+ * catalog's English "13.61 kg cylinder"), SKU, safety class and GWP, today's
+ * price, the deposit, and a link to the product page in that language.
  *
  * Throws on transport failure — and, importantly, also when the server
  * ACCEPTS the connection but REJECTS the recipient. nodemailer resolves in
@@ -214,7 +240,7 @@ export interface MailDelivery {
  */
 export async function sendBackInStockEmail(
   email: string,
-  product: { name: string; variant: string; url: string; locale?: string | null }
+  product: { name: string; url: string; locale?: string | null; details?: StockEmailProduct | null }
 ): Promise<MailDelivery> {
   // Build the body before opening the connection, and say plainly if the
   // template is what broke — a throw from in here used to surface as a
@@ -222,7 +248,32 @@ export async function sendBackInStockEmail(
   let rendered: { subject: string; html: string; text: string };
   try {
     const c = await emailContext(product.locale, "StockEmail");
+    const d = product.details ?? null;
+    const pack = d ? (await emailPacker(c.locale))(d) : null;
     const subject = c.t("subject", { product: product.name });
+    const compliance = d ? [d.safety && d.safety !== "n/a" ? d.safety : "", d.gwp ? c.s("gwp", { value: d.gwp }) : ""].filter(Boolean).join(" · ") : "";
+    const blocks: Block[] = [{ kind: "text", text: c.rich("body", { product: product.name }, ["product"]) }];
+    if (d) {
+      blocks.push({
+        kind: "items",
+        qtyLabel: c.s("qty"),
+        lines: [
+          {
+            name: product.name,
+            meta: [pack ?? "", c.s("sku", { sku: d.sku })].filter(Boolean),
+            badges: [{ label: c.t("inStockBadge"), tone: "success" }, ...(compliance ? [{ label: compliance, tone: "neutral" as const }] : [])],
+            total: d.price > 0 ? c.money(d.price) : undefined,
+          },
+        ],
+      });
+      const facts = [
+        ...(d.pricedPerKg && d.pricePerKg > 0 ? [{ label: c.t("factPerKg"), value: c.money(d.pricePerKg) }] : []),
+        ...(d.deposit > 0 ? [{ label: c.t("factDeposit"), value: c.money(d.deposit), note: c.t("factDepositNote") }] : []),
+      ];
+      if (facts.length) blocks.push({ kind: "facts", rows: facts });
+    }
+    blocks.push({ kind: "cta", label: c.t("cta"), href: product.url, note: c.t("ctaNote") });
+    if (d) blocks.push({ kind: "text", tone: "small", text: c.t("priceNote") });
     rendered = {
       subject,
       ...c.render({
@@ -231,10 +282,7 @@ export async function sendBackInStockEmail(
         reference: c.t("badge").toLocaleUpperCase(c.locale),
         kicker: { label: c.t("kicker"), tone: "success" },
         heading: c.t("heading", { product: product.name }),
-        blocks: [
-          { kind: "text", text: c.rich(product.variant ? "bodyVariant" : "body", { product: product.name, variant: product.variant }, ["product"]) },
-          { kind: "cta", label: c.t("cta"), href: product.url, note: c.t("ctaNote") },
-        ],
+        blocks,
         footer: { reason: c.t("reason") },
       }),
     };

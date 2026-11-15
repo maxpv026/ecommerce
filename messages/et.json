@@ -2324,7 +2324,12 @@
     "bodyVariant": "Soovisite teavitust, kui {product} ({variant}) on jälle laos. Nüüd on see saadaval. Laos on piiratud kogus ja see liigub kiiresti, seega tellige peagi, kui seda veel vajate.",
     "cta": "Vaata toodet →",
     "ctaNote": "See e-kiri ei broneeri laoseisu; saadavus kinnitatakse kassas.",
-    "reason": "Saate selle teavituse, kuna liitusite selle toote ootenimekirjaga. Te ei ole tellinud midagi muud ja me ei saada teile sellest rohkem e-kirju."
+    "reason": "Saate selle teavituse, kuna liitusite selle toote ootenimekirjaga. Te ei ole tellinud midagi muud ja me ei saada teile sellest rohkem e-kirju.",
+    "inStockBadge": "Laos",
+    "factPerKg": "Hind kg kohta",
+    "factDeposit": "Silindri tagatisraha",
+    "factDepositNote": "Tagastatakse, kui tühi silinder tagasi tuuakse",
+    "priceNote": "Hinnad ei sisalda KM ja kehtivad alates sellest e-kirjast; kassas kehtib hind."
   },
   "OrderEmail": {
     "subject": "Tellimus {order} kinnitatud — arve {invoice}",

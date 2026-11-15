@@ -2324,7 +2324,12 @@
     "bodyVariant": "Sie wollten benachrichtigt werden, wenn {product} ({variant}) wieder auf Lager ist. Das ist jetzt der Fall. Der Bestand ist begrenzt und schnell vergriffen, bestellen Sie also bald, wenn Sie es noch benötigen.",
     "cta": "Produkt ansehen →",
     "ctaNote": "Diese E-Mail reserviert keinen Bestand; die Verfügbarkeit wird beim Checkout bestätigt.",
-    "reason": "Sie erhalten diese E-Mail einmalig, weil Sie sich für die Warteliste dieses Produkts angemeldet haben. Sie sind für nichts anderes angemeldet, und wir werden Sie nicht erneut darüber informieren."
+    "reason": "Sie erhalten diese E-Mail einmalig, weil Sie sich für die Warteliste dieses Produkts angemeldet haben. Sie sind für nichts anderes angemeldet, und wir werden Sie nicht erneut darüber informieren.",
+    "inStockBadge": "Auf Lager",
+    "factPerKg": "Preis pro kg",
+    "factDeposit": "Flaschenpfand",
+    "factDepositNote": "Wird bei Rückgabe der leeren Flasche erstattet",
+    "priceNote": "Preise verstehen sich zuzüglich MwSt. und gelten ab diesem E-Mail; der Preis an der Kasse ist maßgeblich."
   },
   "OrderEmail": {
     "subject": "Bestellung {order} bestätigt — Rechnung {invoice}",

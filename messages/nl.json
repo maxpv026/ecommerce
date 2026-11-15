@@ -2324,7 +2324,12 @@
     "bodyVariant": "U vroeg om op de hoogte te worden gebracht wanneer {product} ({variant}) weer op voorraad was. Dat is nu het geval. De voorraad is beperkt en gaat snel, dus bestel snel als u het nog nodig heeft.",
     "cta": "Bekijk het product →",
     "ctaNote": "Deze e-mail reserveert geen voorraad; beschikbaarheid wordt bevestigd bij het afrekenen.",
-    "reason": "U ontvangt dit eenmalig omdat u zich op de wachtlijst voor dit product heeft geplaatst. U bent nergens anders op geabonneerd, en we zullen u hier niet opnieuw over e-mailen."
+    "reason": "U ontvangt dit eenmalig omdat u zich op de wachtlijst voor dit product heeft geplaatst. U bent nergens anders op geabonneerd, en we zullen u hier niet opnieuw over e-mailen.",
+    "inStockBadge": "Op voorraad",
+    "factPerKg": "Prijs per kg",
+    "factDeposit": "Cilinderborg",
+    "factDepositNote": "Terugbetaald wanneer de lege cilinder terugkomt",
+    "priceNote": "Prijzen zijn exclusief BTW en gelden vanaf deze e-mail; de prijs bij afrekenen is van toepassing."
   },
   "OrderEmail": {
     "subject": "Bestelling {order} bevestigd — factuur {invoice}",

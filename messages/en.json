@@ -2323,7 +2323,12 @@
     "bodyVariant": "You asked to be told when {product} ({variant}) came back into stock. It just did. Stock is limited and moves quickly, so order soon if you still need it.",
     "cta": "View the product →",
     "ctaNote": "This email doesn't reserve stock; availability is confirmed at checkout.",
-    "reason": "You're receiving this once because you joined the waitlist for this product. You're not subscribed to anything else, and we won't email you about it again."
+    "reason": "You're receiving this once because you joined the waitlist for this product. You're not subscribed to anything else, and we won't email you about it again.",
+    "inStockBadge": "In stock",
+    "factPerKg": "Price per kg",
+    "factDeposit": "Cylinder deposit",
+    "factDepositNote": "Refunded when the empty cylinder comes back",
+    "priceNote": "Prices exclude VAT and are as of this email; the price at checkout applies."
   },
   "OrderEmail": {
     "subject": "Order {order} confirmed — invoice {invoice}",

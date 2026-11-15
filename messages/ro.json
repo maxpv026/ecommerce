@@ -2324,7 +2324,12 @@
     "bodyVariant": "Ați solicitat să fiți informat când {product} ({variant}) revine în stoc. Tocmai a revenit. Stocul este limitat și se epuizează rapid, așa că comandați curând dacă încă aveți nevoie.",
     "cta": "Vizualizați produsul →",
     "ctaNote": "Acest email nu rezervă stocul; disponibilitatea este confirmată la finalizare.",
-    "reason": "Primiți acest email o singură dată deoarece v-ați înscris pe lista de așteptare pentru acest produs. Nu sunteți abonat la altceva și nu vă vom mai trimite emailuri despre acesta."
+    "reason": "Primiți acest email o singură dată deoarece v-ați înscris pe lista de așteptare pentru acest produs. Nu sunteți abonat la altceva și nu vă vom mai trimite emailuri despre acesta.",
+    "inStockBadge": "În stoc",
+    "factPerKg": "Preț pe kg",
+    "factDeposit": "Depozit butelie",
+    "factDepositNote": "Restituit când butelia goală este returnată",
+    "priceNote": "Prețurile nu includ TVA și sunt valabile la data acestui email; prețul la finalizare se aplică."
   },
   "OrderEmail": {
     "subject": "Comanda {order} confirmată — factura {invoice}",
