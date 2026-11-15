@@ -56,7 +56,8 @@ export default function SdsCompliance({ rows, purchased, signedIn, lines, detect
       <main className="relative mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-8 md:pb-24 md:pt-9" data-sds-page>
         {/* ── Header bar (cart layout) ── */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-sds-header>
-          <div className="min-w-0 flex-1">
+          {/* Full row on phones: as flex-1 (basis 0) the title was squeezed into five lines beside the ZIP pill. */}
+          <div className="min-w-0 flex-1 max-sm:basis-full">
             <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] sm:text-[34px]">{t("title")}</h1>
             <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-sds-meta>
               {t("lead")}
@@ -133,7 +134,8 @@ export default function SdsCompliance({ rows, purchased, signedIn, lines, detect
             <p className="m-0 mt-3 px-1 text-[12px] leading-[1.55] text-slate-500 dark:text-ink-muted">{t("footnote")}</p>
           </div>
 
-          <aside className="min-w-0 lg:sticky lg:top-[88px] lg:col-span-4" data-sds-aside>
+          {/* Below lg the emergency card comes first: on a phone it is what a driver at a leaking cylinder needs, not the 15th row. */}
+          <aside className="min-w-0 max-lg:order-first lg:sticky lg:top-[88px] lg:col-span-4" data-sds-aside>
             <ComplianceCard lines={lines} detected={detected} countryNames={countryNames} />
           </aside>
         </div>

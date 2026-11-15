@@ -728,7 +728,13 @@
     "status_packing": "Pakowanie ADR",
     "status_shipped": "Wysłano",
     "cardInvoice": "Pobierz fakturę PDF",
-    "cardOrders": "Przejdź do moich zamówień"
+    "cardOrders": "Przejdź do moich zamówień",
+    "quickTitle": "Szybkie kopiowanie dla Twojej aplikacji bankowej",
+    "quickIban": "Kopiuj IBAN (bez spacji)",
+    "quickRef": "Kopiuj referencję · {ref}",
+    "quickAmount": "Kopiuj dokładną kwotę · {amount}",
+    "qrShow": "Pokaż kod QR SEPA",
+    "qrHide": "Ukryj kod QR"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Przewiń w lewo",
     "railNext": "Przewiń w prawo",
     "stockOut": "Brak w magazynie",
-    "perKgExVat": "za kg · bez VAT"
+    "perKgExVat": "za kg · bez VAT",
+    "backToCatalog": "Powrót do katalogu"
   },
   "HomeMobile": {
     "notificationsAria": "Powiadomienia",
@@ -3213,5 +3220,53 @@
     "container_Drum": "bęben",
     "container_Isotank": "izotank",
     "container_Can": "puszka"
+  },
+  "SearchPage": {
+    "title": "Szukaj",
+    "lead": "Butle, Twoje zamówienia i karty charakterystyki.",
+    "placeholder": "Kod gazu, SKU, numer zamówienia, CAS lub UN…",
+    "clear": "Wyczyść",
+    "recent": "Ostatnie wyszukiwania",
+    "recentClear": "Wyczyść historię",
+    "hint": "Wpisz co najmniej {n} znaków — np. R-32, 75-10-5, UN 3163 lub numer zamówienia.",
+    "none": "Nie znaleziono wyników dla „{q}”.",
+    "groupProducts": "Butle i sprzęt",
+    "groupOrders": "Twoje zamówienia",
+    "groupDocs": "Karty charakterystyki",
+    "seeAll": "Wszystkie {count} wyniki w katalogu",
+    "outOfStock": "Brak w magazynie",
+    "cancelled": "Anulowane",
+    "awaitingPayment": "Oczekuje na płatność",
+    "sdsTitle": "{gas} · karta charakterystyki",
+    "signIn": "Zaloguj się",
+    "signInOrders": "aby przeszukiwać również swoje zamówienia.",
+    "lines": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}"
+  },
+  "NotifFeed": {
+    "title": "Powiadomienia",
+    "lead": "Co się wydarzyło na Twoim koncie: zamówienia, F-Gas, powiadomienia o cenach i zwroty.",
+    "settings": "Ustawienia e-mail",
+    "new": "Nowe",
+    "emptyTitle": "Nic tutaj jeszcze nie ma",
+    "emptyBody": "Zamówienia, przeglądy certyfikatów, powiadomienia o cenach i zwroty butli pojawią się tutaj w miarę ich występowania.",
+    "orderPlaced": "Zamówienie {number} złożone",
+    "orderPaid": "Płatność otrzymana za {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# linia} few {# linie} many {# linii} other {# linii}} · {total}",
+    "eta": "Oczekiwana dostawa {date}",
+    "orderCancelled": "Zamówienie {number} anulowane",
+    "fgasVerified": "Certyfikat F-Gas zweryfikowany",
+    "fgasRejected": "Certyfikat F-Gas odrzucony",
+    "fgasPending": "Certyfikat F-Gas w trakcie przeglądu",
+    "fgasExpired": "Certyfikat F-Gas wygasł",
+    "fgasExpiring": "Twój certyfikat F-Gas wygasa {date}",
+    "priceAlert": "{gas} osiągnął docelową cenę",
+    "priceAlertBody": "Twój cel: {target} za kg",
+    "backInStock": "{name} jest z powrotem w magazynie",
+    "return_REQUESTED": "Żądanie zwrotu butli złożone ({count})",
+    "fgasExpiringBody": "{days, plural, one {# dzień} few {# dni} many {# dni} other {# dni}} — prześlij odnowiony certyfikat, aby kontynuować zamawianie gazu.",
+    "return_SCHEDULED": "Przyjęcie zwrotu butli ({count})",
+    "return_COLLECTED": "Butle odebrane w magazynie ({count})",
+    "return_CANCELLED": "Anulowanie zwrotu butli"
   }
 }

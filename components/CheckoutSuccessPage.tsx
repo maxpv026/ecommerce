@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { ArrowRight, Check, ClipboardCopy, Copy, Download, Loader2, MapPin, Phone, QrCode, Send } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ClipboardCopy, Copy, Download, Loader2, MapPin, Phone, QrCode, Send } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { EYEBROW, MicroBadge, PILL, PRIMARY, SECONDARY, SUMMARY_CARD, SURFACE, safetyTone } from "@/components/home/ui";
 import { formatIban, type BankTransferDetails } from "@/lib/bankTransfer";
@@ -81,6 +81,8 @@ export default function CheckoutSuccessPage({ order, bank, qr }: Props) {
   const packLabel = usePackLabel();
   const { copied, copy } = useCopy();
   const [ibanSpaces, setIbanSpaces] = useState(true);
+  // Phones: the QR folds away (the buyer is already on the phone with the banking app; copying beats scanning).
+  const [qrOpen, setQrOpen] = useState(false);
   const [reported, setReported] = useState(order.reported);
   const [bankRef, setBankRef] = useState("");
   const [reportError, setReportError] = useState(false);
@@ -123,9 +125,10 @@ export default function CheckoutSuccessPage({ order, bank, qr }: Props) {
     <div className="relative overflow-x-clip">
       <main className="relative mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-8 md:pb-24 md:pt-9" data-checkout-success>
         {/* ── Header bar: status + title left, the accountant's actions right ── */}
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-success-header>
-          <div className="min-w-0 flex-1">
-            <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] sm:text-[34px]">{t("payTitle")}</h1>
+        {/* The title claims the room it needs for one line (basis); when the actions don't fit beside it they move under it instead of squeezing it onto two. */}
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4" data-success-header>
+          <div className="min-w-0 flex-1 basis-[640px] max-sm:basis-full">
+            <h1 className="m-0 text-[28px] font-semibold leading-[1.1] tracking-[-.04em] text-balance sm:text-[34px]">{t("payTitle")}</h1>
             <p className="m-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-success-meta>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300" data-status-pill>
                 <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -136,7 +139,7 @@ export default function CheckoutSuccessPage({ order, bank, qr }: Props) {
           </div>
           <div className="flex flex-wrap items-center gap-2 max-sm:w-full sm:flex-none lg:pt-1">
             {invoiceHref && (
-              <a href={invoiceHref} download className="inline-flex min-h-[38px] items-center gap-2 rounded-full bg-blue-700 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-blue-800" data-invoice-download="header">
+              <a href={invoiceHref} download className="inline-flex min-h-[38px] items-center gap-2 rounded-full bg-blue-700 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-blue-800 max-sm:min-h-[48px] max-sm:w-full max-sm:justify-center max-sm:rounded-[14px] max-sm:text-[14px]" data-invoice-download="header">
                 <Download size={14} strokeWidth={2.2} />
                 {t("actionInvoice")}
               </a>
@@ -155,6 +158,27 @@ export default function CheckoutSuccessPage({ order, bank, qr }: Props) {
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
           {/* ── Left: the transfer terminal ── */}
           <section className={`min-w-0 lg:col-span-8 ${SURFACE}`} data-bank-terminal>
+            {/* Phones: the three things a banking app asks for, one thumb-sized tap each. */}
+            <div className="flex flex-col gap-2 border-b border-slate-900/[.06] p-4 sm:hidden dark:border-white/[.06]" data-quick-copy>
+              <p className={`m-0 ${LABEL}`}>{t("quickTitle")}</p>
+              {[
+                { id: "q-iban", value: bank.iban, label: t("quickIban") },
+                { id: "q-ref", value: order.orderNumber, label: t("quickRef", { ref: order.orderNumber }) },
+                { id: "q-amount", value: amountPlain, label: t("quickAmount", { amount: eur(b.total) }) },
+              ].map((q) => (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => copy(q.id, q.value)}
+                  data-quick={q.id}
+                  data-copied={copied === q.id ? "1" : undefined}
+                  className={`flex min-h-[52px] w-full items-center justify-between gap-3 rounded-[14px] border px-4 text-left text-[14px] font-semibold transition-colors ${copied === q.id ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "border-slate-900/[.12] bg-white text-slate-800 active:bg-slate-50 dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-100"}`}
+                >
+                  <span className="min-w-0">{copied === q.id ? t("copied") : q.label}</span>
+                  {copied === q.id ? <Check size={18} strokeWidth={2.6} className="flex-none" /> : <Copy size={18} strokeWidth={2} className="flex-none text-blue-700 dark:text-blue-400" />}
+                </button>
+              ))}
+            </div>
             {/* Reference + exact amount */}
             <div className="grid gap-px bg-slate-900/[.06] sm:grid-cols-2 dark:bg-white/[.06]">
               <div className="bg-blue-600/[.05] px-5 py-4 dark:bg-blue-400/[.07]" data-payment-reference>
@@ -226,7 +250,14 @@ export default function CheckoutSuccessPage({ order, bank, qr }: Props) {
               </dl>
 
               {qr && (
-                <div className="flex flex-col items-center rounded-[18px] border border-slate-900/[.08] bg-white p-4 text-center dark:border-white/[.1]" data-epc-qr data-epc-payload={qr.payload}>
+                <button type="button" onClick={() => setQrOpen((v) => !v)} aria-expanded={qrOpen} className="flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-slate-900/[.12] text-[13px] font-semibold text-slate-700 sm:hidden dark:border-white/[.14] dark:text-slate-200" data-qr-toggle>
+                  <QrCode size={15} strokeWidth={2.2} />
+                  {qrOpen ? t("qrHide") : t("qrShow")}
+                  <ChevronDown size={15} strokeWidth={2.2} className={qrOpen ? "rotate-180" : ""} />
+                </button>
+              )}
+              {qr && (
+                <div className={`flex flex-col items-center rounded-[18px] border border-slate-900/[.08] bg-white p-4 text-center dark:border-white/[.1] ${qrOpen ? "" : "max-sm:hidden"}`} data-epc-qr data-epc-payload={qr.payload}>
                   <p className="m-0 flex items-center gap-1.5 text-[12.5px] font-semibold text-slate-800">
                     <QrCode size={14} strokeWidth={2.2} />
                     {t("qrTitle")}

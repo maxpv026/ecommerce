@@ -728,7 +728,13 @@
     "status_packing": "IPPJEGAR ADR",
     "status_shipped": "Ibgħat",
     "cardInvoice": "Niżżel il-PDF tal-fattura",
-    "cardOrders": "Mur għall-ordnijiet tiegħi"
+    "cardOrders": "Mur għall-ordnijiet tiegħi",
+    "quickTitle": "Kopja veloċi għall-applikazzjoni bankarja tiegħek",
+    "quickIban": "Kopja IBAN (mingħajr spazji)",
+    "quickRef": "Kopja referenza · {ref}",
+    "quickAmount": "Kopja ammont eżatt · {amount}",
+    "qrShow": "Uri kod SEPA QR",
+    "qrHide": "Iċċekkja QR code"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Skrollja lejn ix-xellug",
     "railNext": "Skrollja lejn il-lemin",
     "stockOut": "Mhux disponibbli",
-    "perKgExVat": "kull kg · mingħajr VAT"
+    "perKgExVat": "kull kg · mingħajr VAT",
+    "backToCatalog": "Iva lura għall-katalgu"
   },
   "HomeMobile": {
     "notificationsAria": "Notifiki",
@@ -3213,5 +3220,53 @@
     "container_Drum": "drum",
     "container_Isotank": "isotank",
     "container_Can": "kanna"
+  },
+  "SearchPage": {
+    "title": "Fittex",
+    "lead": "Ċilindri, ordnijiet tiegħek u skedi ta' data dwar is-sigurtà.",
+    "placeholder": "Kodiċi tal-gass, SKU, numru tal-ordni, CAS jew UN…",
+    "clear": "Ħassar",
+    "recent": "Fittex riċenti",
+    "recentClear": "Ikklerja l-istorja",
+    "hint": "Ikteb mill-inqas {n} karattri — eż. R-32, 75-10-5, UN 3163 jew numru ta' ordni.",
+    "none": "Ma instab xejn għal “{q}”.",
+    "groupProducts": "Ċilindri u tagħmir",
+    "groupOrders": "L-ordnijiet tiegħek",
+    "groupDocs": "Skedi ta' data dwar is-sigurtà",
+    "seeAll": "Kollha {count} riżultati fil-katalgu",
+    "outOfStock": "M'hemmx f'ħażna",
+    "cancelled": "Ikkansellat",
+    "awaitingPayment": "Stennija għall-ħlas",
+    "sdsTitle": "{gas} · skeda ta' data dwar is-sigurtà",
+    "signIn": "Idħol",
+    "signInOrders": "biex tfittxija għall-ordnijiet tiegħek ukoll.",
+    "lines": "{count, plural, one {# linja} two {# linji} few {# linji} many {# linji} other {# linji}}"
+  },
+  "NotifFeed": {
+    "title": "Notifiki",
+    "lead": "X'ġara fuq il-kont tiegħek: ordnijiet, F-Gas, avżijiet ta' prezz u ritornijiet.",
+    "settings": "Impostazzjonijiet tal-email",
+    "new": "Ġdid",
+    "emptyTitle": "Xejn hawn għad m'hemmx",
+    "emptyBody": "L-ordnijiet, reviżjonijiet tal-kertifikati, avżijiet ta' prezz u ritornijiet ta' ċilindri se jidhru hawn hekk kif iseħħu.",
+    "orderPlaced": "Ordni {number} ippostjat",
+    "orderPaid": "Ħlas riċevut għal {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# linja} two {# linji} few {# linji} many {# linji} other {# linji}} · {total}",
+    "eta": "Kunsinna mistenni {date}",
+    "orderCancelled": "Ordni {number} annullata",
+    "fgasVerified": "Iċ-ċertifikazzjoni F-Gas verifikata",
+    "fgasRejected": "Iċ-ċertifikazzjoni F-Gas miċħuda",
+    "fgasPending": "Iċ-ċertifikazzjoni F-Gas taħt reviżjoni",
+    "fgasExpired": "Iċ-ċertifikazzjoni F-Gas skaduta",
+    "fgasExpiring": "Iċ-ċertifikazzjoni F-Gas tiegħek skadiet fid-{date}",
+    "priceAlert": "{gas} laħaq il-prezz mistenni tiegħek",
+    "priceAlertBody": "Il-prezz tiegħek: {target} kull kg",
+    "backInStock": "{name} reġa' ġie f'ħażna",
+    "return_REQUESTED": "Talba għall-irkupru tal-ċiċilindru ġiet magħmula ({count})",
+    "fgasExpiringBody": "{days, plural, one {# ġurnata fadal} two {# ġurnat fadal} few {# ġurnat fadal} many {# ġurnat fadal} other {# ġurnat fadal}} — ittella ċ-ċertifikat imġedded biex tkompli tordna l-gass.",
+    "return_SCHEDULED": "Ċilindru ritornat aċċettat ({count})",
+    "return_COLLECTED": "Ċilindri rċevew fil-maħżen ({count})",
+    "return_CANCELLED": "Ritorn tal-ċilindru annullat"
   }
 }

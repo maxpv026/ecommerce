@@ -728,7 +728,13 @@
     "status_packing": "ADR iepakošana",
     "status_shipped": "Nosūtīts",
     "cardInvoice": "Lejupielādēt rēķinu PDF",
-    "cardOrders": "Doties uz maniem pasūtījumiem"
+    "cardOrders": "Doties uz maniem pasūtījumiem",
+    "quickTitle": "Ātrā kopija jūsu bankas lietotnei",
+    "quickIban": "Kopēt IBAN (bez atstarpēm)",
+    "quickRef": "Kopēt atsauci · {ref}",
+    "quickAmount": "Kopēt precīzu summu · {amount}",
+    "qrShow": "Rādīt SEPA QR kodu",
+    "qrHide": "Paslēpt QR kodu"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Ritināt pa kreisi",
     "railNext": "Ritināt pa labi",
     "stockOut": "Nav noliktavā",
-    "perKgExVat": "par kg · bez PVN"
+    "perKgExVat": "par kg · bez PVN",
+    "backToCatalog": "Atpakaļ uz katalogu"
   },
   "HomeMobile": {
     "notificationsAria": "Paziņojumi",
@@ -3213,5 +3220,53 @@
     "container_Drum": "bungas",
     "container_Isotank": "isotanks",
     "container_Can": "bundža"
+  },
+  "SearchPage": {
+    "title": "Meklēt",
+    "lead": "Baloni, jūsu pasūtījumi un drošības datu lapas.",
+    "placeholder": "Gāzes kods, SKU, pasūtījuma numurs, CAS vai UN…",
+    "clear": "Notīrīt",
+    "recent": "Nesenās meklēšanas",
+    "recentClear": "Notīrīt vēsturi",
+    "hint": "Ievadiet vismaz {n} rakstzīmes — piemēram, R-32, 75-10-5, UN 3163 vai pasūtījuma numuru.",
+    "none": "Nekas netika atrasts “{q}”.",
+    "groupProducts": "Baloni un aprīkojums",
+    "groupOrders": "Jūsu pasūtījumi",
+    "groupDocs": "Drošības datu lapas",
+    "seeAll": "Visi {count} rezultāti katalogā",
+    "outOfStock": "Nav pieejams",
+    "cancelled": "Atcelts",
+    "awaitingPayment": "Gaidām maksājumu",
+    "sdsTitle": "{gas} · drošības datu lapa",
+    "lines": "{count, plural, zero {# līnijas} one {# līnija} other {# līnijas} }",
+    "signIn": "Piesakieties",
+    "signInOrders": "lai meklētu arī savus pasūtījumus."
+  },
+  "NotifFeed": {
+    "title": "Paziņojumi",
+    "lead": "Kas notika jūsu kontā: pasūtījumi, F-gāzes, cenu brīdinājumi un atgriešanas.",
+    "settings": "E-pasta iestatījumi",
+    "new": "Jauns",
+    "emptyTitle": "Vēl nav nekas šeit",
+    "emptyBody": "Pasūtījumi, sertifikātu pārskati, cenu brīdinājumi un balonu atgriešanas parādīsies šeit, kad tie notiks.",
+    "orderPlaced": "Pasūtījums {number} veikts",
+    "orderPaid": "Maksājums saņemts par {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, zero {# līnijas} one {# līnija} other {# līnijas}} · {total}",
+    "eta": "Oga piegāde {date}",
+    "orderCancelled": "Pasūtījums {number} atcelts",
+    "fgasVerified": "F-gāzes sertifikāts pārbaudīts",
+    "fgasRejected": "F-gāzes sertifikāts noraidīts",
+    "fgasPending": "F-gāzes sertifikāts tiek pārskatīts",
+    "fgasExpired": "F-gāzes sertifikāts ir beidzies",
+    "fgasExpiring": "Jūsu F-gāzes sertifikāts beidzas {date}",
+    "priceAlert": "{gas} sasniedza jūsu mērķa cenu",
+    "priceAlertBody": "Jūsu mērķis: {target} par kg",
+    "backInStock": "{name} atkal ir pieejams",
+    "return_REQUESTED": "Balona atgriešana pieprasīta ({count})",
+    "fgasExpiringBody": "{days, plural, zero {# dienas palikušas} one {# diena palikusi} other {# dienas palikušas}} — augšupielādējiet atjaunoto sertifikātu, lai turpinātu pasūtīt gāzi.",
+    "return_SCHEDULED": "Balona atgriešana pieņemta ({count})",
+    "return_COLLECTED": "Baloni saņemti noliktavā ({count})",
+    "return_CANCELLED": "Balona atgriešana atcelta"
   }
 }

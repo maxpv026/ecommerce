@@ -728,7 +728,13 @@
     "status_packing": "ADR-pakkaus",
     "status_shipped": "Toimitettu",
     "cardInvoice": "Lataa lasku PDF-muodossa",
-    "cardOrders": "Siirry tilauksiini"
+    "cardOrders": "Siirry tilauksiini",
+    "quickTitle": "Nopea kopio pankkisovelluksellesi",
+    "quickIban": "Kopioi IBAN (ilman välejä)",
+    "quickRef": "Kopioi viite · {ref}",
+    "quickAmount": "Kopioi tarkka summa · {amount}",
+    "qrShow": "Näytä SEPA QR-koodi",
+    "qrHide": "Piilota QR-koodi"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Vieritä vasemmalle",
     "railNext": "Vieritä oikealle",
     "stockOut": "Loppu varastosta",
-    "perKgExVat": "per kg · alv 0 %"
+    "perKgExVat": "per kg · alv 0 %",
+    "backToCatalog": "Takaisin luetteloon"
   },
   "HomeMobile": {
     "notificationsAria": "Ilmoitukset",
@@ -3213,5 +3220,53 @@
     "container_Drum": "tynnyri",
     "container_Isotank": "Isotank",
     "container_Can": "purkki"
+  },
+  "SearchPage": {
+    "title": "Haku",
+    "lead": "Pullot, tilauksesi ja käyttöturvallisuustiedotteet.",
+    "placeholder": "Kaasun koodi, SKU, tilausnumero, CAS tai UN…",
+    "clear": "Tyhjennä",
+    "recent": "Viimeisimmät haut",
+    "recentClear": "Tyhjennä historia",
+    "hint": "Kirjoita vähintään {n} merkkiä — esim. R-32, 75-10-5, UN 3163 tai tilausnumero.",
+    "none": "Ei löytynyt mitään hakusanalla “{q}”.",
+    "groupProducts": "Pullot ja laitteet",
+    "groupOrders": "Tilauksesi",
+    "groupDocs": "Käyttöturvallisuustiedotteet",
+    "seeAll": "Kaikki {count} tulosta luettelossa",
+    "outOfStock": "Loppu varastosta",
+    "lines": "{count, plural, one {# rivi} other {# riviä} }",
+    "cancelled": "Peruutettu",
+    "awaitingPayment": "Odottaa maksua",
+    "sdsTitle": "{gas} · käyttöturvallisuustiedote",
+    "signIn": "Kirjaudu sisään",
+    "signInOrders": "etsiäksesi myös omia tilauksiasi."
+  },
+  "NotifFeed": {
+    "title": "Ilmoitukset",
+    "lead": "Mitä tililläsi on tapahtunut: tilaukset, F-kaasu, hintahälytykset ja palautukset.",
+    "settings": "Sähköpostiasetukset",
+    "new": "Uusi",
+    "emptyTitle": "Ei vielä mitään",
+    "emptyBody": "Tilaukset, sertifikaattiarvostelut, hintahälytykset ja pullopalautukset näkyvät täällä, kun ne tapahtuvat.",
+    "orderPlaced": "Tilaus {number} tehty",
+    "orderPlacedBody": "{lines, plural, one {# rivi} other {# riviä}} · {total}",
+    "orderPaid": "Maksu vastaanotettu tilauksesta {number}",
+    "orderStage": "{number}: {stage}",
+    "eta": "Odotettu toimitus {date}",
+    "orderCancelled": "Tilauksen {number} peruutus",
+    "fgasVerified": "F-kaasu-sertifikaatti vahvistettu",
+    "fgasRejected": "F-kaasu-sertifikaatti hylätty",
+    "fgasPending": "F-kaasu-sertifikaatti tarkastuksessa",
+    "fgasExpired": "F-kaasu-sertifikaatti on vanhentunut",
+    "fgasExpiring": "F-kaasu-sertifikaattisi vanhenee {date}",
+    "fgasExpiringBody": "{days, plural, one {# päivä jäljellä} other {# päivää jäljellä}} — lataa uusi sertifikaatti, jotta voit jatkaa kaasun tilaamista.",
+    "priceAlert": "{gas} saavutti tavoitehintasi",
+    "priceAlertBody": "Tavoitteesi: {target} per kg",
+    "backInStock": "{name} on jälleen saatavilla",
+    "return_REQUESTED": "Pullon palautus pyydetty ({count})",
+    "return_SCHEDULED": "Pullon palautus hyväksytty ({count})",
+    "return_COLLECTED": "Pullot vastaanotettu varastoon ({count})",
+    "return_CANCELLED": "Pullon palautus peruttu"
   }
 }

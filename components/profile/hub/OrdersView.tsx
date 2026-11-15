@@ -62,8 +62,9 @@ export default function OrdersView({ orders, tracking }: { orders: UserOrder[]; 
           const cylinders = order.items.reduce((n, i) => n + i.quantity, 0);
           return (
             <div key={order.id} className="border-b border-slate-900/[.06] last:border-b-0 dark:border-white/[.06]" data-order-row={order.orderNumber}>
-              <div className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-center gap-4 px-5 py-4">
-                <span className={ICON_TILE}>
+              {/* Phones: a card — number, status and date with the total beside them, then full-width actions. */}
+              <div className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-center gap-4 px-5 py-4 max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-x-3 max-sm:gap-y-3 max-sm:px-4">
+                <span className={`${ICON_TILE} max-sm:hidden`}>
                   <Truck size={17} strokeWidth={1.9} />
                 </span>
                 <div className="min-w-0">
@@ -86,7 +87,7 @@ export default function OrdersView({ orders, tracking }: { orders: UserOrder[]; 
                   </div>
                 </div>
                 <div className="text-right text-[15px] font-semibold tabular-nums tracking-[-.02em]">{eur(order.totalAmount)}</div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 max-sm:col-span-2 max-sm:gap-2 max-sm:[&>a]:h-10 max-sm:[&>a]:flex-1 max-sm:[&>button:not([data-order-toggle])]:h-10 max-sm:[&>button:not([data-order-toggle])]:flex-1" data-order-actions>
                   {order.invoiceId && (
                     <a href={`/api/invoices/${order.invoiceId}/download`} className={ROW_ACTION_GHOST} data-order-invoice title={t("invoicePdf")}>
                       <FileDown size={14} strokeWidth={2.2} />
@@ -103,7 +104,7 @@ export default function OrdersView({ orders, tracking }: { orders: UserOrder[]; 
                 </div>
               </div>
               {expanded && (
-                <div className="grid grid-cols-[1.2fr_1fr] gap-6 border-t border-slate-900/[.06] bg-slate-900/[.015] px-5 py-4 dark:border-white/[.06] dark:bg-white/[.02]" data-order-details>
+                <div className="grid grid-cols-[1.2fr_1fr] gap-6 border-t border-slate-900/[.06] bg-slate-900/[.015] px-5 py-4 max-sm:grid-cols-1 max-sm:gap-4 max-sm:px-4 dark:border-white/[.06] dark:bg-white/[.02]" data-order-details>
                   <ul className="m-0 flex list-none flex-col gap-2 p-0">
                     {order.items.map((item) => (
                       <li key={item.id} className="flex items-baseline justify-between gap-3 text-[13px]">

@@ -728,7 +728,13 @@
     "status_packing": "Embalagem ADR",
     "status_shipped": "Despachado",
     "cardInvoice": "Baixar fatura em PDF",
-    "cardOrders": "Ir para as minhas encomendas"
+    "cardOrders": "Ir para as minhas encomendas",
+    "quickTitle": "Cópia rápida para a sua aplicação bancária",
+    "quickIban": "Copiar IBAN (sem espaços)",
+    "quickRef": "Copiar referência · {ref}",
+    "quickAmount": "Copiar valor exato · {amount}",
+    "qrShow": "Mostrar código QR SEPA",
+    "qrHide": "Ocultar código QR"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Deslocar para a esquerda",
     "railNext": "Deslocar para a direita",
     "stockOut": "Esgotado",
-    "perKgExVat": "por kg · sem IVA"
+    "perKgExVat": "por kg · sem IVA",
+    "backToCatalog": "Voltar ao catálogo"
   },
   "HomeMobile": {
     "notificationsAria": "Notificações",
@@ -3213,5 +3220,53 @@
     "container_Drum": "tambor",
     "container_Isotank": "isotank",
     "container_Can": "lata"
+  },
+  "SearchPage": {
+    "title": "Pesquisar",
+    "lead": "Cilindros, as suas encomendas e fichas de dados de segurança.",
+    "placeholder": "Código do gás, SKU, número da encomenda, CAS ou UN…",
+    "clear": "Limpar",
+    "recent": "Pesquisas recentes",
+    "recentClear": "Limpar histórico",
+    "hint": "Digite pelo menos {n} caracteres — ex: R-32, 75-10-5, UN 3163 ou um número de encomenda.",
+    "none": "Nada encontrado para “{q}”.",
+    "groupProducts": "Cilindros e equipamentos",
+    "groupOrders": "As suas encomendas",
+    "groupDocs": "Fichas de dados de segurança",
+    "seeAll": "Todos os {count} resultados no catálogo",
+    "outOfStock": "Esgotado",
+    "cancelled": "Cancelada",
+    "awaitingPayment": "Aguardando pagamento",
+    "sdsTitle": "{gas} · ficha de dados de segurança",
+    "lines": "{count, plural, one {# linha} many {# linhas} other {# linhas}}",
+    "signIn": "Inicie sessão",
+    "signInOrders": "para pesquisar as suas próprias encomendas também."
+  },
+  "NotifFeed": {
+    "title": "Notificações",
+    "lead": "O que aconteceu na sua conta: encomendas, F-Gas, alertas de preço e devoluções.",
+    "settings": "Configurações de e-mail",
+    "new": "Novo",
+    "emptyTitle": "Nada aqui ainda",
+    "emptyBody": "As encomendas, revisões de certificados, alertas de preço e devoluções de cilindros aparecerão aqui à medida que ocorrerem.",
+    "orderPlaced": "Encomenda {number} realizada",
+    "orderPaid": "Pagamento recebido para {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# linha} many {# linhas} other {# linhas}} · {total}",
+    "eta": "Entrega prevista {date}",
+    "orderCancelled": "Encomenda {number} cancelada",
+    "fgasVerified": "Certificado F-Gas verificado",
+    "fgasRejected": "Certificado F-Gas rejeitado",
+    "fgasPending": "Certificado F-Gas em revisão",
+    "fgasExpired": "Certificado F-Gas expirado",
+    "fgasExpiring": "O seu certificado F-Gas expira em {date}",
+    "priceAlert": "{gas} atingiu o seu preço alvo",
+    "priceAlertBody": "O seu alvo: {target} por kg",
+    "backInStock": "{name} está de volta em stock",
+    "return_REQUESTED": "Devolução de cilindro solicitada ({count})",
+    "fgasExpiringBody": "{days, plural, one {# dia restante} many {# dias restantes} other {# dias restantes}} — carregue o certificado renovado para continuar a encomendar gás.",
+    "return_SCHEDULED": "Devolução de cilindro aceite ({count})",
+    "return_COLLECTED": "Cilindros recebidos no armazém ({count})",
+    "return_CANCELLED": "Devolução de cilindro cancelada"
   }
 }

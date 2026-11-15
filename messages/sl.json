@@ -728,7 +728,13 @@
     "status_packing": "ADR pakiranje",
     "status_shipped": "Poslano",
     "cardInvoice": "Prenesite PDF račun",
-    "cardOrders": "Pojdite na moja naročila"
+    "cardOrders": "Pojdite na moja naročila",
+    "quickTitle": "Hitra kopija za vašo bančno aplikacijo",
+    "quickIban": "Kopiraj IBAN (brez presledkov)",
+    "quickRef": "Kopiraj referenco · {ref}",
+    "quickAmount": "Kopiraj natančen znesek · {amount}",
+    "qrShow": "Prikaži SEPA QR kodo",
+    "qrHide": "Skrij QR kodo"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Pomik levo",
     "railNext": "Pomik desno",
     "stockOut": "Ni na zalogi",
-    "perKgExVat": "na kg · brez DDV"
+    "perKgExVat": "na kg · brez DDV",
+    "backToCatalog": "Nazaj v katalog"
   },
   "HomeMobile": {
     "notificationsAria": "Obvestila",
@@ -3213,5 +3220,53 @@
     "container_Drum": "bobn",
     "container_Isotank": "izotank",
     "container_Can": "pločevinka"
+  },
+  "SearchPage": {
+    "title": "Iskanje",
+    "lead": "Jeklenke, vaša naročila in varnostni listi.",
+    "placeholder": "Koda plina, SKU, številka naročila, CAS ali UN…",
+    "clear": "Počisti",
+    "recent": "Nedavne iskanja",
+    "recentClear": "Počisti zgodovino",
+    "hint": "Vnesite vsaj {n} znakov — npr. R-32, 75-10-5, UN 3163 ali številko naročila.",
+    "none": "Ni najdeno za “{q}”.",
+    "groupProducts": "Jeklenke in oprema",
+    "groupOrders": "Vaša naročila",
+    "groupDocs": "Varnostni listi",
+    "seeAll": "Vsi {count} rezultati v katalogu",
+    "outOfStock": "Ni na voljo",
+    "cancelled": "Preklicano",
+    "awaitingPayment": "Čaka na plačilo",
+    "sdsTitle": "{gas} · varnostni list",
+    "signIn": "Prijavite se",
+    "signInOrders": "da iščete tudi svoje naročila.",
+    "lines": "{count, plural, one {# postavka} two {# postavki} few {# postavke} other {# postavk}}"
+  },
+  "NotifFeed": {
+    "title": "Obvestila",
+    "lead": "Kaj se je zgodilo na vašem računu: naročila, F-Gas, opozorila o cenah in vračila.",
+    "settings": "Nastavitve e-pošte",
+    "new": "Novo",
+    "emptyTitle": "Tukaj še ni ničesar",
+    "emptyBody": "Naročila, pregledi certifikatov, opozorila o cenah in vračila jeklenk se bodo tukaj pojavila, ko se zgodijo.",
+    "orderPlaced": "Naročilo {number} oddano",
+    "orderPaid": "Plačilo prejeto za {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# vrstica} two {# vrstice} few {# vrstice} other {# vrstic} } · {total}",
+    "eta": "Ocenjena dostava {date}",
+    "orderCancelled": "Naročilo {number} preklicano",
+    "fgasVerified": "Potrdilo F-Gas preverjeno",
+    "fgasRejected": "Potrdilo F-Gas zavrnjeno",
+    "fgasPending": "Potrdilo F-Gas v obravnavi",
+    "fgasExpired": "Potrdilo F-Gas poteklo",
+    "fgasExpiring": "Vaše potrdilo F-Gas poteče {date}",
+    "fgasExpiringBody": "{days, plural, one {# dan ostane} two {# dni ostaneta} few {# dni ostanejo} other {# dni ostaja}} — naložite obnovljeno potrdilo, da lahko nadaljujete z naročanjem plina.",
+    "priceAlert": "{gas} je dosegel vašo ciljno ceno",
+    "priceAlertBody": "Vaša ciljna cena: {target} na kg",
+    "backInStock": "{name} je spet na voljo",
+    "return_REQUESTED": "Zahteva za vračilo jeklenke je bila poslana ({count})",
+    "return_SCHEDULED": "Vrnitev jeklenke sprejeta ({count})",
+    "return_COLLECTED": "Jeklenke prejele v skladišču ({count})",
+    "return_CANCELLED": "Vrnitev jeklenke preklicana"
   }
 }

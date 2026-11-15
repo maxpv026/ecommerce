@@ -728,7 +728,13 @@
     "status_packing": "Imballaggio ADR",
     "status_shipped": "Spedito",
     "cardInvoice": "Scarica fattura PDF",
-    "cardOrders": "Vai ai miei ordini"
+    "cardOrders": "Vai ai miei ordini",
+    "quickTitle": "Copia veloce per la tua app bancaria",
+    "quickIban": "Copia IBAN (senza spazi)",
+    "quickRef": "Copia riferimento · {ref}",
+    "quickAmount": "Copia importo esatto · {amount}",
+    "qrShow": "Mostra codice QR SEPA",
+    "qrHide": "Nascondi codice QR"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Scorri a sinistra",
     "railNext": "Scorri a destra",
     "stockOut": "Esaurito",
-    "perKgExVat": "al kg · IVA escl."
+    "perKgExVat": "al kg · IVA escl.",
+    "backToCatalog": "Torna al catalogo"
   },
   "HomeMobile": {
     "notificationsAria": "Notifiche",
@@ -3213,5 +3220,53 @@
     "container_Drum": "fusto",
     "container_Isotank": "Isotank",
     "container_Can": "lattina"
+  },
+  "SearchPage": {
+    "title": "Cerca",
+    "lead": "Bombole, i tuoi ordini e schede di sicurezza.",
+    "placeholder": "Codice gas, SKU, numero d'ordine, CAS o UN…",
+    "clear": "Pulisci",
+    "recent": "Ricerche recenti",
+    "recentClear": "Cancella cronologia",
+    "hint": "Digita almeno {n} caratteri — ad esempio R-32, 75-10-5, UN 3163 o un numero d'ordine.",
+    "none": "Nessun risultato trovato per “{q}”.",
+    "groupProducts": "Bombole e attrezzature",
+    "groupOrders": "I tuoi ordini",
+    "groupDocs": "Schede di sicurezza",
+    "seeAll": "Tutti i {count} risultati nel catalogo",
+    "outOfStock": "Esaurito",
+    "cancelled": "Annullato",
+    "awaitingPayment": "In attesa di pagamento",
+    "sdsTitle": "{gas} · scheda di sicurezza",
+    "lines": "{count, plural, one {# linea} many {# linee} other {# linee}}",
+    "signIn": "Accedi",
+    "signInOrders": "per cercare anche i tuoi ordini."
+  },
+  "NotifFeed": {
+    "title": "Notifiche",
+    "lead": "Cosa è successo sul tuo account: ordini, F-Gas, avvisi di prezzo e resi.",
+    "settings": "Impostazioni email",
+    "new": "Nuovo",
+    "emptyTitle": "Niente qui ancora",
+    "emptyBody": "Gli ordini, le revisioni dei certificati, gli avvisi di prezzo e i resi delle bombole appariranno qui man mano che accadono.",
+    "orderPlaced": "Ordine {number} effettuato",
+    "orderPaid": "Pagamento ricevuto per {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# linea} many {# linee} other {# linee}} · {total}",
+    "eta": "Consegna prevista {date}",
+    "orderCancelled": "Ordine {number} annullato",
+    "fgasVerified": "Certificato F-Gas verificato",
+    "fgasRejected": "Certificato F-Gas rifiutato",
+    "fgasPending": "Certificato F-Gas in fase di revisione",
+    "fgasExpired": "Certificato F-Gas scaduto",
+    "fgasExpiring": "Il tuo certificato F-Gas scade il {date}",
+    "priceAlert": "{gas} ha raggiunto il tuo prezzo target",
+    "priceAlertBody": "Il tuo obiettivo: {target} per kg",
+    "backInStock": "{name} è di nuovo disponibile",
+    "return_REQUESTED": "Richiesta di restituzione bombola ({count})",
+    "fgasExpiringBody": "{days, plural, one {# giorno rimasto} many {# giorni rimasti} other {# giorni rimasti}} — carica il certificato rinnovato per continuare a ordinare gas.",
+    "return_SCHEDULED": "Restituzione bombola accettata ({count})",
+    "return_COLLECTED": "Bombole ricevute in magazzino ({count})",
+    "return_CANCELLED": "Restituzione bombola annullata"
   }
 }

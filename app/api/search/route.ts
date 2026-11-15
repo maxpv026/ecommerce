@@ -1,3 +1,5 @@
+import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import { countSearchProducts, searchProducts } from "@/lib/data";
 import {
   SEARCH_MIN_LENGTH,
@@ -22,6 +24,10 @@ import {
  * The filter itself lives in lib/search.ts and is the very same one
  * /products?search= applies, so the dropdown can never promise a product the
  * full results page then hides.
+ *
+ * For a signed-in buyer the response also carries `orders`: their own orders
+ * whose number or line items match (the /search page; the header ignores it).
+ * Scoped by the session's user id — nobody else's order can come back.
  */
 
 // Catalog rows change when the CRM pushes stock; never serve a stale hit.
@@ -41,9 +47,21 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [matches, total] = await Promise.all([
+    const userId = (await auth())?.user?.id ?? null;
+    const [matches, total, orders] = await Promise.all([
       searchProducts(term, SEARCH_SUGGESTION_LIMIT),
       countSearchProducts(term),
+      userId
+        ? prisma.order.findMany({
+            where: {
+              userId,
+              OR: [{ orderNumber: { contains: term, mode: "insensitive" } }, { items: { some: { product: { OR: [{ name: { contains: term, mode: "insensitive" } }, { sku: { contains: term, mode: "insensitive" } }] } } } }],
+            },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: { id: true, orderNumber: true, createdAt: true, totalAmount: true, paymentStatus: true, shipmentStage: true, _count: { select: { items: true } } },
+          })
+        : null,
     ]);
 
     return Response.json({
@@ -57,6 +75,8 @@ export async function GET(request: Request) {
         /** Refrigerant mark, shown next to the SKU. */
         type: product.type,
         weightLabel: product.weightLabel,
+        weightKg: product.weightKg,
+        containerType: product.containerType,
         pricePerKg: product.pricePerKg,
         cylinderPrice: product.cylinderPrice,
         pricedPerKg: product.pricedPerKg,
@@ -64,6 +84,17 @@ export async function GET(request: Request) {
         // Locale-less on purpose: the client renders it through the
         // next-intl <Link>, which prefixes the active locale.
         href: `/products/${product.id}`,
+      })),
+      signedIn: userId !== null,
+      orders: (orders ?? []).map((o) => ({
+        id: o.id,
+        orderNumber: o.orderNumber,
+        createdAt: o.createdAt.toISOString(),
+        total: Number(o.totalAmount),
+        paid: o.paymentStatus === "PAID",
+        cancelled: o.paymentStatus === "FAILED",
+        stage: o.shipmentStage,
+        lines: o._count.items,
       })),
     });
   } catch (error) {

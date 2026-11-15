@@ -81,16 +81,17 @@ export default function CylindersView({
       </SurfaceHead>
 
       {/* Balance */}
-      <div className="grid grid-cols-4 divide-x divide-slate-900/[.06] border-b border-slate-900/[.06] dark:divide-white/[.06] dark:border-white/[.06]" data-fleet-balance>
+      {/* 2 × 2 on phones (four columns left ~80 px each and clipped the labels). */}
+      <div className="grid grid-cols-4 divide-x divide-slate-900/[.06] border-b border-slate-900/[.06] max-sm:grid-cols-2 max-sm:divide-x-0 max-sm:[&>*:nth-child(odd)]:border-r max-sm:[&>*:nth-child(-n+2)]:border-b max-sm:[&>*]:border-slate-900/[.06] dark:divide-white/[.06] dark:border-white/[.06] max-sm:dark:[&>*]:border-white/[.06]" data-fleet-balance>
         {[
           { k: "held", label: t("fleetHeld"), value: String(fleet.inPossession) },
           { k: "deposit", label: t("fleetDeposit"), value: `${fleet.refundableIsEstimate ? "≈ " : ""}${eur(fleet.refundable)}` },
           { k: "issued", label: t("fleetIssued"), value: String(fleet.borrowed) },
           { k: "returned", label: t("fleetReturned"), value: String(fleet.returned) },
         ].map((s) => (
-          <div key={s.k} className="px-5 py-4" data-fleet={s.k}>
-            <div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:text-ink-muted">{s.label}</div>
-            <div className="mt-1 text-[22px] font-semibold tabular-nums tracking-[-.03em]">{s.value}</div>
+          <div key={s.k} className="min-w-0 px-5 py-4 max-sm:px-4 max-sm:py-3" data-fleet={s.k}>
+            <div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-400 max-sm:tracking-[.05em] dark:text-ink-muted">{s.label}</div>
+            <div className="mt-1 text-[22px] font-semibold tabular-nums tracking-[-.03em] max-sm:text-[19px]">{s.value}</div>
           </div>
         ))}
       </div>

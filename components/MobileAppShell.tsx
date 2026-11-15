@@ -10,22 +10,18 @@ import { useCartCount } from "./CartCountProvider";
 // bottom element — set by explicit "no global nav" requirements when each
 // was built.
 const NAV_HIDDEN_PREFIXES = [
-  // Trailing slashes: hide on detail pages (/product/x, /products/x) while
-  // the /products browser itself keeps the tab bar.
-  "/product/",
-  "/products/",
+  // (Product pages keep the dock now: the phone PDP is the responsive
+  // desktop page, with no sticky add-to-cart bar of its own.)
   "/profile/orders",
   "/profile/addresses",
   "/profile/settings",
   "/profile/security",
   "/profile/support",
-  "/notifications",
   // Checkout owns the bottom of the screen: it has its own fixed Place
   // Order bar, and the tab bar sat on top of it (z-[100] over z-50).
   // Hiding it is also the right call for a payment flow — one stray tap
   // on "Catalog" mid-checkout loses the sale.
   "/checkout",
-  "/search",
   "/legal",
 ];
 

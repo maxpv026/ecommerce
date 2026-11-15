@@ -728,7 +728,13 @@
     "status_packing": "ADR pakendamine",
     "status_shipped": "Saadetud",
     "cardInvoice": "Laadi alla arve PDF",
-    "cardOrders": "Mine minu tellimustele"
+    "cardOrders": "Mine minu tellimustele",
+    "quickTitle": "Kiire koopia teie pangarakendusele",
+    "quickIban": "Kopeeri IBAN (ilma tühikuteta)",
+    "quickRef": "Kopeeri viide · {ref}",
+    "quickAmount": "Kopeeri täpne summa · {amount}",
+    "qrShow": "Kuva SEPA QR-kood",
+    "qrHide": "Peida QR-kood"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Keri vasakule",
     "railNext": "Keri paremale",
     "stockOut": "Laost otsas",
-    "perKgExVat": "kg kohta · km-ta"
+    "perKgExVat": "kg kohta · km-ta",
+    "backToCatalog": "Tagasi katalooge"
   },
   "HomeMobile": {
     "notificationsAria": "Teavitused",
@@ -3213,5 +3220,53 @@
     "container_Drum": "trummel",
     "container_Isotank": "isotank",
     "container_Can": "purk"
+  },
+  "SearchPage": {
+    "title": "Otsi",
+    "lead": "Balloonid, teie tellimused ja ohutuskaardid.",
+    "placeholder": "Gaasi kood, SKU, tellimuse number, CAS või UN…",
+    "clear": "Kustuta",
+    "recent": "Hiljutised otsingud",
+    "recentClear": "Ajaloo kustutamine",
+    "hint": "Sisestage vähemalt {n} tähemärki — nt R-32, 75-10-5, UN 3163 või tellimuse number.",
+    "none": "„{q}” ei leitud.",
+    "groupProducts": "Balloonid ja seadmed",
+    "groupOrders": "Teie tellimused",
+    "groupDocs": "Ohutuskaardid",
+    "seeAll": "Kõik {count} tulemust kataloogis",
+    "outOfStock": "Lao puudumine",
+    "lines": "{count, plural, one {# rida} other {# rida}}",
+    "cancelled": "Tühistatud",
+    "awaitingPayment": "Ootel makse",
+    "sdsTitle": "{gas} · ohutuskaart",
+    "signIn": "Logige sisse",
+    "signInOrders": "et otsida ka oma tellimusi."
+  },
+  "NotifFeed": {
+    "title": "Teated",
+    "lead": "Mis teie kontol juhtus: tellimused, F-gaas, hinnateated ja tagastused.",
+    "settings": "E-posti seaded",
+    "new": "Uus",
+    "emptyTitle": "Siin pole veel midagi",
+    "emptyBody": "Tellimused, sertifikaadi ülevaated, hinnateated ja silindrite tagastused ilmuvad siia, kui need juhtuvad.",
+    "orderPlaced": "Tellimus {number} esitatud",
+    "orderPaid": "Makse saadud {number} eest",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# rida} other {# rida}} · {total}",
+    "eta": "Oodatav kohaletoimetamine {date}",
+    "orderCancelled": "Tellimus {number} on tühistatud",
+    "fgasVerified": "F-gaasi sertifikaat on kinnitatud",
+    "fgasRejected": "F-gaasi sertifikaat on tagasi lükatud",
+    "fgasPending": "F-gaasi sertifikaat on ülevaatamisel",
+    "fgasExpired": "F-gaasi sertifikaat on aegunud",
+    "fgasExpiring": "Teie F-gaasi sertifikaat aegub {date}",
+    "fgasExpiringBody": "{days, plural, one {# päev jäänud} other {# päeva jäänud}} — laadige üles uuendatud sertifikaat, et jätkata gaasi tellimist.",
+    "priceAlert": "{gas} on saavutanud teie sihthinnaga",
+    "priceAlertBody": "Teie siht: {target} kg kohta",
+    "backInStock": "{name} on taas laos",
+    "return_REQUESTED": "Silindri tagastamine on nõutud ({count})",
+    "return_SCHEDULED": "Balloonide tagastamine on aktsepteeritud ({count})",
+    "return_COLLECTED": "Balloonid on laos vastu võetud ({count})",
+    "return_CANCELLED": "Balloonide tagastamine on tühistatud"
   }
 }

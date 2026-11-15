@@ -728,7 +728,13 @@
     "status_packing": "ADR balenie",
     "status_shipped": "Odoslané",
     "cardInvoice": "Stiahnuť PDF faktúru",
-    "cardOrders": "Prejsť na moje objednávky"
+    "cardOrders": "Prejsť na moje objednávky",
+    "quickTitle": "Rýchle kopírovanie pre vašu bankovú aplikáciu",
+    "quickIban": "Kopírovať IBAN (bez medzier)",
+    "quickRef": "Kopírovať referenciu · {ref}",
+    "quickAmount": "Kopírovať presnú sumu · {amount}",
+    "qrShow": "Zobraziť SEPA QR kód",
+    "qrHide": "Skryť QR kód"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Posunúť doľava",
     "railNext": "Posunúť doprava",
     "stockOut": "Nie je na sklade",
-    "perKgExVat": "za kg · bez DPH"
+    "perKgExVat": "za kg · bez DPH",
+    "backToCatalog": "Späť do katalógu"
   },
   "HomeMobile": {
     "notificationsAria": "Oznámenia",
@@ -3213,5 +3220,53 @@
     "container_Drum": "sud",
     "container_Isotank": "izotank",
     "container_Can": "plechovka"
+  },
+  "SearchPage": {
+    "title": "Hľadať",
+    "lead": "Fľaše, vaše objednávky a karty bezpečnostných údajov.",
+    "placeholder": "Kód plynu, SKU, číslo objednávky, CAS alebo UN…",
+    "clear": "Vymazať",
+    "recent": "Nedávne vyhľadávania",
+    "recentClear": "Vymazať históriu",
+    "hint": "Zadajte aspoň {n} znakov — napr. R-32, 75-10-5, UN 3163 alebo číslo objednávky.",
+    "none": "Nenašlo sa nič pre „{q}“.",
+    "groupProducts": "Fľaše a zariadenia",
+    "groupOrders": "Vaše objednávky",
+    "groupDocs": "Karty bezpečnostných údajov",
+    "seeAll": "Všetky {count} výsledky v katalógu",
+    "outOfStock": "Nedostupné",
+    "cancelled": "Zrušené",
+    "awaitingPayment": "Čaká na platbu",
+    "sdsTitle": "{gas} · karta bezpečnostných údajov",
+    "signIn": "Prihláste sa",
+    "signInOrders": "aby ste mohli hľadať aj svoje objednávky.",
+    "lines": "{count, plural, one {# položka} few {# položky} many {# položky} other {# položiek}}"
+  },
+  "NotifFeed": {
+    "title": "Oznámenia",
+    "lead": "Čo sa stalo vo vašom účte: objednávky, F-Gas, upozornenia na ceny a vrátenia.",
+    "settings": "Nastavenia e-mailu",
+    "new": "Nové",
+    "emptyTitle": "Ešte tu nič nie je",
+    "emptyBody": "Objednávky, recenzie certifikátov, upozornenia na ceny a vrátenia fliaš sa tu objavia, keď sa vyskytnú.",
+    "orderPlaced": "Objednávka {number} bola zadaná",
+    "orderPaid": "Platba prijatá za {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# riadok} few {# riadky} many {# riadkov} other {# riadkov}} · {total}",
+    "eta": "Očakávané doručenie {date}",
+    "orderCancelled": "Objednávka {number} zrušená",
+    "fgasVerified": "Certifikát F-Gas overený",
+    "fgasRejected": "Certifikát F-Gas zamietnutý",
+    "fgasPending": "Certifikát F-Gas v procese posudzovania",
+    "fgasExpired": "Certifikát F-Gas vypršaný",
+    "fgasExpiring": "Váš certifikát F-Gas vyprší {date}",
+    "priceAlert": "{gas} dosiahlo vašu cieľovú cenu",
+    "priceAlertBody": "Váš cieľ: {target} za kg",
+    "backInStock": "{name} je opäť na sklade",
+    "return_REQUESTED": "Požiadavka na vrátenie fľaše bola zaslaná ({count})",
+    "fgasExpiringBody": "{days, plural, one {# deň zostáva} few {# dni zostávajú} many {# dní zostáva} other {# dní zostáva}} — nahrajte obnovený certifikát, aby ste mohli pokračovať v objednávaní plynu.",
+    "return_SCHEDULED": "Prijatie vrátenia fľaše ({count})",
+    "return_COLLECTED": "Fľaše prijaté na sklade ({count})",
+    "return_CANCELLED": "Zrušenie vrátenia fľaše"
   }
 }

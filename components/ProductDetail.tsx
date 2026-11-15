@@ -3,7 +3,7 @@
 import { cylinderGasPrice } from "@/lib/pricing";
 import { isPurchasable } from "@/lib/waitlist";
 import { showSizeInUrl } from "@/lib/productFamily";
-import MobilePdpLayout from "./MobilePdpLayout";
+import MobileTopBar from "./MobileTopBar";
 import StockNotifyBlock from "./StockNotifyBlock";
 import FavoriteButton from "./FavoriteButton";
 import AdminRestockTest from "./AdminRestockTest";
@@ -28,8 +28,10 @@ import {
   ShoppingCart,
   Sparkles,
   Truck,
+  ArrowLeft,
 } from "lucide-react";
 import Header from "./Header";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import AuthModal from "./AuthModal";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/lib/store/cart";
@@ -88,6 +90,9 @@ export default function ProductDetail({ product: initialProduct, related, varian
   const tProducts = useTranslations("Products");
   const tCat = useTranslations("Categories");
   const tHome = useTranslations("HomeDesktop");
+  // Localized size ("13,61 кг · балон"); weightLabel is the catalog's English "13.61 kg cylinder".
+  const pack = usePackLabel();
+  const packOf = (p: Pick<StoreProduct, "weightKg" | "containerType" | "pricedPerKg">) => pack(p.weightKg, p.containerType, p.pricedPerKg);
   const format = useFormatter();
   const addItem = useCartStore((s) => s.addItem);
 
@@ -150,19 +155,17 @@ export default function ProductDetail({ product: initialProduct, related, varian
   const categoryKey =
     { cylinders: "cylTitle", blends: "blendTitle", equipment: "eqTitle", recovery: "recTitle" }[product.category] ?? "cylTitle";
 
-  const specs = useMemo(
-    () => [
+  // Eight labels — cheap to rebuild every render, so no memo (and no dependency list to keep in sync).
+  const specs = [
       { label: t("specRefrigerant"), value: product.type },
       { label: tProducts("specPurity"), value: product.purity !== null ? `${product.purity}%` : tProducts("na") },
       { label: tProducts("specGwp"), value: product.gwp !== null ? String(product.gwp) : tProducts("na") },
       { label: t("specSafety"), value: product.gwpClass },
-      { label: t("specNetWeight"), value: product.weightLabel },
+      { label: t("specNetWeight"), value: packOf(product) },
       { label: t("specSku"), value: product.sku },
       { label: t("specCategory"), value: tCat(categoryKey) },
       { label: t("specAvailability"), value: t(stock.key) },
-    ],
-    [product, t, tProducts, tCat, categoryKey, stock.key]
-  );
+  ];
 
   const onStageMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (has3dModel) return; // OrbitControls owns interaction there
@@ -212,12 +215,14 @@ export default function ProductDetail({ product: initialProduct, related, varian
 
   return (
     <div className="flex-1 bg-canvas">
-      {/* Two layouts, one route and one set of real data. The mobile
-          tree is its own design (My Energy PDP Mobile) rather than a
-          reflow of the desktop one, which is why it is a separate
-          component and not a stack of responsive classes. */}
-      <div className="hidden md:block">
-      <Header onSignInClick={() => setIsAuthModalOpen(true)} />
+      {/* One product page at every width (the separate phone PDP is gone):
+          the desktop Header above md, the phone app bar below it. Phones get a
+          shorter stage so price, quantity and "add to cart" sit near the fold. */}
+      <div className="hidden md:contents">
+        <Header onSignInClick={() => setIsAuthModalOpen(true)} />
+      </div>
+      <MobileTopBar />
+      <div>
 
       <div className="relative overflow-x-clip">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1000px] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_44%,transparent_100%)]">
@@ -230,10 +235,15 @@ export default function ProductDetail({ product: initialProduct, related, varian
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mx-auto max-w-[1320px] px-8 pb-[120px] pt-8"
+          className="relative mx-auto max-w-[1320px] px-4 pb-16 pt-4 sm:px-8 sm:pb-[120px] sm:pt-8"
         >
+          {/* Phones: a back pill instead of the breadcrumb trail. */}
+          <Link href="/products" className="mb-3 inline-flex h-9 items-center gap-1.5 rounded-full border border-slate-900/[.12] bg-white/70 px-3.5 text-[12.5px] font-semibold text-slate-700 sm:hidden dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-200" data-pdp-back>
+            <ArrowLeft size={14} strokeWidth={2.2} />
+            {t("backToCatalog")}
+          </Link>
           {/* breadcrumb */}
-          <div className="mb-7 flex items-center gap-[9px] text-xs text-slate-400 dark:text-ink-muted">
+          <div className="mb-7 flex items-center gap-[9px] text-xs text-slate-400 max-sm:hidden dark:text-ink-muted">
             <Link href="/products" className="hover:text-blue-700 dark:hover:text-blue-400">
               {t("crumbRoot")}
             </Link>
@@ -254,7 +264,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
               onMouseMove={onStageMove}
               onMouseLeave={() => setTilt({ x: 0, y: 0 })}
               data-stage
-              className="relative flex min-h-[420px] cursor-grab items-center justify-center overflow-hidden rounded-[30px] border border-transparent bg-[#0b1020] shadow-[0_46px_96px_-50px_rgba(2,4,10,.8)] [perspective:1200px] lg:min-h-[620px] dark:border-white/[.08] dark:bg-[#0b0d12]"
+              className="relative flex min-h-[420px] cursor-grab items-center justify-center overflow-hidden rounded-[30px] border border-transparent max-sm:min-h-[260px] max-sm:rounded-[24px] bg-[#0b1020] shadow-[0_46px_96px_-50px_rgba(2,4,10,.8)] [perspective:1200px] lg:min-h-[620px] dark:border-white/[.08] dark:bg-[#0b0d12]"
             >
               {/* breathing ambient light in the product's own colour */}
               <div
@@ -311,7 +321,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
 
             {/* purchase card */}
             <div className="flex min-w-0">
-              <div className="relative w-full overflow-hidden rounded-[30px] border border-slate-900/[.07] bg-white/70 p-[30px] shadow-[0_26px_60px_-46px_rgba(2,4,10,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/5 dark:bg-surface/60">
+              <div className="relative w-full overflow-hidden rounded-[30px] border border-slate-900/[.07] bg-white/70 p-[30px] max-sm:rounded-[24px] max-sm:p-5 shadow-[0_26px_60px_-46px_rgba(2,4,10,.5)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/5 dark:bg-surface/60">
                 <div
                   className="pointer-events-none absolute -top-[42%] right-[-22%] h-[380px] w-[380px] rounded-full opacity-[.16] blur-[80px]"
                   style={{ background: `radial-gradient(circle,${brand.glow},transparent 68%)` }}
@@ -321,7 +331,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                   <div className="flex items-start justify-between gap-3.5">
                     <div className="min-w-0">
                       <div className="mb-[9px] text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{product.sku}</div>
-                      <h1 className="m-0 text-[31px] font-semibold leading-[1.08] tracking-[-.045em]">{product.name}</h1>
+                      <h1 className="m-0 text-[31px] font-semibold leading-[1.08] tracking-[-.045em] max-sm:text-[26px]">{product.name}</h1>
                     </div>
                     <span className={`inline-flex flex-none items-center gap-[7px] rounded-full border py-1.5 pl-[9px] pr-3 text-[11px] font-semibold ${stock.cls}`}>
                       <span className="h-1.5 w-1.5 rounded-full" style={{ background: stock.dot, boxShadow: `0 0 8px 1px ${stock.dot}` }} />
@@ -329,7 +339,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                     </span>
                   </div>
 
-                  <p className="mt-3.5 text-[13.5px] leading-[1.62] text-slate-600 dark:text-ink-muted">
+                  <p className="mt-3.5 text-[13.5px] leading-[1.62] text-slate-600 max-sm:line-clamp-3 dark:text-ink-muted">
                     {t(`blurb_${product.category}`)}
                   </p>
 
@@ -353,7 +363,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                       </span>
                       {product.pricedPerKg && product.pricePerKg > 0 && (
                         <span className="mt-1.5 block text-[13.5px] font-semibold tracking-[-.02em] text-slate-700 dark:text-slate-200" data-pack-label>
-                          {product.weightLabel}
+                          {packOf(product)}
                         </span>
                       )}
                     </span>
@@ -382,7 +392,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                                   : "border-slate-900/[.07] bg-slate-100 text-slate-600 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
                               } ${!on && !sellable ? "opacity-50" : ""}`}
                             >
-                              <span className="block text-[12.5px] font-semibold tracking-[-.015em]">{v.weightLabel}</span>
+                              <span className="block text-[12.5px] font-semibold tracking-[-.015em]">{packOf(v)}</span>
                               <span className="mt-[3px] block text-[11px] opacity-75">
                                 {!isPurchasable(v) ? t("stockOut") : v.pricePerKg > 0 ? eur(v.cylinderPrice) : tProducts("priceOnRequest")}
                               </span>
@@ -442,7 +452,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                       <motion.span
                         animate={aiPending ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                         transition={aiPending ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
-                        className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,var(--glow-600),#7c3aed)] shadow-[0_12px_24px_-12px_rgba(37,99,235,.7)]"
+                        className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(140deg,var(--glow-600),var(--glow-700))] shadow-[0_12px_24px_-12px_rgba(37,99,235,.7)]"
                       >
                         <Sparkles size={18} strokeWidth={2} className="text-white" />
                       </motion.span>
@@ -552,7 +562,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-              className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 lg:col-span-5 dark:border-white/5 dark:bg-surface/60"
+              className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 max-sm:rounded-[22px] max-sm:p-5 lg:col-span-5 dark:border-white/5 dark:bg-surface/60"
             >
               <h2 className="m-0 mb-5 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("specsTitle")}</h2>
               <div className="grid grid-cols-2 gap-[11px]">
@@ -569,7 +579,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-              className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 lg:col-span-4 dark:border-white/5 dark:bg-surface/60"
+              className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 max-sm:rounded-[22px] max-sm:p-5 lg:col-span-4 dark:border-white/5 dark:bg-surface/60"
             >
               <h2 className="m-0 mb-5 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("docsTitle")}</h2>
               <div className="flex flex-col gap-2.5">
@@ -629,7 +639,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.19 }}
-              className="relative overflow-hidden rounded-[28px] bg-[#0b1020] p-[26px] shadow-[0_40px_80px_-46px_rgba(11,16,32,.9)] lg:col-span-3"
+              className="relative overflow-hidden rounded-[28px] bg-[#0b1020] p-[26px] shadow-[0_40px_80px_-46px_rgba(11,16,32,.9)] max-sm:rounded-[22px] max-sm:p-5 lg:col-span-3"
             >
               <div
                 className="pointer-events-none absolute -bottom-[40%] left-[-24%] h-[360px] w-[360px] rounded-full opacity-60 blur-[80px]"
@@ -714,7 +724,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                       <span className="relative block p-4">
                         <span className="block text-[13.5px] font-semibold tracking-[-.025em]">{rel.name}</span>
                         <span className="mt-[3px] block text-[11px] text-slate-400 dark:text-ink-muted">
-                          {rel.weightLabel}
+                          {packOf(rel)}
                           {rel.gwp !== null ? ` · GWP ${rel.gwp}` : ""}
                         </span>
                         <span className="mt-[13px] flex items-center justify-between gap-2.5">
@@ -765,10 +775,6 @@ export default function ProductDetail({ product: initialProduct, related, varian
         </motion.main>
       </div>
 
-      </div>
-
-      <div className="block md:hidden">
-        <MobilePdpLayout product={product} variants={variants} />
       </div>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

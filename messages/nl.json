@@ -728,7 +728,13 @@
     "status_packing": "ADR-verpakking",
     "status_shipped": "Verzonden",
     "cardInvoice": "Download factuur PDF",
-    "cardOrders": "Ga naar mijn bestellingen"
+    "cardOrders": "Ga naar mijn bestellingen",
+    "quickTitle": "Snelkopie voor uw bankapp",
+    "quickIban": "Kopieer IBAN (zonder spaties)",
+    "quickRef": "Kopieer referentie · {ref}",
+    "quickAmount": "Kopieer exact bedrag · {amount}",
+    "qrShow": "Toon SEPA QR-code",
+    "qrHide": "Verberg QR-code"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Naar links",
     "railNext": "Naar rechts",
     "stockOut": "Niet op voorraad",
-    "perKgExVat": "per kg · excl. btw"
+    "perKgExVat": "per kg · excl. btw",
+    "backToCatalog": "Terug naar catalogus"
   },
   "HomeMobile": {
     "notificationsAria": "Meldingen",
@@ -3213,5 +3220,53 @@
     "container_Drum": "drum",
     "container_Isotank": "isotank",
     "container_Can": "blik"
+  },
+  "SearchPage": {
+    "title": "Zoeken",
+    "lead": "Cilinders, uw bestellingen en veiligheidsinformatiebladen.",
+    "placeholder": "Gascode, SKU, bestelnummer, CAS of UN…",
+    "clear": "Wis",
+    "recent": "Recente zoekopdrachten",
+    "recentClear": "Geschiedenis wissen",
+    "hint": "Typ minimaal {n} tekens — bijv. R-32, 75-10-5, UN 3163 of een bestelnummer.",
+    "none": "Niets gevonden voor “{q}”.",
+    "groupProducts": "Cilinders en apparatuur",
+    "groupOrders": "Uw bestellingen",
+    "groupDocs": "Veiligheidsinformatiebladen",
+    "seeAll": "Alle {count} resultaten in de catalogus",
+    "outOfStock": "Niet op voorraad",
+    "lines": "{count, plural, one {# lijn} other {# lijnen}}",
+    "cancelled": "Geannuleerd",
+    "awaitingPayment": "In afwachting van betaling",
+    "sdsTitle": "{gas} · veiligheidsinformatieblad",
+    "signIn": "Log in",
+    "signInOrders": "om ook uw eigen bestellingen te zoeken."
+  },
+  "NotifFeed": {
+    "title": "Meldingen",
+    "lead": "Wat er op uw account is gebeurd: bestellingen, F-gas, prijsalerts en retouren.",
+    "settings": "E-mailinstellingen",
+    "new": "Nieuw",
+    "emptyTitle": "Nog niets hier",
+    "emptyBody": "Bestellingen, certificaatbeoordelingen, prijsalerts en cilinderretouren verschijnen hier zodra ze plaatsvinden.",
+    "orderPlaced": "Bestelling {number} geplaatst",
+    "orderPlacedBody": "{lines, plural, one {# regel} other {# regels}} · {total}",
+    "orderPaid": "Betaling ontvangen voor {number}",
+    "orderStage": "{number}: {stage}",
+    "eta": "Verwachte levering {date}",
+    "orderCancelled": "Bestelling {number} geannuleerd",
+    "fgasVerified": "F-gas-certificaat geverifieerd",
+    "fgasRejected": "F-gas-certificaat afgewezen",
+    "fgasPending": "F-gas-certificaat in behandeling",
+    "fgasExpired": "F-gas-certificaat verlopen",
+    "fgasExpiring": "Je F-gas-certificaat verloopt op {date}",
+    "fgasExpiringBody": "{days, plural, one {# dag over} other {# dagen over}} — upload het vernieuwde certificaat om gas te blijven bestellen.",
+    "priceAlert": "{gas} heeft je streefprijs bereikt",
+    "priceAlertBody": "Je streefprijs: {target} per kg",
+    "backInStock": "{name} is weer op voorraad",
+    "return_REQUESTED": "Cilinderretour aangevraagd ({count})",
+    "return_SCHEDULED": "Cilinderretour geaccepteerd ({count})",
+    "return_COLLECTED": "Cilinders ontvangen in het magazijn ({count})",
+    "return_CANCELLED": "Cilinderretour geannuleerd"
   }
 }

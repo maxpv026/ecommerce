@@ -728,7 +728,13 @@
     "status_packing": "Комплектування ADR",
     "status_shipped": "Відправлення",
     "cardInvoice": "Завантажити рахунок PDF",
-    "cardOrders": "Перейти до моїх замовлень"
+    "cardOrders": "Перейти до моїх замовлень",
+    "quickTitle": "Швидке копіювання для банківського застосунку",
+    "quickIban": "Скопіювати IBAN без пробілів",
+    "quickRef": "Скопіювати призначення · {ref}",
+    "quickAmount": "Скопіювати точну суму · {amount}",
+    "qrShow": "Показати SEPA QR-код",
+    "qrHide": "Сховати QR-код"
   },
   "Admin": {
     "eyebrow": "АДМІН",
@@ -916,7 +922,7 @@
     "searchResultsFor": "Результати за запитом «{query}»",
     "searchClearAria": "Очистити пошук",
     "perKgAmount": "{amount} / kg",
-    "perKgAmountExVat": "{amount} / kg (без ПДВ)",
+    "perKgAmountExVat": "{amount} / кг (без ПДВ)",
     "viewLabel": "Вигляд",
     "viewGrid": "Сітка",
     "viewTable": "Таблиця як у кошику",
@@ -1040,7 +1046,8 @@
     "railPrev": "Прокрутити ліворуч",
     "railNext": "Прокрутити праворуч",
     "stockOut": "Немає в наявності",
-    "perKgExVat": "за кг · без ПДВ"
+    "perKgExVat": "за кг · без ПДВ",
+    "backToCatalog": "До каталогу"
   },
   "HomeMobile": {
     "notificationsAria": "Сповіщення",
@@ -3213,5 +3220,53 @@
     "container_Drum": "бочка",
     "container_Isotank": "ізотанк",
     "container_Can": "балончик"
+  },
+  "SearchPage": {
+    "title": "Пошук",
+    "lead": "Балони, ваші замовлення та паспорти безпеки.",
+    "placeholder": "Код газу, SKU, номер замовлення, CAS або UN…",
+    "clear": "Очистити",
+    "recent": "Нещодавні пошуки",
+    "recentClear": "Очистити історію",
+    "hint": "Введіть щонайменше {n} символи — наприклад R-32, 75-10-5, UN 3163 або номер замовлення.",
+    "none": "Нічого не знайдено за запитом «{q}».",
+    "groupProducts": "Балони та обладнання",
+    "groupOrders": "Ваші замовлення",
+    "groupDocs": "Паспорти безпеки",
+    "seeAll": "Усі {count} результати в каталозі",
+    "outOfStock": "Немає в наявності",
+    "lines": "{count, plural, one {# позиція} few {# позиції} many {# позицій} other {# позиції}}",
+    "cancelled": "Скасовано",
+    "awaitingPayment": "Очікує оплати",
+    "sdsTitle": "{gas} · паспорт безпеки",
+    "signIn": "Увійдіть,",
+    "signInOrders": "щоб шукати й у своїх замовленнях."
+  },
+  "NotifFeed": {
+    "title": "Сповіщення",
+    "lead": "Що відбувалося у вашому акаунті: замовлення, F-Gas, цінові сповіщення та повернення.",
+    "settings": "Налаштування листів",
+    "new": "Нове",
+    "emptyTitle": "Поки що порожньо",
+    "emptyBody": "Замовлення, перевірки сертифікатів, цінові сповіщення та повернення балонів з’являться тут, щойно відбудуться.",
+    "orderPlaced": "Замовлення {number} оформлено",
+    "orderPlacedBody": "{lines, plural, one {# позиція} few {# позиції} many {# позицій} other {# позиції}} · {total}",
+    "orderPaid": "Оплату за {number} отримано",
+    "orderStage": "{number}: {stage}",
+    "eta": "Очікувана доставка {date}",
+    "orderCancelled": "Замовлення {number} скасовано",
+    "fgasVerified": "Сертифікат F-Gas підтверджено",
+    "fgasRejected": "Сертифікат F-Gas відхилено",
+    "fgasPending": "Сертифікат F-Gas на перевірці",
+    "fgasExpired": "Термін дії сертифіката F-Gas минув",
+    "fgasExpiring": "Ваш сертифікат F-Gas спливає {date}",
+    "fgasExpiringBody": "{days, plural, one {Залишився # день} few {Залишилося # дні} many {Залишилося # днів} other {Залишилося # дня}} — завантажте оновлений сертифікат, щоб і далі замовляти газ.",
+    "priceAlert": "{gas}: ціна досягла вашої цілі",
+    "priceAlertBody": "Ваша ціль: {target} за кг",
+    "backInStock": "{name} знову в наявності",
+    "return_REQUESTED": "Заявку на повернення тари подано ({count})",
+    "return_SCHEDULED": "Повернення тари прийнято в роботу ({count})",
+    "return_COLLECTED": "Балони отримано на складі ({count})",
+    "return_CANCELLED": "Повернення тари скасовано"
   }
 }

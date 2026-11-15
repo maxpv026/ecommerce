@@ -30,9 +30,9 @@ export const GAS_SWATCH: Record<string, string> = {
 export const OTHER_SWATCH = "bg-slate-400 dark:bg-slate-500";
 const swatch = (gas: string) => GAS_SWATCH[gas] ?? OTHER_SWATCH;
 
-const KPI = "rounded-[22px] border border-slate-900/[.08] bg-white/75 p-5 backdrop-blur-xl dark:border-white/[.08] dark:bg-white/[.03]";
-const KPI_LABEL = "m-0 text-[12.5px] font-semibold text-slate-500 dark:text-ink-muted";
-const KPI_VALUE = "m-0 mt-2 text-[26px] font-semibold leading-none tracking-[-.035em] tabular-nums";
+const KPI = "min-w-0 rounded-[22px] border border-slate-900/[.08] bg-white/75 p-5 max-sm:rounded-[18px] max-sm:p-3.5 backdrop-blur-xl dark:border-white/[.08] dark:bg-white/[.03]";
+const KPI_LABEL = "m-0 text-[12.5px] font-semibold text-slate-500 max-sm:text-[11.5px] max-sm:leading-[1.3] dark:text-ink-muted";
+const KPI_VALUE = "m-0 mt-2 text-[26px] font-semibold leading-none tracking-[-.035em] tabular-nums max-sm:text-[20px]";
 const PRIMARY_PILL = "inline-flex min-h-[38px] items-center gap-2 rounded-full bg-blue-700 px-4 text-[13px] font-semibold tracking-[-.01em] text-white transition-colors hover:bg-blue-800";
 
 export default function ComplianceHub({ data, period }: { data: ComplianceDashboardData | null; period: SummaryPeriod }) {
@@ -116,7 +116,7 @@ export default function ComplianceHub({ data, period }: { data: ComplianceDashbo
         </div>
 
         {/* ── KPI strip ── */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" data-compliance-kpis>
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-compliance-kpis>
           <div className={KPI} data-kpi="co2e">
             <p className={KPI_LABEL}>{t("kpiCo2e")}</p>
             <p className={`${KPI_VALUE} text-blue-700 dark:text-blue-400`}>{t("kpiTonnes", { value: n((totals?.co2eKg ?? 0) / 1000, 2) }) /* from kg: co2eTonnes is already rounded to 3 dp, and rounding twice reads 102.8746 as 102,88 */}</p>

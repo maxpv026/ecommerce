@@ -728,7 +728,13 @@
     "status_packing": "ADR pakavimas",
     "status_shipped": "Išsiųsta",
     "cardInvoice": "Atsisiųsti sąskaitą PDF formatu",
-    "cardOrders": "Eiti į mano užsakymus"
+    "cardOrders": "Eiti į mano užsakymus",
+    "quickTitle": "Greitas kopijavimas jūsų banko programai",
+    "quickIban": "Kopijuoti IBAN (be tarpų)",
+    "quickRef": "Kopijuoti nuorodą · {ref}",
+    "quickAmount": "Kopijuoti tikslią sumą · {amount}",
+    "qrShow": "Rodyti SEPA QR kodą",
+    "qrHide": "Slėpti QR kodą"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Slinkti kairėn",
     "railNext": "Slinkti dešinėn",
     "stockOut": "Nėra sandėlyje",
-    "perKgExVat": "už kg · be PVM"
+    "perKgExVat": "už kg · be PVM",
+    "backToCatalog": "Grįžti į katalogą"
   },
   "HomeMobile": {
     "notificationsAria": "Pranešimai",
@@ -3213,5 +3220,53 @@
     "container_Drum": "bakas",
     "container_Isotank": "izotankas",
     "container_Can": "skardinė"
+  },
+  "SearchPage": {
+    "title": "Ieškoti",
+    "lead": "Balionai, jūsų užsakymai ir saugos duomenų lapai.",
+    "placeholder": "Dujų kodas, SKU, užsakymo numeris, CAS arba UN…",
+    "clear": "Išvalyti",
+    "recent": "Naujausi paieškos",
+    "recentClear": "Išvalyti istoriją",
+    "hint": "Įveskite bent {n} simbolius — pvz., R-32, 75-10-5, UN 3163 arba užsakymo numerį.",
+    "none": "Nerasta nieko „{q}“.",
+    "groupProducts": "Balionai ir įranga",
+    "groupOrders": "Jūsų užsakymai",
+    "groupDocs": "Saugos duomenų lapai",
+    "seeAll": "Visi {count} rezultatai kataloge",
+    "outOfStock": "Nėra sandėlyje",
+    "cancelled": "Atšauktas",
+    "awaitingPayment": "Laukiama apmokėjimo",
+    "sdsTitle": "{gas} · saugos duomenų lapas",
+    "signIn": "Prisijunkite",
+    "signInOrders": "ieškoti savo užsakymų taip pat.",
+    "lines": "{count, plural, one {# eilutė} few {# eilutės} many {# eilutės} other {# eilučių}}"
+  },
+  "NotifFeed": {
+    "title": "Pranešimai",
+    "lead": "Kas nutiko jūsų paskyroje: užsakymai, F dujos, kainų pranešimai ir grąžinimai.",
+    "settings": "El. pašto nustatymai",
+    "new": "Naujas",
+    "emptyTitle": "Čia dar nieko nėra",
+    "emptyBody": "Užsakymai, sertifikatų apžvalgos, kainų pranešimai ir balionų grąžinimai pasirodys čia, kai tik įvyks.",
+    "orderPlaced": "Užsakymas {number} pateiktas",
+    "orderPaid": "Gavome mokėjimą už {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# eilutė} few {# eilutės} many {# eilutės} other {# eilutės}} · {total}",
+    "eta": "Numatoma pristatymo data {date}",
+    "orderCancelled": "Užsakymas {number} atšauktas",
+    "fgasVerified": "F dujų sertifikatas patvirtintas",
+    "fgasRejected": "F dujų sertifikatas atmestas",
+    "fgasPending": "F dujų sertifikatas nagrinėjamas",
+    "fgasExpired": "F dujų sertifikatas pasibaigęs",
+    "fgasExpiring": "Jūsų F dujų sertifikatas pasibaigs {date}",
+    "priceAlert": "{gas} pasiekė jūsų tikslinę kainą",
+    "priceAlertBody": "Jūsų tikslas: {target} už kg",
+    "backInStock": "{name} vėl sandėlyje",
+    "return_REQUESTED": "Baliono grąžinimas prašomas ({count})",
+    "fgasExpiringBody": "{days, plural, one {# diena liko} few {# dienos liko} many {# dienų liko} other {# dienų liko}} — įkelkite atnaujintą sertifikatą, kad galėtumėte toliau užsakyti dujas.",
+    "return_SCHEDULED": "Baliono grąžinimas priimtas ({count})",
+    "return_COLLECTED": "Balionai gauti sandėlyje ({count})",
+    "return_CANCELLED": "Baliono grąžinimas atšauktas"
   }
 }

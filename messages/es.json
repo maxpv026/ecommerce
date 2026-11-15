@@ -728,7 +728,13 @@
     "status_packing": "Embalaje ADR",
     "status_shipped": "Enviado",
     "cardInvoice": "Descargar factura PDF",
-    "cardOrders": "Ir a mis pedidos"
+    "cardOrders": "Ir a mis pedidos",
+    "quickTitle": "Copia rápida para tu aplicación bancaria",
+    "quickIban": "Copia IBAN (sin espacios)",
+    "quickRef": "Copia referencia · {ref}",
+    "quickAmount": "Copia cantidad exacta · {amount}",
+    "qrShow": "Mostrar código QR SEPA",
+    "qrHide": "Ocultar código QR"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Desplazar a la izquierda",
     "railNext": "Desplazar a la derecha",
     "stockOut": "Agotado",
-    "perKgExVat": "por kg · sin IVA"
+    "perKgExVat": "por kg · sin IVA",
+    "backToCatalog": "Volver al catálogo"
   },
   "HomeMobile": {
     "notificationsAria": "Notificaciones",
@@ -3213,5 +3220,53 @@
     "container_Drum": "tambor",
     "container_Isotank": "isotank",
     "container_Can": "lata"
+  },
+  "SearchPage": {
+    "title": "Buscar",
+    "lead": "Cilindros, tus pedidos y fichas de datos de seguridad.",
+    "placeholder": "Código de gas, SKU, número de pedido, CAS o UN…",
+    "clear": "Limpiar",
+    "recent": "Búsquedas recientes",
+    "recentClear": "Borrar historial",
+    "hint": "Escribe al menos {n} caracteres — p. ej. R-32, 75-10-5, UN 3163 o un número de pedido.",
+    "none": "No se encontró nada para “{q}”.",
+    "groupProducts": "Cilindros y equipos",
+    "groupOrders": "Tus pedidos",
+    "groupDocs": "Fichas de datos de seguridad",
+    "seeAll": "Todos los {count} resultados en el catálogo",
+    "outOfStock": "Agotado",
+    "cancelled": "Cancelado",
+    "awaitingPayment": "Esperando pago",
+    "sdsTitle": "{gas} · ficha de datos de seguridad",
+    "lines": "{count, plural, one {# línea} many {# líneas} other {# líneas}}",
+    "signIn": "Inicia sesión",
+    "signInOrders": "para buscar también tus propios pedidos."
+  },
+  "NotifFeed": {
+    "title": "Notificaciones",
+    "lead": "Lo que ha sucedido en tu cuenta: pedidos, F-Gas, alertas de precios y devoluciones.",
+    "settings": "Configuración de correo electrónico",
+    "new": "Nuevo",
+    "emptyTitle": "Nada aquí todavía",
+    "emptyBody": "Los pedidos, revisiones de certificados, alertas de precios y devoluciones de cilindros aparecerán aquí a medida que sucedan.",
+    "orderPlaced": "Pedido {number} realizado",
+    "orderPaid": "Pago recibido por {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# línea} many {# líneas} other {# líneas}} · {total}",
+    "eta": "Entrega esperada {date}",
+    "orderCancelled": "Pedido {number} cancelado",
+    "fgasVerified": "Certificado F-Gas verificado",
+    "fgasRejected": "Certificado F-Gas rechazado",
+    "fgasPending": "Certificado F-Gas en revisión",
+    "fgasExpired": "Certificado F-Gas expirado",
+    "fgasExpiring": "Tu certificado F-Gas expira el {date}",
+    "priceAlert": "{gas} alcanzó tu precio objetivo",
+    "priceAlertBody": "Tu objetivo: {target} por kg",
+    "backInStock": "{name} está de nuevo en stock",
+    "return_REQUESTED": "Devolución de cilindro solicitada ({count})",
+    "fgasExpiringBody": "{days, plural, one {# día restante} many {# días restantes} other {# días restantes}} — sube el certificado renovado para seguir pidiendo gas.",
+    "return_SCHEDULED": "Devolución de cilindro aceptada ({count})",
+    "return_COLLECTED": "Cilindros recibidos en el almacén ({count})",
+    "return_CANCELLED": "Devolución de cilindro cancelada"
   }
 }

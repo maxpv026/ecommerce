@@ -728,7 +728,13 @@
     "status_packing": "ADR paketleme",
     "status_shipped": "Gönderildi",
     "cardInvoice": "Faturayı PDF olarak indir",
-    "cardOrders": "Siparişlerime git"
+    "cardOrders": "Siparişlerime git",
+    "quickTitle": "Hızlı kopya için bankacılık uygulamanız",
+    "quickIban": "IBAN'ı kopyala (boşluk yok)",
+    "quickRef": "referansı kopyala · {ref}",
+    "quickAmount": "tam tutarı kopyala · {amount}",
+    "qrShow": "SEPA QR kodunu göster",
+    "qrHide": "QR kodunu gizle"
   },
   "Admin": {
     "eyebrow": "YÖNETİCİ",
@@ -1040,7 +1046,8 @@
     "railPrev": "Sola kaydır",
     "railNext": "Sağa kaydır",
     "stockOut": "Stokta yok",
-    "perKgExVat": "kg başına · KDV hariç"
+    "perKgExVat": "kg başına · KDV hariç",
+    "backToCatalog": "Kataloğa geri dön"
   },
   "HomeMobile": {
     "notificationsAria": "Bildirimler",
@@ -3213,5 +3220,53 @@
     "container_Drum": "drum",
     "container_Isotank": "isotank",
     "container_Can": "kutular"
+  },
+  "SearchPage": {
+    "title": "Ara",
+    "lead": "Tüpler, siparişleriniz ve güvenlik bilgi formları.",
+    "placeholder": "Gaz kodu, SKU, sipariş numarası, CAS veya UN…",
+    "clear": "Temizle",
+    "recent": "Son aramalar",
+    "recentClear": "Geçmişi temizle",
+    "hint": "En az {n} karakter yazın — örn. R-32, 75-10-5, UN 3163 veya bir sipariş numarası.",
+    "none": "“{q}” için hiçbir şey bulunamadı.",
+    "groupProducts": "Tüpler ve ekipman",
+    "groupOrders": "Siparişleriniz",
+    "groupDocs": "Güvenlik bilgi formları",
+    "seeAll": "Katalogda tüm {count} sonucu görüntüle",
+    "outOfStock": "Stokta yok",
+    "lines": "{count, plural, one {# hat} other {# hat}}",
+    "cancelled": "İptal edildi",
+    "awaitingPayment": "Ödeme bekleniyor",
+    "sdsTitle": "{gas} · güvenlik bilgi formu",
+    "signIn": "Giriş yap",
+    "signInOrders": "kendi siparişlerinizi de aramak için."
+  },
+  "NotifFeed": {
+    "title": "Bildirimler",
+    "lead": "Hesabınızda neler oldu: siparişler, F-Gas, fiyat uyarıları ve iadeler.",
+    "settings": "E-posta ayarları",
+    "new": "Yeni",
+    "emptyTitle": "Henüz burada bir şey yok",
+    "emptyBody": "Siparişler, sertifika incelemeleri, fiyat uyarıları ve tüp iadeleri burada gerçekleştiğinde görünecektir.",
+    "orderPlaced": "Sipariş {number} verildi",
+    "orderPlacedBody": "{lines, plural, one {# satır} other {# satır}} · {total}",
+    "orderPaid": "{number} için ödeme alındı",
+    "orderStage": "{number}: {stage}",
+    "eta": "Beklenen teslimat {date}",
+    "orderCancelled": "Sipariş {number} iptal edildi",
+    "fgasVerified": "F-Gas sertifikası onaylı",
+    "fgasRejected": "F-Gas sertifikası reddedildi",
+    "fgasPending": "F-Gas sertifikası incelemede",
+    "fgasExpired": "F-Gas sertifikası süresi doldu",
+    "fgasExpiring": "F-Gas sertifikanız {date} tarihinde sona eriyor",
+    "fgasExpiringBody": "{days, plural, one {# gün kaldı} other {# gün kaldı}} — gaz siparişi vermeye devam etmek için yenilenmiş sertifikayı yükleyin.",
+    "priceAlert": "{gas} hedef fiyatınıza ulaştı",
+    "priceAlertBody": "Hedefiniz: {target} kg başına",
+    "backInStock": "{name} tekrar stokta",
+    "return_REQUESTED": "Tüp iade talep edildi ({count})",
+    "return_SCHEDULED": "Tüp iade kabul edildi ({count})",
+    "return_COLLECTED": "Tüpler depoda alındı ({count})",
+    "return_CANCELLED": "Tüp iade iptal edildi"
   }
 }

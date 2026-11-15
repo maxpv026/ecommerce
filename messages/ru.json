@@ -728,7 +728,13 @@
     "status_packing": "УПАКОВКА ADR",
     "status_shipped": "Отгружено",
     "cardInvoice": "Скачать PDF-счет",
-    "cardOrders": "Перейти к моим заказам"
+    "cardOrders": "Перейти к моим заказам",
+    "quickTitle": "Быстрая копия для вашего банковского приложения",
+    "quickIban": "Скопировать IBAN (без пробелов)",
+    "quickRef": "Скопировать ссылку · {ref}",
+    "quickAmount": "Скопировать точную сумму · {amount}",
+    "qrShow": "Показать QR-код SEPA",
+    "qrHide": "Скрыть QR-код"
   },
   "Admin": {
     "eyebrow": "АДМИН",
@@ -916,7 +922,7 @@
     "searchResultsFor": "Результаты по запросу «{query}»",
     "searchClearAria": "Очистить поиск",
     "perKgAmount": "{amount} / kg",
-    "perKgAmountExVat": "{amount} / kg (без НДС)",
+    "perKgAmountExVat": "{amount} / кг (без НДС)",
     "viewLabel": "Макет",
     "viewGrid": "Сетка",
     "viewTable": "Таблица в стиле корзины",
@@ -1040,7 +1046,8 @@
     "railPrev": "Прокрутить влево",
     "railNext": "Прокрутить вправо",
     "stockOut": "Нет в наличии",
-    "perKgExVat": "за кг · без НДС"
+    "perKgExVat": "за кг · без НДС",
+    "backToCatalog": "Назад в каталог"
   },
   "HomeMobile": {
     "notificationsAria": "Уведомления",
@@ -3213,5 +3220,53 @@
     "container_Drum": "бочка",
     "container_Isotank": "изотанк",
     "container_Can": "баллончик"
+  },
+  "SearchPage": {
+    "title": "Поиск",
+    "lead": "Баллоны, ваши заказы и паспорта безопасности.",
+    "placeholder": "Код газа, SKU, номер заказа, CAS или UN…",
+    "clear": "Очистить",
+    "recent": "Недавние поиски",
+    "recentClear": "Очистить историю",
+    "hint": "Введите не менее {n} символов — например, R-32, 75-10-5, UN 3163 или номер заказа.",
+    "none": "Ничего не найдено для “{q}”.",
+    "groupProducts": "Баллоны и оборудование",
+    "groupOrders": "Ваши заказы",
+    "groupDocs": "Паспорта безопасности",
+    "seeAll": "Все {count} результатов в каталоге",
+    "outOfStock": "Нет в наличии",
+    "lines": "{count, plural, one {# линия} few {# линии} many {# линий} other {# линий}}",
+    "cancelled": "Отменён",
+    "awaitingPayment": "Ожидает оплаты",
+    "sdsTitle": "{gas} · паспорт безопасности",
+    "signIn": "Войдите",
+    "signInOrders": "чтобы искать свои заказы тоже."
+  },
+  "NotifFeed": {
+    "title": "Уведомления",
+    "lead": "Что произошло с вашим аккаунтом: заказы, F-Gas, уведомления о ценах и возвраты.",
+    "settings": "Настройки электронной почты",
+    "new": "Новые",
+    "emptyTitle": "Здесь пока ничего нет",
+    "emptyBody": "Заказы, обзоры сертификатов, уведомления о ценах и возвраты баллонов появятся здесь по мере их поступления.",
+    "orderPlaced": "Заказ {number} размещён",
+    "orderPaid": "Платёж получен за {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# линия} few {# линии} many {# линий} other {# линии}} · {total}",
+    "eta": "Ожидаемая доставка {date}",
+    "orderCancelled": "Заказ {number} отменён",
+    "fgasVerified": "Сертификат F-Gas подтверждён",
+    "fgasRejected": "Сертификат F-Gas отклонён",
+    "fgasPending": "Сертификат F-Gas на рассмотрении",
+    "fgasExpired": "Сертификат F-Gas истёк",
+    "fgasExpiring": "Ваш сертификат F-Gas истекает {date}",
+    "priceAlert": "{gas} достиг вашей целевой цены",
+    "priceAlertBody": "Ваша цель: {target} за кг",
+    "backInStock": "{name} снова в наличии",
+    "return_REQUESTED": "Запрос на возврат баллона отправлен ({count})",
+    "fgasExpiringBody": "{days, plural, one {# день остался} few {# дня осталось} many {# дней осталось} other {# дней осталось}} — загрузите обновлённый сертификат, чтобы продолжить заказы газа.",
+    "return_SCHEDULED": "Возврат баллона принят ({count})",
+    "return_COLLECTED": "Баллоны получены на складе ({count})",
+    "return_CANCELLED": "Возврат баллона отменён"
   }
 }

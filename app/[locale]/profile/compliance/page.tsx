@@ -52,7 +52,7 @@ async function ComplianceContent({ searchParams }: ComplianceRouteProps) {
   const data = userId ? await getComplianceDashboardData(userId, period) : null;
 
   return (
-    <AppChrome>
+    <AppChrome mobileTopBar>
       <ComplianceHub data={data} period={period} />
     </AppChrome>
   );

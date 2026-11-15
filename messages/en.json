@@ -728,7 +728,13 @@
     "status_packing": "ADR packing",
     "status_shipped": "Dispatched",
     "cardInvoice": "Download invoice PDF",
-    "cardOrders": "Go to my orders"
+    "cardOrders": "Go to my orders",
+    "quickTitle": "Quick copy for your banking app",
+    "quickIban": "Copy IBAN (no spaces)",
+    "quickRef": "Copy reference · {ref}",
+    "quickAmount": "Copy exact amount · {amount}",
+    "qrShow": "Show SEPA QR code",
+    "qrHide": "Hide QR code"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Scroll left",
     "railNext": "Scroll right",
     "stockOut": "Out of Stock",
-    "perKgExVat": "per kg · ex. VAT"
+    "perKgExVat": "per kg · ex. VAT",
+    "backToCatalog": "Back to catalog"
   },
   "HomeMobile": {
     "notificationsAria": "Notifications",
@@ -3212,5 +3219,53 @@
     "container_Drum": "drum",
     "container_Isotank": "isotank",
     "container_Can": "can"
+  },
+  "SearchPage": {
+    "title": "Search",
+    "lead": "Cylinders, your orders and safety data sheets.",
+    "placeholder": "Gas code, SKU, order number, CAS or UN…",
+    "clear": "Clear",
+    "recent": "Recent searches",
+    "recentClear": "Clear history",
+    "hint": "Type at least {n} characters — e.g. R-32, 75-10-5, UN 3163 or an order number.",
+    "none": "Nothing found for “{q}”.",
+    "groupProducts": "Cylinders and equipment",
+    "groupOrders": "Your orders",
+    "groupDocs": "Safety data sheets",
+    "seeAll": "All {count} results in the catalog",
+    "outOfStock": "Out of stock",
+    "lines": "{count, plural, one {# line} other {# lines}}",
+    "cancelled": "Cancelled",
+    "awaitingPayment": "Awaiting payment",
+    "sdsTitle": "{gas} · safety data sheet",
+    "signIn": "Sign in",
+    "signInOrders": "to search your own orders too."
+  },
+  "NotifFeed": {
+    "title": "Notifications",
+    "lead": "What happened on your account: orders, F-Gas, price alerts and returns.",
+    "settings": "Email settings",
+    "new": "New",
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "Orders, certificate reviews, price alerts and cylinder returns will appear here as they happen.",
+    "orderPlaced": "Order {number} placed",
+    "orderPlacedBody": "{lines, plural, one {# line} other {# lines}} · {total}",
+    "orderPaid": "Payment received for {number}",
+    "orderStage": "{number}: {stage}",
+    "eta": "Expected delivery {date}",
+    "orderCancelled": "Order {number} cancelled",
+    "fgasVerified": "F-Gas certificate verified",
+    "fgasRejected": "F-Gas certificate rejected",
+    "fgasPending": "F-Gas certificate under review",
+    "fgasExpired": "F-Gas certificate expired",
+    "fgasExpiring": "Your F-Gas certificate expires on {date}",
+    "fgasExpiringBody": "{days, plural, one {# day left} other {# days left}} — upload the renewed certificate to keep ordering gas.",
+    "priceAlert": "{gas} reached your target price",
+    "priceAlertBody": "Your target: {target} per kg",
+    "backInStock": "{name} is back in stock",
+    "return_REQUESTED": "Cylinder return requested ({count})",
+    "return_SCHEDULED": "Cylinder return accepted ({count})",
+    "return_COLLECTED": "Cylinders received at the warehouse ({count})",
+    "return_CANCELLED": "Cylinder return cancelled"
   }
 }

@@ -728,7 +728,13 @@
     "status_packing": "ADR pakning",
     "status_shipped": "Afsendt",
     "cardInvoice": "Download faktura PDF",
-    "cardOrders": "Gå til mine ordrer"
+    "cardOrders": "Gå til mine ordrer",
+    "quickTitle": "Hurtig kopi til din bankapp",
+    "quickIban": "Kopier IBAN (uden mellemrum)",
+    "quickRef": "Kopier reference · {ref}",
+    "quickAmount": "Kopier præcist beløb · {amount}",
+    "qrShow": "Vis SEPA QR-kode",
+    "qrHide": "Skjul QR-kode"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Rul til venstre",
     "railNext": "Rul til højre",
     "stockOut": "Ikke på lager",
-    "perKgExVat": "pr. kg · ekskl. moms"
+    "perKgExVat": "pr. kg · ekskl. moms",
+    "backToCatalog": "Tilbage til katalog"
   },
   "HomeMobile": {
     "notificationsAria": "Notifikationer",
@@ -3213,5 +3220,53 @@
     "container_Drum": "tromle",
     "container_Isotank": "isotank",
     "container_Can": "dåse"
+  },
+  "SearchPage": {
+    "title": "Søg",
+    "lead": "Cylindre, dine ordrer og sikkerhedsdatablade.",
+    "placeholder": "Gas kode, SKU, ordrenummer, CAS eller UN…",
+    "clear": "Ryd",
+    "recent": "Seneste søgninger",
+    "recentClear": "Ryd historik",
+    "hint": "Indtast mindst {n} tegn — f.eks. R-32, 75-10-5, UN 3163 eller et ordrenummer.",
+    "none": "Intet fundet for “{q}”.",
+    "groupProducts": "Cylindre og udstyr",
+    "groupOrders": "Dine ordrer",
+    "groupDocs": "Sikkerhedsdatablade",
+    "seeAll": "Alle {count} resultater i kataloget",
+    "outOfStock": "Ikke på lager",
+    "lines": "{count, plural, one {# linje} other {# linjer}}",
+    "cancelled": "Annulleret",
+    "awaitingPayment": "Afventer betaling",
+    "sdsTitle": "{gas} · sikkerhedsdatablad",
+    "signIn": "Log ind",
+    "signInOrders": "for også at søge dine egne ordrer."
+  },
+  "NotifFeed": {
+    "title": "Notifikationer",
+    "lead": "Hvad der skete på din konto: ordrer, F-gas, prisalarmer og returneringer.",
+    "settings": "E-mailindstillinger",
+    "new": "Ny",
+    "emptyTitle": "Intet her endnu",
+    "emptyBody": "Ordrer, certificeringsgennemgange, prisalarmer og cylindereturneringer vises her, efterhånden som de sker.",
+    "orderPlaced": "Ordre {number} afgivet",
+    "orderPlacedBody": "{lines, plural, one {# linje} other {# linjer}} · {total}",
+    "orderPaid": "Betaling modtaget for {number}",
+    "orderStage": "{number}: {stage}",
+    "eta": "Forventet levering {date}",
+    "orderCancelled": "Ordre {number} annulleret",
+    "fgasVerified": "F-gas-certifikat verificeret",
+    "fgasRejected": "F-gas-certifikat afvist",
+    "fgasPending": "F-gas-certifikat under behandling",
+    "fgasExpired": "F-gas-certifikat udløbet",
+    "fgasExpiring": "Din F-gas-certificering udløber den {date}",
+    "fgasExpiringBody": "{days, plural, one {# dag tilbage} other {# dage tilbage}} — upload det fornyede certifikat for at fortsætte med at bestille gas.",
+    "priceAlert": "{gas} nåede din målpris",
+    "priceAlertBody": "Dit mål: {target} pr. kg",
+    "backInStock": "{name} er tilbage på lager",
+    "return_REQUESTED": "Cylindrets returnering anmodet ({count})",
+    "return_SCHEDULED": "Cylindret tilbagelevering accepteret ({count})",
+    "return_COLLECTED": "Cylindre modtaget på lageret ({count})",
+    "return_CANCELLED": "Cylindret tilbagelevering annulleret"
   }
 }

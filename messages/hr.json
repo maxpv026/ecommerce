@@ -728,7 +728,13 @@
     "status_packing": "ADR pakiranje",
     "status_shipped": "Isporučeno",
     "cardInvoice": "Preuzmi PDF račun",
-    "cardOrders": "Idite na moje narudžbe"
+    "cardOrders": "Idite na moje narudžbe",
+    "quickTitle": "Brza kopija za vašu bankarsku aplikaciju",
+    "quickIban": "Kopiraj IBAN (bez razmaka)",
+    "quickRef": "Kopiraj referencu · {ref}",
+    "quickAmount": "Kopiraj točan iznos · {amount}",
+    "qrShow": "Prikaži SEPA QR kod",
+    "qrHide": "Sakrij QR kod"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Pomakni lijevo",
     "railNext": "Pomakni desno",
     "stockOut": "Nema na zalihi",
-    "perKgExVat": "po kg · bez PDV-a"
+    "perKgExVat": "po kg · bez PDV-a",
+    "backToCatalog": "Povratak na katalog"
   },
   "HomeMobile": {
     "notificationsAria": "Obavijesti",
@@ -3213,5 +3220,53 @@
     "container_Drum": "bure",
     "container_Isotank": "isotank",
     "container_Can": "limenka"
+  },
+  "SearchPage": {
+    "title": "Pretraživanje",
+    "lead": "Boce, vaše narudžbe i sigurnosno-tehnički listovi.",
+    "placeholder": "Kod plina, SKU, broj narudžbe, CAS ili UN…",
+    "clear": "Očisti",
+    "recent": "Nedavne pretrage",
+    "recentClear": "Obriši povijest",
+    "hint": "Upišite najmanje {n} znakova — npr. R-32, 75-10-5, UN 3163 ili broj narudžbe.",
+    "none": "Nema rezultata za “{q}”.",
+    "groupProducts": "Boce i oprema",
+    "groupOrders": "Vaše narudžbe",
+    "groupDocs": "Sigurnosno-tehnički listovi",
+    "seeAll": "Svi {count} rezultati u katalogu",
+    "outOfStock": "Nema na skladištu",
+    "lines": "{count, plural, one {# linija} few {# linije} other {# linija} }",
+    "cancelled": "Otkaženo",
+    "awaitingPayment": "Čeka na uplatu",
+    "sdsTitle": "{gas} · sigurnosno-tehnički list",
+    "signIn": "Prijavite se",
+    "signInOrders": "da pretražujete svoje narudžbe također."
+  },
+  "NotifFeed": {
+    "title": "Obavijesti",
+    "lead": "Što se dogodilo na vašem računu: narudžbe, F-plin, obavijesti o cijenama i povrati.",
+    "settings": "Postavke e-pošte",
+    "new": "Nove",
+    "emptyTitle": "Još ništa ovdje",
+    "emptyBody": "Narudžbe, pregledi certifikata, obavijesti o cijenama i povrati boca će se ovdje pojaviti kako se događaju.",
+    "orderPlaced": "Narudžba {number} postavljena",
+    "orderPaid": "Plaćanje primljeno za {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# stavka} few {# stavke} other {# stavki}} · {total}",
+    "eta": "Očekivana isporuka {date}",
+    "orderCancelled": "Narudžba {number} otkazana",
+    "fgasVerified": "F-plin certifikat verificiran",
+    "fgasRejected": "F-plin certifikat odbijen",
+    "fgasPending": "F-plin certifikat na pregledu",
+    "fgasExpired": "F-plin certifikat istekao",
+    "fgasExpiring": "Vaš F-plin certifikat ističe {date}",
+    "priceAlert": "{gas} je dostigao vašu ciljnu cijenu",
+    "priceAlertBody": "Vaša ciljna cijena: {target} po kg",
+    "backInStock": "{name} je ponovno dostupan",
+    "return_REQUESTED": "Zatražena povrat boce ({count})",
+    "fgasExpiringBody": "{days, plural, one {# dan preostao} few {# dana preostala} other {# dana preostalih}} — prenesite obnovljeni certifikat kako biste nastavili s narudžbom plina.",
+    "return_SCHEDULED": "Prihvaćen povrat boce ({count})",
+    "return_COLLECTED": "Boce primljene u skladištu ({count})",
+    "return_CANCELLED": "Povrat boce otkazan"
   }
 }

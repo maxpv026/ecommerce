@@ -728,7 +728,13 @@
     "status_packing": "ADR 포장 중",
     "status_shipped": "발송됨",
     "cardInvoice": "인보이스 PDF 다운로드",
-    "cardOrders": "내 주문으로 가기"
+    "cardOrders": "내 주문으로 가기",
+    "quickTitle": "빠른 복사로 은행 앱에 사용하세요",
+    "quickIban": "IBAN 복사 (공백 없음)",
+    "quickRef": "참조 복사 · {ref}",
+    "quickAmount": "정확한 금액 복사 · {amount}",
+    "qrShow": "SEPA QR 코드 표시",
+    "qrHide": "QR 코드 숨기기"
   },
   "Admin": {
     "eyebrow": "관리자",
@@ -1040,7 +1046,8 @@
     "railPrev": "왼쪽으로 스크롤",
     "railNext": "오른쪽으로 스크롤",
     "stockOut": "품절",
-    "perKgExVat": "kg당 · 부가세 별도"
+    "perKgExVat": "kg당 · 부가세 별도",
+    "backToCatalog": "카탈로그로 돌아가기"
   },
   "HomeMobile": {
     "notificationsAria": "알림",
@@ -3213,5 +3220,53 @@
     "container_Drum": "드럼",
     "container_Isotank": "이소탱크",
     "container_Can": "캔"
+  },
+  "SearchPage": {
+    "title": "검색",
+    "lead": "실린더, 주문 및 물질안전보건자료입니다.",
+    "placeholder": "가스 코드, SKU, 주문 번호, CAS 또는 UN…",
+    "clear": "지우기",
+    "recent": "최근 검색",
+    "recentClear": "기록 지우기",
+    "hint": "최소 {n}자를 입력하세요 — 예: R-32, 75-10-5, UN 3163 또는 주문 번호.",
+    "none": "“{q}”에 대한 결과가 없습니다.",
+    "groupProducts": "실린더 및 장비",
+    "groupOrders": "귀하의 주문",
+    "groupDocs": "물질안전보건자료",
+    "seeAll": "카탈로그에서 모든 {count} 결과 보기",
+    "outOfStock": "재고 없음",
+    "cancelled": "취소됨",
+    "awaitingPayment": "결제 대기 중",
+    "sdsTitle": "{gas} · 물질안전보건자료",
+    "lines": "{count, plural, other {#개 라인}}",
+    "signIn": "로그인",
+    "signInOrders": "자신의 주문도 검색하기 위해."
+  },
+  "NotifFeed": {
+    "title": "알림",
+    "lead": "귀하의 계정에서 발생한 사항: 주문, F-Gas, 가격 알림 및 반품.",
+    "settings": "이메일 설정",
+    "new": "새로운",
+    "emptyTitle": "아직 아무것도 없습니다",
+    "emptyBody": "주문, 인증서 검토, 가격 알림 및 실린더 반품이 발생하는 대로 여기에 표시됩니다.",
+    "orderPlaced": "주문 {number}이(가) 접수되었습니다",
+    "orderPaid": "{number}에 대한 결제가 완료되었습니다",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, other {#개}} · {total}",
+    "eta": "예상 배송 {date}",
+    "orderCancelled": "주문 {number}이(가) 취소되었습니다.",
+    "fgasVerified": "F-Gas 인증 확인됨",
+    "fgasRejected": "F-Gas 인증이 거부되었습니다.",
+    "fgasPending": "F-Gas 인증이 검토 중입니다.",
+    "fgasExpired": "F-Gas 인증이 만료되었습니다.",
+    "fgasExpiring": "F-Gas 인증이 {date}에 만료됩니다.",
+    "priceAlert": "{gas}가 귀하의 목표 가격에 도달했습니다.",
+    "priceAlertBody": "귀하의 목표: {target} kg당",
+    "backInStock": "{name}이(가) 재입고되었습니다.",
+    "return_REQUESTED": "실린더 반품 요청됨 ({count})",
+    "fgasExpiringBody": "{days, plural, other {#일 남음}} — 갱신된 인증서를 업로드하여 가스를 계속 주문하세요.",
+    "return_SCHEDULED": "실린더 반납이 수락되었습니다 ({count})",
+    "return_COLLECTED": "실린더가 창고에 도착했습니다 ({count})",
+    "return_CANCELLED": "실린더 반납이 취소되었습니다"
   }
 }

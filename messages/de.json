@@ -728,7 +728,13 @@
     "status_packing": "ADR-VERPACKUNG",
     "status_shipped": "Versand",
     "cardInvoice": "Rechnung als PDF herunterladen",
-    "cardOrders": "Zu meinen Bestellungen gehen"
+    "cardOrders": "Zu meinen Bestellungen gehen",
+    "quickTitle": "Schnellkopie für Ihre Banking-App",
+    "quickIban": "IBAN kopieren (ohne Leerzeichen)",
+    "quickRef": "Referenz kopieren · {ref}",
+    "quickAmount": "Genauen Betrag kopieren · {amount}",
+    "qrShow": "SEPA-QR-Code anzeigen",
+    "qrHide": "QR-Code ausblenden"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Nach links",
     "railNext": "Nach rechts",
     "stockOut": "Nicht auf Lager",
-    "perKgExVat": "pro kg · zzgl. MwSt."
+    "perKgExVat": "pro kg · zzgl. MwSt.",
+    "backToCatalog": "Zurück zum Katalog"
   },
   "HomeMobile": {
     "notificationsAria": "Benachrichtigungen",
@@ -3213,5 +3220,53 @@
     "container_Drum": "Fass",
     "container_Isotank": "Isotank",
     "container_Can": "Dose"
+  },
+  "SearchPage": {
+    "title": "Suche",
+    "lead": "Zylinder, Ihre Bestellungen und Sicherheitsdatenblätter.",
+    "placeholder": "Gascode, SKU, Bestellnummer, CAS oder UN…",
+    "clear": "Löschen",
+    "recent": "Letzte Suchen",
+    "recentClear": "Verlauf löschen",
+    "hint": "Geben Sie mindestens {n} Zeichen ein — z.B. R-32, 75-10-5, UN 3163 oder eine Bestellnummer.",
+    "none": "Nichts gefunden für „{q}“.",
+    "groupProducts": "Flaschen und Ausrüstung",
+    "groupOrders": "Ihre Bestellungen",
+    "groupDocs": "Sicherheitsdatenblätter",
+    "seeAll": "Alle {count} Ergebnisse im Katalog",
+    "outOfStock": "Nicht auf Lager",
+    "lines": "{count, plural, one {# Zeile} other {# Zeilen}}",
+    "cancelled": "Storniert",
+    "awaitingPayment": "Warten auf Zahlung",
+    "sdsTitle": "{gas} · Sicherheitsdatenblatt",
+    "signIn": "Anmelden",
+    "signInOrders": "um auch Ihre eigenen Bestellungen zu suchen."
+  },
+  "NotifFeed": {
+    "title": "Benachrichtigungen",
+    "lead": "Was auf Ihrem Konto passiert ist: Bestellungen, F-Gas, Preisalarme und Rücksendungen.",
+    "settings": "E-Mail-Einstellungen",
+    "new": "Neu",
+    "emptyTitle": "Noch nichts hier",
+    "emptyBody": "Bestellungen, Zertifikatsprüfungen, Preisalarme und Zylinder-Rücksendungen erscheinen hier, sobald sie geschehen.",
+    "orderPlaced": "Bestellung {number} aufgegeben",
+    "orderPlacedBody": "{lines, plural, one {# Zeile} other {# Zeilen}} · {total}",
+    "orderPaid": "Zahlung für {number} erhalten",
+    "orderStage": "{number}: {stage}",
+    "eta": "Erwartete Lieferung am {date}",
+    "orderCancelled": "Bestellung {number} storniert",
+    "fgasVerified": "F-Gas-Zertifikat verifiziert",
+    "fgasRejected": "F-Gas-Zertifikat abgelehnt",
+    "fgasPending": "F-Gas-Zertifikat in Prüfung",
+    "fgasExpired": "F-Gas-Zertifikat abgelaufen",
+    "fgasExpiring": "Ihre F-Gas-Zertifizierung läuft am {date} ab",
+    "fgasExpiringBody": "{days, plural, one {# Tag übrig} other {# Tage übrig}} — laden Sie das erneuerte Zertifikat hoch, um weiterhin Gas zu bestellen.",
+    "priceAlert": "{gas} hat Ihren Zielpreis erreicht",
+    "priceAlertBody": "Ihr Ziel: {target} pro kg",
+    "backInStock": "{name} ist wieder auf Lager",
+    "return_REQUESTED": "Zylinder-Rückgabe angefordert ({count})",
+    "return_SCHEDULED": "Zylinder Rückgabe akzeptiert ({count})",
+    "return_COLLECTED": "Zylinder im Lager empfangen ({count})",
+    "return_CANCELLED": "Zylinder Rückgabe storniert"
   }
 }

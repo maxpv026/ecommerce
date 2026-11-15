@@ -728,7 +728,13 @@
     "status_packing": "ADR csomagolás",
     "status_shipped": "Kiszállítva",
     "cardInvoice": "Számla PDF letöltése",
-    "cardOrders": "Menj a rendeléseimhez"
+    "cardOrders": "Menj a rendeléseimhez",
+    "quickTitle": "Gyors másolat a banki alkalmazásodhoz",
+    "quickIban": "IBAN másolása (szóközök nélkül)",
+    "quickRef": "Referencia másolása · {ref}",
+    "quickAmount": "Pontosan másolni az összeget · {amount}",
+    "qrShow": "SEPA QR kód megjelenítése",
+    "qrHide": "QR kód elrejtése"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Görgetés balra",
     "railNext": "Görgetés jobbra",
     "stockOut": "Nincs készleten",
-    "perKgExVat": "kg-onként · nettó"
+    "perKgExVat": "kg-onként · nettó",
+    "backToCatalog": "Vissza a katalógushoz"
   },
   "HomeMobile": {
     "notificationsAria": "Értesítések",
@@ -3213,5 +3220,53 @@
     "container_Drum": "dob",
     "container_Isotank": "isotank",
     "container_Can": "fém doboz"
+  },
+  "SearchPage": {
+    "title": "Keresés",
+    "lead": "Palackok, rendeléseid és biztonsági adatlapok.",
+    "placeholder": "Gázkód, SKU, rendelési szám, CAS vagy UN…",
+    "clear": "Törlés",
+    "recent": "Legutóbbi keresések",
+    "recentClear": "Történet törlése",
+    "hint": "Írj be legalább {n} karaktert — pl. R-32, 75-10-5, UN 3163 vagy egy rendelési számot.",
+    "none": "Nincs találat a(z) “{q}” kifejezésre.",
+    "groupProducts": "Palackok és berendezések",
+    "groupOrders": "A rendeléseid",
+    "groupDocs": "Biztonsági adatlapok",
+    "seeAll": "Összes {count} eredmény a katalógusban",
+    "outOfStock": "Készleten nincs",
+    "lines": "{count, plural, one {# sor} other {# sor} }",
+    "cancelled": "Törölve",
+    "awaitingPayment": "Fizetésre vár",
+    "sdsTitle": "{gas} · biztonsági adatlap",
+    "signIn": "Jelentkezz be",
+    "signInOrders": "hogy a saját rendeléseidet is keresd."
+  },
+  "NotifFeed": {
+    "title": "Értesítések",
+    "lead": "Mi történt a fiókodban: rendelések, F-gáz, árfigyelmeztetések és visszáru.",
+    "settings": "Email beállítások",
+    "new": "Új",
+    "emptyTitle": "Még nincs itt semmi",
+    "emptyBody": "A rendelések, tanúsítvány-áttekintések, árfigyelmeztetések és palack-visszáru itt fognak megjelenni, ahogy történnek.",
+    "orderPlaced": "A(z) {number} számú rendelés leadva",
+    "orderPlacedBody": "{lines, plural, one {# sor} other {# sor}} · {total}",
+    "orderPaid": "A(z) {number} számú rendelés kifizetése megtörtént",
+    "orderStage": "{number}: {stage}",
+    "eta": "Várt szállítási idő: {date}",
+    "orderCancelled": "A {number} számú rendelés törölve",
+    "fgasVerified": "F-gáz tanúsítvány ellenőrizve",
+    "fgasRejected": "F-gáz tanúsítvány elutasítva",
+    "fgasPending": "F-gáz tanúsítvány felülvizsgálat alatt",
+    "fgasExpired": "F-gáz tanúsítvány lejárt",
+    "fgasExpiring": "Az F-gáz tanúsítványod {date} napján jár le",
+    "fgasExpiringBody": "{days, plural, one {# nap maradt} other {# nap maradt}} — töltsd fel a megújított tanúsítványt a gázrendelés folytatásához.",
+    "priceAlert": "{gas} elérte a céláradat",
+    "priceAlertBody": "Célod: {target} €/kg",
+    "backInStock": "{name} újra elérhető",
+    "return_REQUESTED": "Palack visszaküldése kért ({count})",
+    "return_SCHEDULED": "Palack visszaküldés elfogadva ({count})",
+    "return_COLLECTED": "Palackok megérkeztek a raktárba ({count})",
+    "return_CANCELLED": "Palack visszaküldés törölve"
   }
 }

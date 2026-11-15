@@ -728,7 +728,13 @@
     "status_packing": "Pacáil ADR",
     "status_shipped": "Seoladh",
     "cardInvoice": "Íoslódáil PDF na hoifige",
-    "cardOrders": "Téigh chuig mo orduithe"
+    "cardOrders": "Téigh chuig mo orduithe",
+    "quickTitle": "Cóip gasta do do chláir bhaincéireachta",
+    "quickIban": "Cóip IBAN (gan spásanna)",
+    "quickRef": "Cóip tagartha · {ref}",
+    "quickAmount": "Cóip an t-íocaíocht chruinn · {amount}",
+    "qrShow": "Taispeáin cód QR SEPA",
+    "qrHide": "Folaigh cód QR"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Scrollaigh ar chlé",
     "railNext": "Scrollaigh ar dheis",
     "stockOut": "As stoc",
-    "perKgExVat": "in aghaidh an kg · gan CBL"
+    "perKgExVat": "in aghaidh an kg · gan CBL",
+    "backToCatalog": "Ar ais chuig an gcatagóir"
   },
   "HomeMobile": {
     "notificationsAria": "Fógraí",
@@ -3213,5 +3220,53 @@
     "container_Drum": "druma",
     "container_Isotank": "isotank",
     "container_Can": "can"
+  },
+  "SearchPage": {
+    "title": "Cuardaigh",
+    "lead": "Sorcóirí, do chuid orduithe agus bileoga sonraí sábháilteachta.",
+    "placeholder": "Cód gáis, SKU, uimhir ordaithe, CAS nó UN…",
+    "clear": "Glan",
+    "recent": "Cuardach le déanaí",
+    "recentClear": "Glan stair",
+    "hint": "Scríobh ar a laghad {n} carachtar — e.g. R-32, 75-10-5, UN 3163 nó uimhir ordaithe.",
+    "none": "Ní fuarthas aon rud do “{q}”.",
+    "groupProducts": "Sorcóirí agus trealamh",
+    "groupOrders": "Do chuid orduithe",
+    "groupDocs": "Bileoga sonraí sábháilteachta",
+    "seeAll": "Gach {count} toradh sa chatalóg",
+    "outOfStock": "As stoc",
+    "cancelled": "Cealaíodh",
+    "awaitingPayment": "Ag fanacht le híocaíocht",
+    "sdsTitle": "{gas} · bileog sonraí sábháilteachta",
+    "signIn": "Sínigh isteach",
+    "signInOrders": "chun do chuid orduithe féin a chuardach freisin.",
+    "lines": "{count, plural, one {# líne} two {# líne} few {# líne} many {# líne} other {# líne}}"
+  },
+  "NotifFeed": {
+    "title": "Fógraí",
+    "lead": "Cad a tharla ar do chuntas: orduithe, F-Gás, foláirimh praghsanna agus aiseolais.",
+    "settings": "Socruithe ríomhphoist",
+    "new": "Nua",
+    "emptyTitle": "Níl aon rud anseo go fóill",
+    "emptyBody": "Tiocfaidh orduithe, athbhreithnithe deimhnithe, foláirimh praghsanna agus aiseolais sorcóirí anseo de réir mar a tharlaíonn siad.",
+    "orderPlaced": "Ordú {number} curtha",
+    "orderPaid": "Íocaíocht faighte do {number}",
+    "orderStage": "{number}: {stage}",
+    "eta": "Seachadadh atá súil le {date}",
+    "orderCancelled": "Orduithe {number} curtha ar ceal",
+    "fgasVerified": "Deimhniú F-Gháis deimhnithe",
+    "fgasRejected": "Deimhniú F-Gháis diúltaithe",
+    "fgasPending": "Deimhniú F-Gháis faoi athbhreithniú",
+    "fgasExpired": "Deimhniú F-Gháis caite",
+    "fgasExpiring": "Tá do dheimhniú F-Gháis ag dul in éag ar {date}",
+    "priceAlert": "Bhí {gas} ag teacht chuig do phraghas sprioc",
+    "priceAlertBody": "Do sprioc: {target} in aghaidh kg",
+    "backInStock": "Tá {name} ar ais i stoc",
+    "return_REQUESTED": "Iarratas ar aiseag sorcóra curtha isteach ({count})",
+    "fgasExpiringBody": "{days, plural, one {# lá fágtha} two {# lá fágtha} few {# lá fágtha} many {# lá fágtha} other {# lá fágtha}} — uaslódh an deimhniú nuashonraithe chun leanúint ar aghaidh ag ordú gáis.",
+    "return_SCHEDULED": "Glacadh ar aiseolas sorcóirí ({count})",
+    "return_COLLECTED": "Sorcóirí faighte ag an stóras ({count})",
+    "return_CANCELLED": "Cealú ar aiseolas sorcóirí",
+    "orderPlacedBody": "{lines, plural, one {# líne} two {# líne} few {# líne} many {# líne} other {# líne}} · {total}"
   }
 }

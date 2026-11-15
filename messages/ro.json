@@ -728,7 +728,13 @@
     "status_packing": "Ambalare ADR",
     "status_shipped": "Expediat",
     "cardInvoice": "Descarcă factura PDF",
-    "cardOrders": "Mergi la comenzile mele"
+    "cardOrders": "Mergi la comenzile mele",
+    "quickTitle": "Copie rapidă pentru aplicația dvs. bancară",
+    "quickIban": "Copiați IBAN (fără spații)",
+    "quickRef": "Copiați referința · {ref}",
+    "quickAmount": "Copiați suma exactă · {amount}",
+    "qrShow": "Arată codul QR SEPA",
+    "qrHide": "Ascunde codul QR"
   },
   "Admin": {
     "eyebrow": "ADMIN",
@@ -1040,7 +1046,8 @@
     "railPrev": "Derulează la stânga",
     "railNext": "Derulează la dreapta",
     "stockOut": "Stoc epuizat",
-    "perKgExVat": "pe kg · fără TVA"
+    "perKgExVat": "pe kg · fără TVA",
+    "backToCatalog": "Înapoi la catalog"
   },
   "HomeMobile": {
     "notificationsAria": "Notificări",
@@ -3213,5 +3220,53 @@
     "container_Drum": "drum",
     "container_Isotank": "isotank",
     "container_Can": "cutie"
+  },
+  "SearchPage": {
+    "title": "Caută",
+    "lead": "Butelii, comenzile dvs. și fișele cu date de securitate.",
+    "placeholder": "Cod gaz, SKU, număr comandă, CAS sau UN…",
+    "clear": "Șterge",
+    "recent": "Căutări recente",
+    "recentClear": "Șterge istoricul",
+    "hint": "Introduceți cel puțin {n} caractere — de exemplu, R-32, 75-10-5, UN 3163 sau un număr de comandă.",
+    "none": "Nimic găsit pentru „{q}”.",
+    "groupProducts": "Butelii și echipamente",
+    "groupOrders": "Comenzile dvs.",
+    "groupDocs": "Fișe cu date de securitate",
+    "seeAll": "Toate {count} rezultate în catalog",
+    "outOfStock": "Stoc epuizat",
+    "cancelled": "Anulată",
+    "awaitingPayment": "Așteaptă plată",
+    "sdsTitle": "{gas} · fișă cu date de securitate",
+    "lines": "{count, plural, one {# linie} few {# linii} other {# de linii}}",
+    "signIn": "Conectați-vă",
+    "signInOrders": "pentru a căuta comenzile dvs. proprii."
+  },
+  "NotifFeed": {
+    "title": "Notificări",
+    "lead": "Ce s-a întâmplat pe contul dvs.: comenzi, F-Gas, alerte de preț și returnări.",
+    "settings": "Setări email",
+    "new": "Nou",
+    "emptyTitle": "Nimic aici încă",
+    "emptyBody": "Comenzile, revizuirile certificatelor, alertele de preț și returnările de butelii vor apărea aici pe măsură ce se întâmplă.",
+    "orderPlaced": "Comanda {number} plasată",
+    "orderPaid": "Plata primită pentru {number}",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, one {# linie} few {# linii} other {# linii}} · {total}",
+    "eta": "Livrare estimată {date}",
+    "orderCancelled": "Comanda {number} anulată",
+    "fgasVerified": "Certificat F-Gas verificat",
+    "fgasRejected": "Certificat F-Gas respins",
+    "fgasPending": "Certificat F-Gas în evaluare",
+    "fgasExpired": "Certificat F-Gas expirat",
+    "fgasExpiring": "Certificatul dvs. F-Gas expiră pe {date}",
+    "priceAlert": "{gas} a atins prețul țintă",
+    "priceAlertBody": "Ținta dvs.: {target} pe kg",
+    "backInStock": "{name} este din nou pe stoc",
+    "return_REQUESTED": "Returnarea buteliei solicitată ({count})",
+    "fgasExpiringBody": "{days, plural, one {# zi rămasă} few {# zile rămase} other {# zile rămase}} — încărcați certificatul reînnoit pentru a continua să comandați gaz.",
+    "return_SCHEDULED": "Returnare butelie acceptată ({count})",
+    "return_COLLECTED": "Butelii primite la depozit ({count})",
+    "return_CANCELLED": "Returnare butelie anulată"
   }
 }

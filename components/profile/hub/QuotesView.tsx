@@ -49,8 +49,8 @@ export default function QuotesView({ quotes }: { quotes: QuoteView[] }) {
         <EmptyRow>{t("quotesEmpty")}</EmptyRow>
       ) : (
         quotes.map((q) => (
-          <div key={q.id} className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-slate-900/[.06] px-5 py-4 last:border-b-0 dark:border-white/[.06]" data-quote-row={q.quoteNumber}>
-            <span className={ICON_TILE}>
+          <div key={q.id} className="grid grid-cols-[40px_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-slate-900/[.06] px-5 py-4 last:border-b-0 max-sm:grid-cols-[minmax(0,1fr)_auto] max-sm:gap-x-3 max-sm:gap-y-3 max-sm:px-4 max-sm:[&>*:last-child]:col-span-2 dark:border-white/[.06]" data-quote-row={q.quoteNumber}>
+            <span className={`${ICON_TILE} max-sm:hidden`}>
               <Receipt size={17} strokeWidth={1.9} />
             </span>
             <div className="min-w-0">

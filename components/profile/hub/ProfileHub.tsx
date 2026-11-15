@@ -134,12 +134,12 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
         <div className="absolute left-[-10%] top-[180px] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,var(--orb-violet),rgba(124,58,237,0)_66%)] opacity-[.16] blur-[120px]" />
       </div>
 
-      <main className="relative mx-auto max-w-7xl px-8 pb-24 pt-9" data-profile-hub>
+      <main className="relative mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-8 sm:pb-24 sm:pt-9" data-profile-hub>
         {/* ── Header bar (cart layout) ── */}
         {/* Title and pills share the row; the meta line wraps inside its column rather than pushing the pills down. */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap" data-profile-header>
           <div className="min-w-0 flex-1">
-            <h1 className="m-0 truncate text-[34px] font-semibold leading-[1.1] tracking-[-.04em]">{t("title", { name })}</h1>
+            <h1 className="m-0 truncate text-[34px] font-semibold leading-[1.1] tracking-[-.04em] max-sm:text-[26px]">{t("title", { name })}</h1>
             <p className="m-0 mt-2 text-[14px] leading-[1.55] text-slate-500 dark:text-ink-muted" data-profile-meta>
               {t("lead")}
             </p>
@@ -148,8 +148,9 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
         </div>
 
         {/* ── Section tabs ── */}
-        {/* One row: all nine views. Never wraps — on a narrow window it scrolls sideways instead. */}
-        <nav className="-mx-1 mb-6 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label={t("sectionsLabel")} data-profile-tabs>
+        {/* One row of all nine views from sm up (scrolls sideways on a narrow window).
+            Phones: a 3 × 3 grid of icon + label cells — every view on screen, none off the edge. */}
+        <nav className="-mx-1 mb-6 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] max-sm:mx-0 max-sm:mb-5 max-sm:grid max-sm:grid-cols-3 max-sm:gap-2 max-sm:overflow-visible max-sm:px-0 max-sm:pb-0 [&::-webkit-scrollbar]:hidden" role="tablist" aria-label={t("sectionsLabel")} data-profile-tabs>
           {PROFILE_TABS.map((id) => {
             const Icon = TAB_ICON[id];
             const on = tab === id;
@@ -162,15 +163,15 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
                 aria-selected={on}
                 onClick={() => setTab(id)}
                 data-profile-tab={id}
-                className={`inline-flex h-9 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[12.5px] font-semibold tracking-[-.01em] transition-colors ${
+                className={`relative inline-flex h-9 flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[12.5px] font-semibold tracking-[-.01em] transition-colors max-sm:h-auto max-sm:min-h-[60px] max-sm:min-w-0 max-sm:flex-col max-sm:justify-center max-sm:gap-1 max-sm:whitespace-normal max-sm:rounded-[16px] max-sm:px-1.5 max-sm:py-2 max-sm:text-center max-sm:text-[11.5px] max-sm:leading-[1.2] ${
                   on
                     ? "border-transparent bg-[#0B1020] text-white dark:bg-white dark:text-slate-900"
                     : "border-slate-900/[.12] bg-white/70 text-slate-800 hover:bg-slate-900/[.04] dark:border-white/[.14] dark:bg-white/[.04] dark:text-slate-100 dark:hover:bg-white/[.09]"
                 }`}
               >
-                <Icon size={14} strokeWidth={2} />
-                {t(`tab_${id}`)}
-                {n !== undefined && n > 0 && <span className={`rounded-full px-1.5 text-[11px] tabular-nums ${on ? "bg-white/15 dark:bg-slate-900/10" : "bg-slate-900/[.06] dark:bg-white/[.08]"}`}>{n}</span>}
+                <Icon size={14} strokeWidth={2} className="flex-none max-sm:h-[17px] max-sm:w-[17px]" />
+                <span className="max-sm:line-clamp-2">{t(`tab_${id}`)}</span>
+                {n !== undefined && n > 0 && <span className={`rounded-full px-1.5 text-[11px] tabular-nums max-sm:absolute max-sm:right-1.5 max-sm:top-1.5 max-sm:px-1 max-sm:text-[10px] ${on ? "bg-white/15 dark:bg-slate-900/10" : "bg-slate-900/[.06] dark:bg-white/[.08]"}`}>{n}</span>}
               </button>
             );
           })}
@@ -188,16 +189,16 @@ export default function ProfileHub({ profile, orders, orderTracking, addresses, 
           {/* The view's own anchor: /profile#addresses lands here once the view is open. */}
           <div id={tab} className="scroll-mt-24" />
           {tab === "overview" && (
-            <dl className="m-0 mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4" data-profile-stats>
+            <dl className="m-0 mb-6 grid grid-cols-2 gap-4 max-sm:gap-3 lg:grid-cols-4" data-profile-stats>
               {[
                 { k: "delivered", label: t("sumDelivered"), value: String(delivered) },
                 { k: "transit", label: t("sumTransit"), value: String(inTransit) },
                 { k: "cylinders", label: t("sumCylinders"), value: hub.fleet.inPossession > 0 ? `${hub.fleet.inPossession} · ${hub.fleet.refundableIsEstimate ? "≈ " : ""}${eur(hub.fleet.refundable)}` : "0" },
                 { k: "co2e", label: t("sumCo2e", { year: logbook?.year ?? new Date().getUTCFullYear() }), value: logbook ? t("tonnes", { value: format.number(logbook.co2eTonnes, { maximumFractionDigits: 2 }) }) : "—" },
               ].map((row) => (
-                <div key={row.k} className="rounded-[22px] border border-slate-900/[.08] bg-white/75 p-5 dark:border-white/[.08] dark:bg-white/[.03]" data-summary-row={row.k}>
+                <div key={row.k} className="min-w-0 rounded-[22px] border border-slate-900/[.08] bg-white/75 p-5 max-sm:rounded-[18px] max-sm:p-3.5 dark:border-white/[.08] dark:bg-white/[.03]" data-summary-row={row.k}>
                   <dt className="text-[12.5px] text-slate-500 dark:text-ink-muted">{row.label}</dt>
-                  <dd className="m-0 mt-1.5 text-[22px] font-semibold tracking-[-.03em] tabular-nums">{row.value}</dd>
+                  <dd className="m-0 mt-1.5 text-[22px] font-semibold tracking-[-.03em] tabular-nums max-sm:text-[18px]">{row.value}</dd>
                 </div>
               ))}
             </dl>

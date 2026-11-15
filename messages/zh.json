@@ -728,7 +728,13 @@
     "status_packing": "ADR 包装",
     "status_shipped": "已发货",
     "cardInvoice": "下载发票 PDF",
-    "cardOrders": "查看我的订单"
+    "cardOrders": "查看我的订单",
+    "quickTitle": "快速复制您的银行应用",
+    "quickIban": "复制 IBAN（无空格）",
+    "quickRef": "复制参考 · {ref}",
+    "quickAmount": "复制确切金额 · {amount}",
+    "qrShow": "显示 SEPA 二维码",
+    "qrHide": "隐藏二维码"
   },
   "Admin": {
     "eyebrow": "管理员",
@@ -1040,7 +1046,8 @@
     "railPrev": "向左滚动",
     "railNext": "向右滚动",
     "stockOut": "缺货",
-    "perKgExVat": "每公斤 · 不含增值税"
+    "perKgExVat": "每公斤 · 不含增值税",
+    "backToCatalog": "返回目录"
   },
   "HomeMobile": {
     "notificationsAria": "通知",
@@ -3213,5 +3220,53 @@
     "container_Drum": "桶",
     "container_Isotank": "Isotank",
     "container_Can": "罐"
+  },
+  "SearchPage": {
+    "title": "搜索",
+    "lead": "钢瓶、您的订单和安全数据表。",
+    "placeholder": "气体代码、SKU、订单号、CAS 或 UN…",
+    "clear": "清除",
+    "recent": "最近搜索",
+    "recentClear": "清除历史记录",
+    "hint": "至少输入 {n} 个字符 — 例如 R-32, 75-10-5, UN 3163 或订单号。",
+    "none": "未找到“{q}”的结果。",
+    "groupProducts": "钢瓶和设备",
+    "groupOrders": "您的订单",
+    "groupDocs": "安全数据表",
+    "seeAll": "目录中所有 {count} 个结果",
+    "outOfStock": "缺货",
+    "cancelled": "已取消",
+    "awaitingPayment": "待付款",
+    "sdsTitle": "{gas} · 安全数据表",
+    "lines": "{count, plural, other {# 行}}",
+    "signIn": "登录",
+    "signInOrders": "也可以搜索您自己的订单。"
+  },
+  "NotifFeed": {
+    "title": "通知",
+    "lead": "您的账户发生了什么：订单、F-Gas、价格提醒和退货。",
+    "settings": "电子邮件设置",
+    "new": "新消息",
+    "emptyTitle": "这里还没有内容",
+    "emptyBody": "订单、证书审核、价格提醒和钢瓶退货将在这里显示。",
+    "orderPlaced": "订单 {number} 已下达",
+    "orderPaid": "订单 {number} 的付款已收到",
+    "orderStage": "{number}: {stage}",
+    "orderPlacedBody": "{lines, plural, other {# 行}} · {total}",
+    "eta": "预计交货日期 {date}",
+    "orderCancelled": "订单 {number} 已取消",
+    "fgasVerified": "F-Gas 证书已验证",
+    "fgasRejected": "F-Gas 证书已拒绝",
+    "fgasPending": "F-Gas 证书正在审核中",
+    "fgasExpired": "F-Gas 证书已过期",
+    "fgasExpiring": "您的 F-Gas 证书将于 {date} 到期",
+    "priceAlert": "{gas} 达到您的目标价格",
+    "priceAlertBody": "您的目标：每公斤 {target}",
+    "backInStock": "{name} 已重新入库",
+    "return_REQUESTED": "请求退还钢瓶 ({count})",
+    "fgasExpiringBody": "{days, plural, other {# 天剩余}} — 上传更新的证书以继续订购气体。",
+    "return_SCHEDULED": "钢瓶退货已接受（{count}）",
+    "return_COLLECTED": "钢瓶已在仓库接收（{count}）",
+    "return_CANCELLED": "钢瓶退货已取消"
   }
 }

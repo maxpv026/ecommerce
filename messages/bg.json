@@ -728,7 +728,13 @@
     "status_packing": "ОПАКОВАНЕ ADR",
     "status_shipped": "Изпратено",
     "cardInvoice": "Изтеглете PDF фактура",
-    "cardOrders": "Отидете в моите поръчки"
+    "cardOrders": "Отидете в моите поръчки",
+    "quickTitle": "Бързо копиране за вашето банково приложение",
+    "quickIban": "Копирайте IBAN (без интервали)",
+    "quickRef": "Копирайте референция · {ref}",
+    "quickAmount": "Копирайте точна сума · {amount}",
+    "qrShow": "Покажете SEPA QR код",
+    "qrHide": "Скрийте QR кода"
   },
   "Admin": {
     "eyebrow": "АДМИН",
@@ -916,7 +922,7 @@
     "searchResultsFor": "Резултати за „{query}“",
     "searchClearAria": "Изчисти търсенето",
     "perKgAmount": "{amount} / kg",
-    "perKgAmountExVat": "{amount} / kg (без ДДС)",
+    "perKgAmountExVat": "{amount} / кг (без ДДС)",
     "viewLabel": "Оформление",
     "viewGrid": "Мрежа",
     "viewTable": "Таблица в стил кошница",
@@ -1040,7 +1046,8 @@
     "railPrev": "Превърти наляво",
     "railNext": "Превърти надясно",
     "stockOut": "Изчерпано",
-    "perKgExVat": "на кг · без ДДС"
+    "perKgExVat": "на кг · без ДДС",
+    "backToCatalog": "Назад към каталога"
   },
   "HomeMobile": {
     "notificationsAria": "Известия",
@@ -3213,5 +3220,53 @@
     "container_Drum": "барабан",
     "container_Isotank": "изотанк",
     "container_Can": "консерва"
+  },
+  "SearchPage": {
+    "title": "Търсене",
+    "lead": "Бутилки, вашите поръчки и информационни листове за безопасност.",
+    "placeholder": "Код на газ, SKU, номер на поръчка, CAS или UN…",
+    "clear": "Изчисти",
+    "recent": "Наскоро търсени",
+    "recentClear": "Изчисти историята",
+    "hint": "Въведете поне {n} символа — напр. R-32, 75-10-5, UN 3163 или номер на поръчка.",
+    "none": "Нищо не е намерено за “{q}”.",
+    "groupProducts": "Бутилки и оборудване",
+    "groupOrders": "Вашите поръчки",
+    "groupDocs": "Информационни листове за безопасност",
+    "seeAll": "Всички {count} резултати в каталога",
+    "outOfStock": "Няма наличност",
+    "lines": "{count, plural, one {# линия} other {# линии}}",
+    "cancelled": "Отменена",
+    "awaitingPayment": "В очакване на плащане",
+    "sdsTitle": "{gas} · информационен лист за безопасност",
+    "signIn": "Влезте",
+    "signInOrders": "за да търсите и вашите поръчки."
+  },
+  "NotifFeed": {
+    "title": "Уведомления",
+    "lead": "Какво се случи с вашия акаунт: поръчки, F-Gas, известия за цени и връщания.",
+    "settings": "Настройки на имейла",
+    "new": "Нов",
+    "emptyTitle": "Няма нищо тук още",
+    "emptyBody": "Поръчки, прегледи на сертификати, известия за цени и връщания на бутилки ще се появят тук, когато се случат.",
+    "orderPlaced": "Поръчка {number} направена",
+    "orderPlacedBody": "{lines, plural, one {# линия} other {# линии}} · {total}",
+    "orderPaid": "Плащането получено за {number}",
+    "orderStage": "{number}: {stage}",
+    "eta": "Очаквана доставка {date}",
+    "orderCancelled": "Поръчка {number} отменена",
+    "fgasVerified": "Сертификат F-Gas проверен",
+    "fgasRejected": "Сертификат F-Gas отхвърлен",
+    "fgasPending": "Сертификат F-Gas в процес на преглед",
+    "fgasExpired": "Сертификат F-Gas изтекъл",
+    "fgasExpiring": "Вашият сертификат F-Gas изтича на {date}",
+    "fgasExpiringBody": "{days, plural, one {# ден остава} other {# дни остават}} — качете подновения сертификат, за да продължите да поръчвате газ.",
+    "priceAlert": "{gas} достигна вашата целева цена",
+    "priceAlertBody": "Вашата цел: {target} на кг",
+    "backInStock": "{name} отново е наличен",
+    "return_REQUESTED": "Заявка за връщане на бутилка ({count})",
+    "return_SCHEDULED": "Прием на връщане на бутилки ({count})",
+    "return_COLLECTED": "Бутилките получени в склада ({count})",
+    "return_CANCELLED": "Връщането на бутилки е отменено"
   }
 }
