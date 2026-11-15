@@ -9,6 +9,10 @@ export const authConfig = {
   // Errors land on our own sign-in page (it reads ?error=), not NextAuth's
   // unstyled default — e.g. a refused Google link explains itself there.
   pages: { signIn: "/auth", error: "/auth" },
+  // The site answers on several hosts (www.myeenergy.com, www.myeenergy.eu,
+  // the Vercel URL): Auth.js must take the host from the request, so each
+  // domain keeps its own sign-in and session. auth.ts sets the same.
+  trustHost: true,
   session: { strategy: "jwt" },
   providers: [],
   callbacks: {

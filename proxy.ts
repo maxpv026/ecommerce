@@ -29,6 +29,21 @@ const PROTECTED_SEGMENTS = [
 
 const LOCALE_PREFIX_PATTERN = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
 
+/**
+ * The origin the visitor actually used — https://www.myeenergy.eu, …com, or a
+ * preview URL. Not req.nextUrl.origin: when AUTH_URL is set, Auth.js rewrites
+ * the request URL to it, and every redirect built from it then sent one
+ * domain's visitors to another (www.myeenergy.eu → www.myeenergy.com, and
+ * before that → the *.vercel.app deployment URL).
+ */
+function visitorOrigin(req: { headers: Headers; nextUrl: URL }): string {
+  // Host, not X-Forwarded-Host: Vercel sets Host to the domain requested, and
+  // a client-supplied forwarding header must never steer a redirect.
+  const host = (req.headers.get("host") ?? "").trim();
+  const proto = (req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol.replace(/:$/, "")).split(",")[0]!.trim();
+  return host ? `${proto}://${host}` : req.nextUrl.origin;
+}
+
 function stripLocalePrefix(pathname: string) {
   const match = pathname.match(LOCALE_PREFIX_PATTERN);
   return match ? pathname.slice(match[0].length) || "/" : pathname;
@@ -36,6 +51,7 @@ function stripLocalePrefix(pathname: string) {
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
+  const origin = visitorOrigin(req);
 
   // ── Rate limiting ──
   // Runs before anything else so a flood is rejected at the cheapest point.
@@ -64,6 +80,16 @@ export default auth((req) => {
   // goes through here so a rule added for a non-API path keeps reporting.
   const finish = (res: NextResponse) => {
     if (budget) for (const [key, value] of Object.entries(budget)) res.headers.set(key, value);
+    // Our own redirects (next-intl's locale redirect included) stay on the
+    // visitor's domain. Only a Location on the app's own (possibly AUTH_URL-
+    // rewritten) origin is re-based; anything else is left alone.
+    const location = res.headers.get("location");
+    if (location && origin !== req.nextUrl.origin) {
+      try {
+        const target = new URL(location, req.nextUrl.origin);
+        if (target.origin === req.nextUrl.origin) res.headers.set("location", `${origin}${target.pathname}${target.search}${target.hash}`);
+      } catch {}
+    }
     return res;
   };
 
@@ -108,12 +134,12 @@ export default auth((req) => {
   // the outer wall, not the only one.
   const isAdminRoute = pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/");
   if (isAdminRoute && !isStaffRole(req.auth?.user?.role)) {
-    return finish(NextResponse.redirect(new URL(`/${locale}`, req.nextUrl.origin)));
+    return finish(NextResponse.redirect(new URL(`/${locale}`, origin)));
   }
   // Staff, but not for this screen (lib/rbac): the in-shell 403 page, with a
   // real 403 status. The page guard re-checks the row; this is the fast path.
   if (isAdminRoute && !canAccessAdminRoute(req.auth?.user?.role, pathWithoutLocale)) {
-    return finish(NextResponse.rewrite(new URL(`/${locale}/admin/forbidden`, req.nextUrl.origin), { status: 403 }));
+    return finish(NextResponse.rewrite(new URL(`/${locale}/admin/forbidden`, origin), { status: 403 }));
   }
 
   // An admin without an authenticator is sent to set one up rather than
@@ -122,13 +148,13 @@ export default auth((req) => {
   // real gate is requireAdmin(), which re-reads the row on every admin
   // action. A stale claim can therefore delay access but never grant it.
   if (isAdminRoute && req.auth?.user?.isTwoFactorEnabled !== true) {
-    const setup = new URL(`/${locale}/profile`, req.nextUrl.origin);
+    const setup = new URL(`/${locale}/profile`, origin);
     setup.searchParams.set("notice", "admin-2fa-required");
     return finish(NextResponse.redirect(setup));
   }
 
   if (isProtected && !req.auth) {
-    const authUrl = new URL(`/${locale}/auth`, req.nextUrl.origin);
+    const authUrl = new URL(`/${locale}/auth`, origin);
     authUrl.searchParams.set("callbackUrl", pathname);
     return finish(NextResponse.redirect(authUrl));
   }
