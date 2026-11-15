@@ -2,9 +2,26 @@ import "server-only";
 import nodemailer from "nodemailer";
 import { emailContext } from "@/lib/email/context";
 
-// Email delivery over SMTP (nodemailer). Every message's body comes from
-// the shared design system in lib/email (design.ts renders, context.ts
-// localizes); this module is the transport and the security-code email.
+// Email delivery. Every message's body comes from the shared design system
+// in lib/email (design.ts renders, context.ts localizes); this module is the
+// transport and the security-code email.
+//
+// Two transports, one entry point (deliver):
+//
+//   resend  — Resend's HTTP API (RESEND_API_KEY). Preferred in production:
+//             one HTTPS request per message, no SMTP handshake on a cold
+//             serverless start, attachments as base64.
+//   smtp    — nodemailer (SMTP_*), e.g. smtp.resend.com:465 or Gmail.
+//
+// mailTransport() picks: MAIL_TRANSPORT ("resend" | "smtp" | "off") when set;
+// otherwise an SMTP_HOST on this machine (127.0.0.1 / localhost — every test
+// harness's mail sink) ALWAYS wins, so test runs never reach Resend even with
+// the real key in .env.local; then RESEND_API_KEY; then SMTP. NODE_ENV=test
+// defaults to "off". Fixture addresses (*.test, example.com/org/net) are
+// never handed to Resend either.
+//
+// From: EMAIL_FROM, else SMTP_FROM (must be on the domain verified at the
+// provider — "My Energy <orders@myeenergy.com>"). Reply-To: EMAIL_REPLY_TO.
 //
 // OTP email delivery over SMTP (nodemailer). Development setup targets
 // Gmail's SMTP service:
@@ -24,6 +41,21 @@ const GMAIL_HOST = "smtp.gmail.com";
 const GMAIL_PORT = 465;
 
 let transporter: nodemailer.Transporter | null = null;
+
+export type MailTransport = "resend" | "smtp" | "off";
+
+const LOOPBACK = /^(127\.\d+\.\d+\.\d+|localhost|::1)$/i;
+
+export function mailTransport(): MailTransport {
+  const forced = process.env.MAIL_TRANSPORT?.trim().toLowerCase();
+  if (forced === "resend" || forced === "smtp" || forced === "off") return forced;
+  if (LOOPBACK.test(process.env.SMTP_HOST?.trim() ?? "")) return "smtp";
+  if (process.env.NODE_ENV === "test") return "off";
+  return process.env.RESEND_API_KEY?.trim() ? "resend" : "smtp";
+}
+
+/** Addresses that only ever belong to test fixtures. */
+const FIXTURE_ADDRESS = /@(?:[^@\s]+\.)?(?:example\.(?:com|org|net)|[^@\s]+\.test)$/i;
 
 function getTransporter(): nodemailer.Transporter {
   if (transporter) return transporter;
@@ -56,9 +88,9 @@ function getTransporter(): nodemailer.Transporter {
   transporter = nodemailer.createTransport({
     host: SMTP_HOST || GMAIL_HOST,
     port,
-    // Port 465 is implicit TLS (the Gmail setup); other ports negotiate
-    // STARTTLS where the server offers it.
-    secure: port === 465,
+    // Port 465 is implicit TLS (Gmail, smtp.resend.com); other ports negotiate
+    // STARTTLS where the server offers it. SMTP_SECURE overrides.
+    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : port === 465,
     auth: { user: SMTP_USER, pass },
   });
 
@@ -86,12 +118,79 @@ function getTransporter(): nodemailer.Transporter {
 }
 
 function fromAddress(): string {
-  // SMTP_FROM wins when set — required for providers whose SMTP login is not
-  // an address (Resend's user is literally "resend"; the From must be on a
-  // domain verified there). Otherwise derive it from SMTP_USER, which is what
-  // Gmail rewrites the header to anyway.
-  const explicit = process.env.SMTP_FROM?.trim();
+  // EMAIL_FROM / SMTP_FROM win when set — required for Resend, whose SMTP
+  // login is literally "resend" and whose From must be on the verified domain.
+  // Otherwise derive it from SMTP_USER, which Gmail rewrites the header to anyway.
+  const explicit = process.env.EMAIL_FROM?.trim() || process.env.SMTP_FROM?.trim();
   return explicit || `"My Energy" <${process.env.SMTP_USER}>`;
+}
+
+const replyTo = () => process.env.EMAIL_REPLY_TO?.trim() || undefined;
+
+type OutgoingMail = {
+  to: string;
+  cc?: string;
+  subject: string;
+  html?: string;
+  text: string;
+  headers?: Record<string, string>;
+  attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
+};
+
+/**
+ * The one place a message leaves the app. Returns what the provider said;
+ * throws on a transport failure or a rejected recipient, so callers that
+ * release a claim on failure (waitlist, reminders) can retry.
+ */
+async function deliver(message: OutgoingMail): Promise<MailDelivery> {
+  const mode = mailTransport();
+  const recipients = [message.to, ...(message.cc ? [message.cc] : [])];
+
+  if (mode === "off" || (mode === "resend" && recipients.every((r) => FIXTURE_ADDRESS.test(r)))) {
+    console.log(`[mail] not sent (${mode === "off" ? "MAIL_TRANSPORT=off / test" : "fixture address"}): "${message.subject}" → ${recipients.join(", ")}`);
+    return { accepted: recipients, rejected: [], response: "skipped", messageId: "" };
+  }
+
+  if (mode === "resend") {
+    const live = recipients.filter((r) => !FIXTURE_ADDRESS.test(r));
+    const toAddress = live.includes(message.to) ? message.to : live[0]!;
+    const ccAddress = message.cc && live.includes(message.cc) && message.cc !== toAddress ? message.cc : null;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY!.trim()}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: fromAddress(),
+        to: [toAddress],
+        ...(ccAddress ? { cc: [ccAddress] } : {}),
+        ...(replyTo() ? { reply_to: replyTo() } : {}),
+        subject: message.subject,
+        ...(message.html ? { html: message.html } : {}),
+        text: message.text,
+        ...(message.headers ? { headers: message.headers } : {}),
+        ...(message.attachments?.length
+          ? { attachments: message.attachments.map((a) => ({ filename: a.filename, content: a.content.toString("base64"), content_type: a.contentType })) }
+          : {}),
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const body = (await res.json().catch(() => null)) as { id?: string; message?: string; name?: string } | null;
+    if (!res.ok || !body?.id) {
+      throw new Error(`Resend rejected the message: ${res.status} ${body?.name ?? ""} ${body?.message ?? ""}`.trim());
+    }
+    return { accepted: ccAddress ? [toAddress, ccAddress] : [toAddress], rejected: [], response: `resend ${res.status}`, messageId: body.id };
+  }
+
+  const info = await getTransporter().sendMail({ from: fromAddress(), ...(replyTo() ? { replyTo: replyTo() } : {}), ...message });
+  const delivery: MailDelivery = {
+    accepted: (info.accepted ?? []).map(String),
+    rejected: (info.rejected ?? []).map(String),
+    response: String(info.response ?? ""),
+    messageId: String(info.messageId ?? ""),
+  };
+  if (delivery.accepted.length === 0 || delivery.rejected.length > 0) {
+    throw new Error(`SMTP rejected the recipient: response="${delivery.response}"`);
+  }
+  return delivery;
 }
 
 /** What the SMTP server said, so the caller can log it and judge it. */
@@ -171,17 +270,7 @@ export async function sendHtmlEmail(message: {
   headers?: Record<string, string>;
   attachments?: Array<{ filename: string; content: Buffer; contentType: string }>;
 }): Promise<MailDelivery> {
-  const info = await getTransporter().sendMail({ from: fromAddress(), ...message });
-  const delivery: MailDelivery = {
-    accepted: (info.accepted ?? []).map(String),
-    rejected: (info.rejected ?? []).map(String),
-    response: String(info.response ?? ""),
-    messageId: String(info.messageId ?? ""),
-  };
-  if (delivery.accepted.length === 0 || delivery.rejected.length > 0) {
-    throw new Error(`SMTP rejected the recipient: response="${delivery.response}"`);
-  }
-  return delivery;
+  return deliver(message);
 }
 
 /** What the code is for — it changes the heading and the sentence around it. */
@@ -219,7 +308,7 @@ export async function sendOtpEmail(
   });
 
   try {
-    await getTransporter().sendMail({ from: fromAddress(), to: email, subject, text, html });
+    await deliver({ to: email, subject, text, html });
   } catch (error) {
     // Log the full SMTP diagnostics server-side (auth rejections, TLS
     // failures, Gmail 5xx responses), but surface only a clean message.
@@ -232,7 +321,7 @@ export async function sendOtpEmail(
             command: (error as { command?: string }).command,
           }
         : {};
-    console.error("[mail] Failed to send OTP email:", details, error);
+    console.error(`[mail] Failed to send OTP email (${mailTransport()}):`, details, error);
     // A dead cached transporter (rotated app password, network change)
     // shouldn't poison every later send — rebuild on next attempt.
     transporter = null;
@@ -248,6 +337,11 @@ export async function sendOtpEmail(
  * neither reveals the password.
  */
 export function smtpDiagnostics(): {
+  /** Which path messages take right now (mailTransport). */
+  transport: MailTransport;
+  /** RESEND_API_KEY present — never the key itself. */
+  resendKeySet: boolean;
+  from: string;
   host: string;
   port: number;
   secure: boolean;
@@ -262,6 +356,9 @@ export function smtpDiagnostics(): {
   const port = Number(process.env.SMTP_PORT ?? GMAIL_PORT);
   const user = process.env.SMTP_USER?.trim() || null;
   return {
+    transport: mailTransport(),
+    resendKeySet: Boolean(process.env.RESEND_API_KEY?.trim()),
+    from: fromAddress(),
     host: process.env.SMTP_HOST || GMAIL_HOST,
     port,
     secure: port === 465,
@@ -280,26 +377,11 @@ export function smtpDiagnostics(): {
  * here really does clear the transport.
  */
 export async function sendSmtpSelfTest(to: string): Promise<MailDelivery> {
-  const active = getTransporter();
-  const info = await active.sendMail({
-    from: fromAddress(),
+  return deliver({
     to,
-    subject: "SMTP is working!",
+    subject: "Email is working!",
     text:
-      "SMTP is working.\n\nSent by GET /api/admin/test-smtp to prove the transport is healthy. " +
-      "If you are reading this, Nodemailer and Gmail are fine and any missing back-in-stock mail is a problem further up.",
+      `Email is working (transport: ${mailTransport()}).\n\nSent by GET /api/admin/test-smtp to prove the transport is healthy. ` +
+      "If you are reading this, delivery is fine and any missing back-in-stock mail is a problem further up.",
   });
-
-  const delivery: MailDelivery = {
-    accepted: (info.accepted ?? []).map(String),
-    rejected: (info.rejected ?? []).map(String),
-    response: String(info.response ?? ""),
-    messageId: String(info.messageId ?? ""),
-  };
-  if (delivery.accepted.length === 0 || delivery.rejected.length > 0) {
-    throw new Error(
-      `SMTP accepted the message but rejected the recipient: accepted=[${delivery.accepted.join(", ")}] rejected=[${delivery.rejected.join(", ")}] response="${delivery.response}"`
-    );
-  }
-  return delivery;
 }
