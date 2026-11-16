@@ -2366,7 +2366,6 @@
     "shippedKicker": "Mibgħuta",
     "shippedHeading": "L-ordni tiegħek hija fuq triqitha",
     "preview": "{count, plural, one {# oġġett} two {# oġġetti} few {# oġġetti} many {# oġġetti} other {# oġġetti}} · {total} · fattura {invoice} mehmuża",
-    "depositBody": "{count, plural, one {# ċilindru li jista' jiġi rritornat ġie} two {# ċilindri li jistgħu jiġu rritornati ġew} few {# ċilindri li jistgħu jiġu rritornati ġew} many {# ċilindri li jistgħu jiġu rritornati ġew} other {# ċilindri li jistgħu jiġu rritornati ġew}} miżjuda mal-kont tiegħek. Id-depożitu ta' {amount} jiġi rrifondut kollu meta {count, plural, one {jiġi} two {jiġu} few {jiġu} many {jiġu} other {jiġu}} rritornati mingħajr ħsara.",
     "fieldCarrier": "Trasportatur",
     "fieldEta": "Kunsinna stmata",
     "deliveredSubject": "L-ordni {order} ġiet ikkunsinnata",

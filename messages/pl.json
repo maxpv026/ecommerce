@@ -2366,7 +2366,6 @@
     "shippedKicker": "Wysłane",
     "shippedHeading": "Twoje zamówienie jest w drodze",
     "preview": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}} · {total} · faktura {invoice} w załączniku",
-    "depositBody": "{count, plural, one {# zwrotna butla została} few {# zwrotne butle zostały} many {# zwrotnych butli zostało} other {# zwrotnych butli zostało}} dodana do Twojego konta. Kaucja {amount} jest zwracana w całości, gdy {count, plural, one {zostanie} few {zostaną} many {zostaną} other {zostaną}} zwrócona bez uszkodzeń.",
     "fieldCarrier": "Przewoźnik",
     "fieldEta": "Szacowana dostawa",
     "deliveredSubject": "Zamówienie {order} zostało dostarczone",

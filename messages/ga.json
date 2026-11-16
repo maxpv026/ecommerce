@@ -2366,7 +2366,6 @@
     "shippedKicker": "Seolta",
     "shippedHeading": "Tá d'ordú ar a bhealach",
     "preview": "{count, plural, one {# mhír} two {# mhír} few {# mhír} many {# mhír} other {# mhír}} · {total} · sonrasc {invoice} ceangailte",
-    "depositBody": "{count, plural, one {Cuireadh # sorcóir inaisíoctha} two {Cuireadh # sorcóir inaisíoctha} few {Cuireadh # sorcóir inaisíoctha} many {Cuireadh # sorcóir inaisíoctha} other {Cuireadh # sorcóir inaisíoctha}} le do chuntas. Aisíocfar an {amount} éarlais go hiomlán nuair a {count, plural, one {bhfilleann sé} two {bhfilleann siad} few {bhfilleann siad} many {bhfilleann siad} other {bhfilleann siad}} gan damáiste.",
     "fieldCarrier": "Iompróir",
     "fieldEta": "Seachadadh measta",
     "deliveredSubject": "Seachadadh ordú {order}",

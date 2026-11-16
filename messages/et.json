@@ -2361,7 +2361,6 @@
     "bankReference": "Makse viide",
     "bankName": "Pank",
     "depositTitle": "Tagastatavad balloonid",
-    "depositBody": "{count, plural, one {# tagastatav balloon on} other {# tagastatavat ballooni on}} lisatud teie kontole. {amount} tagatis tagastatakse täies ulatuses, kui {count, plural, one {see tagastatakse} other {need tagastatakse}} kahjustamata.",
     "cta": "Vaata oma tellimust →",
     "reason": "Saate selle teavituse, kuna esitasite tellimuse My Energy's. Tellimuse ja kohaletoimetamise e-kirjad saadetakse alati.",
     "shippedSubject": "Tellimus {order} on teele pandud",

@@ -2366,7 +2366,6 @@
     "shippedKicker": "Expédiée",
     "shippedHeading": "Votre commande est en route",
     "preview": "{count, plural, one {# article} many {# articles} other {# articles}} · {total} · facture {invoice} jointe",
-    "depositBody": "{count, plural, one {# bouteille consignée a} many {# bouteilles consignées ont} other {# bouteilles consignées ont}} été ajoutée à votre compte. Le dépôt de {amount} est remboursé intégralement lorsque {count, plural, one {elle est} many {elles sont} other {elles sont}} retournée(s) sans dommage.",
     "fieldCarrier": "Transporteur",
     "fieldEta": "Livraison estimée",
     "deliveredSubject": "Commande {order} livrée",

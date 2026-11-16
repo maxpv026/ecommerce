@@ -2361,7 +2361,6 @@
     "bankReference": "Zahlungsreferenz",
     "bankName": "Bank",
     "depositTitle": "Rückgabeflaschen",
-    "depositBody": "{count, plural, one {# Rückgabeflasche wurde} other {# Rückgabeflaschen wurden}} Ihrem Konto hinzugefügt. Das Pfand von {amount} wird vollständig zurückerstattet, wenn {count, plural, one {sie unbeschädigt zurückgegeben wird} other {sie unbeschädigt zurückgegeben werden}}.",
     "cta": "Ihre Bestellung ansehen →",
     "reason": "Sie erhalten diese E-Mail, weil Sie eine Bestellung bei My Energy aufgegeben haben. Bestell- und Liefer-E-Mails werden immer gesendet.",
     "shippedSubject": "Bestellung {order} wurde versandt",

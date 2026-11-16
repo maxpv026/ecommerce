@@ -2366,7 +2366,6 @@
     "shippedKicker": "Poslano",
     "shippedHeading": "Vaša narudžba je na putu",
     "preview": "{count, plural, one {# stavka} few {# stavke} other {# stavki}} · {total} · faktura {invoice} priložena",
-    "depositBody": "{count, plural, one {# povratna boca je} few {# povratne boce su} other {# povratnih boca je}} dodano na vaš račun. Polog od {amount} vraća se u cijelosti kada {count, plural, one {je} few {su} other {su}} vraćene neoštećene.",
     "fieldCarrier": "Prijevoznik",
     "fieldEta": "Procijenjena dostava",
     "deliveredSubject": "Narudžba {order} je dostavljena",

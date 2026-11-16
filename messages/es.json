@@ -2366,7 +2366,6 @@
     "shippedKicker": "Enviado",
     "shippedHeading": "Su pedido está en camino",
     "preview": "{count, plural, one {# artículo} many {# artículos} other {# artículos}} · {total} · factura {invoice} adjunta",
-    "depositBody": "{count, plural, one {# cilindro retornable ha} many {# cilindros retornables han} other {# cilindros retornables han}} sido añadidos a su cuenta. El depósito de {amount} se reembolsa por completo cuando {count, plural, one {se devuelve} many {se devuelven} other {se devuelven}} sin daños.",
     "fieldCarrier": "Transportista",
     "fieldEta": "Entrega estimada",
     "deliveredSubject": "El pedido {order} fue entregado",

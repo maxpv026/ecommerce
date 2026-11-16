@@ -168,9 +168,6 @@ async function confirmation(orderId: string, invoicePdf: Buffer | null): Promise
             },
           ] satisfies Block[])
         : []),
-      ...(b.depositUnits > 0
-        ? ([{ kind: "callout", tone: "brand", title: c.t("depositTitle"), text: c.t("depositBody", { count: b.depositUnits, amount: c.money(b.deposit) }) }] satisfies Block[])
-        : []),
       { kind: "cta", label: c.t("cta"), href: c.url(`/profile/orders/${order.id}`) },
     ],
     footer: { reason: c.t("reason") },

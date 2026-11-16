@@ -2361,7 +2361,6 @@
     "bankReference": "Betalningsreferens",
     "bankName": "Bank",
     "depositTitle": "Återbetalningsbara cylindrar",
-    "depositBody": "{count, plural, one {# återbetalningsbar cylinder har} other {# återbetalningsbara cylindrar har}} lagts till på ditt konto. Depositionen på {amount} återbetalas i sin helhet när {count, plural, one {den returneras} other {de returneras}} oskadade.",
     "cta": "Visa din order →",
     "reason": "Du får detta eftersom du har lagt en beställning hos My Energy. Order- och leveransmeddelanden skickas alltid.",
     "shippedSubject": "Order {order} har skickats",

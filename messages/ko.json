@@ -2361,7 +2361,6 @@
     "bankReference": "결제 참조",
     "bankName": "은행",
     "depositTitle": "반환 가능한 실린더",
-    "depositBody": "{count, plural, other {반환 가능한 실린더 #개}}가 귀하의 계정에 추가되었습니다. {amount} 보증금은 손상 없이 반환될 경우 전액 환불됩니다.",
     "cta": "주문 보기 →",
     "reason": "My Energy에서 주문하셨기 때문에 이 이메일을 받으셨습니다. 주문 및 배송 이메일은 항상 발송됩니다.",
     "shippedSubject": "주문 {order} 발송됨",

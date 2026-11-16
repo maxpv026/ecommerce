@@ -2366,7 +2366,6 @@
     "shippedKicker": "Odposlano",
     "shippedHeading": "Vaše naročilo je na poti",
     "preview": "{count, plural, one {# artikel} two {# artikla} few {# artikli} other {# artiklov}} · {total} · račun {invoice} priložen",
-    "depositBody": "{count, plural, one {# vračljiva jeklenka je bila} two {# vračljivi jeklenki sta bili} few {# vračljive jeklenke so bile} other {# vračljivih jeklenk je bilo}} dodanih na vaš račun. Kavcija {amount} se v celoti povrne, ko {count, plural, one {je} two {sta} few {so} other {so}} vrnjene nepoškodovane.",
     "fieldCarrier": "Prevoznik",
     "fieldEta": "Predvidena dostava",
     "deliveredSubject": "Naročilo {order} je bilo dostavljeno",

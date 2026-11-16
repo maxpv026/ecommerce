@@ -2361,7 +2361,6 @@
     "bankReference": "Betalingsreferentie",
     "bankName": "Bank",
     "depositTitle": "Retourneerbare cilinders",
-    "depositBody": "{count, plural, one {# retourneerbare cilinder is} other {# retourneerbare cilinders zijn}} aan uw account toegevoegd. Het {amount} statiegeld wordt volledig terugbetaald wanneer {count, plural, one {deze} other {deze}} onbeschadigd worden geretourneerd.",
     "cta": "Bekijk uw bestelling →",
     "reason": "U ontvangt dit omdat u een bestelling heeft geplaatst bij My Energy. Bestel- en leveringsmails worden altijd verzonden.",
     "shippedSubject": "Bestelling {order} is verzonden",

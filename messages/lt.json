@@ -2366,7 +2366,6 @@
     "shippedKicker": "Išsiųsta",
     "shippedHeading": "Jūsų užsakymas pakeliui",
     "preview": "{count, plural, one {# prekė} few {# prekės} many {# prekių} other {# prekių}} · {total} · sąskaita faktūra {invoice} pridedama",
-    "depositBody": "{count, plural, one {# grąžintinas balionas buvo} few {# grąžintini balionai buvo} many {# grąžintinų balionų buvo} other {# grąžintinų balionų buvo}} pridėta į jūsų paskyrą. {amount} užstatas grąžinamas visiškai, kai {count, plural, one {jis yra} few {jie yra} many {jie yra} other {jie yra}} grąžinami nepažeisti.",
     "fieldCarrier": "Vežėjas",
     "fieldEta": "Numatomas pristatymas",
     "deliveredSubject": "Užsakymas {order} buvo pristatytas",

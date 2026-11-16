@@ -463,7 +463,7 @@ function renderHtml(doc: EmailDoc, chrome: EmailChrome): string {
     ? `<tr><td style="padding:0 0 10px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%"><tr><td class="me-tone-warning" style="padding:9px 14px;border-radius:8px;background-color:${TONES.warning.bg};color:#92400E;font-size:12.5px;line-height:18px">${escapeHtml(doc.testBanner)}</td></tr></table></td></tr>`
     : "";
 
-  const header = `<tr><td class="me-pad me-line" style="padding:18px 32px;border-bottom:1px solid ${C.border}">
+  const header = `<tr><td class="me-pad me-line" style="padding:20px 40px;border-bottom:1px solid ${C.border}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%"><tr>
 <td valign="middle" style="vertical-align:middle">
 ${
@@ -480,7 +480,7 @@ ${
 </tr></table>
 </td></tr>`;
 
-  const body = `<tr><td class="me-pad" style="padding:30px 32px 10px">
+  const body = `<tr><td class="me-pad" style="padding:36px 40px 16px;font-family:${FONT}">
 ${kicker}<h1 class="me-ink me-h1" style="margin:0 0 18px;font-family:${FONT};font-size:24px;line-height:31px;font-weight:700;letter-spacing:-0.025em;color:${C.ink}">${escapeHtml(doc.heading)}</h1>
 ${doc.blocks.map(blockHtml).join("\n")}
 </td></tr>`;
@@ -493,7 +493,7 @@ ${doc.blocks.map(blockHtml).join("\n")}
     ? `<p style="margin:0 0 8px"><a href="${safeHref(doc.footer.unsubscribe.href)}" class="me-muted" style="color:${C.muted};text-decoration:underline;font-weight:600">${escapeHtml(doc.footer.unsubscribe.label)}</a></p>`
     : "";
 
-  const footer = `<tr><td class="me-pad" style="padding:22px 32px 0;font-family:${FONT};font-size:12px;line-height:19px;color:${C.muted}">
+  const footer = `<tr><td class="me-pad" style="padding:24px 40px 0;font-family:${FONT};font-size:12px;line-height:19px;color:${C.muted}">
 <p class="me-muted" style="margin:0 0 8px;color:${C.muted}"><strong class="me-body" style="font-weight:600;color:${C.body}">${escapeHtml(chrome.brand)}</strong> &middot; ${escapeHtml(chrome.tagline)} &middot; <span style="white-space:nowrap">${escapeHtml(chrome.regulation)}</span></p>
 <p class="me-muted" style="margin:0 0 8px;color:${C.muted}">${linkRow}</p>
 ${reason}${unsubscribe}<p class="me-faint" style="margin:0;color:${C.faint}">${escapeHtml(chrome.sender)}</p>
@@ -514,6 +514,7 @@ ${reason}${unsubscribe}<p class="me-faint" style="margin:0;color:${C.faint}">${e
 <meta name="supported-color-schemes" content="light dark">
 <title>${escapeHtml(doc.subject)}</title>
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+<!--[if mso]><style>body,table,td,p,h1,div,span,a{font-family:'Segoe UI',Arial,sans-serif !important}</style><![endif]-->
 <style>
 ${STYLE}
 </style>
@@ -521,9 +522,9 @@ ${STYLE}
 <body class="body me-bg" style="margin:0;padding:0;background-color:${C.page};font-family:${FONT};-webkit-font-smoothing:antialiased">
 <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;color:${C.page}">${escapeHtml(doc.preview)}${spacer}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="me-bg" bgcolor="${C.page}" style="width:100%;background-color:${C.page}">
-<tr><td align="center" class="me-outer" style="padding:32px 12px 40px">
-<!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px">
+<tr><td align="center" class="me-outer" style="padding:40px 20px;font-family:${FONT}">
+<!--[if mso]><table role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+<table role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;margin:0 auto">
 ${testBanner}<tr><td>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="me-card" bgcolor="${C.card}" style="width:100%;background-color:${C.card};border:1px solid ${C.border};border-radius:14px;border-collapse:separate !important;overflow:hidden">
 ${header}

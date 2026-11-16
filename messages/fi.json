@@ -2361,7 +2361,6 @@
     "bankReference": "Maksuviite",
     "bankName": "Pankki",
     "depositTitle": "Palautettavat pullot",
-    "depositBody": "{count, plural, one {# palautettava pullo on} other {# palautettavaa pulloa on}} lisätty tilillesi. {amount} pantti palautetaan kokonaisuudessaan, kun {count, plural, one {se palautetaan} other {ne palautetaan}} vahingoittumattomina.",
     "cta": "Katso tilauksesi →",
     "reason": "Saat tämän, koska teit tilauksen My Energyltä. Tilaus- ja toimitussähköpostit lähetetään aina.",
     "shippedSubject": "Tilaus {order} on lähetetty",

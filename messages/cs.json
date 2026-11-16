@@ -2366,7 +2366,6 @@
     "shippedKicker": "Odesláno",
     "shippedHeading": "Vaše objednávka je na cestě",
     "preview": "{count, plural, one {# položka} few {# položky} many {# položek} other {# položek}} · {total} · faktura {invoice} přiložena",
-    "depositBody": "{count, plural, one {# vratná lahev byla} few {# vratné lahve byly} many {# vratných lahví bylo} other {# vratných lahví bylo}} přidána na váš účet. {amount} záloha je plně vrácena, když {count, plural, one {je} few {jsou} many {jsou} other {jsou}} vrácena nepoškozená.",
     "fieldCarrier": "Dopravce",
     "fieldEta": "Odhadované doručení",
     "deliveredSubject": "Objednávka {order} byla doručena",

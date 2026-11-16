@@ -2361,7 +2361,6 @@
     "bankReference": "Referință plată",
     "bankName": "Bancă",
     "depositTitle": "Butelii returnabile",
-    "depositBody": "{count, plural, one {# butelie returnabilă a fost} few {# butelii returnabile au fost} other {# de butelii returnabile au fost}} adăugate în contul dvs. Depozitul de {amount} se rambursează integral când {count, plural, one {este} few {sunt} other {sunt}} returnate nedeteriorate.",
     "cta": "Vizualizați comanda dvs. →",
     "reason": "Primiți acest email deoarece ați plasat o comandă cu My Energy. Emailurile de comandă și livrare sunt întotdeauna trimise.",
     "shippedSubject": "Comanda {order} a fost expediată",

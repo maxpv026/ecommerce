@@ -2361,7 +2361,6 @@
     "bankReference": "Betalingsreference",
     "bankName": "Bank",
     "depositTitle": "Returnerbare cylindre",
-    "depositBody": "{count, plural, one {# returnerbar cylinder er} other {# returnerbare cylindre er}} blevet tilføjet til din konto. {amount} godtgørelsen refunderes fuldt ud, når {count, plural, one {den returneres} other {de returneres}} ubeskadiget.",
     "cta": "Se din ordre →",
     "reason": "Du modtager dette, fordi du har afgivet en ordre hos My Energy. Ordre- og leveringsmails sendes altid.",
     "shippedSubject": "Ordre {order} er afsendt",

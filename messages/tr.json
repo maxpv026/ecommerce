@@ -2361,7 +2361,6 @@
     "bankReference": "Ödeme referansı",
     "bankName": "Banka",
     "depositTitle": "İade edilebilir tüpler",
-    "depositBody": "{count, plural, one {# iade edilebilir tüp} other {# iade edilebilir tüp}} hesabınıza eklendi. {amount} depozito, {count, plural, one {o hasarsız} other {onlar hasarsız}} iade edildiğinde tamamen geri ödenir.",
     "cta": "Siparişinizi görüntüleyin →",
     "reason": "Bu e-postayı My Energy ile sipariş verdiğiniz için alıyorsunuz. Sipariş ve teslimat e-postaları her zaman gönderilir.",
     "shippedSubject": "Sipariş {order} gönderildi",

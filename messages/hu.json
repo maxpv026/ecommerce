@@ -2361,7 +2361,6 @@
     "bankReference": "Fizetési hivatkozás",
     "bankName": "Bank",
     "depositTitle": "Visszatérítendő palackok",
-    "depositBody": "{count, plural, one {# visszatérítendő palack került} other {# visszatérítendő palack került}} hozzáadásra a fiókjához. A {amount} betét teljes mértékben visszatérítendő, ha {count, plural, one {sértetlenül visszakerül} other {sértetlenül visszakerülnek}}.",
     "cta": "Tekintse meg a rendelését →",
     "reason": "Ezt az e-mailt azért kapja, mert rendelést adott le a My Energy-nél. A rendelési és szállítási e-mailek mindig elküldésre kerülnek.",
     "shippedSubject": "{order} rendelés kiszállítva",

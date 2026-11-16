@@ -2360,7 +2360,6 @@
     "bankReference": "Payment reference",
     "bankName": "Bank",
     "depositTitle": "Returnable cylinders",
-    "depositBody": "{count, plural, one {# returnable cylinder has} other {# returnable cylinders have}} been added to your account. The {amount} deposit is refunded in full when {count, plural, one {it is} other {they are}} returned undamaged.",
     "cta": "View your order →",
     "reason": "You're receiving this because you placed an order with My Energy. Order and delivery emails are always sent.",
     "shippedSubject": "Order {order} has shipped",

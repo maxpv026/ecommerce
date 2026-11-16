@@ -2366,7 +2366,6 @@
     "shippedKicker": "Nosūtīts",
     "shippedHeading": "Jūsu pasūtījums ir ceļā",
     "preview": "{count, plural, zero {# vienības} one {# vienība} other {# vienības}} · {total} · pievienota faktūra {invoice}",
-    "depositBody": "{count, plural, zero {# atgriežamo balonu ir} one {# atgriežamais balons ir} other {# atgriežamie baloni ir}} pievienoti jūsu kontam. {amount} depozīts tiek pilnībā atmaksāts, kad {count, plural, zero {tie ir} one {tas ir} other {tie ir}} atgriezti nebojāti.",
     "fieldCarrier": "Pārvadātājs",
     "fieldEta": "Paredzamais piegādes laiks",
     "deliveredSubject": "Pasūtījums {order} ir piegādāts",

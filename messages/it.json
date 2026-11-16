@@ -2366,7 +2366,6 @@
     "shippedKicker": "Spedito",
     "shippedHeading": "Il tuo ordine è in arrivo",
     "preview": "{count, plural, one {# articolo} many {# articoli} other {# articoli}} · {total} · fattura {invoice} allegata",
-    "depositBody": "{count, plural, one {# bombola a rendere è stata} many {# bombole a rendere sono state} other {# bombole a rendere sono state}} aggiunta al tuo account. Il deposito di {amount} viene rimborsato per intero quando {count, plural, one {essa viene} many {esse vengono} other {esse vengono}} restituite senza danni.",
     "fieldCarrier": "Vettore",
     "fieldEta": "Consegna stimata",
     "deliveredSubject": "Ordine {order} consegnato",

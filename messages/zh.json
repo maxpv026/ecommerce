@@ -2361,7 +2361,6 @@
     "bankReference": "付款参考",
     "bankName": "银行",
     "depositTitle": "可退还钢瓶",
-    "depositBody": "{count, plural, other {# 个可退还钢瓶已}} 添加到您的账户中。{amount} 押金在 {count, plural, other {它们完好无损退回时}} 全额退还。",
     "cta": "查看您的订单 →",
     "reason": "您收到此邮件是因为您在 My Energy 下了订单。订单和交货电子邮件始终发送。",
     "shippedSubject": "订单 {order} 已发货",
