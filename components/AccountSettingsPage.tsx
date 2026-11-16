@@ -118,7 +118,7 @@ const THEMES: Array<{ value: ThemeChoice; icon: typeof Sun; labelKey: string }> 
   { value: "system", icon: Monitor, labelKey: "themeAuto" },
 ];
 
-export default function AccountSettingsPage({ profile, security: initialSecurity, addresses, now, focus }: AccountSettingsData & { focus?: "security" }) {
+export default function AccountSettingsPage({ profile, security: initialSecurity, addresses, now, canSendTests, focus }: AccountSettingsData & { focus?: "security" }) {
   const t = useTranslations("AccountSettings");
   const router = useRouter();
   const { update } = useSession();
@@ -171,7 +171,7 @@ export default function AccountSettingsPage({ profile, security: initialSecurity
     const result = await sendTestNotification(kind).catch(() => null);
     setTesting(null);
     if (result?.ok) toast.success(t("testSent", { email: profile?.email ?? "" }));
-    else toast.error(t(`test_${result && !result.ok && result.code !== "UNAUTHENTICATED" ? result.code : "FAILED"}`));
+    else toast.error(t(`test_${result && !result.ok && result.code !== "UNAUTHENTICATED" && result.code !== "FORBIDDEN" ? result.code : "FAILED"}`));
   };
 
   const activeCount = NOTIFICATION_TOPICS.filter((k) => prefs[k]).length;
@@ -344,7 +344,8 @@ export default function AccountSettingsPage({ profile, security: initialSecurity
                   {NOTIFICATION_TOPICS.map((key) => {
                     const { icon: Icon, tone, badge } = TOPICS[key];
                     const on = prefs[key];
-                    const testKind = TESTABLE[key];
+                    // Staff only: buyers see their preferences, not a QA tool.
+                    const testKind = canSendTests ? TESTABLE[key] : undefined;
                     return (
                       <div key={key} data-preference={key} data-on={on ? "1" : "0"} className={ROW}>
                         <span className={`${TILE} ${on ? TILE_ON[tone] : TILE_OFF}`}>

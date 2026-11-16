@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { requirePermission } from "@/lib/admin/permissionCore";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { sendCartReminderEmail } from "@/lib/cartReminder";
 import { sendReplenishmentEmail } from "@/lib/notificationEmail";
@@ -10,7 +11,7 @@ export type TestNotificationKind = "abandonedCart" | "restockReminders";
 
 export type TestNotificationResult =
   | { ok: true }
-  | { ok: false; code: "UNAUTHENTICATED" | "RATE_LIMITED" | "CART_EMPTY" | "NO_HISTORY" | "NOTHING_AVAILABLE" | "NO_EMAIL" | "FAILED" };
+  | { ok: false; code: "UNAUTHENTICATED" | "FORBIDDEN" | "RATE_LIMITED" | "CART_EMPTY" | "NO_HISTORY" | "NOTHING_AVAILABLE" | "NO_EMAIL" | "FAILED" };
 
 /**
  * Settings → "Send a test to my email".
@@ -23,11 +24,19 @@ export type TestNotificationResult =
  *
  * When there is nothing real to send, it says so instead of inventing an
  * example: an empty basket, or no order history to predict from.
+ *
+ * Staff only (permission "notifications.test": SUPER_ADMIN, ADMIN — role
+ * re-read from the row, 2FA required, lib/admin/permissionCore). The
+ * settings page hides the button from everyone else; this refusal is the
+ * real wall — a buyer calling the action directly gets FORBIDDEN, the
+ * server-action equivalent of a 403, before anything is read or sent.
  */
 export async function sendTestNotification(kind: TestNotificationKind): Promise<TestNotificationResult> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { ok: false, code: "UNAUTHENTICATED" };
+  const guard = await requirePermission(userId, "notifications.test");
+  if (!guard.ok) return { ok: false, code: guard.code === "UNAUTHENTICATED" ? "UNAUTHENTICATED" : "FORBIDDEN" };
   if (!checkRateLimit(`notification-test:${userId}`, { limit: 4, windowMs: 10 * 60_000 }).success) return { ok: false, code: "RATE_LIMITED" };
 
   try {

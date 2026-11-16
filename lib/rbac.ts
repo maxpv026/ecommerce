@@ -46,7 +46,8 @@ export type Permission =
   | "broadcasts" //        /admin/broadcast
   | "support" //           /admin/support
   | "telegram.link" //     /admin/telegram — pair a Telegram chat with the admin bot
-  | "diagnostics"; //      SMTP self-test and similar owner tools
+  | "diagnostics" //       SMTP self-test and similar owner tools
+  | "notifications.test"; // Settings → "Send test" for the reminder emails (a staff QA tool, not a buyer feature)
 
 const MATRIX: Record<AppRole, readonly Permission[]> = {
   SUPER_ADMIN: [
@@ -54,14 +55,14 @@ const MATRIX: Record<AppRole, readonly Permission[]> = {
     "inventory.view", "inventory.stock", "inventory.catalog",
     "orders.view", "orders.manage",
     "users.view", "users.fgas", "users.roles",
-    "broadcasts", "support", "diagnostics", "telegram.link",
+    "broadcasts", "support", "diagnostics", "telegram.link", "notifications.test",
   ],
   ADMIN: [
     "admin.access", "dashboard.view",
     "inventory.view", "inventory.stock",
     "orders.view", "orders.manage",
     "users.view", "users.fgas",
-    "support", "telegram.link",
+    "support", "telegram.link", "notifications.test",
   ],
   ACCOUNTANT: ["admin.access", "dashboard.view", "analytics.view", "finance.export"],
   USER: [],

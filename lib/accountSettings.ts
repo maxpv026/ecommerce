@@ -3,6 +3,7 @@ import "server-only";
 import { auth } from "@/auth";
 import { getUserAddresses, getUserProfile, type UserAddress, type UserProfileData } from "@/lib/data";
 import { getSecurityState, type SecurityState } from "@/lib/actions/security";
+import { viewerCan } from "@/lib/admin/permissionCore";
 
 /**
  * Everything the settings page renders, read once on the server — used by
@@ -15,13 +16,20 @@ export interface AccountSettingsData {
   security: SecurityState | null;
   addresses: UserAddress[];
   now: number;
+  /** Staff only: the "Send test" pills on the reminder emails (lib/actions/notificationTest re-checks). */
+  canSendTests: boolean;
 }
 
 export async function loadAccountSettings(): Promise<AccountSettingsData> {
   const session = await auth();
   const userId = session?.user?.id;
   const now = Date.now();
-  if (!userId) return { profile: null, security: null, addresses: [], now };
-  const [profile, security, addresses] = await Promise.all([getUserProfile(userId), getSecurityState(), getUserAddresses(userId)]);
-  return { profile, security, addresses, now };
+  if (!userId) return { profile: null, security: null, addresses: [], now, canSendTests: false };
+  const [profile, security, addresses, canSendTests] = await Promise.all([
+    getUserProfile(userId),
+    getSecurityState(),
+    getUserAddresses(userId),
+    viewerCan(userId, "notifications.test"),
+  ]);
+  return { profile, security, addresses, now, canSendTests };
 }
