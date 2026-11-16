@@ -1618,7 +1618,7 @@
     "talkToPerson": "Sazinieties ar My Energy komandas pārstāvi",
     "talkToPersonShort": "Sazinieties ar pārstāvi",
     "greeting": "Sveiki — es varu atrast produktus un pārbaudīt krājumus, izskaidrot F-gāzu noteikumus vai nodot jūs mūsu komandai. Ko jums vajag?",
-    "quick1": "Rādīt R-32 balonus noliktavā",
+    "quick1": "Kādi aukstumaģenti ir noliktavā?",
     "quick2": "Ko nozīmē kļūdas kods E9?",
     "quick3": "Man vajag vairumtirdzniecības cenas",
     "placeholder": "Jautājiet par krājumiem, specifikācijām vai F-gāzu noteikumiem...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Mūsu komanda ir aizvērusi šo sarunu. Sūtiet ziņu, lai sāktu jaunu.",
     "expiredNotice": "Šī saruna tika dzēsta pēc stundas bezdarbības. Nosūtiet ziņojumu, lai sāktu jaunu.",
     "retentionNote": "Sarunas tiek neatgriezeniski dzēstas vienu stundu pēc pēdējās ziņas.",
-    "errorUnavailable": "Palīgs pašlaik nav pieejams. Jūsu ziņojums ir saglabāts: mēģiniet vēlreiz pēc brīža vai pieskarieties “Sazināties ar personu”."
+    "errorUnavailable": "Palīgs pašlaik nav pieejams. Jūsu ziņojums ir saglabāts: mēģiniet vēlreiz pēc brīža vai pieskarieties “Sazināties ar personu”.",
+    "subtitleOnline": "Tiešsaistē · B2B atbalsts",
+    "modeSupport": "Atbalsts",
+    "modeFgas": "F-Gas eksperts",
+    "modesAria": "Asistenta režīms",
+    "today": "Šodien",
+    "fgasTitle": "F-Gas konsultants",
+    "fgasSubtitle": "Atbild tikai no mūsu zināšanu bāzes",
+    "close": "Aizvērt tērzēšanu",
+    "talkToManager": "Sazināties ar menedžeri",
+    "welcomeTitle": "Sveiki! Kā varam palīdzēt?",
+    "cap1": "Atrast produktus un pārbaudīt krājumus",
+    "cap2": "Izskaidrot F-Gas noteikumus, dokumentus un sertifikātus",
+    "cap3": "Nodot jūs mūsu komandas menedžerim",
+    "chipsAria": "Ieteiktie jautājumi"
   },
   "SmartOrder": {
     "launch": "Viedā lielapjoma pasūtīšana",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Produktu katalogs",
     "ctaHub": "Tirgus centrs",
     "devNote": "Platformu izstrādāja <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas asistents",
+    "subtitle": "Atbild tikai no mūsu regulējuma zināšanu bāzes",
+    "intro": "Jautājiet par aizstājējiem, GWP ierobežojumiem, noplūdes pārbaužu intervāliem vai modernizācijas risinājumiem. Ja tas nav mūsu zināšanu bāzē, asistents tā arī pateiks, nevis minēs.",
+    "starter1": "Ar ko aizstāt R-404A esošajās sistēmās?",
+    "starter2": "Cik bieži jāpārbauda noplūde 60 t CO₂e sistēmai?",
+    "starter3": "Vai varu izmantot R-32 vecā R-410A split sistēmā?",
+    "searching": "Meklē zināšanu bāzē…",
+    "error": "Neizdevās sazināties ar asistentu. Lūdzu, mēģiniet vēlreiz.",
+    "placeholder": "Jautājiet par aukstumaģentu vai regulējumu…",
+    "inputAria": "Jautāt F-Gas asistentam",
+    "stop": "Apturēt ģenerēšanu",
+    "send": "Sūtīt",
+    "inStock": "Noliktavā",
+    "addToCart": "Pievienot grozam",
+    "added": "Pievienots",
+    "addAria": "Pievienot {name}, {pack} grozam",
+    "addedToast": "{name} pievienots grozam",
+    "deposit": "+ {amount} atmaksājams balona depozīts",
+    "unavailable": "Ir mūsu katalogā, bet pašlaik nav pieejams pasūtīšanai. Par pieejamību sazinieties ar komandu."
   }
 }

@@ -1618,7 +1618,7 @@
     "talkToPerson": "Parla con una persona del team My Energy",
     "talkToPersonShort": "Parla con una persona",
     "greeting": "Ciao — posso trovare prodotti e controllare la disponibilità, spiegare le regole F-Gas o passarti al nostro team. Di cosa hai bisogno?",
-    "quick1": "Mostra bombole R-32 disponibili",
+    "quick1": "Quali refrigeranti sono disponibili?",
     "quick2": "Cosa significa il codice di errore E9?",
     "quick3": "Ho bisogno di prezzi all'ingrosso",
     "placeholder": "Chiedi informazioni su disponibilità, specifiche o regole F-Gas...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Il nostro team ha chiuso questa conversazione. Invia un messaggio per iniziarne una nuova.",
     "expiredNotice": "Questa conversazione è stata eliminata dopo un'ora senza attività. Invia un messaggio per iniziarne una nuova.",
     "retentionNote": "Le chat vengono eliminate definitivamente un'ora dopo l'ultimo messaggio.",
-    "errorUnavailable": "L'assistente non è disponibile in questo momento. Il tuo messaggio è stato salvato: riprova tra un momento o tocca \"Parla con una persona\"."
+    "errorUnavailable": "L'assistente non è disponibile in questo momento. Il tuo messaggio è stato salvato: riprova tra un momento o tocca \"Parla con una persona\".",
+    "subtitleOnline": "Online · Supporto B2B",
+    "modeSupport": "Supporto",
+    "modeFgas": "Esperto F-Gas",
+    "modesAria": "Modalità assistente",
+    "today": "Oggi",
+    "fgasTitle": "Consulente F-Gas",
+    "fgasSubtitle": "Risponde solo dalla nostra base di conoscenze",
+    "close": "Chiudi chat",
+    "talkToManager": "Contatta un manager",
+    "welcomeTitle": "Ciao! Come possiamo aiutarti?",
+    "cap1": "Trovare prodotti e verificare la disponibilità",
+    "cap2": "Spiegare regole F-Gas, documenti e certificati",
+    "cap3": "Passarti a un manager del nostro team",
+    "chipsAria": "Domande suggerite"
   },
   "SmartOrder": {
     "launch": "Ordine Smart all'Ingrosso",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Catalogo prodotti",
     "ctaHub": "Hub di mercato",
     "devNote": "Piattaforma sviluppata da <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "Assistente F-Gas",
+    "subtitle": "Risponde solo dalla nostra base di conoscenze normativa",
+    "intro": "Chiedi di sostituzioni, limiti GWP, intervalli dei controlli perdite o percorsi di retrofit. Se l'informazione non è nella nostra base di conoscenze, l'assistente lo dice invece di tirare a indovinare.",
+    "starter1": "Cosa sostituisce l'R-404A negli impianti esistenti?",
+    "starter2": "Ogni quanto devo controllare le perdite di un impianto da 60 t CO₂e?",
+    "starter3": "Posso usare R-32 in un vecchio impianto split a R-410A?",
+    "searching": "Ricerca nella base di conoscenze…",
+    "error": "Si è verificato un errore nel contattare l'assistente. Riprova.",
+    "placeholder": "Chiedi di un refrigerante o di una normativa…",
+    "inputAria": "Chiedi all'assistente F-Gas",
+    "stop": "Interrompi la generazione",
+    "send": "Invia",
+    "inStock": "Disponibile",
+    "addToCart": "Aggiungi al carrello",
+    "added": "Aggiunto",
+    "addAria": "Aggiungi {name}, {pack} al carrello",
+    "addedToast": "{name} aggiunto al carrello",
+    "deposit": "+ {amount} di cauzione bombola rimborsabile",
+    "unavailable": "Presente nel nostro catalogo, ma al momento non ordinabile. Contatta il team per la disponibilità."
   }
 }

@@ -1618,7 +1618,7 @@
     "talkToPerson": "Labhair le duine ón bhfoireann My Energy",
     "talkToPersonShort": "Labhair le duine",
     "greeting": "Dia dhuit — is féidir liom táirgí a aimsiú agus stoc a sheiceáil, rialacha F-Gáis a mhíniú, nó tú a chur ar aghaidh chuig ár bhfoireann. Cad atá uait?",
-    "quick1": "Taispeáin sorcóirí R-32 atá i stoc",
+    "quick1": "Cé na cuisneáin atá i stoc?",
     "quick2": "Cad is brí le cód earráide E9?",
     "quick3": "Tá praghsáil mórchóir uaim",
     "placeholder": "Fiafraigh faoi stoc, sonraíochtaí, nó rialacha F-Gáis...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Dúnadh an comhrá seo ag ár bhfoireann. Seol teachtaireacht chun ceann nua a thosú.",
     "expiredNotice": "Scriosadh an comhrá seo tar éis uair an chloig gan aon ghníomhaíocht. Seol teachtaireacht chun ceann nua a thosú.",
     "retentionNote": "Scriostar comhráite go buan uair an chloig tar éis an teachtaireacht dheireanach.",
-    "errorUnavailable": "Níl an cúntóir ar fáil faoi láthair. Tá do theachtaireacht sábháilte: bain triail eile as ar ball, nó sconna ar “Labhair le duine”."
+    "errorUnavailable": "Níl an cúntóir ar fáil faoi láthair. Tá do theachtaireacht sábháilte: bain triail eile as ar ball, nó sconna ar “Labhair le duine”.",
+    "subtitleOnline": "Ar Líne · Tacaíocht B2B",
+    "modeSupport": "Tacaíocht",
+    "modeFgas": "Saineolaí F-Gas",
+    "modesAria": "Mód an chúntóra",
+    "today": "Inniu",
+    "fgasTitle": "Comhairleoir F-Gas",
+    "fgasSubtitle": "Freagraí ónár mbunachar eolais amháin",
+    "close": "Dún an comhrá",
+    "talkToManager": "Déan teagmháil le bainisteoir",
+    "welcomeTitle": "Dia duit! Conas is féidir linn cabhrú?",
+    "cap1": "Táirgí a aimsiú agus an stoc a sheiceáil",
+    "cap2": "Rialacha, doiciméid agus teastais F-Gas a mhíniú",
+    "cap3": "Tú a chur ar aghaidh chuig bainisteoir ar ár bhfoireann",
+    "chipsAria": "Ceisteanna molta"
   },
   "SmartOrder": {
     "launch": "Ordú Mór Cliste",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Catalóg táirgí",
     "ctaHub": "Mol margaidh",
     "devNote": "Ardán forbartha ag <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "Cúntóir F-Gas",
+    "subtitle": "Freagraí ónár mbunachar eolais rialála amháin",
+    "intro": "Fiafraigh faoi athsholáthairtí, teorainneacha GWP, eatraimh seiceála sceithe nó bealaí iarfheistithe. Mura bhfuil sé inár mbunachar eolais, déarfaidh an cúntóir é sin in ionad buille faoi thuairim a thabhairt.",
+    "starter1": "Cad a thagann in ionad R-404A i gcórais atá ann cheana?",
+    "starter2": "Cé chomh minic is gá dom córas 60 t CO₂e a sheiceáil le haghaidh sceite?",
+    "starter3": "An féidir liom R-32 a úsáid i seanchóras scoilte R-410A?",
+    "searching": "Ag cuardach an bhunachair eolais…",
+    "error": "Tharla earráid agus an cúntóir á rochtain. Bain triail eile as.",
+    "placeholder": "Fiafraigh faoi chuisneán nó faoi rialachán…",
+    "inputAria": "Cuir ceist ar an gcúntóir F-Gas",
+    "stop": "Stop an ghiniúint",
+    "send": "Seol",
+    "inStock": "I stoc",
+    "addToCart": "Cuir leis an gcart",
+    "added": "Curtha leis",
+    "addAria": "Cuir {name}, {pack} leis an gcart",
+    "addedToast": "{name} curtha leis an gcart",
+    "deposit": "+ {amount} éarlais sorcóra in-aisíoctha",
+    "unavailable": "Inár gcatalóg, ach níl sé ar fáil le hordú faoi láthair. Déan teagmháil leis an bhfoireann faoi infhaighteacht."
   }
 }

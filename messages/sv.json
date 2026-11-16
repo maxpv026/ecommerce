@@ -1618,7 +1618,7 @@
     "talkToPerson": "Prata med en person från My Energy-teamet",
     "talkToPersonShort": "Prata med en person",
     "greeting": "Hej — jag kan hitta produkter och kontrollera lager, förklara F-gasregler eller koppla dig till vårt team. Vad behöver du?",
-    "quick1": "Visa R-32 cylindrar i lager",
+    "quick1": "Vilka köldmedier finns i lager?",
     "quick2": "Vad betyder felkod E9?",
     "quick3": "Jag behöver mängdrabatt",
     "placeholder": "Fråga om lager, specifikationer eller F-gasregler...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Vårt team har avslutat denna konversation. Skicka ett meddelande för att starta en ny.",
     "expiredNotice": "Denna konversation raderades efter en timme utan aktivitet. Skicka ett meddelande för att starta en ny.",
     "retentionNote": "Chattar raderas permanent en timme efter det senaste meddelandet.",
-    "errorUnavailable": "Assistenten är inte tillgänglig just nu. Ditt meddelande är sparat: försök igen om en stund, eller tryck på “Prata med en person”."
+    "errorUnavailable": "Assistenten är inte tillgänglig just nu. Ditt meddelande är sparat: försök igen om en stund, eller tryck på “Prata med en person”.",
+    "subtitleOnline": "Online · B2B-support",
+    "modeSupport": "Support",
+    "modeFgas": "F-Gas-expert",
+    "modesAria": "Assistentläge",
+    "today": "Idag",
+    "fgasTitle": "F-Gas-konsult",
+    "fgasSubtitle": "Svarar endast utifrån vår kunskapsbas",
+    "close": "Stäng chatten",
+    "talkToManager": "Kontakta en kundansvarig",
+    "welcomeTitle": "Hej! Hur kan vi hjälpa till?",
+    "cap1": "Hitta produkter och kolla vad som finns i lager",
+    "cap2": "Förklara F-Gas-regler, dokument och certifikat",
+    "cap3": "Koppla dig vidare till en kundansvarig i vårt team",
+    "chipsAria": "Föreslagna frågor"
   },
   "SmartOrder": {
     "launch": "Smart Bulk Order",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Produktkatalog",
     "ctaHub": "Marknadshubb",
     "devNote": "Plattformen utvecklad av <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas-assistent",
+    "subtitle": "Svarar endast utifrån vår kunskapsbas om regelverk",
+    "intro": "Fråga om ersättningsalternativ, GWP-gränser, intervall för läckagekontroll eller retrofit-alternativ. Om något inte finns i vår kunskapsbas säger assistenten det i stället för att gissa.",
+    "starter1": "Vad ersätter R-404A i befintliga system?",
+    "starter2": "Hur ofta måste jag läckagekontrollera ett system på 60 t CO₂e?",
+    "starter3": "Kan jag använda R-32 i ett gammalt splitsystem med R-410A?",
+    "searching": "Söker i kunskapsbasen…",
+    "error": "Något gick fel när assistenten skulle nås. Försök igen.",
+    "placeholder": "Fråga om ett köldmedium eller regelverk…",
+    "inputAria": "Fråga F-Gas-assistenten",
+    "stop": "Stoppa svaret",
+    "send": "Skicka",
+    "inStock": "I lager",
+    "addToCart": "Lägg till i kundvagn",
+    "added": "Tillagd",
+    "addAria": "Lägg till {name}, {pack} i kundvagnen",
+    "addedToast": "{name} har lagts i kundvagnen",
+    "deposit": "+ {amount} återbetalbar cylinderdeposition",
+    "unavailable": "Finns i vår katalog, men går inte att beställa just nu. Kontakta teamet om tillgänglighet."
   }
 }

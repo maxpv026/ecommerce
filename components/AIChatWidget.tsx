@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
-import { Bot, Send, Sparkles, UserRound, X } from "lucide-react";
+import { Headset, Loader2, MessageCircle, PackageSearch, Send, ShieldCheck, Sparkles, X } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ASSISTANT_VISIBLE_PATHS, OPEN_AI_CHAT_EVENT, takePendingAiChat, type OpenAiChatDetail } from "@/lib/aiChatEvents";
@@ -37,9 +37,9 @@ const RagAssistant = dynamic(() => import("./ai/RagAssistant"), { ssr: false });
 
 type Mode = "support" | "fgas";
 
-const MODES: Array<{ id: Mode; label: string; Icon: typeof Bot }> = [
-  { id: "support", label: "Support", Icon: Bot },
-  { id: "fgas", label: "F-Gas Expert", Icon: Sparkles },
+const MODES: Array<{ id: Mode; labelKey: "modeSupport" | "modeFgas"; Icon: typeof MessageCircle }> = [
+  { id: "support", labelKey: "modeSupport", Icon: MessageCircle },
+  { id: "fgas", labelKey: "modeFgas", Icon: ShieldCheck },
 ];
 
 const QUICK_REPLY_KEYS = ["quick1", "quick2", "quick3"] as const;
@@ -227,13 +227,16 @@ export default function AIChatWidget() {
 
   if (!isVisible) return null;
 
+  const showChips = !escalated && messages.length === 0;
+
   return (
     <>
+      {/* ── Launcher ── */}
       <div
         className={`fixed z-[100] transition-[opacity,transform] duration-300 ease-[cubic-bezier(.4,0,.2,1)] ${fabOffset}`}
         style={{
           opacity: isOpen ? 0 : 1,
-          transform: isOpen ? "scale(.85)" : "scale(1)",
+          transform: isOpen ? "scale(.8)" : "scale(1)",
           pointerEvents: isOpen ? "none" : "auto",
         }}
       >
@@ -245,91 +248,86 @@ export default function AIChatWidget() {
           }}
           aria-label={unread ? t("openUnread") : t("open")}
           data-chat-fab
-          className="relative flex h-11 w-11 items-center justify-center rounded-full bg-blue-600/90 md:h-[58px] md:w-[58px] text-white shadow-[0_18px_40px_-14px_rgba(29,78,216,0.55)] backdrop-blur-md backdrop-saturate-150 transition-[transform,box-shadow,background-color] duration-200 hover:scale-[1.06] hover:bg-blue-600 hover:shadow-[0_22px_46px_-14px_rgba(29,78,216,0.65)]"
+          className="group relative flex h-12 w-12 items-center justify-center rounded-full bg-[linear-gradient(145deg,#3b82f6,#1d4ed8_55%,#1e3a8a)] text-white shadow-[0_18px_40px_-14px_rgba(29,78,216,0.7),inset_0_1px_0_rgba(255,255,255,.25)] ring-1 ring-white/25 transition-[transform,box-shadow] duration-200 hover:scale-[1.06] hover:shadow-[0_24px_48px_-14px_rgba(29,78,216,0.8),inset_0_1px_0_rgba(255,255,255,.25)] active:scale-95 md:h-14 md:w-14 dark:ring-white/15"
         >
-          <Bot strokeWidth={1.8} className="h-[18px] w-[18px] md:h-[22px] md:w-[22px]" />
-          {unread && <span data-chat-unread className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500" />}
+          {/* Soft halo, so the launcher reads as live without a bouncing animation. */}
+          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-4 ring-blue-500/15 transition-[box-shadow] group-hover:ring-blue-500/25" />
+          <MessageCircle strokeWidth={1.9} className="h-5 w-5 md:h-6 md:w-6" />
+          <Sparkles strokeWidth={2.2} className="absolute left-[29%] top-[30%] h-2.5 w-2.5 md:h-3 md:w-3" aria-hidden />
+          <span aria-hidden className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-950" data-chat-online />
+          {unread && <span data-chat-unread className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500 dark:border-slate-950" />}
         </button>
       </div>
 
       {isOpen && (
         <>
-          {/* Backdrop: mobile bottom-sheet only — the desktop panel floats free */}
+          {/* Backdrop: the phone bottom sheet only — the desktop panel floats free. */}
+          <div className="fixed inset-0 z-[104] bg-slate-950/45 backdrop-blur-[2px] md:hidden" onClick={() => setIsOpen(false)} aria-hidden="true" />
+
+          {/* z-[105]: above the dock (100), every page layer and the 3D canvas;
+              below the modals this panel itself opens (StockNotifyModal, 110). */}
           <div
-            className="fixed inset-0 z-[99] bg-slate-950/35 backdrop-blur-[2px] md:hidden"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
+            role="dialog"
+            aria-label={fgas ? t("fgasTitle") : "My Energy AI"}
+            data-chat-panel
+            className="fixed inset-x-0 bottom-0 z-[105] h-[85dvh] w-full [animation:hc-sheet-up_.34s_cubic-bezier(.2,.8,.2,1)_both] md:inset-x-auto md:bottom-6 md:right-6 md:h-[600px] md:max-h-[calc(100dvh-48px)] md:w-[400px] md:max-w-[calc(100vw-32px)] md:[animation:hc-panel_.34s_cubic-bezier(.2,.8,.2,1)_both]"
+          >
+            {/* Solid surface: nothing on the page can show through it. */}
+            <div className="flex h-full flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-white text-slate-900 shadow-[0_40px_90px_-30px_rgba(15,23,42,0.45),0_12px_28px_-12px_rgba(15,23,42,0.18)] md:rounded-[24px] dark:border-slate-800/80 dark:bg-slate-950 dark:text-slate-50 dark:shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]">
+              <div className="flex flex-none justify-center pb-1 pt-2.5 md:hidden">
+                <span className="h-1.5 w-9 rounded-full bg-slate-900/15 dark:bg-white/20" />
+              </div>
 
-          <div className="fixed inset-x-0 bottom-0 z-[100] h-[80vh] w-full [animation:hc-sheet-up_.34s_cubic-bezier(.2,.8,.2,1)_both] md:inset-x-auto md:right-6 md:bottom-6 md:h-[560px] md:w-96 md:max-w-[calc(100vw-32px)] md:max-h-[calc(100vh-48px)] md:[animation:hc-panel_.34s_cubic-bezier(.2,.8,.2,1)_both]">
-            <div className="relative h-full overflow-hidden rounded-t-3xl md:rounded-[24px]">
-              {/* Faint tech-blue / frost-cyan mesh, behind the glass panel */}
-              <div className="pointer-events-none absolute -left-[90px] -top-[70px] h-[340px] w-[340px] rounded-full bg-[radial-gradient(circle,var(--orb-blue),rgba(37,99,235,0)_70%)] opacity-20 blur-[64px] [animation:hc-float_20s_ease-in-out_infinite] dark:opacity-[.32]" />
-              <div className="pointer-events-none absolute -right-[80px] -bottom-[60px] h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--orb-cyan),rgba(34,211,238,0)_70%)] opacity-20 blur-[64px] [animation:hc-float_26s_ease-in-out_infinite_reverse] dark:opacity-[.3]" />
-
-              <div className="relative flex h-full flex-col overflow-hidden rounded-t-3xl border border-white/75 bg-white/72 shadow-[0_30px_70px_-24px_rgba(15,23,42,0.34)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-900/75 md:rounded-[24px]">
-                <div className="flex flex-none justify-center pb-1 pt-2.5 md:hidden">
-                  <span className="h-1.5 w-9 rounded-full bg-slate-900/15 dark:bg-white/20" />
-                </div>
-
-                <div className="flex items-center gap-[11px] px-4 pb-3 pt-4">
-                  <span className="flex h-8 w-8 flex-none items-center justify-center rounded-[11px] bg-slate-900 text-white dark:bg-slate-50 dark:text-slate-900">
-                    {fgas ? <Sparkles size={15} strokeWidth={1.9} /> : <Bot size={16} strokeWidth={1.8} />}
+              {/* ── Header ── */}
+              <div className="flex-none border-b border-slate-200/80 bg-slate-50/70 px-4 pb-3 pt-3 md:pt-4 dark:border-slate-800/80 dark:bg-slate-900/40">
+                {/* Row 1 — identity + close. One line, always: min-w-0 + truncate. */}
+                <div className="flex items-center gap-3">
+                  <span className="relative flex h-10 w-10 flex-none items-center justify-center rounded-[13px] bg-[linear-gradient(145deg,#1e293b,#0f172a)] shadow-[inset_0_1px_0_rgba(255,255,255,.12)] dark:bg-[linear-gradient(145deg,#f8fafc,#e2e8f0)]" aria-hidden>
+                    {/* The brand ring, with an AI spark on it. */}
+                    <span className="block h-[15px] w-[15px] rounded-full border-[3.5px] border-white dark:border-slate-900" />
+                    <span className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-blue-600 ring-2 ring-slate-50 dark:ring-slate-900">
+                      {fgas ? <ShieldCheck size={10} strokeWidth={2.6} className="text-white" /> : <Sparkles size={10} strokeWidth={2.6} className="text-white" />}
+                    </span>
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-semibold tracking-[-.015em]">
-                      {fgas ? "F-Gas Consultant" : t("title")}
+                    <div className="truncate text-[15px] font-semibold tracking-[-.02em]" data-chat-title>
+                      {fgas ? t("fgasTitle") : "My Energy AI"}
                     </div>
-                    <div className="mt-[3px] flex items-center gap-1.5 text-[11.5px] text-slate-500 dark:text-slate-400">
+                    <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] text-slate-500 dark:text-slate-400">
                       {fgas ? (
-                        // No "Online" dot here: this assistant's honesty about
+                        // No "online" dot here: this assistant's honesty about
                         // what it does not know is the thing worth stating.
-                        <span>Answers only from our knowledge base</span>
+                        <span className="truncate">{t("fgasSubtitle")}</span>
                       ) : escalated ? (
-                        <span data-chat-status="escalated" className="flex items-center gap-1.5">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
-                          {t("statusWithTeam")}
+                        <span data-chat-status="escalated" className="flex min-w-0 items-center gap-1.5">
+                          <span className="h-2 w-2 flex-none rounded-full bg-amber-500 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
+                          <span className="truncate">{t("statusWithTeam")}</span>
                         </span>
                       ) : (
-                        <>
-                          <span className="h-1.5 w-1.5 rounded-full bg-green-600 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
-                          {t("statusOnline")}
-                        </>
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="relative flex h-2 w-2 flex-none">
+                            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 [animation:hc-pulse_2.4s_ease-in-out_infinite]" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                          </span>
+                          <span className="truncate">{t("subtitleOnline")}</span>
+                        </span>
                       )}
                     </div>
                   </div>
-                  {!fgas && !escalated && (
-                    // A person on request, without depending on the model to decide.
-                    <button
-                      type="button"
-                      onClick={talkToPerson}
-                      disabled={escalating}
-                      data-talk-to-person
-                      title={t("talkToPerson")}
-                      className="flex h-[30px] flex-none items-center gap-1.5 rounded-[9px] bg-slate-900/5 px-2.5 text-[11.5px] font-medium text-slate-700 transition-colors hover:bg-slate-900/[.11] disabled:opacity-50 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                    >
-                      <UserRound size={13} strokeWidth={2} />
-                      {t("talkToPersonShort")}
-                    </button>
-                  )}
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    aria-label="Close chat"
-                    className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-slate-900/5 text-slate-600 transition-colors hover:bg-slate-900/[.11] dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+                    aria-label={t("close")}
+                    data-chat-close
+                    className="flex h-9 w-9 flex-none items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-900/[.06] hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/[.08] dark:hover:text-white"
                   >
-                    <X size={14} strokeWidth={2} />
+                    <X size={17} strokeWidth={2} />
                   </button>
                 </div>
 
-                {/* Segmented switch. Each tab keeps its own conversation: the
-                    two assistants have different knowledge and different
-                    rules, so carrying a transcript across would be misleading. */}
-                <div
-                  role="tablist"
-                  aria-label="Assistant mode"
-                  className="flex flex-none gap-1 border-b border-slate-900/[.07] px-3 pb-2.5 dark:border-white/[.08]"
-                >
+                {/* Row 2 — segmented switch. Each tab keeps its own conversation:
+                    the two assistants have different knowledge and rules. */}
+                <div role="tablist" aria-label={t("modesAria")} className="mt-3 grid grid-cols-2 gap-1 rounded-xl bg-slate-900/[.05] p-1 dark:bg-white/[.06]" data-chat-modes>
                   {MODES.map((m) => {
                     const active = mode === m.id;
                     return (
@@ -339,113 +337,151 @@ export default function AIChatWidget() {
                         role="tab"
                         aria-selected={active}
                         onClick={() => setMode(m.id)}
-                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] px-2 py-[7px] text-[12px] font-medium tracking-[-.01em] transition-colors ${
+                        data-chat-mode={m.id}
+                        className={`flex min-w-0 items-center justify-center gap-1.5 rounded-[9px] px-2 py-[7px] text-[12.5px] font-semibold tracking-[-.01em] transition-colors ${
                           active
-                            ? "bg-slate-900/[.06] text-slate-900 dark:bg-white/10 dark:text-slate-50"
-                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                            ? "bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,.12)] dark:bg-slate-800 dark:text-white"
+                            : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                         }`}
                       >
-                        <m.Icon size={13} strokeWidth={2} />
-                        {m.label}
+                        <m.Icon size={14} strokeWidth={2} className="flex-none" />
+                        <span className="truncate">{t(m.labelKey)}</span>
                       </button>
                     );
                   })}
                 </div>
 
-                {fgas ? (
-                  // Self-contained: it brings its own message list, product
-                  // cards and composer, so the support body below is replaced
-                  // wholesale rather than sharing an input that posts to the
-                  // wrong endpoint.
-                  <RagAssistant embedded />
-                ) : (
-                  <>
-                <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
-                <div className="text-center text-[11px] tracking-[.03em] text-slate-400 dark:text-slate-500">
-                  Today
-                </div>
-                <div className="flex justify-start">
-                  <div className="max-w-[84%] rounded-[16px_16px_16px_5px] border border-slate-900/[.07] bg-white/92 px-3.5 py-[11px] text-[13px] leading-[1.55] tracking-[-.005em] text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.05)] dark:border-white/[.08] dark:bg-white/[.06] dark:text-slate-50">
-                    {t("greeting")}
-                  </div>
-                </div>
-                {messages.map((m) => (
-                  <SupportMessage key={m.id} message={m} cartSkus={cartSkus} onAddToCart={addToCart} onNotify={setNotifyFor} />
-                ))}
-                {chatStatus === "RESOLVED" && (
-                  <div data-chat-resolved className="text-center text-[11.5px] text-muted-foreground">
-                    {t("resolvedNotice")}
-                  </div>
-                )}
-                {chatStatus === "EXPIRED" && (
-                  <div data-chat-expired className="text-center text-[11.5px] text-muted-foreground">
-                    {t("expiredNotice")}
-                  </div>
-                )}
-                {/* A model outage / timeout ends the stream with an error part:
-                    say so plainly instead of the dots just vanishing. The
-                    buyer's message is already saved, and "Talk to a person"
-                    still works. */}
-                {streamError && !isTyping && !escalated && (
-                  <div role="alert" data-chat-error className="rounded-[14px] border border-amber-500/30 bg-amber-500/[.08] px-3.5 py-2.5 text-[12.5px] leading-[1.5] text-amber-800 dark:text-amber-300">
-                    {t("errorUnavailable")}
-                  </div>
-                )}
-                {isTyping && !escalated && (
-                  <div className="flex justify-start">
-                    <div className="flex items-center gap-1 rounded-[16px_16px_16px_5px] border border-slate-900/[.07] bg-white/90 px-3.5 py-3 dark:border-white/[.08] dark:bg-white/[.06]">
-                      <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_infinite]" />
-                      <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_.2s_infinite]" />
-                      <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_.4s_infinite]" />
-                    </div>
-                  </div>
+                {/* Row 3 — a person on request, without depending on the model to decide. */}
+                {!fgas && !escalated && (
+                  <button
+                    type="button"
+                    onClick={talkToPerson}
+                    disabled={escalating}
+                    data-talk-to-person
+                    title={t("talkToPerson")}
+                    className="mt-2 flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-slate-900/[.1] bg-white px-3 text-[12.5px] font-semibold text-slate-700 transition-colors hover:border-blue-600/40 hover:text-blue-700 disabled:opacity-60 dark:border-white/[.12] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-400/40 dark:hover:text-blue-300"
+                  >
+                    {escalating ? <Loader2 size={14} className="flex-none animate-spin" /> : <Headset size={14} strokeWidth={2} className="flex-none" />}
+                    <span className="truncate">{t("talkToManager")}</span>
+                  </button>
                 )}
               </div>
 
-              <div className="border-t border-slate-900/[.07] p-3 pt-2.5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] dark:border-white/[.08] md:pb-3">
-                <div className={`mb-2 flex gap-[7px] overflow-x-auto ${escalated ? "hidden" : ""}`}>
-                  {QUICK_REPLY_KEYS.map((key) => t(key)).map((label) => (
-                    <button
-                      key={label}
-                      type="button"
-                      onClick={() => send(label)}
-                      className="flex-none whitespace-nowrap rounded-full border border-slate-900/[.11] bg-white/80 px-[11px] py-1.5 text-[11.5px] text-slate-600 transition-colors hover:border-slate-900/30 dark:border-white/[.12] dark:bg-white/5 dark:text-slate-400 dark:hover:border-white/30"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex h-11 items-center gap-2 rounded-[14px] border border-slate-900/[.12] bg-white/85 py-0 pl-3.5 pr-1.5 dark:border-white/[.14] dark:bg-white/5">
-                  <input
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") send(draft);
-                    }}
-                    placeholder={escalated ? t("placeholderTeam") : t("placeholder")}
-                    className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-slate-900 focus:outline-none dark:text-slate-50 dark:placeholder:text-slate-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => send(draft)}
-                    aria-label={t("send")}
-                    disabled={!draft.trim()}
-                    className={`flex h-8 w-8 flex-none items-center justify-center rounded-[10px] transition-colors disabled:cursor-not-allowed ${
-                      draft.trim()
-                        ? "bg-blue-700 text-white"
-                        : "bg-slate-900/[.08] text-slate-400 dark:bg-white/10 dark:text-slate-500"
-                    }`}
-                  >
-                    <Send size={15} strokeWidth={2} />
-                  </button>
-                </div>
-                <p data-chat-retention className="m-0 mt-1.5 text-center text-[10.5px] text-slate-400 dark:text-slate-500">{t("retentionNote")}</p>
-              </div>
-                  </>
-                )}
+              {fgas ? (
+                // Self-contained: its own message list, product cards and composer.
+                <RagAssistant embedded />
+              ) : (
+                <>
+                  <div ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4" data-chat-messages>
+                    <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[.08em] text-slate-500 dark:text-slate-400" data-chat-today>
+                      <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                      {t("today")}
+                      <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                    </div>
+
+                    {/* Welcome card: what this assistant can actually do. */}
+                    <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-900" data-chat-welcome>
+                      <div className="text-[14px] font-semibold tracking-[-.015em]">{t("welcomeTitle")}</div>
+                      <ul className="m-0 mt-2.5 flex list-none flex-col gap-2 p-0">
+                        {([
+                          ["cap1", PackageSearch],
+                          ["cap2", ShieldCheck],
+                          ["cap3", Headset],
+                        ] as const).map(([key, Icon]) => (
+                          <li key={key} className="flex items-start gap-2.5 text-[13px] leading-[1.45] text-slate-600 dark:text-slate-300">
+                            <span className="mt-px flex h-5 w-5 flex-none items-center justify-center rounded-md bg-blue-600/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300">
+                              <Icon size={12} strokeWidth={2.2} />
+                            </span>
+                            {t(key)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {messages.map((m) => (
+                      <SupportMessage key={m.id} message={m} cartSkus={cartSkus} onAddToCart={addToCart} onNotify={setNotifyFor} />
+                    ))}
+                    {chatStatus === "RESOLVED" && (
+                      <div data-chat-resolved className="text-center text-[11.5px] text-slate-500 dark:text-slate-400">
+                        {t("resolvedNotice")}
+                      </div>
+                    )}
+                    {chatStatus === "EXPIRED" && (
+                      <div data-chat-expired className="text-center text-[11.5px] text-slate-500 dark:text-slate-400">
+                        {t("expiredNotice")}
+                      </div>
+                    )}
+                    {/* A model outage / timeout ends the stream with an error part:
+                        say so plainly instead of the dots just vanishing. */}
+                    {streamError && !isTyping && !escalated && (
+                      <div role="alert" data-chat-error className="rounded-[14px] border border-amber-500/30 bg-amber-500/[.08] px-3.5 py-2.5 text-[12.5px] leading-[1.5] text-amber-800 dark:text-amber-300">
+                        {t("errorUnavailable")}
+                      </div>
+                    )}
+                    {isTyping && !escalated && (
+                      <div className="flex justify-start">
+                        <div className="flex items-center gap-1 rounded-[16px_16px_16px_5px] border border-slate-200 bg-slate-50 px-3.5 py-3 dark:border-slate-800 dark:bg-slate-900">
+                          <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_infinite]" />
+                          <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_.2s_infinite]" />
+                          <span className="h-[5px] w-[5px] rounded-full bg-slate-400 [animation:hc-pulse_1.2s_ease-in-out_.4s_infinite]" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Composer (opaque footer) ── */}
+                  <div className="flex-none border-t border-slate-200/80 bg-white px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 md:pb-3 dark:border-slate-800/80 dark:bg-slate-950">
+                    {/* Starter questions WRAP — never clipped at the edge; gone once the conversation starts. */}
+                    {showChips && (
+                      <div className="mb-2.5 flex flex-wrap gap-2" aria-label={t("chipsAria")} data-chat-chips>
+                        {QUICK_REPLY_KEYS.map((key) => t(key)).map((label) => (
+                          <button
+                            key={label}
+                            type="button"
+                            onClick={() => send(label)}
+                            className="max-w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-left text-[12px] font-medium leading-[1.35] text-slate-700 transition-colors hover:border-blue-600/40 hover:bg-blue-50 hover:text-blue-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-400/40 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="relative">
+                      <input
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") send(draft);
+                        }}
+                        placeholder={escalated ? t("placeholderTeam") : t("placeholder")}
+                        aria-label={escalated ? t("placeholderTeam") : t("placeholder")}
+                        data-chat-input
+                        // pr-14: the placeholder ends before the send button, in every language.
+                        className="h-12 w-full truncate rounded-2xl border border-slate-200 bg-slate-50 pl-4 pr-14 text-[14px] text-slate-900 transition-[border-color,box-shadow] placeholder:text-slate-500 focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-blue-600/15 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-400 dark:focus:border-blue-400 dark:focus:bg-slate-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => send(draft)}
+                        aria-label={t("send")}
+                        disabled={!draft.trim()}
+                        data-chat-send
+                        className={`absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl transition-[background-color,transform,color] duration-150 disabled:cursor-not-allowed ${
+                          draft.trim()
+                            ? "bg-blue-700 text-white shadow-[0_8px_18px_-8px_rgba(29,78,216,.8)] hover:bg-blue-800 active:scale-95"
+                            : "bg-slate-200/70 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                        }`}
+                      >
+                        <Send size={16} strokeWidth={2} />
+                      </button>
+                    </div>
+                    <p data-chat-retention className="m-0 mt-2 text-center text-[11px] leading-[1.4] text-slate-500 dark:text-slate-400">
+                      {t("retentionNote")}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </div>
         </>
       )}
 

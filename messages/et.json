@@ -1618,7 +1618,7 @@
     "talkToPerson": "Rääkige My Energy meeskonna liikmega",
     "talkToPersonShort": "Rääkige inimesega",
     "greeting": "Tere — saan leida tooteid ja kontrollida laoseisu, selgitada F-gaasi reegleid või suunata teid meie meeskonnale. Mida vajate?",
-    "quick1": "Näita laos olevaid R-32 balloone",
+    "quick1": "Milliseid külmaaineid on laos?",
     "quick2": "Mida tähendab veakood E9?",
     "quick3": "Vajan hulgi hinda",
     "placeholder": "Küsige laoseisu, spetsifikatsioonide või F-gaasi reeglite kohta...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Meie meeskond sulges selle vestluse. Saatke sõnum, et alustada uut vestlust.",
     "expiredNotice": "See vestlus kustutati pärast tund aega tegevusetust. Saatke sõnum, et alustada uut vestlust.",
     "retentionNote": "Vestlused kustutatakse jäädavalt tund pärast viimast sõnumit.",
-    "errorUnavailable": "Assistent ei ole hetkel saadaval. Teie sõnum on salvestatud: proovige uuesti mõne aja pärast või vajutage „Rääkige inimesega“."
+    "errorUnavailable": "Assistent ei ole hetkel saadaval. Teie sõnum on salvestatud: proovige uuesti mõne aja pärast või vajutage „Rääkige inimesega“.",
+    "subtitleOnline": "Veebis · B2B-tugi",
+    "modeSupport": "Tugi",
+    "modeFgas": "F-Gas ekspert",
+    "modesAria": "Assistendi režiim",
+    "today": "Täna",
+    "fgasTitle": "F-Gas konsultant",
+    "fgasSubtitle": "Vastab ainult meie teadmusbaasi põhjal",
+    "close": "Sulge vestlus",
+    "talkToManager": "Võtke ühendust kliendihalduriga",
+    "welcomeTitle": "Tere! Kuidas saame aidata?",
+    "cap1": "Leida tooteid ja kontrollida, mis on laos",
+    "cap2": "Selgitada F-Gas reegleid, dokumente ja sertifikaate",
+    "cap3": "Suunata teid meie meeskonna kliendihaldurile",
+    "chipsAria": "Soovitatud küsimused"
   },
   "SmartOrder": {
     "launch": "Nutikas hulgitellimus",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Tootekataloog",
     "ctaHub": "Turukeskus",
     "devNote": "Platvormi arendus: <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas assistent",
+    "subtitle": "Vastab ainult meie regulatiivse teadmusbaasi põhjal",
+    "intro": "Küsige asendusainete, GWP piirmäärade, lekkekontrolli intervallide või ümberehitusvõimaluste kohta. Kui seda meie teadmusbaasis pole, ütleb assistent seda, selle asemel et oletada.",
+    "starter1": "Mis asendab R-404A olemasolevates süsteemides?",
+    "starter2": "Kui tihti pean 60 t CO₂e süsteemil lekkekontrolli tegema?",
+    "starter3": "Kas võin kasutada R-32 vanas R-410A split-süsteemis?",
+    "searching": "Otsin teadmusbaasist…",
+    "error": "Assistendiga ühenduse loomisel tekkis viga. Palun proovige uuesti.",
+    "placeholder": "Küsige külmaaine või määruse kohta…",
+    "inputAria": "Küsige F-Gas assistendilt",
+    "stop": "Peata vastus",
+    "send": "Saada",
+    "inStock": "Laos",
+    "addToCart": "Lisa ostukorvi",
+    "added": "Lisatud",
+    "addAria": "Lisa {name}, {pack} ostukorvi",
+    "addedToast": "{name} lisatud ostukorvi",
+    "deposit": "+ {amount} tagastatav ballooni tagatisraha",
+    "unavailable": "Meie kataloogis olemas, kuid praegu ei saa tellida. Saadavuse osas võtke ühendust meeskonnaga."
   }
 }

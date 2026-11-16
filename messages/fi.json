@@ -1618,7 +1618,7 @@
     "talkToPerson": "Keskustele My Energy -tiimin henkilön kanssa",
     "talkToPersonShort": "Keskustele henkilön kanssa",
     "greeting": "Hei — voin etsiä tuotteita ja tarkistaa varaston, selittää F-kaasu-sääntöjä tai ohjata sinut tiimillemme. Mitä tarvitset?",
-    "quick1": "Näytä R-32 pullot varastossa",
+    "quick1": "Mitä kylmäaineita on varastossa?",
     "quick2": "Mitä virhekoodi E9 tarkoittaa?",
     "quick3": "Tarvitsen tukkuhinnat",
     "placeholder": "Kysy varastosta, tiedoista tai F-kaasu-säännöistä...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Tiimimme on sulkenut tämän keskustelun. Lähetä viesti aloittaaksesi uuden.",
     "expiredNotice": "Tämä keskustelu poistettiin tunnin kuluttua ilman toimintaa. Lähetä viesti aloittaaksesi uuden.",
     "retentionNote": "Keskustelut poistetaan pysyvästi tunnin kuluttua viimeisestä viestistä.",
-    "errorUnavailable": "Avustaja ei ole tällä hetkellä käytettävissä. Viestisi on tallennettu: yritä uudelleen hetken kuluttua tai napauta “Puhu henkilölle”."
+    "errorUnavailable": "Avustaja ei ole tällä hetkellä käytettävissä. Viestisi on tallennettu: yritä uudelleen hetken kuluttua tai napauta “Puhu henkilölle”.",
+    "subtitleOnline": "Online · B2B-tuki",
+    "modeSupport": "Tuki",
+    "modeFgas": "F-Gas-asiantuntija",
+    "modesAria": "Avustajan tila",
+    "today": "Tänään",
+    "fgasTitle": "F-Gas-konsultti",
+    "fgasSubtitle": "Vastaa vain tietopankkimme pohjalta",
+    "close": "Sulje keskustelu",
+    "talkToManager": "Ota yhteys asiakasvastaavaan",
+    "welcomeTitle": "Hei! Miten voimme auttaa?",
+    "cap1": "Etsiä tuotteita ja tarkistaa, mitä on varastossa",
+    "cap2": "Selittää F-Gas-säännöt, asiakirjat ja sertifikaatit",
+    "cap3": "Ohjata sinut tiimimme asiakasvastaavalle",
+    "chipsAria": "Ehdotetut kysymykset"
   },
   "SmartOrder": {
     "launch": "Älykäs tukkutilaus",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Tuoteluettelo",
     "ctaHub": "Markkinakeskus",
     "devNote": "Alustan kehitys: <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas-avustaja",
+    "subtitle": "Vastaa vain sääntelytietopankkimme pohjalta",
+    "intro": "Kysy korvaavista aineista, GWP-rajoista, vuototarkastusväleistä tai retrofit-vaihtoehdoista. Jos tietoa ei ole tietopankissamme, avustaja kertoo sen arvaamisen sijaan.",
+    "starter1": "Mikä korvaa R-404A:n nykyisissä järjestelmissä?",
+    "starter2": "Kuinka usein minun on tehtävä vuototarkastus 60 t CO₂e:n järjestelmälle?",
+    "starter3": "Voinko käyttää R-32:ta vanhassa R-410A-split-järjestelmässä?",
+    "searching": "Haetaan tietopankista…",
+    "error": "Avustajaan ei saatu yhteyttä. Yritä uudelleen.",
+    "placeholder": "Kysy kylmäaineesta tai määräyksestä…",
+    "inputAria": "Kysy F-Gas-avustajalta",
+    "stop": "Pysäytä vastaus",
+    "send": "Lähetä",
+    "inStock": "Varastossa",
+    "addToCart": "Lisää ostoskoriin",
+    "added": "Lisätty",
+    "addAria": "Lisää {name}, {pack} ostoskoriin",
+    "addedToast": "{name} lisätty ostoskoriin",
+    "deposit": "+ {amount} palautettava pullopantti",
+    "unavailable": "Luettelossamme, mutta ei tilattavissa juuri nyt. Ota yhteyttä tiimiin saatavuuden selvittämiseksi."
   }
 }

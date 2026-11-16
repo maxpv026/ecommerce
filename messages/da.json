@@ -1618,7 +1618,7 @@
     "talkToPerson": "Tal med en person fra My Energy-teamet",
     "talkToPersonShort": "Tal med en person",
     "greeting": "Hej — jeg kan finde produkter og tjekke lager, forklare F-gas-regler eller sende dig videre til vores team. Hvad har du brug for?",
-    "quick1": "Vis R-32 cylindre på lager",
+    "quick1": "Hvilke kølemidler er på lager?",
     "quick2": "Hvad betyder fejlkode E9?",
     "quick3": "Jeg har brug for engrospriser",
     "placeholder": "Spørg om lager, specifikationer eller F-gas-regler...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Vores team har afsluttet denne samtale. Send en besked for at starte en ny.",
     "expiredNotice": "Denne samtale blev slettet efter en time uden aktivitet. Send en besked for at starte en ny.",
     "retentionNote": "Chats slettes permanent en time efter den sidste besked.",
-    "errorUnavailable": "Assistenten er ikke tilgængelig lige nu. Din besked er gemt: prøv igen om et øjeblik, eller tryk på “Tal med en person”."
+    "errorUnavailable": "Assistenten er ikke tilgængelig lige nu. Din besked er gemt: prøv igen om et øjeblik, eller tryk på “Tal med en person”.",
+    "subtitleOnline": "Online · B2B-support",
+    "modeSupport": "Support",
+    "modeFgas": "F-Gas-ekspert",
+    "modesAria": "Assistenttilstand",
+    "today": "I dag",
+    "fgasTitle": "F-Gas-rådgiver",
+    "fgasSubtitle": "Svarer kun ud fra vores vidensbase",
+    "close": "Luk chat",
+    "talkToManager": "Kontakt en manager",
+    "welcomeTitle": "Hej! Hvordan kan vi hjælpe?",
+    "cap1": "Finde produkter og tjekke, hvad der er på lager",
+    "cap2": "Forklare F-Gas-regler, dokumenter og certifikater",
+    "cap3": "Sende dig videre til en manager i vores team",
+    "chipsAria": "Foreslåede spørgsmål"
   },
   "SmartOrder": {
     "launch": "Smart Bulk Order",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Produktkatalog",
     "ctaHub": "Markedshub",
     "devNote": "Platformen er udviklet af <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas-assistent",
+    "subtitle": "Svarer kun ud fra vores regulatoriske vidensbase",
+    "intro": "Spørg om erstatninger, GWP-grænser, intervaller for lækagetjek eller retrofit-muligheder. Hvis det ikke står i vores vidensbase, siger assistenten det i stedet for at gætte.",
+    "starter1": "Hvad erstatter R-404A i eksisterende anlæg?",
+    "starter2": "Hvor ofte skal jeg lækagetjekke et anlæg på 60 t CO₂e?",
+    "starter3": "Kan jeg bruge R-32 i et gammelt R-410A-splitanlæg?",
+    "searching": "Søger i vidensbasen…",
+    "error": "Der opstod en fejl i forbindelsen til assistenten. Prøv igen.",
+    "placeholder": "Spørg om et kølemiddel eller en regel…",
+    "inputAria": "Spørg F-Gas-assistenten",
+    "stop": "Stop svaret",
+    "send": "Send",
+    "inStock": "På lager",
+    "addToCart": "Tilføj til kurv",
+    "added": "Tilføjet",
+    "addAria": "Tilføj {name}, {pack} til kurven",
+    "addedToast": "{name} lagt i kurven",
+    "deposit": "+ {amount} refunderbart flaskepant",
+    "unavailable": "I vores katalog, men kan ikke bestilles lige nu. Kontakt teamet om tilgængelighed."
   }
 }

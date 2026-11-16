@@ -1618,7 +1618,7 @@
     "talkToPerson": "Tkellem ma' persuna mit-tim ta' My Energy",
     "talkToPersonShort": "Tkellem ma' persuna",
     "greeting": "Hi — Nista' nsib prodotti u niċċekkja l-istokk, nispjega r-regoli F-Gas, jew ngħaddik lit-tim tagħna. X'għandek bżonn?",
-    "quick1": "Uri ċilindri R-32 fl-istokk",
+    "quick1": "Liema refriġeranti hemm fl-istokk?",
     "quick2": "Xi jfisser il-kodiċi ta' żball E9?",
     "quick3": "Għandi bżonn prezzijiet bl-ingrossa",
     "placeholder": "Staqsi dwar l-istokk, speċifikazzjonijiet, jew regoli F-Gas...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "It-tim tagħna għalaq din il-konversazzjoni. Ibgħat messaġġ biex tibda waħda ġdida.",
     "expiredNotice": "Din il-konversazzjoni tħassret wara siegħa mingħajr attività. Ibgħat messaġġ biex tibda waħda ġdida.",
     "retentionNote": "Il-konversazzjonijiet jitħassru b'mod permanenti siegħa wara l-aħħar messaġġ.",
-    "errorUnavailable": "L-assistent mhux disponibbli bħalissa. Il-messaġġ tiegħek huwa ssejvjat: erġa' pprova f'mument, jew agħfas “Tkellem ma' persuna”."
+    "errorUnavailable": "L-assistent mhux disponibbli bħalissa. Il-messaġġ tiegħek huwa ssejvjat: erġa' pprova f'mument, jew agħfas “Tkellem ma' persuna”.",
+    "subtitleOnline": "Online · Appoġġ B2B",
+    "modeSupport": "Appoġġ",
+    "modeFgas": "Espert F-Gas",
+    "modesAria": "Modalità tal-assistent",
+    "today": "Illum",
+    "fgasTitle": "Konsulent F-Gas",
+    "fgasSubtitle": "Iwieġeb biss mill-bażi tal-għarfien tagħna",
+    "close": "Agħlaq il-konversazzjoni",
+    "talkToManager": "Ikkuntattja maniġer",
+    "welcomeTitle": "Bonġu! Kif nistgħu ngħinuk?",
+    "cap1": "Insibu prodotti u niċċekkjaw x'hemm fl-istokk",
+    "cap2": "Nispjegaw ir-regoli, id-dokumenti u ċ-ċertifikati F-Gas",
+    "cap3": "Ngħadduk lil maniġer tat-tim tagħna",
+    "chipsAria": "Mistoqsijiet issuġġeriti"
   },
   "SmartOrder": {
     "launch": "Ordni Bulk Intelliġenti",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Katalgu tal-prodotti",
     "ctaHub": "Ċentru tas-suq",
     "devNote": "Pjattaforma żviluppata minn <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "Assistent F-Gas",
+    "subtitle": "Iwieġeb biss mill-bażi tal-għarfien regolatorja tagħna",
+    "intro": "Staqsi dwar sostituti, limiti tal-GWP, intervalli tal-kontroll tal-leak jew modi ta' retrofit. Jekk ma jkunx fil-bażi tal-għarfien tagħna, l-assistent jgħidlek hekk minflok ma jaqta'.",
+    "starter1": "X'jissostitwixxi l-R-404A f'sistemi eżistenti?",
+    "starter2": "Kemm-il darba rrid nagħmel kontroll tal-leak fuq sistema ta' 60 t CO₂e?",
+    "starter3": "Nista' nuża R-32 f'sistema split antika ta' R-410A?",
+    "searching": "Qiegħed infittex fil-bażi tal-għarfien…",
+    "error": "Xi ħaġa marret ħażin waqt il-kuntatt mal-assistent. Jekk jogħġbok erġa' pprova.",
+    "placeholder": "Staqsi dwar refriġerant jew regolament…",
+    "inputAria": "Staqsi lill-assistent F-Gas",
+    "stop": "Waqqaf il-ġenerazzjoni",
+    "send": "Ibgħat",
+    "inStock": "Fl-istokk",
+    "addToCart": "Żid fil-karrett",
+    "added": "Miżjud",
+    "addAria": "Żid {name}, {pack} fil-karrett",
+    "addedToast": "{name} miżjud fil-karrett",
+    "deposit": "+ {amount} depożitu taċ-ċilindru rimborżabbli",
+    "unavailable": "Fil-katalgu tagħna, iżda bħalissa ma jistax jiġi ordnat. Ikkuntattja lit-tim dwar id-disponibbiltà."
   }
 }

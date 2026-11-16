@@ -1618,7 +1618,7 @@
     "talkToPerson": "与 My Energy 团队成员交谈",
     "talkToPersonShort": "与人员交谈",
     "greeting": "您好 — 我可以查找产品和库存，解释 F-Gas 规则，或将您转给我们的团队。您需要什么？",
-    "quick1": "显示库存中的 R-32 钢瓶",
+    "quick1": "目前有哪些制冷剂有货？",
     "quick2": "错误代码 E9 是什么意思？",
     "quick3": "我需要批量定价",
     "placeholder": "询问库存、规格或 F-Gas 规则...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "我们的团队已关闭此对话。发送消息以开始新的对话。",
     "expiredNotice": "此对话在一小时无活动后被删除。发送消息以开始新的对话。",
     "retentionNote": "聊天将在最后一条消息后一小时永久删除。",
-    "errorUnavailable": "助手目前不可用。您的消息已保存：请稍后再试，或点击“与人工对话”。"
+    "errorUnavailable": "助手目前不可用。您的消息已保存：请稍后再试，或点击“与人工对话”。",
+    "subtitleOnline": "在线 · B2B 支持",
+    "modeSupport": "客服",
+    "modeFgas": "F-Gas 专家",
+    "modesAria": "助手模式",
+    "today": "今天",
+    "fgasTitle": "F-Gas 顾问",
+    "fgasSubtitle": "仅根据我们的知识库作答",
+    "close": "关闭聊天",
+    "talkToManager": "联系客户经理",
+    "welcomeTitle": "您好！有什么可以帮您？",
+    "cap1": "查找产品并查看库存",
+    "cap2": "解释 F-Gas 规则、文件和证书",
+    "cap3": "为您转接我们团队的客户经理",
+    "chipsAria": "推荐问题"
   },
   "SmartOrder": {
     "launch": "智能批量订单",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "产品目录",
     "ctaHub": "市场中心",
     "devNote": "平台开发：<link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas 助手",
+    "subtitle": "仅根据我们的法规知识库作答",
+    "intro": "可询问替代方案、GWP 限值、泄漏检查周期或改造方案。如果我们的知识库中没有相关内容，助手会如实说明，而不会猜测。",
+    "starter1": "现有系统中用什么替代 R-404A？",
+    "starter2": "60 t CO₂e 的系统必须多久进行一次泄漏检查？",
+    "starter3": "旧的 R-410A 分体式系统可以使用 R-32 吗？",
+    "searching": "正在搜索知识库…",
+    "error": "连接助手时出错，请重试。",
+    "placeholder": "询问制冷剂或法规…",
+    "inputAria": "向 F-Gas 助手提问",
+    "stop": "停止生成",
+    "send": "发送",
+    "inStock": "有货",
+    "addToCart": "添加到购物车",
+    "added": "已添加",
+    "addAria": "将 {name}，{pack} 添加到购物车",
+    "addedToast": "{name} 已加入购物车",
+    "deposit": "+ {amount} 可退还钢瓶押金",
+    "unavailable": "已收录于我们的目录，但目前无法订购。如需了解供货情况，请联系团队。"
   }
 }

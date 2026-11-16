@@ -1618,7 +1618,7 @@
     "talkToPerson": "My Energy 팀의 담당자와 대화",
     "talkToPersonShort": "담당자와 대화",
     "greeting": "안녕하세요 — 제품 검색 및 재고 확인, F-Gas 규칙 설명, 또는 팀에 연결해 드릴 수 있습니다. 무엇이 필요하신가요?",
-    "quick1": "재고 있는 R-32 실린더 보기",
+    "quick1": "재고 있는 냉매는 무엇인가요?",
     "quick2": "오류 코드 E9의 의미는 무엇인가요?",
     "quick3": "대량 구매 가격이 필요합니다",
     "placeholder": "재고, 사양 또는 F-Gas 규칙에 대해 문의하세요...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "팀에서 이 대화를 종료했습니다. 새 메시지를 보내 대화를 시작하세요.",
     "expiredNotice": "활동 없이 한 시간이 지나 이 대화가 삭제되었습니다. 새 대화를 시작하려면 메시지를 보내세요.",
     "retentionNote": "채팅은 마지막 메시지 이후 한 시간이 지나면 영구 삭제됩니다.",
-    "errorUnavailable": "현재 상담원을 이용할 수 없습니다. 메시지가 저장되었습니다: 잠시 후 다시 시도하시거나 “사람과 대화하기”를 누르세요."
+    "errorUnavailable": "현재 상담원을 이용할 수 없습니다. 메시지가 저장되었습니다: 잠시 후 다시 시도하시거나 “사람과 대화하기”를 누르세요.",
+    "subtitleOnline": "온라인 · B2B 지원",
+    "modeSupport": "지원",
+    "modeFgas": "F-Gas 전문가",
+    "modesAria": "어시스턴트 모드",
+    "today": "오늘",
+    "fgasTitle": "F-Gas 컨설턴트",
+    "fgasSubtitle": "당사 지식 베이스에서만 답변합니다",
+    "close": "채팅 닫기",
+    "talkToManager": "매니저에게 문의",
+    "welcomeTitle": "안녕하세요! 무엇을 도와드릴까요?",
+    "cap1": "제품 검색 및 재고 확인",
+    "cap2": "F-Gas 규정, 서류 및 인증서 안내",
+    "cap3": "저희 팀 매니저에게 연결",
+    "chipsAria": "추천 질문"
   },
   "SmartOrder": {
     "launch": "스마트 대량 주문",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "제품 카탈로그",
     "ctaHub": "시장 허브",
     "devNote": "플랫폼 개발: <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas 어시스턴트",
+    "subtitle": "당사 규제 지식 베이스에서만 답변합니다",
+    "intro": "대체품, GWP 한도, 누수 점검 주기 또는 개조 방법에 대해 문의하세요. 지식 베이스에 없는 내용이면 어시스턴트가 추측하지 않고 없다고 알려 드립니다.",
+    "starter1": "기존 시스템에서 R-404A는 무엇으로 대체하나요?",
+    "starter2": "60 t CO₂e 시스템은 얼마나 자주 누수 점검을 해야 하나요?",
+    "starter3": "오래된 R-410A 스플릿 시스템에 R-32를 사용할 수 있나요?",
+    "searching": "지식 베이스 검색 중…",
+    "error": "어시스턴트에 연결하는 중 문제가 발생했습니다. 다시 시도해 주세요.",
+    "placeholder": "냉매 또는 규정에 대해 문의하세요…",
+    "inputAria": "F-Gas 어시스턴트에게 질문",
+    "stop": "생성 중지",
+    "send": "전송",
+    "inStock": "재고 있음",
+    "addToCart": "장바구니에 추가",
+    "added": "추가됨",
+    "addAria": "{name}, {pack} 장바구니에 추가",
+    "addedToast": "{name} 장바구니에 추가됨",
+    "deposit": "+ {amount} 환불 가능한 실린더 보증금",
+    "unavailable": "당사 카탈로그에 있는 제품이지만 현재 주문할 수 없습니다. 구매 가능 여부는 팀에 문의해 주세요."
   }
 }

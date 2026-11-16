@@ -1618,7 +1618,7 @@
     "talkToPerson": "Kalbėkite su My Energy komandos nariu",
     "talkToPersonShort": "Kalbėkite su asmeniu",
     "greeting": "Sveiki — galiu rasti produktus ir patikrinti atsargas, paaiškinti F dujų taisykles arba perduoti jus mūsų komandai. Ko jums reikia?",
-    "quick1": "Rodyti R-32 balionus sandėlyje",
+    "quick1": "Kokie šaltnešiai yra sandėlyje?",
     "quick2": "Ką reiškia klaidos kodas E9?",
     "quick3": "Reikia didmeninių kainų",
     "placeholder": "Klauskite apie atsargas, specifikacijas ar F dujų taisykles...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Mūsų komanda uždarė šį pokalbį. Siųskite žinutę, kad pradėtumėte naują.",
     "expiredNotice": "Šis pokalbis buvo ištrintas po valandos neveiklumo. Siųskite žinutę, kad pradėtumėte naują.",
     "retentionNote": "Pokalbiai visam laikui ištrinami praėjus valandai po paskutinės žinutės.",
-    "errorUnavailable": "Asistentas šiuo metu nepasiekiamas. Jūsų žinutė išsaugota: bandykite dar kartą po akimirkos arba spustelėkite „Kalbėti su asmeniu“."
+    "errorUnavailable": "Asistentas šiuo metu nepasiekiamas. Jūsų žinutė išsaugota: bandykite dar kartą po akimirkos arba spustelėkite „Kalbėti su asmeniu“.",
+    "subtitleOnline": "Prisijungęs · B2B palaikymas",
+    "modeSupport": "Palaikymas",
+    "modeFgas": "F-Gas ekspertas",
+    "modesAria": "Asistento režimas",
+    "today": "Šiandien",
+    "fgasTitle": "F-Gas konsultantas",
+    "fgasSubtitle": "Atsako tik iš mūsų žinių bazės",
+    "close": "Uždaryti pokalbį",
+    "talkToManager": "Susisiekti su vadybininku",
+    "welcomeTitle": "Sveiki! Kuo galime padėti?",
+    "cap1": "Rasti produktus ir patikrinti atsargas",
+    "cap2": "Paaiškinti F-Gas taisykles, dokumentus ir sertifikatus",
+    "cap3": "Perduoti jus mūsų komandos vadybininkui",
+    "chipsAria": "Siūlomi klausimai"
   },
   "SmartOrder": {
     "launch": "Išmanusis didmeninis užsakymas",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Produktų katalogas",
     "ctaHub": "Rinkos centras",
     "devNote": "Platformą sukūrė <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas asistentas",
+    "subtitle": "Atsako tik iš mūsų reguliavimo žinių bazės",
+    "intro": "Klauskite apie pakaitalus, GWP ribas, nuotėkio tikrinimo intervalus ar modernizavimo būdus. Jei to nėra mūsų žinių bazėje, asistentas taip ir pasakys, užuot spėliojęs.",
+    "starter1": "Kuo pakeisti R-404A esamose sistemose?",
+    "starter2": "Kaip dažnai turiu tikrinti 60 t CO₂e sistemos nuotėkį?",
+    "starter3": "Ar galiu naudoti R-32 senoje R-410A split sistemoje?",
+    "searching": "Ieškoma žinių bazėje…",
+    "error": "Nepavyko susisiekti su asistentu. Bandykite dar kartą.",
+    "placeholder": "Klauskite apie šaltnešį ar reglamentą…",
+    "inputAria": "Klausti F-Gas asistento",
+    "stop": "Stabdyti generavimą",
+    "send": "Siųsti",
+    "inStock": "Sandėlyje",
+    "addToCart": "Pridėti į krepšelį",
+    "added": "Pridėta",
+    "addAria": "Pridėti {name}, {pack} į krepšelį",
+    "addedToast": "{name} pridėta į krepšelį",
+    "deposit": "+ {amount} grąžinamas užstatas už balioną",
+    "unavailable": "Yra mūsų kataloge, bet šiuo metu negalima užsakyti. Dėl prieinamumo susisiekite su komanda."
   }
 }

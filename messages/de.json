@@ -1618,7 +1618,7 @@
     "talkToPerson": "Sprechen Sie mit einer Person aus dem My Energy-Team",
     "talkToPersonShort": "Mit einer Person sprechen",
     "greeting": "Hallo — ich kann Produkte finden und den Lagerbestand prüfen, F-Gas-Regeln erklären oder Sie an unser Team weiterleiten. Was benötigen Sie?",
-    "quick1": "Zeigen Sie R-32 Flaschen auf Lager",
+    "quick1": "Welche Kältemittel sind auf Lager?",
     "quick2": "Was bedeutet Fehlercode E9?",
     "quick3": "Ich benötige Großhandelspreise",
     "placeholder": "Fragen Sie nach Lagerbestand, Spezifikationen oder F-Gas-Regeln...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Unser Team hat dieses Gespräch geschlossen. Senden Sie eine Nachricht, um ein neues zu starten.",
     "expiredNotice": "Dieses Gespräch wurde nach einer Stunde ohne Aktivität gelöscht. Senden Sie eine Nachricht, um ein neues zu starten.",
     "retentionNote": "Chats werden eine Stunde nach der letzten Nachricht dauerhaft gelöscht.",
-    "errorUnavailable": "Der Assistent ist derzeit nicht verfügbar. Ihre Nachricht wurde gespeichert: Versuchen Sie es in einem Moment erneut oder tippen Sie auf „Mit einer Person sprechen“."
+    "errorUnavailable": "Der Assistent ist derzeit nicht verfügbar. Ihre Nachricht wurde gespeichert: Versuchen Sie es in einem Moment erneut oder tippen Sie auf „Mit einer Person sprechen“.",
+    "subtitleOnline": "Online · B2B-Support",
+    "modeSupport": "Support",
+    "modeFgas": "F-Gas-Experte",
+    "modesAria": "Assistentenmodus",
+    "today": "Heute",
+    "fgasTitle": "F-Gas-Berater",
+    "fgasSubtitle": "Antwortet nur aus unserer Wissensdatenbank",
+    "close": "Chat schließen",
+    "talkToManager": "Manager kontaktieren",
+    "welcomeTitle": "Hallo! Wie können wir helfen?",
+    "cap1": "Produkte finden und Lagerbestand prüfen",
+    "cap2": "F-Gas-Regeln, Dokumente und Zertifikate erklären",
+    "cap3": "Sie an einen Manager aus unserem Team weiterleiten",
+    "chipsAria": "Vorgeschlagene Fragen"
   },
   "SmartOrder": {
     "launch": "Intelligente Großbestellung",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Produktkatalog",
     "ctaHub": "Markt-Hub",
     "devNote": "Plattform entwickelt von <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas-Assistent",
+    "subtitle": "Antwortet nur aus unserer regulatorischen Wissensdatenbank",
+    "intro": "Fragen Sie nach Ersatzkältemitteln, GWP-Grenzwerten, Leckageprüfintervallen oder Umrüstungswegen. Steht es nicht in unserer Wissensdatenbank, sagt der Assistent das, statt zu raten.",
+    "starter1": "Was ersetzt R-404A in bestehenden Anlagen?",
+    "starter2": "Wie oft muss ich eine Anlage mit 60 t CO₂e auf Leckagen prüfen?",
+    "starter3": "Kann ich R-32 in einer alten R-410A-Split-Anlage verwenden?",
+    "searching": "Wissensdatenbank wird durchsucht…",
+    "error": "Der Assistent konnte nicht erreicht werden. Bitte versuchen Sie es erneut.",
+    "placeholder": "Fragen Sie nach einem Kältemittel oder einer Vorschrift…",
+    "inputAria": "Den F-Gas-Assistenten fragen",
+    "stop": "Antwort stoppen",
+    "send": "Senden",
+    "inStock": "Auf Lager",
+    "addToCart": "In den Warenkorb",
+    "added": "Hinzugefügt",
+    "addAria": "{name}, {pack} in den Warenkorb legen",
+    "addedToast": "{name} in den Warenkorb gelegt",
+    "deposit": "+ {amount} erstattbares Flaschenpfand",
+    "unavailable": "In unserem Katalog, aber derzeit nicht bestellbar. Kontaktieren Sie das Team zur Verfügbarkeit."
   }
 }

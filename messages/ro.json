@@ -1618,7 +1618,7 @@
     "talkToPerson": "Discutați cu o persoană din echipa My Energy",
     "talkToPersonShort": "Discutați cu o persoană",
     "greeting": "Bună — pot găsi produse și verifica stocul, explica regulile F-Gas sau vă pot conecta cu echipa noastră. Ce aveți nevoie?",
-    "quick1": "Arată buteliile R-32 în stoc",
+    "quick1": "Ce agenți frigorifici sunt în stoc?",
     "quick2": "Ce înseamnă codul de eroare E9?",
     "quick3": "Am nevoie de prețuri pentru cantități mari",
     "placeholder": "Întrebați despre stoc, specificații sau reguli F-Gas...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Echipa noastră a închis această conversație. Trimiteți un mesaj pentru a începe una nouă.",
     "expiredNotice": "Această conversație a fost ștearsă după o oră fără activitate. Trimiteți un mesaj pentru a începe una nouă.",
     "retentionNote": "Conversațiile sunt șterse definitiv la o oră după ultimul mesaj.",
-    "errorUnavailable": "Asistentul nu este disponibil acum. Mesajul dvs. a fost salvat: încercați din nou în câteva momente sau apăsați „Discutați cu o persoană”."
+    "errorUnavailable": "Asistentul nu este disponibil acum. Mesajul dvs. a fost salvat: încercați din nou în câteva momente sau apăsați „Discutați cu o persoană”.",
+    "subtitleOnline": "Online · Asistență B2B",
+    "modeSupport": "Asistență",
+    "modeFgas": "Expert F-Gas",
+    "modesAria": "Modul asistentului",
+    "today": "Astăzi",
+    "fgasTitle": "Consultant F-Gas",
+    "fgasSubtitle": "Răspunde doar din baza noastră de cunoștințe",
+    "close": "Închide chatul",
+    "talkToManager": "Contactați un manager",
+    "welcomeTitle": "Bună ziua! Cu ce vă putem ajuta?",
+    "cap1": "Găsirea produselor și verificarea stocului",
+    "cap2": "Explicarea regulilor F-Gas, a documentelor și a certificatelor",
+    "cap3": "Transferul către un manager din echipa noastră",
+    "chipsAria": "Întrebări sugerate"
   },
   "SmartOrder": {
     "launch": "Comandă inteligentă en-gros",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Catalog de produse",
     "ctaHub": "Hub de piață",
     "devNote": "Platformă dezvoltată de <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "Asistent F-Gas",
+    "subtitle": "Răspunde doar din baza noastră de cunoștințe despre reglementări",
+    "intro": "Întrebați despre înlocuitori, limite GWP, intervale de verificare a scurgerilor sau variante de retrofit. Dacă informația nu se află în baza noastră de cunoștințe, asistentul vă spune acest lucru în loc să ghicească.",
+    "starter1": "Ce înlocuiește R-404A în sistemele existente?",
+    "starter2": "Cât de des trebuie verificat la scurgeri un sistem de 60 t CO₂e?",
+    "starter3": "Pot folosi R-32 într-un sistem split vechi cu R-410A?",
+    "searching": "Caut în baza de cunoștințe…",
+    "error": "A apărut o problemă la conectarea cu asistentul. Încercați din nou.",
+    "placeholder": "Întrebați despre un agent frigorific sau o reglementare…",
+    "inputAria": "Întrebați asistentul F-Gas",
+    "stop": "Oprește generarea",
+    "send": "Trimite",
+    "inStock": "În stoc",
+    "addToCart": "Adaugă în coș",
+    "added": "Adăugat",
+    "addAria": "Adaugă {name}, {pack} în coș",
+    "addedToast": "{name} a fost adăugat în coș",
+    "deposit": "+ {amount} depozit rambursabil pentru butelie",
+    "unavailable": "În catalogul nostru, dar momentan indisponibil pentru comandă. Contactați echipa pentru disponibilitate."
   }
 }

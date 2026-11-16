@@ -1618,7 +1618,7 @@
     "talkToPerson": "Razgovarajte s osobom iz My Energy tima",
     "talkToPersonShort": "Razgovarajte s osobom",
     "greeting": "Pozdrav — mogu pronaći proizvode i provjeriti zalihe, objasniti F-plin pravila ili vas povezati s našim timom. Što trebate?",
-    "quick1": "Prikaži R-32 boce na zalihi",
+    "quick1": "Koja su rashladna sredstva na zalihi?",
     "quick2": "Što znači šifra greške E9?",
     "quick3": "Trebam cijene za velike količine",
     "placeholder": "Pitajte o zalihama, specifikacijama ili F-plin pravilima...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Naš tim je zatvorio ovaj razgovor. Pošaljite poruku za početak novog.",
     "expiredNotice": "Ovaj razgovor je izbrisan nakon sat vremena bez aktivnosti. Pošaljite poruku za početak novog.",
     "retentionNote": "Razgovori se trajno brišu sat vremena nakon posljednje poruke.",
-    "errorUnavailable": "Asistent trenutno nije dostupan. Vaša poruka je spremljena: pokušajte ponovno za trenutak ili dodirnite „Razgovarajte s osobom“."
+    "errorUnavailable": "Asistent trenutno nije dostupan. Vaša poruka je spremljena: pokušajte ponovno za trenutak ili dodirnite „Razgovarajte s osobom“.",
+    "subtitleOnline": "Online · B2B podrška",
+    "modeSupport": "Podrška",
+    "modeFgas": "F-Gas stručnjak",
+    "modesAria": "Način rada asistenta",
+    "today": "Danas",
+    "fgasTitle": "F-Gas savjetnik",
+    "fgasSubtitle": "Odgovara samo iz naše baze znanja",
+    "close": "Zatvori razgovor",
+    "talkToManager": "Kontaktirajte menadžera",
+    "welcomeTitle": "Pozdrav! Kako vam možemo pomoći?",
+    "cap1": "Pronaći proizvode i provjeriti zalihe",
+    "cap2": "Objasniti F-Gas pravila, dokumente i certifikate",
+    "cap3": "Povezati vas s menadžerom iz našeg tima",
+    "chipsAria": "Predložena pitanja"
   },
   "SmartOrder": {
     "launch": "Pametna skupna narudžba",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Katalog proizvoda",
     "ctaHub": "Tržišni centar",
     "devNote": "Platformu razvio <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas asistent",
+    "subtitle": "Odgovara samo iz naše regulatorne baze znanja",
+    "intro": "Pitajte o zamjenama, GWP ograničenjima, intervalima provjere curenja ili načinima retrofita. Ako toga nema u našoj bazi znanja, asistent će to reći umjesto da nagađa.",
+    "starter1": "Čime zamijeniti R-404A u postojećim sustavima?",
+    "starter2": "Koliko često moram provjeravati curenje sustava od 60 t CO₂e?",
+    "starter3": "Mogu li koristiti R-32 u starom split sustavu na R-410A?",
+    "searching": "Pretražujem bazu znanja…",
+    "error": "Došlo je do pogreške pri povezivanju s asistentom. Pokušajte ponovno.",
+    "placeholder": "Pitajte o rashladnom sredstvu ili propisu…",
+    "inputAria": "Pitajte F-Gas asistenta",
+    "stop": "Zaustavi generiranje",
+    "send": "Pošalji",
+    "inStock": "Na zalihi",
+    "addToCart": "Dodaj u košaricu",
+    "added": "Dodano",
+    "addAria": "Dodaj {name}, {pack} u košaricu",
+    "addedToast": "{name} dodano u košaricu",
+    "deposit": "+ {amount} povratni polog za bocu",
+    "unavailable": "Nalazi se u našem katalogu, ali trenutačno nije dostupno za narudžbu. Kontaktirajte tim radi dostupnosti."
   }
 }

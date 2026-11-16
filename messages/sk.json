@@ -1618,7 +1618,7 @@
     "talkToPerson": "Porozprávajte sa s osobou z tímu My Energy",
     "talkToPersonShort": "Porozprávajte sa s osobou",
     "greeting": "Dobrý deň — môžem nájsť produkty a skontrolovať sklad, vysvetliť pravidlá F-Gas alebo vás prepojiť s naším tímom. Čo potrebujete?",
-    "quick1": "Zobraziť fľaše R-32 na sklade",
+    "quick1": "Aké chladivá máte na sklade?",
     "quick2": "Čo znamená chybový kód E9?",
     "quick3": "Potrebujem hromadné ceny",
     "placeholder": "Opýtajte sa na sklad, špecifikácie alebo pravidlá F-Gas...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Náš tím uzavrel túto konverzáciu. Pošlite správu na začatie novej.",
     "expiredNotice": "Táto konverzácia bola vymazaná po hodine bez aktivity. Pošlite správu na začatie novej.",
     "retentionNote": "Chaty sú natrvalo vymazané hodinu po poslednej správe.",
-    "errorUnavailable": "Asistent je momentálne nedostupný. Vaša správa bola uložená: skúste to znova o chvíľu, alebo kliknite na „Porozprávať sa s osobou“."
+    "errorUnavailable": "Asistent je momentálne nedostupný. Vaša správa bola uložená: skúste to znova o chvíľu, alebo kliknite na „Porozprávať sa s osobou“.",
+    "subtitleOnline": "Online · B2B podpora",
+    "modeSupport": "Podpora",
+    "modeFgas": "Expert F-Gas",
+    "modesAria": "Režim asistenta",
+    "today": "Dnes",
+    "fgasTitle": "Konzultant F-Gas",
+    "fgasSubtitle": "Odpovedá len z našej znalostnej databázy",
+    "close": "Zavrieť chat",
+    "talkToManager": "Kontaktovať manažéra",
+    "welcomeTitle": "Dobrý deň! Ako vám môžeme pomôcť?",
+    "cap1": "Nájsť produkty a overiť, čo je na sklade",
+    "cap2": "Vysvetliť pravidlá F-Gas, dokumenty a certifikáty",
+    "cap3": "Odovzdať vás manažérovi z nášho tímu",
+    "chipsAria": "Navrhované otázky"
   },
   "SmartOrder": {
     "launch": "Inteligentná hromadná objednávka",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Katalóg produktov",
     "ctaHub": "Trhový hub",
     "devNote": "Vývoj platformy: <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "Asistent F-Gas",
+    "subtitle": "Odpovedá len z našej znalostnej databázy predpisov",
+    "intro": "Pýtajte sa na náhrady, limity GWP, intervaly kontrol tesnosti alebo možnosti retrofitu. Ak informácia nie je v našej znalostnej databáze, asistent to povie a nebude hádať.",
+    "starter1": "Čím nahradiť R-404A v existujúcich systémoch?",
+    "starter2": "Ako často musím kontrolovať tesnosť systému so 60 t CO₂e?",
+    "starter3": "Môžem použiť R-32 v starom split systéme na R-410A?",
+    "searching": "Prehľadávam znalostnú databázu…",
+    "error": "Pri spojení s asistentom sa niečo pokazilo. Skúste to znova.",
+    "placeholder": "Opýtajte sa na chladivo alebo predpis…",
+    "inputAria": "Opýtať sa asistenta F-Gas",
+    "stop": "Zastaviť generovanie",
+    "send": "Odoslať",
+    "inStock": "Na sklade",
+    "addToCart": "Pridať do košíka",
+    "added": "Pridané",
+    "addAria": "Pridať {name}, {pack} do košíka",
+    "addedToast": "Pridané do košíka: {name}",
+    "deposit": "+ {amount} vratná záloha na fľašu",
+    "unavailable": "Je v našom katalógu, ale momentálne sa nedá objednať. Ohľadom dostupnosti kontaktujte tím."
   }
 }

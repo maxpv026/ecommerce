@@ -1618,7 +1618,7 @@
     "talkToPerson": "My Energy ekibinden biriyle konuşun",
     "talkToPersonShort": "Biriyle konuşun",
     "greeting": "Merhaba — Ürün bulabilir ve stok kontrol edebilirim, F-Gas kurallarını açıklayabilirim veya sizi ekibimize yönlendirebilirim. Ne yapmamı istersiniz?",
-    "quick1": "Stokta olan R-32 tüplerini göster",
+    "quick1": "Hangi soğutucu akışkanlar stokta?",
     "quick2": "E9 hata kodu ne anlama geliyor?",
     "quick3": "Toplu fiyatlandırmaya ihtiyacım var",
     "placeholder": "Stok, özellikler veya F-Gas kuralları hakkında sorun...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Ekibimiz bu konuşmayı kapattı. Yeni bir tane başlatmak için mesaj gönderin.",
     "expiredNotice": "Bu konuşma, bir saat boyunca etkinlik olmadığında silindi. Yeni bir konuşma başlatmak için bir mesaj gönderin.",
     "retentionNote": "Sohbetler, son mesajdan bir saat sonra kalıcı olarak silinir.",
-    "errorUnavailable": "Asistan şu anda kullanılamıyor. Mesajınız kaydedildi: lütfen biraz sonra tekrar deneyin veya “Bir kişiyle konuş”a dokunun."
+    "errorUnavailable": "Asistan şu anda kullanılamıyor. Mesajınız kaydedildi: lütfen biraz sonra tekrar deneyin veya “Bir kişiyle konuş”a dokunun.",
+    "subtitleOnline": "Çevrimiçi · B2B destek",
+    "modeSupport": "Destek",
+    "modeFgas": "F-Gas Uzmanı",
+    "modesAria": "Asistan modu",
+    "today": "Bugün",
+    "fgasTitle": "F-Gas Danışmanı",
+    "fgasSubtitle": "Yalnızca bilgi tabanımızdan yanıt verir",
+    "close": "Sohbeti kapat",
+    "talkToManager": "Müşteri temsilcisine ulaşın",
+    "welcomeTitle": "Merhaba! Size nasıl yardımcı olabiliriz?",
+    "cap1": "Ürün bulma ve stokta neler olduğunu kontrol etme",
+    "cap2": "F-Gas kurallarını, belgeleri ve sertifikaları açıklama",
+    "cap3": "Sizi ekibimizden bir müşteri temsilcisine aktarma",
+    "chipsAria": "Önerilen sorular"
   },
   "SmartOrder": {
     "launch": "Akıllı Toplu Sipariş",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Ürün kataloğu",
     "ctaHub": "Piyasa merkezi",
     "devNote": "Platform geliştiricisi: <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas Asistanı",
+    "subtitle": "Yalnızca mevzuat bilgi tabanımızdan yanıt verir",
+    "intro": "Muadiller, GWP sınırları, kaçak kontrolü aralıkları veya retrofit seçenekleri hakkında sorun. Bilgi tabanımızda yoksa asistan tahmin yürütmek yerine bunu söyler.",
+    "starter1": "Mevcut sistemlerde R-404A yerine ne kullanılır?",
+    "starter2": "60 t CO₂e'lik bir sistemde ne sıklıkla kaçak kontrolü yapmalıyım?",
+    "starter3": "Eski bir R-410A split sistemde R-32 kullanabilir miyim?",
+    "searching": "Bilgi tabanında aranıyor…",
+    "error": "Asistana ulaşırken bir sorun oluştu. Lütfen tekrar deneyin.",
+    "placeholder": "Bir soğutucu akışkan veya mevzuat hakkında sorun…",
+    "inputAria": "F-Gas asistanına sorun",
+    "stop": "Yanıtı durdur",
+    "send": "Gönder",
+    "inStock": "Stokta",
+    "addToCart": "Sepete ekle",
+    "added": "Eklendi",
+    "addAria": "{name}, {pack} ürününü sepete ekle",
+    "addedToast": "{name} sepete eklendi",
+    "deposit": "+ {amount} iade edilebilir tüp depozitosu",
+    "unavailable": "Kataloğumuzda var, ancak şu anda sipariş verilemiyor. Stok durumu için ekiple iletişime geçin."
   }
 }

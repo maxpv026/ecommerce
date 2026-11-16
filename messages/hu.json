@@ -1618,7 +1618,7 @@
     "talkToPerson": "Beszéljen a My Energy csapat egyik tagjával",
     "talkToPersonShort": "Beszéljen valakivel",
     "greeting": "Üdvözlöm — Termékeket találhatok és ellenőrizhetem a készletet, elmagyarázhatom az F-gáz szabályokat, vagy átirányíthatom a csapatunkhoz. Mire van szüksége?",
-    "quick1": "Mutassa az R-32 palackokat készleten",
+    "quick1": "Mely hűtőközegek vannak készleten?",
     "quick2": "Mit jelent az E9 hibakód?",
     "quick3": "Tömeges árazásra van szükségem",
     "placeholder": "Kérdezzen a készletről, specifikációkról vagy F-gáz szabályokról...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "A csapatunk lezárta ezt a beszélgetést. Küldjön üzenetet egy új indításához.",
     "expiredNotice": "Ez a beszélgetés egy óra inaktivitás után törlésre került. Küldjön üzenetet egy új beszélgetés indításához.",
     "retentionNote": "A csevegések az utolsó üzenet után egy órával véglegesen törlődnek.",
-    "errorUnavailable": "Az asszisztens jelenleg nem elérhető. Az üzenetét elmentettük: próbálja meg újra később, vagy kattintson a „Beszéljen valakivel” lehetőségre."
+    "errorUnavailable": "Az asszisztens jelenleg nem elérhető. Az üzenetét elmentettük: próbálja meg újra később, vagy kattintson a „Beszéljen valakivel” lehetőségre.",
+    "subtitleOnline": "Online · B2B támogatás",
+    "modeSupport": "Támogatás",
+    "modeFgas": "F-Gas szakértő",
+    "modesAria": "Asszisztens mód",
+    "today": "Ma",
+    "fgasTitle": "F-Gas tanácsadó",
+    "fgasSubtitle": "Csak a tudásbázisunkból válaszol",
+    "close": "Csevegés bezárása",
+    "talkToManager": "Kapcsolat menedzserrel",
+    "welcomeTitle": "Üdvözöljük! Miben segíthetünk?",
+    "cap1": "Termékek keresése és a készlet ellenőrzése",
+    "cap2": "F-Gas szabályok, dokumentumok és tanúsítványok magyarázata",
+    "cap3": "Átirányítás csapatunk egyik menedzseréhez",
+    "chipsAria": "Javasolt kérdések"
   },
   "SmartOrder": {
     "launch": "Intelligens tömeges rendelés",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Termékkatalógus",
     "ctaHub": "Piaci központ",
     "devNote": "A platformot fejlesztette: <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas asszisztens",
+    "subtitle": "Csak a szabályozási tudásbázisunkból válaszol",
+    "intro": "Kérdezzen helyettesítőkről, GWP-határértékekről, szivárgásellenőrzési időközökről vagy retrofit lehetőségekről. Ha valami nincs a tudásbázisunkban, az asszisztens ezt megmondja, ahelyett hogy találgatna.",
+    "starter1": "Mi helyettesíti az R-404A-t meglévő rendszerekben?",
+    "starter2": "Milyen gyakran kell szivárgásellenőrzést végeznem egy 60 t CO₂e-s rendszeren?",
+    "starter3": "Használhatok R-32-t egy régi R-410A-s split rendszerben?",
+    "searching": "Keresés a tudásbázisban…",
+    "error": "Hiba történt az asszisztens elérésekor. Kérjük, próbálja újra.",
+    "placeholder": "Kérdezzen egy hűtőközegről vagy előírásról…",
+    "inputAria": "Kérdezze az F-Gas asszisztenst",
+    "stop": "Generálás leállítása",
+    "send": "Küldés",
+    "inStock": "Készleten",
+    "addToCart": "Hozzáadás a kosárhoz",
+    "added": "Hozzáadva",
+    "addAria": "{name}, {pack} hozzáadása a kosárhoz",
+    "addedToast": "{name} a kosárba került",
+    "deposit": "+ {amount} visszatéríthető palackletét",
+    "unavailable": "Szerepel a katalógusunkban, de jelenleg nem rendelhető. Az elérhetőségről érdeklődjön a csapatnál."
   }
 }

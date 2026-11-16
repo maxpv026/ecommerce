@@ -6,6 +6,8 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ArrowUp, Check, Loader2, PackageX, ShieldCheck, Square } from "lucide-react";
 import { toast } from "sonner";
+import { useFormatter, useTranslations } from "next-intl";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import { useCartStore } from "@/lib/store/cart";
 
 /**
@@ -43,13 +45,7 @@ const Markdown = dynamic(() => import("react-markdown"), { ssr: false });
 const PROSE =
   "[&_p]:m-0 [&_p+p]:mt-2.5 [&_strong]:font-medium [&_strong]:text-ink [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1 [&_code]:rounded [&_code]:bg-ink/[.06] [&_code]:px-1 [&_code]:py-px [&_code]:text-[12px] dark:[&_code]:bg-white/10";
 
-const eur = new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" });
-
-const STARTERS = [
-  "What replaces R-404A in existing systems?",
-  "How often must I leak check a 60 tonne CO2e system?",
-  "Can I drop R-32 into an old R-410A split?",
-];
+const STARTER_KEYS = ["starter1", "starter2", "starter3"] as const;
 
 /**
  * The purchasable branch of the tool's output.
@@ -149,6 +145,11 @@ function asSuggestion(output: unknown): Suggestion | null {
 /* ── Product suggestion card ─────────────────────────────────────────── */
 
 function AvailableCard({ item }: { item: AvailableSuggestion }) {
+  const t = useTranslations("FgasAssistant");
+  const format = useFormatter();
+  const eur = (n: number) => format.number(n, { style: "currency", currency: "EUR" });
+  // On screen, the pack in the reader's language; the cart line keeps the catalog's `variant`.
+  const pack = usePackLabel()(item.weightKg, undefined, true);
   const addItem = useCartStore((s) => s.addItem);
   const [added, setAdded] = useState(false);
 
@@ -174,7 +175,7 @@ function AvailableCard({ item }: { item: AvailableSuggestion }) {
       1
     );
     setAdded(true);
-    toast.success(`${item.name} added to cart`);
+    toast.success(t("addedToast", { name: item.name }));
   };
 
   return (
@@ -182,13 +183,13 @@ function AvailableCard({ item }: { item: AvailableSuggestion }) {
       <div className="flex items-center gap-2 border-b border-blue-700/10 bg-blue-700/[.04] px-4 py-2 dark:border-blue-400/15 dark:bg-blue-400/[.06]">
         <ShieldCheck className="size-3.5 text-blue-700 dark:text-blue-400" aria-hidden />
         <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-blue-700 dark:text-blue-400">
-          In stock
+          {t("inStock")}
         </span>
       </div>
 
       <div className="px-4 py-3.5">
         <p className="text-[15px] font-medium leading-tight text-ink">{item.name}</p>
-        <p className="mt-0.5 text-[13px] text-ink-muted">{item.variant}</p>
+        <p className="mt-0.5 text-[13px] text-ink-muted">{pack}</p>
 
         {item.reason ? (
           <p className="mt-2.5 text-[13px] leading-relaxed text-ink-muted">{item.reason}</p>
@@ -197,19 +198,19 @@ function AvailableCard({ item }: { item: AvailableSuggestion }) {
         <div className="mt-3.5 flex items-end justify-between gap-4">
           <div>
             <p className="text-[19px] font-medium tabular-nums leading-none text-ink">
-              {eur.format(item.unitPrice)}
+              {eur(item.unitPrice)}
             </p>
             {/* Named explicitly: the deposit is refundable and is charged on
                 top, so showing only the gas price would understate the line. */}
             <p className="mt-1 text-[11px] text-ink-muted">
-              + {eur.format(item.deposit)} refundable cylinder deposit
+              {t("deposit", { amount: eur(item.deposit) })}
             </p>
           </div>
 
           <button
             type="button"
             onClick={add}
-            aria-label={`Add ${item.name} ${item.variant} to cart`}
+            aria-label={t("addAria", { name: item.name, pack })}
             className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-medium transition-colors ${
               added
                 ? "bg-blue-700/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-400"
@@ -222,10 +223,10 @@ function AvailableCard({ item }: { item: AvailableSuggestion }) {
             {added ? (
               <span className="flex items-center gap-1.5">
                 <Check className="size-3.5" aria-hidden />
-                Added
+                {t("added")}
               </span>
             ) : (
-              "Add to cart"
+              t("addToCart")
             )}
           </button>
         </div>
@@ -235,6 +236,7 @@ function AvailableCard({ item }: { item: AvailableSuggestion }) {
 }
 
 function UnavailableCard({ item }: { item: UnavailableSuggestion }) {
+  const t = useTranslations("FgasAssistant");
   return (
     <div className="mt-3 max-w-md rounded-2xl border border-hairline bg-surface-2/60 px-4 py-3.5 dark:bg-surface-2/40">
       <div className="flex items-start gap-2.5">
@@ -245,8 +247,7 @@ function UnavailableCard({ item }: { item: UnavailableSuggestion }) {
               for this branch, so there is nothing here to mistake for an
               offer. */}
           <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">
-            In our catalogue, but not available to order right now. Contact the team for
-            availability.
+            {t("unavailable")}
           </p>
           {item.reason ? (
             <p className="mt-2 text-[13px] leading-relaxed text-ink-muted/80">{item.reason}</p>
@@ -318,6 +319,7 @@ interface RagAssistantProps {
 }
 
 export default function RagAssistant({ embedded = false }: RagAssistantProps) {
+  const t = useTranslations("FgasAssistant");
   // Built once. A transport recreated on every render would re-key the chat
   // mid-conversation.
   const transport = useMemo(
@@ -355,10 +357,8 @@ export default function RagAssistant({ embedded = false }: RagAssistantProps) {
     >
       {embedded ? null : (
         <header className="shrink-0 border-b border-hairline px-5 py-3.5">
-          <h2 className="text-[14px] font-medium tracking-tight text-ink">F-Gas Assistant</h2>
-          <p className="mt-0.5 text-[12px] text-ink-muted">
-            Answers from our regulatory knowledge base only
-          </p>
+          <h2 className="text-[14px] font-medium tracking-tight text-ink">{t("title")}</h2>
+          <p className="mt-0.5 text-[12px] text-ink-muted">{t("subtitle")}</p>
         </header>
       )}
 
@@ -369,18 +369,18 @@ export default function RagAssistant({ embedded = false }: RagAssistantProps) {
         aria-busy={busy}
       >
         {messages.length === 0 ? (
-          <div className="pt-6">
-            <p className="text-[13px] leading-relaxed text-ink-muted">
-              Ask about replacements, GWP limits, leak-check intervals or retrofit routes.
-              If it isn&apos;t in our knowledge base, the assistant will say so rather than guess.
+          <div className="pt-1">
+            <p className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3.5 text-[13px] leading-relaxed text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+              {t("intro")}
             </p>
-            <div className="mt-5 flex flex-col items-start gap-2">
-              {STARTERS.map((s) => (
+            {/* Starters wrap; never clipped at the panel edge. */}
+            <div className="mt-4 flex flex-wrap gap-2" data-fgas-starters>
+              {STARTER_KEYS.map((key) => t(key)).map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => submit(s)}
-                  className="rounded-full border border-hairline px-3.5 py-1.5 text-left text-[13px] text-ink-muted transition-colors hover:border-hairline-strong hover:text-ink"
+                  className="max-w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-left text-[12px] font-medium leading-[1.35] text-slate-700 transition-colors hover:border-blue-600/40 hover:bg-blue-50 hover:text-blue-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-400/40 dark:hover:bg-blue-500/10 dark:hover:text-blue-200"
                 >
                   {s}
                 </button>
@@ -394,13 +394,13 @@ export default function RagAssistant({ embedded = false }: RagAssistantProps) {
         {status === "submitted" ? (
           <div className="flex items-center gap-2 text-[13px] text-ink-muted">
             <Loader2 className="size-3.5 animate-spin" aria-hidden />
-            Searching the knowledge base…
+            {t("searching")}
           </div>
         ) : null}
 
         {error ? (
           <p className="text-[13px] leading-relaxed text-ink-muted">
-            Something went wrong reaching the assistant. Please try again.
+            {t("error")}
           </p>
         ) : null}
       </div>
@@ -410,23 +410,24 @@ export default function RagAssistant({ embedded = false }: RagAssistantProps) {
           e.preventDefault();
           submit(input);
         }}
-        className="shrink-0 border-t border-hairline p-3"
+        className="shrink-0 border-t border-slate-200/80 bg-white px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 md:pb-3 dark:border-slate-800/80 dark:bg-slate-950"
       >
-        <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-1.5 transition-colors focus-within:border-blue-700/40 dark:bg-surface-2 dark:focus-within:border-blue-400/40">
+        {/* Same composer as the support tab: pr-14 keeps the placeholder clear of the button. */}
+        <div className="relative">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about a refrigerant or regulation…"
-            aria-label="Ask the F-Gas assistant"
-            className="min-w-0 flex-1 bg-transparent py-1.5 text-[14px] text-ink outline-none placeholder:text-ink-muted"
+            placeholder={t("placeholder")}
+            aria-label={t("inputAria")}
+            data-fgas-input
+            className="h-12 w-full truncate rounded-2xl border border-slate-200 bg-slate-50 pl-4 pr-14 text-[14px] text-slate-900 transition-[border-color,box-shadow] placeholder:text-slate-500 focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-blue-600/15 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-400 dark:focus:border-blue-400"
           />
-
           {busy ? (
             <button
               type="button"
               onClick={stop}
-              aria-label="Stop generating"
-              className="shrink-0 rounded-full p-1.5 text-ink-muted transition-colors hover:text-ink"
+              aria-label={t("stop")}
+              className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-slate-200/70 text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               <Square className="size-3.5 fill-current" aria-hidden />
             </button>
@@ -434,10 +435,14 @@ export default function RagAssistant({ embedded = false }: RagAssistantProps) {
             <button
               type="submit"
               disabled={!input.trim()}
-              aria-label="Send"
-              className="shrink-0 rounded-full bg-ink p-1.5 text-invert-ink transition-opacity disabled:opacity-25"
+              aria-label={t("send")}
+              className={`absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl transition-[background-color,transform,color] duration-150 disabled:cursor-not-allowed ${
+                input.trim()
+                  ? "bg-blue-700 text-white shadow-[0_8px_18px_-8px_rgba(29,78,216,.8)] hover:bg-blue-800 active:scale-95"
+                  : "bg-slate-200/70 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+              }`}
             >
-              <ArrowUp className="size-3.5" aria-hidden />
+              <ArrowUp className="size-4" aria-hidden />
             </button>
           )}
         </div>

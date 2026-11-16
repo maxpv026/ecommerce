@@ -1618,7 +1618,7 @@
     "talkToPerson": "Praat met iemand van het My Energy-team",
     "talkToPersonShort": "Praat met iemand",
     "greeting": "Hallo — ik kan producten vinden en voorraad controleren, F-gasregels uitleggen, of u doorverbinden met ons team. Waar heeft u behoefte aan?",
-    "quick1": "Toon R-32 cilinders op voorraad",
+    "quick1": "Welke koudemiddelen zijn op voorraad?",
     "quick2": "Wat betekent foutcode E9?",
     "quick3": "Ik heb bulkprijzen nodig",
     "placeholder": "Vraag naar voorraad, specificaties of F-gasregels...",
@@ -1630,7 +1630,21 @@
     "resolvedNotice": "Ons team heeft dit gesprek gesloten. Stuur een bericht om een nieuw gesprek te starten.",
     "expiredNotice": "Dit gesprek is na een uur zonder activiteit verwijderd. Stuur een bericht om een nieuw gesprek te starten.",
     "retentionNote": "Chats worden één uur na het laatste bericht permanent verwijderd.",
-    "errorUnavailable": "De assistent is momenteel niet beschikbaar. Uw bericht is opgeslagen: probeer het over een moment opnieuw, of tik op \"Praat met een persoon\"."
+    "errorUnavailable": "De assistent is momenteel niet beschikbaar. Uw bericht is opgeslagen: probeer het over een moment opnieuw, of tik op \"Praat met een persoon\".",
+    "subtitleOnline": "Online · B2B-support",
+    "modeSupport": "Support",
+    "modeFgas": "F-Gas-expert",
+    "modesAria": "Assistentmodus",
+    "today": "Vandaag",
+    "fgasTitle": "F-Gas-consultant",
+    "fgasSubtitle": "Antwoordt alleen vanuit onze kennisbank",
+    "close": "Chat sluiten",
+    "talkToManager": "Contact met een manager",
+    "welcomeTitle": "Hallo! Waarmee kunnen we helpen?",
+    "cap1": "Producten vinden en voorraad controleren",
+    "cap2": "F-Gas-regels, documenten en certificaten uitleggen",
+    "cap3": "U doorverbinden met een manager van ons team",
+    "chipsAria": "Voorgestelde vragen"
   },
   "SmartOrder": {
     "launch": "Slimme Bulkbestelling",
@@ -3315,5 +3329,26 @@
     "ctaCatalog": "Productcatalogus",
     "ctaHub": "Markthub",
     "devNote": "Platform ontwikkeld door <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas-assistent",
+    "subtitle": "Antwoordt alleen vanuit onze kennisbank over regelgeving",
+    "intro": "Vraag naar vervangers, GWP-limieten, lekcontrole-intervallen of retrofitroutes. Staat het niet in onze kennisbank, dan zegt de assistent dat in plaats van te gokken.",
+    "starter1": "Wat vervangt R-404A in bestaande installaties?",
+    "starter2": "Hoe vaak moet ik een installatie van 60 t CO₂e op lekken controleren?",
+    "starter3": "Kan ik R-32 gebruiken in een oud R-410A-splitsysteem?",
+    "searching": "Kennisbank doorzoeken…",
+    "error": "Er ging iets mis bij het bereiken van de assistent. Probeer het opnieuw.",
+    "placeholder": "Vraag naar een koudemiddel of regelgeving…",
+    "inputAria": "Vraag het de F-Gas-assistent",
+    "stop": "Genereren stoppen",
+    "send": "Verzenden",
+    "inStock": "Op voorraad",
+    "addToCart": "Voeg toe aan winkelwagentje",
+    "added": "Toegevoegd",
+    "addAria": "Voeg {name}, {pack} toe aan winkelwagentje",
+    "addedToast": "{name} toegevoegd aan winkelwagen",
+    "deposit": "+ {amount} terugbetaalbaar cilinderstatiegeld",
+    "unavailable": "Staat in onze catalogus, maar is nu niet te bestellen. Neem contact op met het team voor beschikbaarheid."
   }
 }

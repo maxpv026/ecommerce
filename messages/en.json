@@ -1617,7 +1617,7 @@
     "talkToPerson": "Talk to a person from the My Energy team",
     "talkToPersonShort": "Talk to a person",
     "greeting": "Hi — I can find products and check stock, explain F-Gas rules, or pass you to our team. What do you need?",
-    "quick1": "Show R-32 cylinders in stock",
+    "quick1": "Which refrigerants are in stock?",
     "quick2": "What does error code E9 mean?",
     "quick3": "I need bulk pricing",
     "placeholder": "Ask about stock, specs, or F-Gas rules...",
@@ -1629,7 +1629,21 @@
     "resolvedNotice": "Our team closed this conversation. Send a message to start a new one.",
     "expiredNotice": "This conversation was deleted after an hour without activity. Send a message to start a new one.",
     "retentionNote": "Chats are permanently deleted one hour after the last message.",
-    "errorUnavailable": "The assistant is unavailable right now. Your message is saved: try again in a moment, or tap “Talk to a person”."
+    "errorUnavailable": "The assistant is unavailable right now. Your message is saved: try again in a moment, or tap “Talk to a person”.",
+    "subtitleOnline": "Online · B2B support",
+    "modeSupport": "Support",
+    "modeFgas": "F-Gas Expert",
+    "modesAria": "Assistant mode",
+    "today": "Today",
+    "fgasTitle": "F-Gas Consultant",
+    "fgasSubtitle": "Answers only from our knowledge base",
+    "close": "Close chat",
+    "talkToManager": "Contact a manager",
+    "welcomeTitle": "Hello! How can we help?",
+    "cap1": "Find products and check what's in stock",
+    "cap2": "Explain F-Gas rules, documents and certificates",
+    "cap3": "Hand you over to a manager on our team",
+    "chipsAria": "Suggested questions"
   },
   "SmartOrder": {
     "launch": "Smart Bulk Order",
@@ -3314,5 +3328,26 @@
     "ctaCatalog": "Product catalogue",
     "ctaHub": "Market hub",
     "devNote": "Platform engineered by <link>{name}</link>"
+  },
+  "FgasAssistant": {
+    "title": "F-Gas Assistant",
+    "subtitle": "Answers from our regulatory knowledge base only",
+    "intro": "Ask about replacements, GWP limits, leak-check intervals or retrofit routes. If it isn't in our knowledge base, the assistant says so rather than guessing.",
+    "starter1": "What replaces R-404A in existing systems?",
+    "starter2": "How often must I leak-check a 60 t CO₂e system?",
+    "starter3": "Can I use R-32 in an old R-410A split system?",
+    "searching": "Searching the knowledge base…",
+    "error": "Something went wrong reaching the assistant. Please try again.",
+    "placeholder": "Ask about a refrigerant or regulation…",
+    "inputAria": "Ask the F-Gas assistant",
+    "stop": "Stop generating",
+    "send": "Send",
+    "inStock": "In stock",
+    "addToCart": "Add to cart",
+    "added": "Added",
+    "addAria": "Add {name}, {pack} to cart",
+    "addedToast": "{name} added to cart",
+    "deposit": "+ {amount} refundable cylinder deposit",
+    "unavailable": "In our catalogue, but not available to order right now. Contact the team for availability."
   }
 }
