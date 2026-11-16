@@ -1,5 +1,7 @@
 "use client";
 
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
+
 import type { Ref } from "react";
 import { motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
@@ -105,10 +107,12 @@ export default function ProductCard({
   const row = variant === "row";
   // Icon-only action where a labelled pill wouldn't fit beside the price.
   const iconAction = compact || row;
+  // Localized pack ("13,61 кг · балон" / "поштучно"), never the catalog's English weightLabel.
+  const packLabel = usePackLabel()(product.weightKg, product.containerType, product.pricedPerKg);
 
   const specs = [
     { label: t("specPurity"), value: product.purity !== null ? `${product.purity}%` : t("na") },
-    { label: t("specVolume"), value: product.pricedPerKg ? formatKg(product.weightKg) : product.weightLabel },
+    { label: t("specVolume"), value: product.pricedPerKg ? formatKg(product.weightKg) : packLabel },
     { label: t("specGwp"), value: product.gwp !== null ? String(product.gwp) : t("na") },
   ];
 
@@ -259,10 +263,10 @@ export default function ProductCard({
             {!product.pricedPerKg
               ? compact
                 ? t("exVatShort")
-                : t("unitExVat", { volume: product.weightLabel })
+                : t("unitExVat", { volume: packLabel })
               : priced
                 ? t("perKgAmount", { amount: eur(product.pricePerKg) })
-                : product.weightLabel}
+                : packLabel}
           </span>
         </div>
         {/* The action slot is the only thing that differs between an

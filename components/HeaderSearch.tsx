@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
 import { ArrowRight, Loader2, PackageX, Search, X } from "lucide-react";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import { SEARCH_MIN_LENGTH, isSearchable, normalizeSearchTerm } from "@/lib/search";
 
 /** One row of the dropdown, as /api/search returns it. */
@@ -16,6 +17,8 @@ interface SearchHit {
   sku: string;
   type: string;
   weightLabel: string;
+  weightKg: number;
+  containerType: string;
   pricePerKg: number;
   cylinderPrice: number;
   pricedPerKg: boolean;
@@ -81,6 +84,8 @@ function HeaderSearchBox({ onQueryChange }: HeaderSearchProps) {
   // The result count is already correctly pluralised for every locale in the
   // Products namespace — reuse it rather than duplicate 29 sets of rules.
   const tProducts = useTranslations("Products");
+  // Localized pack label; the API's weightLabel is the catalog's English.
+  const pack = usePackLabel();
   const format = useFormatter();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -322,7 +327,7 @@ function HeaderSearchBox({ onQueryChange }: HeaderSearchProps) {
                               truncates; the pack label gives way instead. */}
                           <span className="flex-none font-medium">{hit.sku}</span>
                           <span aria-hidden className="flex-none">·</span>
-                          <span className="truncate">{hit.weightLabel}</span>
+                          <span className="truncate">{pack(hit.weightKg, hit.containerType, hit.pricedPerKg)}</span>
                           {!hit.inStock && (
                             <span className="flex-none font-semibold text-amber-600 dark:text-amber-400">
                               {t("searchOutOfStock")}

@@ -191,6 +191,7 @@ export async function calculateCharge(rawQuery: string): Promise<CalculateCharge
       name: p.name,
       weightLabel: p.weight,
       weightKg: p.weightKg,
+      containerType: p.containerType,
       pricePerKg: p.pricePerKg,
       cylinderDeposit: Number(p.cylinderDeposit),
       // Live on-hand count: a 20-system job must not be offered more

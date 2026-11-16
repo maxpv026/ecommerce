@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
+import { keepUnits } from "@/lib/keepUnits";
 
 /**
  * "13,61 кг · балон" — a pack size in the reader's language.
@@ -17,6 +18,7 @@ export function usePackLabel() {
   return (weightKg: number, containerType: string | null | undefined, pricedPerKg: boolean) => {
     if (!pricedPerKg) return t("unit");
     const key = ["Cylinder", "Drum", "Isotank", "Can"].includes(containerType ?? "") ? containerType! : "Cylinder";
-    return t("size", { kg: format.number(weightKg, { maximumFractionDigits: 2 }), container: t(`container_${key}`) });
+    // "13,61 кг" stays one piece; the label may still wrap at "·".
+    return keepUnits(t("size", { kg: format.number(weightKg, { maximumFractionDigits: 2 }), container: t(`container_${key}`) }));
   };
 }

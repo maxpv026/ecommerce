@@ -138,6 +138,8 @@ export interface CylinderOption {
   name: string;
   weightLabel: string;
   weightKg: number;
+  /** "Cylinder" | "Drum" | …, for the localized pack label on screen (weightLabel is the catalog's English). */
+  containerType?: string;
   pricePerKg: number;
   cylinderDeposit: number;
   /** Units on hand right now; absent = not checked. */

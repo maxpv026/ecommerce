@@ -11,6 +11,8 @@ import { useCartStore } from "@/lib/store/cart";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { isPurchasable } from "@/lib/waitlist";
 import type { StoreProduct } from "@/lib/data";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
+import { keepUnits } from "@/lib/keepUnits";
 
 /**
  * One catalog product, two layouts — the grid card and the cart-identical
@@ -91,24 +93,24 @@ function PriceLines({ p, align = "left" }: { p: StoreProduct; align?: "left" | "
   if (!p.pricedPerKg) {
     return (
       <div className={right}>
-        <div className="text-[17px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
+        <div className="whitespace-nowrap text-[17px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
           {eur(p.pricePerKg)}
         </div>
-        <div className="text-[11.5px] text-slate-500 dark:text-ink-muted">{t("exVatShort")}</div>
+        <div className="whitespace-nowrap text-[11.5px] text-slate-500 dark:text-ink-muted">{t("exVatShort")}</div>
       </div>
     );
   }
   if (p.pricePerKg <= 0) return <div className={`text-[14px] font-semibold ${right}`}>{t("priceOnRequest")}</div>;
   return (
     <div className={`min-w-0 ${right}`}>
-      <div className="text-[17px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
+      <div className="whitespace-nowrap text-[17px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
         {eur(p.cylinderPrice)}
       </div>
-      <div className="truncate text-[11.5px] leading-[1.45] text-slate-500 tabular-nums dark:text-ink-muted" data-item-perkg>
+      <div className="whitespace-nowrap text-[11.5px] leading-[1.45] text-slate-500 tabular-nums dark:text-ink-muted" data-item-perkg>
         {t("perKgLine", { price: eur(p.pricePerKg), weight: format.number(p.weightKg, { maximumFractionDigits: 2 }) })}
       </div>
       {p.cylinderDeposit > 0 && (
-        <div className="truncate text-[11.5px] leading-[1.35] text-emerald-700 tabular-nums dark:text-emerald-400" data-item-deposit>
+        <div className="whitespace-nowrap text-[11.5px] leading-[1.35] text-emerald-700 tabular-nums dark:text-emerald-400" data-item-deposit>
           {t("depositLine", { amount: eur(p.cylinderDeposit) })}
         </div>
       )}
@@ -152,8 +154,15 @@ export function CatalogCard({ p, onNotify }: { p: StoreProduct; onNotify: (p: St
         <Thumb p={p} />
         <span className="min-w-0">
           <span className="line-clamp-2 block text-[15px] font-semibold leading-[1.3] tracking-[-.025em]" data-item-title>
-            {p.name}
-            {weight && <span className="font-normal text-slate-500 dark:text-ink-muted"> · {weight}</span>}
+            {keepUnits(p.name)}
+            {/* "· 45,36 кг" is one unbreakable piece: a long name wraps before it, never inside it. */}
+            {/* The space stays OUTSIDE the nowrap span: it is the break point before the weight. */}
+            {weight && (
+              <>
+                {" "}
+                <span className="whitespace-nowrap font-normal text-slate-500 dark:text-ink-muted">·&nbsp;{weight}</span>
+              </>
+            )}
           </span>
           <span className="mt-1 flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-ink-muted" data-item-stock={stock.key}>
             <span aria-hidden className={`h-1.5 w-1.5 flex-none rounded-full ${DOT[stock.tone] ?? DOT.muted}`} />
@@ -164,27 +173,34 @@ export function CatalogCard({ p, onNotify }: { p: StoreProduct; onNotify: (p: St
       <div className="mt-4">
         <CardBadges p={p} />
       </div>
-      <div className="mt-auto flex items-end justify-between gap-3 pt-5">
-        <div className="min-w-0">
+      {/* Price and action share a row that WRAPS rather than squeezes: the
+          price grows 9999:1 against the action, so on one line the action
+          keeps its natural width; when a long label ("Підписатися на
+          оновлення", "In den Warenkorb legen") doesn't fit beside the price,
+          it drops to its own line and, alone there, fills the card's width.
+          Nothing is ever pushed over the price. */}
+      <div className="mt-auto flex flex-wrap items-end gap-x-4 gap-y-3 pt-5" data-card-footer>
+        <div className="min-w-0 flex-[9999_1_auto]" data-card-price>
           {!p.pricedPerKg ? (
-            <div className="text-[18px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
+            <div className="whitespace-nowrap text-[18px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
               {eur(p.pricePerKg)}
             </div>
           ) : p.pricePerKg <= 0 ? (
             <div className="text-[14px] font-semibold">{t("priceOnRequest")}</div>
           ) : (
             <>
-              <div className="text-[18px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
+              <div className="whitespace-nowrap text-[18px] font-semibold tabular-nums tracking-[-.03em]" data-item-total>
                 {eur(p.cylinderPrice)}
               </div>
-              <div className="text-[12px] text-slate-500 tabular-nums dark:text-ink-muted" data-item-perkg>
+              <div className="whitespace-nowrap text-[12px] text-slate-500 tabular-nums dark:text-ink-muted" data-item-perkg>
                 {t("cardPerKg", { amount: eur(p.pricePerKg) })}
               </div>
             </>
           )}
         </div>
+        <div className="flex flex-[1_0_auto] justify-end" data-card-action>
         {!item.purchasable ? (
-          <button type="button" onClick={() => onNotify(p)} data-item-notify className={`${ROW_ACTION_GHOST} h-9`}>
+          <button type="button" onClick={() => onNotify(p)} data-item-notify className={`${ROW_ACTION_GHOST} h-9 w-full`}>
             <Bell size={14} strokeWidth={2} />
             {t("notifyCta")}
           </button>
@@ -200,19 +216,32 @@ export function CatalogCard({ p, onNotify }: { p: StoreProduct; onNotify: (p: St
             data-item-in-cart={String(item.inCart)}
           />
         ) : (
-          <AddButton item={item} className="h-9" />
+          <AddButton item={item} className="h-9 w-full" />
         )}
+        </div>
       </div>
     </article>
   );
 }
 
-/** Table view row — the cart line layout. */
-export const ROW_GRID = "grid grid-cols-[64px_minmax(0,1fr)_auto_208px_128px] items-center gap-4";
+/**
+ * Table view — the cart line layout. From sm up the table is ONE grid
+ * (TABLE_GRID) and every row, the header included, is a subgrid of it, so a
+ * column is as wide as its widest cell in any row: the price column fits the
+ * longest "€/kg · kg net" line, the action column the longest button label in
+ * this locale, and they still line up row to row. (Fixed 208/128 px tracks
+ * did neither: "Підписатися на оновлення" overflowed into the price.)
+ * Phones keep a per-row grid that restacks the five cells.
+ */
+// First track `auto`, not 64px: a subgrid row's padding is taken out of its edge
+// tracks, so a fixed 64px column left the 64px thumbnail 44px of room.
+export const TABLE_GRID = "sm:grid sm:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] sm:gap-x-6";
+export const ROW_GRID = "grid items-center sm:col-span-5 sm:grid-cols-subgrid";
 
 export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: StoreProduct) => void }) {
   const t = useTranslations("Products");
   const item = useCatalogItem(p);
+  const pack = usePackLabel();
   return (
     // Phones restack the five cells: thumb · name (row 1), stepper · price (row 2), action (row 3).
     <div
@@ -224,10 +253,10 @@ export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: Sto
       </Link>
       <div className="min-w-0">
         <Link href={p.pdpHref} className="block truncate text-[15px] font-semibold tracking-[-.025em] hover:text-blue-700 dark:hover:text-blue-400">
-          {p.name}
+          {keepUnits(p.name)}
         </Link>
         <div className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-ink-muted">
-          {p.weightLabel} · <span className="font-mono">{p.sku}</span>
+          <span className="whitespace-nowrap">{pack(p.weightKg, p.containerType, p.pricedPerKg)}</span> · <span className="font-mono">{p.sku}</span>
         </div>
         <div className="mt-1.5">
           <Badges p={p} purity={false} />
@@ -239,7 +268,7 @@ export function CatalogRow({ p, onNotify }: { p: StoreProduct; onNotify: (p: Sto
         <span />
       )}
       <PriceLines p={p} align="right" />
-      <div className="flex flex-col items-end gap-1">
+      <div className="flex min-w-[128px] flex-col items-stretch gap-1 max-sm:items-end">
         {item.purchasable ? (
           <AddButton item={item} className="w-full" />
         ) : (

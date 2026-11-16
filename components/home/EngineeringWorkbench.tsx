@@ -8,6 +8,7 @@ import { useCartStore } from "@/lib/store/cart";
 import { isPurchasable } from "@/lib/waitlist";
 import { PT_GASES, PT_MAX_C, PT_MIN_C, barAbsToPsig, saturationBarAbs } from "@/lib/refrigerantPT";
 import type { StoreProduct } from "@/lib/data";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import type { ShowcaseItem } from "./HeroShowcase";
 import { EYEBROW, ICON_TILE, MicroBadge, PRIMARY, ROW, ROW_ACTION_DONE, ROW_ACTION_GHOST, ROW_ACTION_PRIMARY, SURFACE, SUMMARY_CARD, SectionHeader, Stepper, safetyTone } from "./ui";
 
@@ -34,6 +35,7 @@ const MAX_CYLINDERS = 30;
 export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseItem[] }) {
   const t = useTranslations("HomeDesktop");
   const format = useFormatter();
+  const pack = usePackLabel();
   const addItem = useCartStore((s) => s.addItem);
   const [temp, setTemp] = useState(7);
   const [addedSku, setAddedSku] = useState<string | null>(null);
@@ -221,7 +223,7 @@ export default function EngineeringWorkbench({ showcase }: { showcase: ShowcaseI
                   })}
                 </div>
                 <div className="mt-3 truncate text-[12px] text-slate-500 dark:text-ink-muted" data-est-product>
-                  {p.name} · {p.weightLabel} · {t("perKgPrice", { price: eur(p.pricePerKg) })}
+                  {p.name} · {pack(p.weightKg, p.containerType, p.pricedPerKg)} · {t("perKgPrice", { price: eur(p.pricePerKg) })}
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-3">

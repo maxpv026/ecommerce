@@ -11,7 +11,7 @@ import AuthModal from "./AuthModal";
 import StockNotifyModal from "./StockNotifyModal";
 import MobileTopBar from "./MobileTopBar";
 import SmartOrderButton from "./smartOrder/SmartOrderButton";
-import { CatalogCard, CatalogRow, ROW_GRID } from "./catalog/CatalogItem";
+import { CatalogCard, CatalogRow, ROW_GRID, TABLE_GRID } from "./catalog/CatalogItem";
 import { CATEGORY_LABEL_KEY } from "./ProductCard";
 import { ICON_TILE, PILL, SURFACE } from "./home/ui";
 import { sortProducts } from "@/lib/productSort";
@@ -422,11 +422,11 @@ export default function ProductBrowser({ products, searchTerm }: ProductBrowserP
                     ))}
                   </div>
                 ) : (
-                  <div className={`mt-4 ${SURFACE}`} data-product-table>
+                  <div className={`mt-4 ${SURFACE} ${TABLE_GRID}`} data-product-table>
                     <div className={`${ROW_GRID} border-b border-slate-900/[.06] bg-slate-900/[.015] px-5 py-2 max-sm:hidden text-[10.5px] font-semibold uppercase tracking-[.08em] text-slate-400 dark:border-white/[.06] dark:bg-white/[.02] dark:text-ink-muted`}>
                       <span />
                       <span>{t("colProduct")}</span>
-                      <span className="w-[84px] text-center">{t("colQty")}</span>
+                      <span className="text-center">{t("colQty")}</span>
                       <span className="text-right">{t("colPrice")}</span>
                       <span />
                     </div>

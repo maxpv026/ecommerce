@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import Header from "./Header";
 import { usePackLabel } from "@/lib/hooks/usePackLabel";
+import { keepUnits } from "@/lib/keepUnits";
 import AuthModal from "./AuthModal";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/lib/store/cart";
@@ -160,12 +161,25 @@ export default function ProductDetail({ product: initialProduct, related, varian
       { label: t("specRefrigerant"), value: product.type },
       { label: tProducts("specPurity"), value: product.purity !== null ? `${product.purity}%` : tProducts("na") },
       { label: tProducts("specGwp"), value: product.gwp !== null ? String(product.gwp) : tProducts("na") },
-      { label: t("specSafety"), value: product.gwpClass },
+      { label: t("specSafety"), value: product.gwpClass && product.gwpClass !== "n/a" ? product.gwpClass : tProducts("na") },
       { label: t("specNetWeight"), value: packOf(product) },
       { label: t("specSku"), value: product.sku },
       { label: t("specCategory"), value: tCat(categoryKey) },
       { label: t("specAvailability"), value: t(stock.key) },
   ];
+
+  // Handling & transport follows THIS product's safety class (it used to
+  // say "A2L" on every page, A1 gases included). Refrigerants: the ASHRAE 34
+  // class and its ADR class (A1 → 2.2 non-flammable gas; A2L, A3 → 2.1
+  // flammable gas). No class: equipment, or an empty recovery cylinder.
+  const handling = (() => {
+    const cls = product.gwpClass;
+    if (cls === "A1") return { key: "A1", body: "noteBody_A1", chip: "A1 · ADR 2.2" } as const;
+    if (cls === "A2L") return { key: "A2L", body: "noteBody_A2L", chip: "A2L · ADR 2.1" } as const;
+    if (cls === "A3") return { key: "A3", body: "noteBody_A3", chip: "A3 · ADR 2.1" } as const;
+    if (product.category === "recovery") return { key: "recovery", body: "noteBody_recovery", chip: null } as const;
+    return { key: "equipment", body: "noteBody_equipment", chip: null } as const;
+  })();
 
   const onStageMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (has3dModel) return; // OrbitControls owns interaction there
@@ -255,7 +269,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
               {tCat(categoryKey)}
             </Link>
             <span>/</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-50">{product.name}</span>
+            <span className="font-semibold text-slate-900 dark:text-slate-50">{keepUnits(product.name)}</span>
           </div>
 
           {/* ── hero: 3D stage + purchase card ── */}
@@ -313,9 +327,12 @@ export default function ProductDetail({ product: initialProduct, related, varian
                   of this row now belongs to the viewer, which only shows it
                   once a model is actually orbiting. */}
               <div className="pointer-events-none absolute bottom-[18px] left-5 right-5 flex items-center justify-end gap-3">
-                <span className="text-[10.5px] uppercase tracking-[.06em] text-white/50">
-                  {product.gwpClass}{product.gwp !== null ? ` · GWP ${product.gwp}` : ""}
-                </span>
+                {/* Equipment has no class: say nothing rather than a raw "N/A". */}
+                {product.gwpClass && product.gwpClass !== "n/a" && (
+                  <span className="text-[10.5px] uppercase tracking-[.06em] text-white/50">
+                    {product.gwpClass}{product.gwp !== null ? ` · GWP ${format.number(product.gwp)}` : ""}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -331,50 +348,73 @@ export default function ProductDetail({ product: initialProduct, related, varian
                   <div className="flex items-start justify-between gap-3.5">
                     <div className="min-w-0">
                       <div className="mb-[9px] text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{product.sku}</div>
-                      <h1 className="m-0 text-[31px] font-semibold leading-[1.08] tracking-[-.045em] max-sm:text-[26px]">{product.name}</h1>
+                      <h1 className="m-0 text-balance text-[31px] font-semibold leading-[1.08] tracking-[-.045em] max-sm:text-[26px]">{keepUnits(product.name)}</h1>
                     </div>
-                    <span className={`inline-flex flex-none items-center gap-[7px] rounded-full border py-1.5 pl-[9px] pr-3 text-[11px] font-semibold ${stock.cls}`}>
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: stock.dot, boxShadow: `0 0 8px 1px ${stock.dot}` }} />
-                      {t(stock.key)}
-                    </span>
+                    {/* Status and the heart as one action cluster: the heart is
+                        always here, whether the buy row or the waitlist shows. */}
+                    <div className="flex flex-none items-center gap-2" data-pdp-actions>
+                      <span className={`inline-flex items-center gap-[7px] whitespace-nowrap rounded-full border py-1.5 pl-[9px] pr-3 text-[11px] font-semibold ${stock.cls}`}>
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: stock.dot, boxShadow: `0 0 8px 1px ${stock.dot}` }} />
+                        {t(stock.key)}
+                      </span>
+                      {/* Saves the selected size: switching size switches which row the heart reflects. */}
+                      <FavoriteButton productId={product.id} productName={`${product.name} · ${packOf(product)}`} size="md" />
+                    </div>
                   </div>
 
                   <p className="mt-3.5 text-[13.5px] leading-[1.62] text-slate-600 max-sm:line-clamp-3 dark:text-ink-muted">
                     {t(`blurb_${product.category}`)}
                   </p>
 
-                  <div className="mt-6 flex flex-wrap items-end gap-3.5">
-                    <span className="min-w-0 flex-1">
-                      {/* B2B buyers order whole cylinders, so the cylinder is
-                          the headline figure; the €/kg rate that produced it
-                          sits underneath as supporting detail. */}
-                      <span className="flex items-baseline gap-1.5">
-                        <span
-                          data-cylinder-price
-                          className={`block font-semibold leading-none tracking-[-.05em] ${product.pricePerKg > 0 ? "text-[38px]" : "text-[24px]"}`}
-                        >
-                          {product.pricePerKg > 0 ? eur(unitPrice) : tProducts("priceOnRequest")}
-                        </span>
+                  {/* Pricing: the cylinder is the headline (B2B buyers order whole
+                      cylinders); the €/kg rate, the pack and the refundable
+                      deposit that make it up sit in one structured panel. */}
+                  <div className="mt-6 rounded-[20px] border border-slate-900/[.07] bg-slate-50/80 p-[18px] max-sm:mt-4 max-sm:p-4 dark:border-hairline dark:bg-surface-3/60" data-pdp-price-panel>
+                    <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                      <span
+                        data-cylinder-price
+                        className={`whitespace-nowrap font-semibold leading-none tracking-[-.05em] tabular-nums ${product.pricePerKg > 0 ? "text-[38px] max-sm:text-[32px]" : "text-[24px]"}`}
+                      >
+                        {product.pricePerKg > 0 ? eur(unitPrice) : tProducts("priceOnRequest")}
                       </span>
-                      <span data-per-kg className="mt-1.5 block text-[11.5px] text-slate-400 dark:text-ink-muted">
-                        {product.pricedPerKg && product.pricePerKg > 0
-                          ? tProducts("perKgAmountExVat", { amount: eur(unitPerKg) })
-                          : t("perUnit", { volume: product.weightLabel })}
-                      </span>
-                      {product.pricedPerKg && product.pricePerKg > 0 && (
-                        <span className="mt-1.5 block text-[13.5px] font-semibold tracking-[-.02em] text-slate-700 dark:text-slate-200" data-pack-label>
-                          {packOf(product)}
-                        </span>
+                      {product.pricePerKg > 0 && (
+                        <span className="whitespace-nowrap text-[12.5px] font-medium text-slate-500 dark:text-ink-muted">{tProducts("exVatShort")}</span>
                       )}
-                    </span>
-                    {/* Saves the selected size: switching size switches which row the heart reflects. */}
-                    <FavoriteButton productId={product.id} productName={`${product.name} · ${product.weightLabel}`} size="lg" />
+                    </div>
+                    <dl className="m-0 mt-4 grid gap-2 border-t border-slate-900/[.07] pt-3.5 text-[13px] max-sm:mt-3 max-sm:gap-1.5 max-sm:pt-3 dark:border-hairline">
+                      {product.pricedPerKg && product.pricePerKg > 0 && (
+                        <div className="flex items-baseline justify-between gap-4">
+                          <dt className="text-slate-500 dark:text-ink-muted">{t("pricePerKgLabel")}</dt>
+                          <dd className="m-0 whitespace-nowrap font-semibold tabular-nums" data-per-kg>
+                            {tProducts("cardPerKg", { amount: eur(unitPerKg) })}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="text-slate-500 dark:text-ink-muted">{t("packLabel")}</dt>
+                        <dd className="m-0 whitespace-nowrap font-semibold" data-pack-label>
+                          {packOf(product)}
+                        </dd>
+                      </div>
+                      {product.cylinderDeposit > 0 && (
+                        <div className="flex items-baseline justify-between gap-4" data-pdp-deposit>
+                          <dt className="min-w-0 text-slate-500 dark:text-ink-muted">
+                            {t("depositLabel")}
+                            <span className="block text-[11.5px] text-slate-500 dark:text-ink-muted">{t("depositNote")}</span>
+                          </dt>
+                          <dd className="m-0 whitespace-nowrap font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">+{eur(product.cylinderDeposit)}</dd>
+                        </div>
+                      )}
+                    </dl>
+                    <p className="m-0 mt-3 text-[11.5px] leading-[1.5] text-slate-500 max-sm:mt-2 dark:text-ink-muted" data-pdp-vat-note>
+                      {t("priceVatNote")}
+                    </p>
                   </div>
 
                   {variants.length > 1 && (
-                    <div className="mt-[22px]" data-size-selector>
-                      <div className="mb-2.5 text-[10.5px] tracking-[.08em] text-slate-400 dark:text-ink-muted">{t("sizeHeading")}</div>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="mt-[22px] max-sm:mt-4" data-size-selector>
+                      <div className="mb-2.5 text-[10.5px] font-semibold tracking-[.08em] text-slate-500 dark:text-ink-muted">{t("sizeHeading")}</div>
+                      <div className="grid grid-cols-2 gap-2">
                         {variants.map((v) => {
                           const on = v.id === product.id;
                           const sellable = isPurchasable(v) && v.pricePerKg > 0;
@@ -386,15 +426,25 @@ export default function ProductDetail({ product: initialProduct, related, varian
                               onClick={() => selectSize(v.id)}
                               aria-pressed={on}
                               data-size={v.sku}
-                              className={`rounded-[15px] border px-3.5 py-2.5 text-left transition-colors ${
+                              // Selected = a blue ring on the same surface, so the price and
+                              // the availability line keep their own colours; unavailable
+                              // sizes say so in words instead of fading to 50 % (unreadable).
+                              className={`flex min-w-0 flex-col gap-1 rounded-[15px] border px-3.5 py-3 text-left transition-colors max-sm:gap-0.5 max-sm:px-3 max-sm:py-2.5 ${
                                 on
-                                  ? "border-blue-700 bg-blue-700 text-white shadow-[0_14px_28px_-14px_var(--glow-700)]"
-                                  : "border-slate-900/[.07] bg-slate-100 text-slate-600 dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"
-                              } ${!on && !sellable ? "opacity-50" : ""}`}
+                                  ? "border-blue-700 bg-blue-700/[.06] ring-1 ring-blue-700 dark:border-blue-400 dark:bg-blue-500/[.12] dark:ring-blue-400"
+                                  : "border-slate-900/[.08] bg-white/70 hover:border-slate-900/[.2] dark:border-hairline dark:bg-surface-3 dark:hover:border-white/[.2]"
+                              }`}
                             >
-                              <span className="block text-[12.5px] font-semibold tracking-[-.015em]">{packOf(v)}</span>
-                              <span className="mt-[3px] block text-[11px] opacity-75">
-                                {!isPurchasable(v) ? t("stockOut") : v.pricePerKg > 0 ? eur(v.cylinderPrice) : tProducts("priceOnRequest")}
+                              <span className="flex items-baseline justify-between gap-2">
+                                <span className="min-w-0 text-[13px] font-semibold leading-[1.3] tracking-[-.015em] text-slate-900 dark:text-slate-50">{packOf(v)}</span>
+                                {on && <Check size={14} strokeWidth={2.6} className="flex-none self-center text-blue-700 dark:text-blue-400" aria-hidden />}
+                              </span>
+                              <span className="whitespace-nowrap text-[13px] font-semibold tabular-nums text-slate-700 dark:text-slate-200">
+                                {v.pricePerKg > 0 ? eur(v.cylinderPrice) : tProducts("priceOnRequest")}
+                              </span>
+                              <span className="flex items-center gap-1.5 text-[11.5px] text-slate-500 dark:text-ink-muted">
+                                <span aria-hidden className="h-1.5 w-1.5 flex-none rounded-full" style={{ background: sellable ? STOCK_BADGE.in.dot : STOCK_BADGE.out.dot }} />
+                                <span className="truncate">{sellable ? t("stockIn") : t("stockOut")}</span>
                               </span>
                             </motion.button>
                           );
@@ -404,7 +454,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                   )}
 
                   {isAvailable ? (
-                    <div className="mt-[22px] flex items-center gap-3">
+                    <div className="mt-[22px] flex items-center gap-3 max-sm:mt-4">
                       <div className="flex h-[52px] items-center gap-0.5 rounded-2xl border border-slate-900/[.07] bg-slate-100 px-1 dark:border-hairline dark:bg-surface-3">
                         <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label={t("qtyDec")} className="flex h-11 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-900/[.05] dark:text-ink-muted dark:hover:bg-white/10">
                           <Minus size={15} strokeWidth={2} />
@@ -444,11 +494,11 @@ export default function ProductDetail({ product: initialProduct, related, varian
                   {/* AI compatibility checker */}
                   <div
                     data-ai-checker
-                    className={`mt-[22px] overflow-hidden rounded-[20px] border bg-slate-100 transition-colors duration-300 dark:bg-surface-3 ${
+                    className={`mt-[22px] overflow-hidden rounded-[20px] border bg-slate-50/80 transition-colors duration-300 dark:bg-surface-3/60 ${
                       aiOpen ? "border-[rgba(96,165,250,.4)]" : "border-slate-900/[.07] dark:border-hairline"
                     }`}
                   >
-                    <button type="button" onClick={() => setAiOpen((v) => !v)} className="flex w-full items-center gap-3 p-[15px] text-left">
+                    <button type="button" onClick={() => setAiOpen((v) => !v)} aria-expanded={aiOpen} className="flex w-full items-center gap-3 p-[15px] text-left">
                       <motion.span
                         animate={aiPending ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                         transition={aiPending ? { duration: 1.3, repeat: Infinity, ease: "easeInOut" } : undefined}
@@ -458,7 +508,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                       </motion.span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-[13px] font-semibold tracking-[-.02em]">{t("aiTitle")}</span>
-                        <span className="mt-[3px] block text-[11.5px] text-slate-400 dark:text-ink-muted">{t("aiSub")}</span>
+                        <span className="mt-[3px] block text-[11.5px] leading-[1.4] text-slate-500 dark:text-ink-muted">{t("aiSub")}</span>
                       </span>
                       <motion.span animate={{ rotate: aiOpen ? 180 : 0 }} transition={{ duration: 0.3 }} className="flex flex-none">
                         <ChevronDown size={15} strokeWidth={2} className="text-slate-400 dark:text-ink-muted" />
@@ -539,37 +589,43 @@ export default function ProductDetail({ product: initialProduct, related, varian
                     </AnimatePresence>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap gap-5 border-t border-slate-900/[.07] pt-[18px] dark:border-hairline">
+                  <ul className="m-0 mt-5 grid list-none grid-cols-3 gap-2 border-t border-slate-900/[.07] p-0 pt-[18px] dark:border-hairline" data-pdp-trust>
                     {[
                       { label: t("assurance1"), icon: FlaskConical },
                       { label: t("assurance2"), icon: Truck },
                       { label: t("assurance3"), icon: Lock },
                     ].map(({ label, icon: Icon }) => (
-                      <span key={label} className="flex items-center gap-2 text-[11.5px] text-slate-600 dark:text-ink-muted">
-                        <Icon size={14} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
+                      <li key={label} className="flex min-w-0 flex-col items-center gap-1.5 rounded-2xl px-1 py-1 text-center text-[11.5px] font-medium leading-[1.3] text-slate-600 dark:text-ink-muted">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-700/[.07] dark:bg-blue-400/[.12]">
+                          <Icon size={15} strokeWidth={2} className="text-blue-700 dark:text-blue-400" />
+                        </span>
                         {label}
-                      </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </div>
             </div>
           </div>
 
           {/* ── bento: specs 5 / docs 4 / handling 3 ── */}
-          <div className="mt-[22px] grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
+          {/* Equal heights: the row stretches and each card is a column whose
+              last element is pushed to the bottom, so no card leaves a hole. */}
+          <div className="mt-[22px] grid grid-cols-1 items-stretch gap-5 lg:grid-cols-12" data-pdp-bento>
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-              className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 max-sm:rounded-[22px] max-sm:p-5 lg:col-span-5 dark:border-white/5 dark:bg-surface/60"
+              className="relative flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 max-sm:rounded-[22px] max-sm:p-5 lg:col-span-5 dark:border-white/5 dark:bg-surface/60"
+              data-pdp-section="specs"
             >
-              <h2 className="m-0 mb-5 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("specsTitle")}</h2>
-              <div className="grid grid-cols-2 gap-[11px]">
+              <h2 className="m-0 mb-5 text-[12.5px] font-semibold tracking-[.09em] text-slate-500 dark:text-ink-muted">{t("specsTitle")}</h2>
+              <div className="grid flex-1 auto-rows-fr grid-cols-2 gap-[11px]">
                 {specs.map((spec) => (
-                  <div key={spec.label} className="rounded-2xl border border-slate-900/[.07] bg-slate-100 px-4 py-[15px] dark:border-hairline dark:bg-surface-3">
-                    <div className="mb-[7px] text-[10px] tracking-[.07em] text-slate-400 dark:text-ink-muted">{spec.label}</div>
-                    <div className="truncate text-[14.5px] font-semibold tracking-[-.025em]">{spec.value}</div>
+                  <div key={spec.label} className="flex min-w-0 flex-col justify-center rounded-2xl border border-slate-900/[.07] bg-slate-100 px-4 py-[13px] dark:border-hairline dark:bg-surface-3">
+                    <div className="mb-[6px] text-[10px] font-medium tracking-[.07em] text-slate-500 dark:text-ink-muted">{spec.label}</div>
+                    {/* Wraps instead of truncating: "Балони з холодоагентом" is longer in most locales. */}
+                    <div className="text-[14.5px] font-semibold leading-[1.3] tracking-[-.025em] [overflow-wrap:anywhere]">{spec.value}</div>
                   </div>
                 ))}
               </div>
@@ -579,10 +635,11 @@ export default function ProductDetail({ product: initialProduct, related, varian
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-              className="relative overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 max-sm:rounded-[22px] max-sm:p-5 lg:col-span-4 dark:border-white/5 dark:bg-surface/60"
+              className="relative flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-900/[.07] bg-white/70 p-[26px] backdrop-blur-xl backdrop-saturate-150 max-sm:rounded-[22px] max-sm:p-5 lg:col-span-4 dark:border-white/5 dark:bg-surface/60"
+              data-pdp-section="docs"
             >
-              <h2 className="m-0 mb-5 text-[12.5px] tracking-[.09em] text-slate-400 dark:text-ink-muted">{t("docsTitle")}</h2>
-              <div className="flex flex-col gap-2.5">
+              <h2 className="m-0 mb-5 text-[12.5px] font-semibold tracking-[.09em] text-slate-500 dark:text-ink-muted">{t("docsTitle")}</h2>
+              <div className="flex flex-1 flex-col justify-between gap-2.5">
                 {DOCS.map(({ id, nameKey, icon: Icon }) => {
                   const file = productDocument(id, product);
                   if (!file) {
@@ -639,19 +696,29 @@ export default function ProductDetail({ product: initialProduct, related, varian
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.19 }}
-              className="relative overflow-hidden rounded-[28px] bg-[#0b1020] p-[26px] shadow-[0_40px_80px_-46px_rgba(11,16,32,.9)] max-sm:rounded-[22px] max-sm:p-5 lg:col-span-3"
+              className="relative flex h-full flex-col overflow-hidden rounded-[28px] bg-[#0b1020] p-[26px] shadow-[0_40px_80px_-46px_rgba(11,16,32,.9)] max-sm:rounded-[22px] max-sm:p-5 lg:col-span-3"
+              data-pdp-section="handling"
+              data-handling={handling.key}
             >
               <div
                 className="pointer-events-none absolute -bottom-[40%] left-[-24%] h-[360px] w-[360px] rounded-full opacity-60 blur-[80px]"
                 style={{ background: `radial-gradient(circle,${brand.glow},transparent 68%)` }}
               />
-              <div className="relative">
-                <span className="flex h-[46px] w-[46px] items-center justify-center rounded-[15px] border border-white/[.18] bg-white/10">
-                  <ShieldCheck size={20} strokeWidth={2} className="text-white" />
-                </span>
+              <div className="relative flex flex-1 flex-col">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex h-[46px] w-[46px] flex-none items-center justify-center rounded-[15px] border border-white/[.18] bg-white/10">
+                    <ShieldCheck size={20} strokeWidth={2} className="text-white" />
+                  </span>
+                  {/* The class this text is about, so the card can't silently describe another gas. */}
+                  {handling.chip && (
+                    <span className="whitespace-nowrap rounded-full border border-white/[.2] bg-white/[.08] px-2.5 py-1 text-[11px] font-semibold tracking-[.02em] text-white" data-handling-chip>
+                      {handling.chip}
+                    </span>
+                  )}
+                </div>
                 <h2 className="m-0 mt-[18px] text-[19px] font-semibold tracking-[-.035em] text-white">{t("noteTitle")}</h2>
-                <p className="m-0 mt-3 text-[13px] leading-[1.66] text-white/[.72]">{t("noteBody")}</p>
-                <Link href="/compliance/sds" className="mt-[18px] inline-flex text-[12.5px] font-semibold text-white hover:text-blue-300">
+                <p className="m-0 mt-3 text-[13px] leading-[1.66] text-white/[.78]" data-handling-body>{t(handling.body)}</p>
+                <Link href="/compliance/sds" className="mt-auto inline-flex pt-[18px] text-[12.5px] font-semibold text-white hover:text-blue-300">
                   {t("noteLink")}
                 </Link>
               </div>
@@ -691,12 +758,12 @@ export default function ProductDetail({ product: initialProduct, related, varian
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 + i * 0.06 }}
                     whileHover={{ y: -5, scale: 1.02 }}
-                    className="group flex flex-none"
+                    className="group flex flex-none self-stretch"
                     data-related-card
                   >
                     <Link
                       href={`/products/${rel.id}`}
-                      className="relative block w-[236px] flex-none overflow-hidden rounded-[22px] border border-slate-900/[.07] bg-white/60 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,box-shadow] duration-300 dark:border-white/5 dark:bg-surface/60"
+                      className="relative flex w-[236px] flex-none flex-col overflow-hidden rounded-[22px] border border-slate-900/[.07] bg-white/60 backdrop-blur-xl backdrop-saturate-150 transition-[border-color,box-shadow] duration-300 dark:border-white/5 dark:bg-surface/60"
                       style={{ boxShadow: "0 14px 34px -32px rgba(2,4,10,.5)" }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = `${tint}80`;
@@ -721,19 +788,19 @@ export default function ProductDetail({ product: initialProduct, related, varian
                           sizes="212px"
                         />
                       </span>
-                      <span className="relative block p-4">
-                        <span className="block text-[13.5px] font-semibold tracking-[-.025em]">{rel.name}</span>
-                        <span className="mt-[3px] block text-[11px] text-slate-400 dark:text-ink-muted">
-                          {packOf(rel)}
-                          {rel.gwp !== null ? ` · GWP ${rel.gwp}` : ""}
+                      <span className="relative flex flex-1 flex-col p-4">
+                        <span className="line-clamp-2 block min-h-[2.6em] text-[13.5px] font-semibold leading-[1.3] tracking-[-.025em]">{keepUnits(rel.name)}</span>
+                        <span className="mt-[3px] flex flex-wrap gap-x-1.5 text-[11px] text-slate-500 dark:text-ink-muted">
+                          <span className="whitespace-nowrap">{packOf(rel)}</span>
+                          {rel.gwp !== null && <span className="whitespace-nowrap">· GWP {format.number(rel.gwp)}</span>}
                         </span>
-                        <span className="mt-[13px] flex items-center justify-between gap-2.5">
+                        <span className="mt-auto flex items-end justify-between gap-3 pt-[13px]">
                           <span className="min-w-0">
-                            <span className="block text-[15px] font-semibold tracking-[-.03em]" data-rel-cylinder>
+                            <span className="block whitespace-nowrap text-[15px] font-semibold tabular-nums tracking-[-.03em]" data-rel-cylinder>
                               {eur(rel.cylinderPrice)}
                             </span>
                             {rel.pricedPerKg && (
-                              <span className="block text-[10.5px] text-slate-400 dark:text-ink-muted">
+                              <span className="block whitespace-nowrap text-[10.5px] text-slate-500 dark:text-ink-muted">
                                 {tProducts("perKgAmount", { amount: eur(rel.pricePerKg) })}
                               </span>
                             )}
@@ -756,7 +823,7 @@ export default function ProductDetail({ product: initialProduct, related, varian
                               });
                               setRelAdded((a) => [...a, rel.sku]);
                             }}
-                            className={`flex h-8 w-8 flex-none items-center justify-center rounded-[11px] border transition-colors ${
+                            className={`flex h-9 w-9 flex-none items-center justify-center rounded-[12px] border transition-colors ${
                               inCart
                                 ? "border-green-600 bg-green-600 text-white"
                                 : "border-slate-900/[.07] bg-slate-100 text-slate-600 group-hover:border-blue-700 group-hover:bg-blue-700 group-hover:text-white dark:border-hairline dark:bg-surface-3 dark:text-ink-muted"

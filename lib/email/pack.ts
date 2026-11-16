@@ -1,4 +1,5 @@
 import "server-only";
+import { keepUnits } from "@/lib/keepUnits";
 
 import { emailTranslator } from "@/lib/emailTranslator";
 import { isPricedPerKg } from "@/lib/pricing";
@@ -27,6 +28,6 @@ export async function emailPacker(locale: string): Promise<(p: PackSource) => st
     const perKg = p.pricedPerKg ?? (p.category ? isPricedPerKg(p.category) : true);
     if (!perKg) return t("unit");
     const container = CONTAINERS.includes(p.containerType ?? "") ? p.containerType! : "Cylinder";
-    return t("size", { kg: kg.format(p.weightKg), container: t(`container_${container}`) });
+    return keepUnits(t("size", { kg: kg.format(p.weightKg), container: t(`container_${container}`) }));
   };
 }

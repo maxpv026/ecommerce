@@ -162,7 +162,7 @@ export function StageLoader({ src }: { src: string }) {
         <span className="absolute inset-0 rounded-full border-2 border-slate-900/10 dark:border-white/10" />
         <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-500/90 [animation-duration:900ms] dark:border-t-cyan-300/90" />
         {pct !== null && (
-          <span className="text-[10.5px] font-semibold tabular-nums text-white/70">{pct}%</span>
+          <span className="whitespace-nowrap text-[10.5px] font-semibold tabular-nums text-white/70">{pct}%</span>
         )}
       </span>
     </div>

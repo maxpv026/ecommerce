@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProducts } from "@/lib/data";
 import ProductDetail from "@/components/ProductDetail";
+import { emailPacker } from "@/lib/email/pack";
 
 interface ProductDetailRouteProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }
 
 /**
@@ -22,13 +23,16 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: ProductDetailRouteProps): Promise<Metadata> {
-  const { id } = await params;
+  const { id, locale } = await params;
   // The cached catalogue, not a second uncached query.
   const product = (await getProducts()).find((p) => p.id === id);
   if (!product) return {};
+  // The pack in the page's language ("13,61 кг · балон"), not the catalog's English weightLabel.
+  const pack = (await emailPacker(locale))(product);
+  const safety = product.gwpClass && product.gwpClass !== "n/a" ? ` · ${product.gwpClass}` : "";
   return {
     title: `${product.name} — My Energy`,
-    description: `${product.name} · ${product.weightLabel} · ${product.gwpClass}`,
+    description: `${product.name} · ${pack}${safety}`,
   };
 }
 

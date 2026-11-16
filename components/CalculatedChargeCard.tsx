@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Calculator, Check, ClipboardCopy, Info, Minus, Plus, RotateCcw, ShoppingCart, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useCartStore } from "@/lib/store/cart";
+import { usePackLabel } from "@/lib/hooks/usePackLabel";
 import {
   LIQUID_LINE_SIZES,
   autoChargePerMeterG,
@@ -63,6 +64,9 @@ export default function CalculatedChargeCard({
   className?: string;
 }) {
   const t = useTranslations("ChargeCalc");
+  // Localized "13,61 кг · балон"; option.weightLabel is the catalog's English legacy column.
+  const pack = usePackLabel();
+  const packOf = (o: { weightKg: number; containerType?: string }) => pack(o.weightKg, o.containerType, true);
   const format = useFormatter();
   const addItem = useCartStore((s) => s.addItem);
   const gasLabel = calc.refrigerant.label ?? calc.refrigerant.mark ?? "";
@@ -171,7 +175,7 @@ export default function CalculatedChargeCard({
       pick.qty
     );
     setAdded(true);
-    toast.success(t("addedToast", { qty: pick.qty, name: `${pick.option.name} · ${pick.option.weightLabel}` }));
+    toast.success(t("addedToast", { qty: pick.qty, name: `${pick.option.name} · ${packOf(pick.option)}` }));
   };
 
   /** A plain-text record for the technician's job log. */
@@ -182,7 +186,7 @@ export default function CalculatedChargeCard({
       `${t("addOnSite")}: ${extraKg !== null ? kg(extraKg) : "—"} ${t("perSystem")}`,
       `${t("totalCharge")}: ${totalKg !== null ? kg(totalKg) : "—"} ${t("perSystem")}${inputs.factoryChargeKg !== null ? ` (${t("fFactory")} ${kg(inputs.factoryChargeKg)})` : ""}`,
       `${mode === "full" ? t("modeFull") : t("modeTopup")} × ${systems}: ${neededKg !== null ? kg(neededKg) : "—"}`,
-      pick && neededKg !== null ? `${t("cylinders")}: ${pick.qty} × ${pick.option.name} · ${pick.option.weightLabel} — ${t("leftover", { kg: kg(leftoverKg) })}` : null,
+      pick && neededKg !== null ? `${t("cylinders")}: ${pick.qty} × ${pick.option.name} · ${packOf(pick.option)} — ${t("leftover", { kg: kg(leftoverKg) })}` : null,
       co2eT !== null ? `CO₂e: ${format.number(co2eT, { maximumFractionDigits: 3 })} t (GWP ${calc.gwp})` : null,
     ].filter(Boolean);
     try {
@@ -483,7 +487,7 @@ export default function CalculatedChargeCard({
               <>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5" data-charge-pick>
                   <span className="text-[15px] font-semibold">
-                    {pick.qty} × {pick.option.name} · {pick.option.weightLabel}
+                    {pick.qty} × {pick.option.name} · {packOf(pick.option)}
                   </span>
                   <span className="whitespace-nowrap text-[13px] font-medium text-slate-500 dark:text-white/60 tabular-nums" data-charge-price>
                     {eur(pick.qty * cylinderPrice)} {t("exVat")}
