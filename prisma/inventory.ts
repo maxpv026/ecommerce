@@ -27,15 +27,19 @@ export interface InventoryItem {
   purity: number;
 }
 
-const INITIAL_AVAILABLE_QUANTITY = 100;
 /** Baseline pack size for every CRM-listed refrigerant. */
 export const BASELINE_CYLINDER_KG = 10;
 
+// State as of 2026-11-16: R-134a in 12 kg cylinders is the only refrigerant
+// on hand (120 × €26.00/kg = €312.00 per cylinder, ex. VAT); everything
+// else is listed but out of stock until the CRM pushes a quantity.
 export const INVENTORY: InventoryItem[] = [
   // ── Available ──────────────────────────────────────────────────────────
-  { sku: "R32", name: "R-32", pricePerKg: 25.0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: INITIAL_AVAILABLE_QUANTITY, gwpClass: "A2L", gwp: 675, purity: 99.9 },
-  { sku: "R410A", name: "R-410A", pricePerKg: 30.0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: INITIAL_AVAILABLE_QUANTITY, gwpClass: "A1", gwp: 2088, purity: 99.9 },
-  { sku: "R134A", name: "R-134a", pricePerKg: 25.0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: INITIAL_AVAILABLE_QUANTITY, gwpClass: "A1", gwp: 1430, purity: 99.9 },
+  { sku: "R134A-12", name: "R-134a", pricePerKg: 26.0, weightKg: 12, stockQuantity: 120, gwpClass: "A1", gwp: 1430, purity: 99.9 },
+  // ── Listed, priced, out of stock ────────────────────────────────────────
+  { sku: "R32", name: "R-32", pricePerKg: 25.0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: 0, gwpClass: "A2L", gwp: 675, purity: 99.9 },
+  { sku: "R410A", name: "R-410A", pricePerKg: 30.0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: 0, gwpClass: "A1", gwp: 2088, purity: 99.9 },
+  { sku: "R134A", name: "R-134a", pricePerKg: 25.0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: 0, gwpClass: "A1", gwp: 1430, purity: 99.9 },
   // ── Listed but unavailable (strictly out of stock, no price published yet) ──
   { sku: "R404A", name: "R-404A", pricePerKg: 0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: 0, gwpClass: "A1", gwp: 3922, purity: 99.9 },
   { sku: "R407C", name: "R-407C", pricePerKg: 0, weightKg: BASELINE_CYLINDER_KG, stockQuantity: 0, gwpClass: "A1", gwp: 1774, purity: 99.9 },

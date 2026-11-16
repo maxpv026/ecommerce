@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma";
 import { gasPricingFromLegacy } from "../lib/pricing";
 import { seedInventory } from "./inventory";
+import { stockStateForQuantity } from "../lib/inventory";
 
 // Legacy mock tiers were authored with a per-cylinder price and an lb pack
 // size; gasPricingFromLegacy() splits that into the per-kg rate + net kg the
@@ -190,24 +191,25 @@ async function main() {
 
   // Equipment is sold outright per unit (weightKg 1, pricePerKg = the unit
   // price; no returnable cylinder → no deposit) and isn't in the CRM's
-  // refrigerant feed, so it gets a working quantity here.
+  // refrigerant feed. Out of stock as of 2026-11-16 (only R-134a 12 kg is
+  // on hand — prisma/inventory.ts); the three stock columns are derived
+  // together by stockStateForQuantity.
   const extraCategories = [
     { sku: "HC-BLEND-C1", name: "Custom Blend C1", ...gasPricingFromLegacy(342, 25), weight: "11.34 kg cylinder", gwpClass: "A2L", purity: 99.99, gwp: 890, stock: "order", category: "blends", cylinderDeposit: 15, stockQuantity: 0 },
-    { sku: "HC-MAN-4V", name: "4-Valve Manifold", pricePerKg: 148, weightKg: 1, weight: "Set", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "equipment", cylinderDeposit: 0, stockQuantity: 100 },
-    { sku: "HC-REC-50", name: "Recovery Cylinder 22.7 kg", pricePerKg: 132, weightKg: 1, weight: "22.7 kg cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "in", category: "recovery", cylinderDeposit: 0, stockQuantity: 100 },
+    { sku: "HC-MAN-4V", name: "4-Valve Manifold", pricePerKg: 148, weightKg: 1, weight: "Set", gwpClass: "n/a", purity: null, gwp: null, stock: "out", category: "equipment", cylinderDeposit: 0, stockQuantity: 0 },
+    { sku: "HC-REC-50", name: "Recovery Cylinder 22.7 kg", pricePerKg: 132, weightKg: 1, weight: "22.7 kg cylinder", gwpClass: "n/a", purity: null, gwp: null, stock: "out", category: "recovery", cylinderDeposit: 0, stockQuantity: 0 },
   ];
   for (const p of extraCategories) {
     await prisma.product.upsert({
       where: { sku: p.sku },
       update: {
-        stock: p.stock,
         category: p.category,
         cylinderDeposit: p.cylinderDeposit,
-        stockQuantity: p.stockQuantity,
         pricePerKg: p.pricePerKg,
         weightKg: p.weightKg,
+        ...stockStateForQuantity(p.stockQuantity),
       },
-      create: { ...p, inStock: true },
+      create: { ...p, ...stockStateForQuantity(p.stockQuantity) },
     });
   }
 
