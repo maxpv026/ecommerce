@@ -255,7 +255,16 @@
     "linkOrderHistory": "Bestellverlauf",
     "linkSdsFgas": "Sicherheitsdatenblätter & F-Gas",
     "toastSubscribed": "Sie erhalten Verfügbarkeits-Hinweise an {email}.",
-    "toastInvalidEmail": "Bitte eine gültige E-Mail-Adresse eingeben."
+    "toastInvalidEmail": "Bitte eine gültige E-Mail-Adresse eingeben.",
+    "companyHeading": "Unternehmen & Konto",
+    "linkCategories": "Kältemittel & B2B-Versorgung",
+    "linkHub": "Markt- & Technik-Hub",
+    "linkAbout": "Über uns",
+    "badgesAria": "Compliance",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR-Logistik",
+    "badgePurity": "Reinheit ≥ 99,9 %",
+    "devCredit": "Entwicklung: {name}"
   },
   "Pdp": {
     "addToCart": "In den Warenkorb",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Zylinder Rückgabe akzeptiert ({count})",
     "return_COLLECTED": "Zylinder im Lager empfangen ({count})",
     "return_CANCELLED": "Zylinder Rückgabe storniert"
+  },
+  "AboutPage": {
+    "metaTitle": "Über uns",
+    "metaDescription": "My Energy ist eine europäische B2B-Plattform für Kältemittel: F-Gas-konformer Verkauf, Sicherheitsdatenblätter und Gefahrgutversand nach ADR.",
+    "kicker": "Über My Energy",
+    "title": "Kältemittel und Compliance für HVAC/R-Fachbetriebe in Europa",
+    "intro": "My Energy ist eine spezialisierte B2B-Plattform für Kältemittel und die HVAC/R-Lieferkette. Katalog, Compliance-Unterlagen und Gefahrgutversand liegen in einem Konto – entwickelt für Installateure, Servicebetriebe und Händler.",
+    "pillarsTitle": "So arbeiten wir",
+    "purityTitle": "Dokumentierte Reinheit",
+    "purityBody": "Für jedes Gas ist die Reinheit auf der Produktseite angegeben – mindestens 99,9 % im gesamten Katalog – zusammen mit GWP und Sicherheitsklasse. Das Sicherheitsdatenblatt jedes Kältemittels finden Sie in der SDS-Bibliothek.",
+    "fgasTitle": "EU-F-Gas-Konformität",
+    "fgasBody": "Fluorierte Gase werden nur an Käufer mit gültigem F-Gas-Zertifikat gemäß Verordnung (EU) 2024/573 verkauft. Das Zertifikat wird vor dem Checkout geprüft und in der Bestellung erfasst.",
+    "adrTitle": "Spezialisierte ADR-Logistik",
+    "adrBody": "Kältemittel werden als Gefahrgut nach ADR befördert. Die Frachtkosten sehen Sie vor der Bestellung im Warenkorb, und Mehrwegflaschen werden in Ihrem Konto nachverfolgt.",
+    "digitalTitle": "Digitaler B2B-Service",
+    "digitalBody": "Eine PDF-Rechnung zu jeder Bestellung, SEPA-Überweisung, aktueller Lagerbestand bei jedem Produkt und ein Markt-Hub mit Preisindizes und Gasvergleichen.",
+    "companyTitle": "Unternehmensangaben",
+    "companyLegal": "Rechtsträger",
+    "companyVat": "USt-IdNr. {vat}",
+    "companyContact": "Bestellungen und Fragen",
+    "ctaTitle": "Starten Sie mit dem Katalog",
+    "ctaBody": "Durchsuchen Sie Kältemittel nach Gas und Gebindegröße oder vergleichen Sie Gase und Preise im Markt-Hub.",
+    "ctaCatalog": "Produktkatalog",
+    "ctaHub": "Markt-Hub",
+    "devNote": "Plattform entwickelt von <link>{name}</link>"
   }
 }

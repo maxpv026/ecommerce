@@ -255,7 +255,16 @@
     "linkOrderHistory": "Stair na nOrduithe",
     "linkSdsFgas": "Bileoga Sonraí Sábháilteachta & F-Gás",
     "toastSubscribed": "Gheobhaidh tú foláirimh stoic ag {email}.",
-    "toastInvalidEmail": "Cuir isteach seoladh ríomhphoist bailí."
+    "toastInvalidEmail": "Cuir isteach seoladh ríomhphoist bailí.",
+    "companyHeading": "Cuideachta & cuntas",
+    "linkCategories": "Cuisneáin & soláthar B2B",
+    "linkHub": "Mol margaidh & innealtóireachta",
+    "linkAbout": "Fúinn",
+    "badgesAria": "Comhlíonadh",
+    "badgeFgas": "F-Gas AE (2024/573)",
+    "badgeAdr": "Lóistíocht ADR",
+    "badgePurity": "Íonacht ≥ 99.9%",
+    "devCredit": "Forbairt: {name}"
   },
   "Pdp": {
     "addToCart": "Cuir sa Chairt",
@@ -3272,5 +3281,30 @@
     "return_COLLECTED": "Sorcóirí faighte ag an stóras ({count})",
     "return_CANCELLED": "Cealú ar aiseolas sorcóirí",
     "orderPlacedBody": "{lines, plural, one {# líne} two {# líne} few {# líne} many {# líne} other {# líne}} · {total}"
+  },
+  "AboutPage": {
+    "metaTitle": "Fúinn",
+    "metaDescription": "Is ardán B2B Eorpach do chuisneáin é My Energy: díolachán a chomhlíonann F-Gas, bileoga sonraí sábháilteachta agus seachadadh earraí contúirteacha faoi ADR.",
+    "kicker": "Faoi My Energy",
+    "title": "Cuisneáin agus comhlíonadh do ghairmithe HVAC/R na hEorpa",
+    "intro": "Is ardán B2B speisialaithe é My Energy do chuisneáin agus do shlabhra soláthair HVAC/R. Tá an catalóg, cáipéisí comhlíonta agus seachadadh earraí contúirteacha in aon chuntas amháin, deartha do shuiteálaithe, do chuideachtaí seirbhíse agus do dháileoirí.",
+    "pillarsTitle": "Conas a oibrímid",
+    "purityTitle": "Íonacht dhoiciméadaithe",
+    "purityBody": "Luaitear íonacht gach gáis ar leathanach an táirge — 99.9% ar a laghad ar fud an chatalóige — mar aon lena GWP agus a aicme sábháilteachta. Tá an bhileog sonraí sábháilteachta do gach cuisneán sa leabharlann SDS.",
+    "fgasTitle": "Comhlíonadh F-Gas AE",
+    "fgasBody": "Ní dhíoltar gáis fhluairínithe ach le ceannaitheoirí a bhfuil deimhniú bailí F-Gas acu faoi Rialachán (AE) 2024/573. Seiceáiltear an deimhniú roimh an tseiceáil amach agus taifeadtar é ar an ordú.",
+    "adrTitle": "Lóistíocht speisialaithe ADR",
+    "adrBody": "Iompraítear cuisneáin mar earraí contúirteacha faoi ADR. Taispeántar costas an lastais sa chiseán sula n-ordaíonn tú, agus rianaítear sorcóirí in-aischurtha i do chuntas.",
+    "digitalTitle": "Seirbhís dhigiteach B2B",
+    "digitalBody": "Sonrasc PDF le gach ordú, aistriú bainc SEPA, stoc reatha ar gach táirge, agus mol margaidh le hinnéacsanna praghais agus comparáidí gás.",
+    "companyTitle": "Sonraí na cuideachta",
+    "companyLegal": "Eintiteas dlíthiúil",
+    "companyVat": "CBL {vat}",
+    "companyContact": "Orduithe agus ceisteanna",
+    "ctaTitle": "Tosaigh leis an gcatalóg",
+    "ctaBody": "Brabhsáil cuisneáin de réir gáis agus méid pacáiste, nó cuir gáis agus praghsanna i gcomparáid sa mhol margaidh.",
+    "ctaCatalog": "Catalóg táirgí",
+    "ctaHub": "Mol margaidh",
+    "devNote": "Ardán forbartha ag <link>{name}</link>"
   }
 }

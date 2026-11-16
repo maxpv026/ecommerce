@@ -255,7 +255,16 @@
     "linkOrderHistory": "Storico ordini",
     "linkSdsFgas": "Schede di sicurezza e F-Gas",
     "toastSubscribed": "Riceverai gli avvisi di disponibilità a {email}.",
-    "toastInvalidEmail": "Inserisci un indirizzo email valido."
+    "toastInvalidEmail": "Inserisci un indirizzo email valido.",
+    "companyHeading": "Azienda e account",
+    "linkCategories": "Refrigeranti e fornitura B2B",
+    "linkHub": "Hub mercato e ingegneria",
+    "linkAbout": "Chi siamo",
+    "badgesAria": "Conformità",
+    "badgeFgas": "F-Gas UE (2024/573)",
+    "badgeAdr": "Logistica ADR",
+    "badgePurity": "Purezza ≥ 99,9%",
+    "devCredit": "Sviluppo: {name}"
   },
   "Pdp": {
     "addToCart": "Aggiungi al carrello",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Restituzione bombola accettata ({count})",
     "return_COLLECTED": "Bombole ricevute in magazzino ({count})",
     "return_CANCELLED": "Restituzione bombola annullata"
+  },
+  "AboutPage": {
+    "metaTitle": "Chi siamo",
+    "metaDescription": "My Energy è una piattaforma B2B europea per refrigeranti: vendita conforme F-Gas, schede di dati di sicurezza e consegna di merci pericolose secondo ADR.",
+    "kicker": "Chi è My Energy",
+    "title": "Refrigeranti e conformità per i professionisti HVAC/R europei",
+    "intro": "My Energy è una piattaforma B2B specializzata in refrigeranti e nella filiera HVAC/R. Catalogo, documentazione di conformità e consegna di merci pericolose in un unico account, pensato per installatori, aziende di assistenza e distributori.",
+    "pillarsTitle": "Come lavoriamo",
+    "purityTitle": "Purezza documentata",
+    "purityBody": "Ogni gas riporta la sua purezza nella pagina prodotto — almeno 99,9% in tutto il catalogo — insieme al GWP e alla classe di sicurezza. La scheda di dati di sicurezza di ogni refrigerante è nella libreria SDS.",
+    "fgasTitle": "Conformità F-Gas UE",
+    "fgasBody": "I gas fluorurati sono venduti solo ad acquirenti con un certificato F-Gas valido ai sensi del Regolamento (UE) 2024/573. Il certificato viene verificato prima del checkout e registrato sull'ordine.",
+    "adrTitle": "Logistica ADR specializzata",
+    "adrBody": "I refrigeranti viaggiano come merci pericolose secondo ADR. Il costo di trasporto è indicato nel carrello prima dell'ordine e le bombole a rendere sono tracciate nel tuo account.",
+    "digitalTitle": "Servizio B2B digitale",
+    "digitalBody": "Fattura PDF con ogni ordine, bonifico SEPA, disponibilità aggiornata su ogni prodotto e un hub di mercato con indici di prezzo e confronti tra gas.",
+    "companyTitle": "Dati aziendali",
+    "companyLegal": "Ragione sociale",
+    "companyVat": "P.IVA {vat}",
+    "companyContact": "Ordini e domande",
+    "ctaTitle": "Inizia dal catalogo",
+    "ctaBody": "Sfoglia i refrigeranti per gas e formato, oppure confronta gas e prezzi nell'hub di mercato.",
+    "ctaCatalog": "Catalogo prodotti",
+    "ctaHub": "Hub di mercato",
+    "devNote": "Piattaforma sviluppata da <link>{name}</link>"
   }
 }

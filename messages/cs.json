@@ -255,7 +255,16 @@
     "linkOrderHistory": "Historie objednávek",
     "linkSdsFgas": "Bezpečnostní listy a F-Gas",
     "toastSubscribed": "Upozornění na naskladnění budeme posílat na {email}.",
-    "toastInvalidEmail": "Zadejte platnou e-mailovou adresu."
+    "toastInvalidEmail": "Zadejte platnou e-mailovou adresu.",
+    "companyHeading": "Společnost a účet",
+    "linkCategories": "Chladiva a B2B dodávky",
+    "linkHub": "Tržní a technický přehled",
+    "linkAbout": "O nás",
+    "badgesAria": "Soulad s předpisy",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "Logistika ADR",
+    "badgePurity": "Čistota ≥ 99,9 %",
+    "devCredit": "Vývoj: {name}"
   },
   "Pdp": {
     "addToCart": "Přidat do košíku",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Vrácení lahve přijato ({count})",
     "return_COLLECTED": "Lahve přijaty na sklad ({count})",
     "return_CANCELLED": "Vrácení lahve zrušeno"
+  },
+  "AboutPage": {
+    "metaTitle": "O nás",
+    "metaDescription": "My Energy je evropská B2B platforma pro chladiva: prodej v souladu s F-Gas, bezpečnostní listy a přeprava nebezpečných věcí podle ADR.",
+    "kicker": "O My Energy",
+    "title": "Chladiva a soulad s předpisy pro evropské profesionály v HVAC/R",
+    "intro": "My Energy je specializovaná B2B platforma pro chladiva a dodavatelský řetězec HVAC/R. Katalog, dokumentace k souladu s předpisy a přeprava nebezpečných věcí jsou v jednom účtu, vytvořeném pro montážní firmy, servisní společnosti a distributory.",
+    "pillarsTitle": "Jak pracujeme",
+    "purityTitle": "Doložená čistota",
+    "purityBody": "U každého plynu je na stránce produktu uvedena čistota — nejméně 99,9 % v celém katalogu — spolu s GWP a bezpečnostní třídou. Bezpečnostní list každého chladiva najdete v knihovně SDS.",
+    "fgasTitle": "Soulad s EU F-Gas",
+    "fgasBody": "Fluorované plyny prodáváme pouze kupujícím s platným certifikátem F-Gas podle nařízení (EU) 2024/573. Certifikát se ověřuje před dokončením objednávky a zaznamenává se k objednávce.",
+    "adrTitle": "Specializovaná logistika ADR",
+    "adrBody": "Chladiva se přepravují jako nebezpečné věci podle ADR. Cena dopravy se zobrazí v košíku ještě před objednáním a vratné lahve jsou evidovány ve vašem účtu.",
+    "digitalTitle": "Digitální B2B služby",
+    "digitalBody": "PDF faktura ke každé objednávce, bankovní převod SEPA, aktuální skladová zásoba u každého produktu a přehled trhu s cenovými indexy a srovnáním plynů.",
+    "companyTitle": "Údaje o společnosti",
+    "companyLegal": "Právnická osoba",
+    "companyVat": "DIČ {vat}",
+    "companyContact": "Objednávky a dotazy",
+    "ctaTitle": "Začněte katalogem",
+    "ctaBody": "Procházejte chladiva podle plynu a velikosti balení nebo porovnejte plyny a ceny v přehledu trhu.",
+    "ctaCatalog": "Katalog produktů",
+    "ctaHub": "Přehled trhu",
+    "devNote": "Vývoj platformy: <link>{name}</link>"
   }
 }

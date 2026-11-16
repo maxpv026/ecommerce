@@ -255,7 +255,16 @@
     "linkOrderHistory": "Order History",
     "linkSdsFgas": "Safety Data Sheets & F-Gas",
     "toastSubscribed": "You'll get restock alerts at {email}.",
-    "toastInvalidEmail": "Enter a valid email address."
+    "toastInvalidEmail": "Enter a valid email address.",
+    "companyHeading": "Company & account",
+    "linkCategories": "Refrigerants & B2B supply",
+    "linkHub": "Market & engineering hub",
+    "linkAbout": "About us",
+    "badgesAria": "Compliance",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR logistics",
+    "badgePurity": "Purity ≥ 99.9%",
+    "devCredit": "Dev: {name}"
   },
   "Pdp": {
     "addToCart": "Add to Cart",
@@ -3271,5 +3280,30 @@
     "return_SCHEDULED": "Cylinder return accepted ({count})",
     "return_COLLECTED": "Cylinders received at the warehouse ({count})",
     "return_CANCELLED": "Cylinder return cancelled"
+  },
+  "AboutPage": {
+    "metaTitle": "About us",
+    "metaDescription": "My Energy is a European B2B platform for refrigerants: F-Gas compliant sales, safety data sheets and ADR dangerous-goods delivery.",
+    "kicker": "About My Energy",
+    "title": "Refrigerants and compliance for European HVAC/R professionals",
+    "intro": "My Energy is a specialised B2B platform for refrigerants and the HVAC/R supply chain. The catalogue, the compliance paperwork and dangerous-goods delivery sit in one account, built for installers, service companies and distributors.",
+    "pillarsTitle": "How we work",
+    "purityTitle": "Documented purity",
+    "purityBody": "Every gas states its purity on the product page — at least 99.9% across the catalogue — alongside its GWP and safety class. The safety data sheet for each refrigerant is in the SDS library.",
+    "fgasTitle": "EU F-Gas compliance",
+    "fgasBody": "Fluorinated gases are sold only to buyers with a valid F-Gas certificate under Regulation (EU) 2024/573. The certificate is checked before checkout and recorded on the order.",
+    "adrTitle": "Specialised ADR logistics",
+    "adrBody": "Refrigerants travel as dangerous goods under ADR. Freight is quoted in the cart before you order, and returnable cylinders are tracked in your account.",
+    "digitalTitle": "Digital B2B service",
+    "digitalBody": "A PDF invoice with every order, SEPA bank transfer, current stock on every product, and a market hub with price indices and gas comparisons.",
+    "companyTitle": "Company details",
+    "companyLegal": "Legal entity",
+    "companyVat": "VAT {vat}",
+    "companyContact": "Orders and questions",
+    "ctaTitle": "Start with the catalogue",
+    "ctaBody": "Browse refrigerants by gas and pack size, or compare gases and prices in the market hub.",
+    "ctaCatalog": "Product catalogue",
+    "ctaHub": "Market hub",
+    "devNote": "Platform engineered by <link>{name}</link>"
   }
 }

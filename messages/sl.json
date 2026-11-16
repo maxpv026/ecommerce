@@ -255,7 +255,16 @@
     "linkOrderHistory": "Zgodovina naročil",
     "linkSdsFgas": "Varnostni listi in F-plini",
     "toastSubscribed": "Obvestila o zalogi bomo poslali na {email}.",
-    "toastInvalidEmail": "Vnesite veljaven e-poštni naslov."
+    "toastInvalidEmail": "Vnesite veljaven e-poštni naslov.",
+    "companyHeading": "Podjetje in račun",
+    "linkCategories": "Hladiva in B2B-dobava",
+    "linkHub": "Tržno in inženirsko središče",
+    "linkAbout": "O nas",
+    "badgesAria": "Skladnost",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "Logistika ADR",
+    "badgePurity": "Čistost ≥ 99,9 %",
+    "devCredit": "Razvoj: {name}"
   },
   "Pdp": {
     "addToCart": "Dodaj v košarico",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Vrnitev jeklenke sprejeta ({count})",
     "return_COLLECTED": "Jeklenke prejele v skladišču ({count})",
     "return_CANCELLED": "Vrnitev jeklenke preklicana"
+  },
+  "AboutPage": {
+    "metaTitle": "O nas",
+    "metaDescription": "My Energy je evropska B2B-platforma za hladiva: prodaja v skladu s F-Gas, varnostni listi in dostava nevarnega blaga po ADR.",
+    "kicker": "O podjetju My Energy",
+    "title": "Hladiva in skladnost za strokovnjake HVAC/R v Evropi",
+    "intro": "My Energy je specializirana B2B-platforma za hladiva in dobavno verigo HVAC/R. Katalog, dokumentacija o skladnosti in dostava nevarnega blaga so v enem računu, namenjenem monterjem, servisnim podjetjem in distributerjem.",
+    "pillarsTitle": "Kako delamo",
+    "purityTitle": "Dokumentirana čistost",
+    "purityBody": "Čistost vsakega plina je navedena na strani izdelka — najmanj 99,9 % v celotnem katalogu — skupaj z GWP in varnostnim razredom. Varnostni list za vsako hladivo je v knjižnici SDS.",
+    "fgasTitle": "Skladnost z EU F-Gas",
+    "fgasBody": "Fluorirane pline prodajamo samo kupcem z veljavnim certifikatom F-Gas v skladu z Uredbo (EU) 2024/573. Certifikat se preveri pred zaključkom nakupa in zabeleži v naročilu.",
+    "adrTitle": "Specializirana logistika ADR",
+    "adrBody": "Hladiva se prevažajo kot nevarno blago po ADR. Strošek prevoza je prikazan v košarici pred oddajo naročila, povratne jeklenke pa se vodijo v vašem računu.",
+    "digitalTitle": "Digitalna B2B-storitev",
+    "digitalBody": "Račun v PDF k vsakemu naročilu, bančno nakazilo SEPA, trenutna zaloga pri vsakem izdelku ter tržno središče s cenovnimi indeksi in primerjavami plinov.",
+    "companyTitle": "Podatki o podjetju",
+    "companyLegal": "Pravna oseba",
+    "companyVat": "ID za DDV {vat}",
+    "companyContact": "Naročila in vprašanja",
+    "ctaTitle": "Začnite s katalogom",
+    "ctaBody": "Brskajte po hladivih glede na plin in velikost embalaže ali primerjajte pline in cene v tržnem središču.",
+    "ctaCatalog": "Katalog izdelkov",
+    "ctaHub": "Tržno središče",
+    "devNote": "Razvoj platforme: <link>{name}</link>"
   }
 }

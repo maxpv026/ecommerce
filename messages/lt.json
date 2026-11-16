@@ -255,7 +255,16 @@
     "linkOrderHistory": "Užsakymų istorija",
     "linkSdsFgas": "Saugos duomenų lapai ir F-dujos",
     "toastSubscribed": "Pranešimus apie atsargas siųsime adresu {email}.",
-    "toastInvalidEmail": "Įveskite galiojantį el. pašto adresą."
+    "toastInvalidEmail": "Įveskite galiojantį el. pašto adresą.",
+    "companyHeading": "Įmonė ir paskyra",
+    "linkCategories": "Šaltnešiai ir B2B tiekimas",
+    "linkHub": "Rinkos ir inžinerijos centras",
+    "linkAbout": "Apie mus",
+    "badgesAria": "Atitiktis",
+    "badgeFgas": "ES F-Gas (2024/573)",
+    "badgeAdr": "ADR logistika",
+    "badgePurity": "Grynumas ≥ 99,9 %",
+    "devCredit": "Kūrimas: {name}"
   },
   "Pdp": {
     "addToCart": "Į krepšelį",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Baliono grąžinimas priimtas ({count})",
     "return_COLLECTED": "Balionai gauti sandėlyje ({count})",
     "return_CANCELLED": "Baliono grąžinimas atšauktas"
+  },
+  "AboutPage": {
+    "metaTitle": "Apie mus",
+    "metaDescription": "My Energy – Europos B2B šaltnešių platforma: F-Gas reikalavimus atitinkantis pardavimas, saugos duomenų lapai ir pavojingų krovinių pristatymas pagal ADR.",
+    "kicker": "Apie My Energy",
+    "title": "Šaltnešiai ir atitiktis Europos HVAC/R specialistams",
+    "intro": "My Energy – specializuota B2B platforma šaltnešiams ir HVAC/R tiekimo grandinei. Katalogas, atitikties dokumentai ir pavojingų krovinių pristatymas – vienoje paskyroje, sukurtoje montuotojams, serviso įmonėms ir platintojams.",
+    "pillarsTitle": "Kaip dirbame",
+    "purityTitle": "Dokumentuotas grynumas",
+    "purityBody": "Kiekvieno gaso grynumas nurodytas produkto puslapyje – ne mažiau kaip 99,9 % visame kataloge – kartu su GWP ir saugos klase. Kiekvieno šaltnešio saugos duomenų lapas yra SDS bibliotekoje.",
+    "fgasTitle": "ES F-Gas atitiktis",
+    "fgasBody": "Fluorintos dujos parduodamos tik pirkėjams, turintiems galiojantį F-Gas sertifikatą pagal Reglamentą (ES) 2024/573. Sertifikatas patikrinamas prieš apmokėjimą ir užfiksuojamas užsakyme.",
+    "adrTitle": "Specializuota ADR logistika",
+    "adrBody": "Šaltnešiai gabenami kaip pavojingi kroviniai pagal ADR. Pristatymo kaina matoma krepšelyje prieš užsakant, o grąžinami balionai sekami jūsų paskyroje.",
+    "digitalTitle": "Skaitmeninė B2B paslauga",
+    "digitalBody": "PDF sąskaita faktūra prie kiekvieno užsakymo, SEPA banko pavedimas, aktualūs likučiai prie kiekvieno produkto ir rinkos centras su kainų indeksais bei dujų palyginimais.",
+    "companyTitle": "Įmonės rekvizitai",
+    "companyLegal": "Juridinis asmuo",
+    "companyVat": "PVM kodas {vat}",
+    "companyContact": "Užsakymai ir klausimai",
+    "ctaTitle": "Pradėkite nuo katalogo",
+    "ctaBody": "Naršykite šaltnešius pagal dujas ir pakuotės dydį arba palyginkite dujas ir kainas rinkos centre.",
+    "ctaCatalog": "Produktų katalogas",
+    "ctaHub": "Rinkos centras",
+    "devNote": "Platformą sukūrė <link>{name}</link>"
   }
 }

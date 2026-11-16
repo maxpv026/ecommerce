@@ -255,7 +255,16 @@
     "linkOrderHistory": "Ordrehistorik",
     "linkSdsFgas": "Sikkerhedsdatablade og F-gas",
     "toastSubscribed": "Du får lagerbeskeder på {email}.",
-    "toastInvalidEmail": "Indtast en gyldig e-mailadresse."
+    "toastInvalidEmail": "Indtast en gyldig e-mailadresse.",
+    "companyHeading": "Virksomhed og konto",
+    "linkCategories": "Kølemidler og B2B-forsyning",
+    "linkHub": "Markeds- og teknikhub",
+    "linkAbout": "Om os",
+    "badgesAria": "Overholdelse",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR-logistik",
+    "badgePurity": "Renhed ≥ 99,9 %",
+    "devCredit": "Udvikling: {name}"
   },
   "Pdp": {
     "addToCart": "Læg i kurv",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Cylindret tilbagelevering accepteret ({count})",
     "return_COLLECTED": "Cylindre modtaget på lageret ({count})",
     "return_CANCELLED": "Cylindret tilbagelevering annulleret"
+  },
+  "AboutPage": {
+    "metaTitle": "Om os",
+    "metaDescription": "My Energy er en europæisk B2B-platform for kølemidler: F-Gas-kompatibelt salg, sikkerhedsdatablade og levering af farligt gods efter ADR.",
+    "kicker": "Om My Energy",
+    "title": "Kølemidler og compliance for europæiske HVAC/R-fagfolk",
+    "intro": "My Energy er en specialiseret B2B-platform for kølemidler og forsyningskæden inden for HVAC/R. Kataloget, compliance-dokumenterne og leveringen af farligt gods er samlet på én konto, bygget til installatører, servicevirksomheder og distributører.",
+    "pillarsTitle": "Sådan arbejder vi",
+    "purityTitle": "Dokumenteret renhed",
+    "purityBody": "Hver gas angiver sin renhed på produktsiden — mindst 99,9 % i hele kataloget — sammen med GWP og sikkerhedsklasse. Sikkerhedsdatabladet for hvert kølemiddel findes i SDS-biblioteket.",
+    "fgasTitle": "Overholdelse af EU's F-Gas-regler",
+    "fgasBody": "Fluorholdige gasser sælges kun til købere med et gyldigt F-Gas-certifikat i henhold til forordning (EU) 2024/573. Certifikatet kontrolleres før checkout og registreres på ordren.",
+    "adrTitle": "Specialiseret ADR-logistik",
+    "adrBody": "Kølemidler transporteres som farligt gods efter ADR. Fragten beregnes i kurven, før du bestiller, og returflasker spores på din konto.",
+    "digitalTitle": "Digital B2B-service",
+    "digitalBody": "En PDF-faktura med hver ordre, SEPA-bankoverførsel, aktuel lagerstatus på hvert produkt og en markedshub med prisindeks og gassammenligninger.",
+    "companyTitle": "Virksomhedsoplysninger",
+    "companyLegal": "Juridisk enhed",
+    "companyVat": "Moms-nr. {vat}",
+    "companyContact": "Ordrer og spørgsmål",
+    "ctaTitle": "Start med kataloget",
+    "ctaBody": "Gennemse kølemidler efter gas og emballagestørrelse, eller sammenlign gasser og priser i markedshubben.",
+    "ctaCatalog": "Produktkatalog",
+    "ctaHub": "Markedshub",
+    "devNote": "Platformen er udviklet af <link>{name}</link>"
   }
 }

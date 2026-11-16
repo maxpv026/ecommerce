@@ -255,7 +255,16 @@
     "linkOrderHistory": "Tellimuste ajalugu",
     "linkSdsFgas": "Ohutuskaardid ja F-gaas",
     "toastSubscribed": "Saadame laoteated aadressile {email}.",
-    "toastInvalidEmail": "Sisestage kehtiv e-posti aadress."
+    "toastInvalidEmail": "Sisestage kehtiv e-posti aadress.",
+    "companyHeading": "Ettevõte ja konto",
+    "linkCategories": "Külmaained ja B2B-tarned",
+    "linkHub": "Turu- ja insenerikeskus",
+    "linkAbout": "Meist",
+    "badgesAria": "Vastavus",
+    "badgeFgas": "EL F-Gas (2024/573)",
+    "badgeAdr": "ADR-logistika",
+    "badgePurity": "Puhtus ≥ 99,9%",
+    "devCredit": "Arendus: {name}"
   },
   "Pdp": {
     "addToCart": "Lisa ostukorvi",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Balloonide tagastamine on aktsepteeritud ({count})",
     "return_COLLECTED": "Balloonid on laos vastu võetud ({count})",
     "return_CANCELLED": "Balloonide tagastamine on tühistatud"
+  },
+  "AboutPage": {
+    "metaTitle": "Meist",
+    "metaDescription": "My Energy on Euroopa B2B-platvorm külmaainetele: F-Gas-nõuetele vastav müük, ohutuskaardid ja ohtlike veoste kohaletoimetamine ADR-i järgi.",
+    "kicker": "My Energyst",
+    "title": "Külmaained ja nõuetele vastavus Euroopa HVAC/R-spetsialistidele",
+    "intro": "My Energy on külmaainetele ja HVAC/R-tarneahelale spetsialiseerunud B2B-platvorm. Kataloog, vastavusdokumendid ja ohtlike veoste kohaletoimetamine on ühes kontos, mis on loodud paigaldajatele, hooldusettevõtetele ja edasimüüjatele.",
+    "pillarsTitle": "Kuidas me töötame",
+    "purityTitle": "Dokumenteeritud puhtus",
+    "purityBody": "Iga gaasi puhtus on märgitud tootelehel — kogu kataloogis vähemalt 99,9% — koos GWP ja ohutusklassiga. Iga külmaaine ohutuskaart on SDS-teegis.",
+    "fgasTitle": "ELi F-Gas-nõuetele vastavus",
+    "fgasBody": "Fluoritud gaase müüakse ainult ostjatele, kellel on määruse (EL) 2024/573 kohane kehtiv F-Gas-sertifikaat. Sertifikaati kontrollitakse enne tellimuse vormistamist ja see märgitakse tellimusele.",
+    "adrTitle": "Spetsialiseeritud ADR-logistika",
+    "adrBody": "Külmaaineid veetakse ohtlike veostena ADR-i järgi. Veokulu näete ostukorvis enne tellimist ja tagastatavaid balloone jälgitakse teie kontol.",
+    "digitalTitle": "Digitaalne B2B-teenus",
+    "digitalBody": "PDF-arve iga tellimusega, SEPA pangaülekanne, ajakohane laoseis iga toote juures ning turukeskus hinnaindeksite ja gaaside võrdlustega.",
+    "companyTitle": "Ettevõtte andmed",
+    "companyLegal": "Juriidiline isik",
+    "companyVat": "KMKR {vat}",
+    "companyContact": "Tellimused ja küsimused",
+    "ctaTitle": "Alustage kataloogist",
+    "ctaBody": "Sirvige külmaaineid gaasi ja pakendi suuruse järgi või võrrelge gaase ja hindu turukeskuses.",
+    "ctaCatalog": "Tootekataloog",
+    "ctaHub": "Turukeskus",
+    "devNote": "Platvormi arendus: <link>{name}</link>"
   }
 }

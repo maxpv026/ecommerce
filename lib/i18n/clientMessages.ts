@@ -41,6 +41,7 @@ export const SERVER_ONLY_NAMESPACES = [
   "SupportEmail",
   "Trust",
   "Home",
+  "AboutPage", // app/[locale]/about is a server component
 ] as const;
 
 /**

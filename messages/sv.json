@@ -255,7 +255,16 @@
     "linkOrderHistory": "Orderhistorik",
     "linkSdsFgas": "Säkerhetsdatablad och F-gas",
     "toastSubscribed": "Du får lagermeddelanden till {email}.",
-    "toastInvalidEmail": "Ange en giltig e-postadress."
+    "toastInvalidEmail": "Ange en giltig e-postadress.",
+    "companyHeading": "Företag och konto",
+    "linkCategories": "Köldmedier och B2B-leveranser",
+    "linkHub": "Marknads- och teknikhubb",
+    "linkAbout": "Om oss",
+    "badgesAria": "Regelefterlevnad",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR-logistik",
+    "badgePurity": "Renhet ≥ 99,9 %",
+    "devCredit": "Utveckling: {name}"
   },
   "Pdp": {
     "addToCart": "Lägg i varukorg",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Cylindrar återlämnade accepterade ({count})",
     "return_COLLECTED": "Cylindrar mottagna på lagret ({count})",
     "return_CANCELLED": "Cylindrar återlämnande avbrutet"
+  },
+  "AboutPage": {
+    "metaTitle": "Om oss",
+    "metaDescription": "My Energy är en europeisk B2B-plattform för köldmedier: försäljning enligt F-Gas, säkerhetsdatablad och leverans av farligt gods enligt ADR.",
+    "kicker": "Om My Energy",
+    "title": "Köldmedier och regelefterlevnad för HVAC/R-proffs i Europa",
+    "intro": "My Energy är en specialiserad B2B-plattform för köldmedier och leveranskedjan inom HVAC/R. Katalogen, efterlevnadsdokumenten och leveranser av farligt gods finns i ett och samma konto, byggt för installatörer, serviceföretag och distributörer.",
+    "pillarsTitle": "Så arbetar vi",
+    "purityTitle": "Dokumenterad renhet",
+    "purityBody": "Varje gas anger sin renhet på produktsidan — minst 99,9 % i hela katalogen — tillsammans med GWP och säkerhetsklass. Säkerhetsdatabladet för varje köldmedium finns i SDS-biblioteket.",
+    "fgasTitle": "Efterlevnad av EU:s F-Gas-regler",
+    "fgasBody": "Fluorerade gaser säljs endast till köpare med ett giltigt F-Gas-certifikat enligt förordning (EU) 2024/573. Certifikatet kontrolleras före utcheckningen och registreras på ordern.",
+    "adrTitle": "Specialiserad ADR-logistik",
+    "adrBody": "Köldmedier transporteras som farligt gods enligt ADR. Fraktkostnaden visas i varukorgen innan du beställer, och returflaskor följs upp i ditt konto.",
+    "digitalTitle": "Digital B2B-service",
+    "digitalBody": "En PDF-faktura med varje order, SEPA-banköverföring, aktuellt lagersaldo på varje produkt och en marknadshubb med prisindex och gasjämförelser.",
+    "companyTitle": "Företagsuppgifter",
+    "companyLegal": "Juridisk person",
+    "companyVat": "Momsreg.nr {vat}",
+    "companyContact": "Beställningar och frågor",
+    "ctaTitle": "Börja med katalogen",
+    "ctaBody": "Bläddra bland köldmedier efter gas och förpackningsstorlek, eller jämför gaser och priser i marknadshubben.",
+    "ctaCatalog": "Produktkatalog",
+    "ctaHub": "Marknadshubb",
+    "devNote": "Plattformen utvecklad av <link>{name}</link>"
   }
 }

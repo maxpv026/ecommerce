@@ -255,7 +255,16 @@
     "linkOrderHistory": "Historique des commandes",
     "linkSdsFgas": "Fiches de données de sécurité et F-Gas",
     "toastSubscribed": "Vous recevrez les alertes de stock à {email}.",
-    "toastInvalidEmail": "Saisissez une adresse e-mail valide."
+    "toastInvalidEmail": "Saisissez une adresse e-mail valide.",
+    "companyHeading": "Société et compte",
+    "linkCategories": "Fluides frigorigènes et approvisionnement B2B",
+    "linkHub": "Hub marché et ingénierie",
+    "linkAbout": "À propos",
+    "badgesAria": "Conformité",
+    "badgeFgas": "UE F-Gas (2024/573)",
+    "badgeAdr": "Logistique ADR",
+    "badgePurity": "Pureté ≥ 99,9 %",
+    "devCredit": "Développement : {name}"
   },
   "Pdp": {
     "addToCart": "Ajouter au panier",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Retour de bouteille accepté ({count})",
     "return_COLLECTED": "Bouteilles reçues à l'entrepôt ({count})",
     "return_CANCELLED": "Retour de bouteille annulé"
+  },
+  "AboutPage": {
+    "metaTitle": "À propos",
+    "metaDescription": "My Energy est une plateforme B2B européenne de fluides frigorigènes : vente conforme à la réglementation F-Gas, fiches de données de sécurité et livraison de marchandises dangereuses selon l’ADR.",
+    "kicker": "À propos de My Energy",
+    "title": "Fluides frigorigènes et conformité pour les professionnels HVAC/R en Europe",
+    "intro": "My Energy est une plateforme B2B spécialisée dans les fluides frigorigènes et la chaîne d’approvisionnement HVAC/R. Le catalogue, les documents de conformité et la livraison de marchandises dangereuses sont réunis dans un seul compte, conçu pour les installateurs, les sociétés de maintenance et les distributeurs.",
+    "pillarsTitle": "Notre façon de travailler",
+    "purityTitle": "Pureté documentée",
+    "purityBody": "Chaque gaz indique sa pureté sur la page produit — au moins 99,9 % sur l’ensemble du catalogue — ainsi que son GWP et sa classe de sécurité. La fiche de données de sécurité de chaque fluide frigorigène se trouve dans la bibliothèque FDS.",
+    "fgasTitle": "Conformité F-Gas UE",
+    "fgasBody": "Les gaz fluorés sont vendus uniquement aux acheteurs titulaires d’un certificat F-Gas valide au titre du règlement (UE) 2024/573. Le certificat est vérifié avant la validation de la commande et enregistré sur la commande.",
+    "adrTitle": "Logistique ADR spécialisée",
+    "adrBody": "Les fluides frigorigènes sont transportés comme marchandises dangereuses selon l’ADR. Le transport est chiffré dans le panier avant la commande, et les bouteilles retournables sont suivies dans votre compte.",
+    "digitalTitle": "Service B2B numérique",
+    "digitalBody": "Une facture PDF avec chaque commande, le virement bancaire SEPA, le stock à jour sur chaque produit et un hub marché avec indices de prix et comparatifs de gaz.",
+    "companyTitle": "Informations sur la société",
+    "companyLegal": "Entité juridique",
+    "companyVat": "TVA {vat}",
+    "companyContact": "Commandes et questions",
+    "ctaTitle": "Commencez par le catalogue",
+    "ctaBody": "Parcourez les fluides frigorigènes par gaz et par conditionnement, ou comparez gaz et prix dans le hub marché.",
+    "ctaCatalog": "Catalogue produits",
+    "ctaHub": "Hub marché",
+    "devNote": "Plateforme développée par <link>{name}</link>"
   }
 }

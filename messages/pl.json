@@ -255,7 +255,16 @@
     "linkOrderHistory": "Historia zamówień",
     "linkSdsFgas": "Karty charakterystyki i F-gazy",
     "toastSubscribed": "Powiadomienia o dostępności wyślemy na {email}.",
-    "toastInvalidEmail": "Podaj prawidłowy adres e-mail."
+    "toastInvalidEmail": "Podaj prawidłowy adres e-mail.",
+    "companyHeading": "Firma i konto",
+    "linkCategories": "Czynniki chłodnicze i dostawy B2B",
+    "linkHub": "Hub rynkowy i inżynierski",
+    "linkAbout": "O nas",
+    "badgesAria": "Zgodność",
+    "badgeFgas": "UE F-Gas (2024/573)",
+    "badgeAdr": "Logistyka ADR",
+    "badgePurity": "Czystość ≥ 99,9%",
+    "devCredit": "Realizacja: {name}"
   },
   "Pdp": {
     "addToCart": "Dodaj do koszyka",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Przyjęcie zwrotu butli ({count})",
     "return_COLLECTED": "Butle odebrane w magazynie ({count})",
     "return_CANCELLED": "Anulowanie zwrotu butli"
+  },
+  "AboutPage": {
+    "metaTitle": "O nas",
+    "metaDescription": "My Energy to europejska platforma B2B z czynnikami chłodniczymi: sprzedaż zgodna z F-Gas, karty charakterystyki i dostawa towarów niebezpiecznych zgodnie z ADR.",
+    "kicker": "O My Energy",
+    "title": "Czynniki chłodnicze i zgodność z przepisami dla specjalistów HVAC/R w Europie",
+    "intro": "My Energy to wyspecjalizowana platforma B2B dla czynników chłodniczych i łańcucha dostaw HVAC/R. Katalog, dokumentacja zgodności i dostawa towarów niebezpiecznych są w jednym koncie stworzonym dla instalatorów, firm serwisowych i dystrybutorów.",
+    "pillarsTitle": "Jak pracujemy",
+    "purityTitle": "Udokumentowana czystość",
+    "purityBody": "Czystość każdego gazu jest podana na stronie produktu — co najmniej 99,9% w całym katalogu — wraz z GWP i klasą bezpieczeństwa. Karta charakterystyki każdego czynnika chłodniczego znajduje się w bibliotece SDS.",
+    "fgasTitle": "Zgodność z unijnymi przepisami F-Gas",
+    "fgasBody": "Gazy fluorowane sprzedajemy wyłącznie nabywcom z ważnym certyfikatem F-Gas zgodnie z rozporządzeniem (UE) 2024/573. Certyfikat jest sprawdzany przed finalizacją zamówienia i odnotowywany w zamówieniu.",
+    "adrTitle": "Wyspecjalizowana logistyka ADR",
+    "adrBody": "Czynniki chłodnicze są przewożone jako towary niebezpieczne zgodnie z ADR. Koszt transportu widać w koszyku przed złożeniem zamówienia, a butle zwrotne są ewidencjonowane na Twoim koncie.",
+    "digitalTitle": "Cyfrowa obsługa B2B",
+    "digitalBody": "Faktura PDF do każdego zamówienia, przelew bankowy SEPA, aktualne stany magazynowe przy każdym produkcie oraz hub rynkowy z indeksami cen i porównaniami gazów.",
+    "companyTitle": "Dane firmy",
+    "companyLegal": "Podmiot prawny",
+    "companyVat": "NIP UE {vat}",
+    "companyContact": "Zamówienia i pytania",
+    "ctaTitle": "Zacznij od katalogu",
+    "ctaBody": "Przeglądaj czynniki chłodnicze według gazu i wielkości opakowania lub porównaj gazy i ceny w hubie rynkowym.",
+    "ctaCatalog": "Katalog produktów",
+    "ctaHub": "Hub rynkowy",
+    "devNote": "Realizacja platformy: <link>{name}</link>"
   }
 }

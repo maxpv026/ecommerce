@@ -255,7 +255,16 @@
     "linkOrderHistory": "订单历史",
     "linkSdsFgas": "安全数据表与 F-Gas",
     "toastSubscribed": "补货提醒将发送至 {email}。",
-    "toastInvalidEmail": "请输入有效的电子邮箱地址。"
+    "toastInvalidEmail": "请输入有效的电子邮箱地址。",
+    "companyHeading": "公司与账户",
+    "linkCategories": "制冷剂与 B2B 供应",
+    "linkHub": "市场与工程中心",
+    "linkAbout": "关于我们",
+    "badgesAria": "合规",
+    "badgeFgas": "欧盟 F-Gas (2024/573)",
+    "badgeAdr": "ADR 物流",
+    "badgePurity": "纯度 ≥ 99.9%",
+    "devCredit": "开发：{name}"
   },
   "Pdp": {
     "addToCart": "加入购物车",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "钢瓶退货已接受（{count}）",
     "return_COLLECTED": "钢瓶已在仓库接收（{count}）",
     "return_CANCELLED": "钢瓶退货已取消"
+  },
+  "AboutPage": {
+    "metaTitle": "关于我们",
+    "metaDescription": "My Energy 是面向欧洲的 B2B 制冷剂平台：符合 F-Gas 法规的销售、安全数据表以及按 ADR 规定的危险品配送。",
+    "kicker": "关于 My Energy",
+    "title": "为欧洲 HVAC/R 专业人士提供制冷剂与合规服务",
+    "intro": "My Energy 是专注于制冷剂和 HVAC/R 供应链的 B2B 平台。产品目录、合规文件和危险品配送集中在同一个账户中，专为安装商、服务公司和分销商打造。",
+    "pillarsTitle": "我们的工作方式",
+    "purityTitle": "有据可查的纯度",
+    "purityBody": "每种气体的纯度都标注在产品页面上（整个目录均不低于 99.9%），同时标明 GWP 和安全等级。每种制冷剂的安全数据表均可在 SDS 资料库中查阅。",
+    "fgasTitle": "符合欧盟 F-Gas 法规",
+    "fgasBody": "含氟气体仅销售给持有符合欧盟第 2024/573 号法规的有效 F-Gas 证书的买家。证书在结账前核验，并记录在订单中。",
+    "adrTitle": "专业 ADR 物流",
+    "adrBody": "制冷剂按 ADR 规定作为危险品运输。下单前即可在购物车中看到运费报价，可退还钢瓶在您的账户中跟踪管理。",
+    "digitalTitle": "数字化 B2B 服务",
+    "digitalBody": "每笔订单附 PDF 发票，支持 SEPA 银行转账，每件商品显示当前库存，另有提供价格指数和气体对比的市场中心。",
+    "companyTitle": "公司信息",
+    "companyLegal": "法律实体",
+    "companyVat": "增值税号 {vat}",
+    "companyContact": "订单与咨询",
+    "ctaTitle": "从产品目录开始",
+    "ctaBody": "按气体和包装规格浏览制冷剂，或在市场中心比较气体和价格。",
+    "ctaCatalog": "产品目录",
+    "ctaHub": "市场中心",
+    "devNote": "平台开发：<link>{name}</link>"
   }
 }

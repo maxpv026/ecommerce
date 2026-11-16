@@ -255,7 +255,16 @@
     "linkOrderHistory": "Pasūtījumu vēsture",
     "linkSdsFgas": "Drošības datu lapas un F-gāzes",
     "toastSubscribed": "Paziņojumus par krājumiem sūtīsim uz {email}.",
-    "toastInvalidEmail": "Ievadiet derīgu e-pasta adresi."
+    "toastInvalidEmail": "Ievadiet derīgu e-pasta adresi.",
+    "companyHeading": "Uzņēmums un konts",
+    "linkCategories": "Aukstumaģenti un B2B piegāde",
+    "linkHub": "Tirgus un inženierijas centrs",
+    "linkAbout": "Par mums",
+    "badgesAria": "Atbilstība",
+    "badgeFgas": "ES F-Gas (2024/573)",
+    "badgeAdr": "ADR loģistika",
+    "badgePurity": "Tīrība ≥ 99,9 %",
+    "devCredit": "Izstrāde: {name}"
   },
   "Pdp": {
     "addToCart": "Pievienot grozam",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Balona atgriešana pieņemta ({count})",
     "return_COLLECTED": "Baloni saņemti noliktavā ({count})",
     "return_CANCELLED": "Balona atgriešana atcelta"
+  },
+  "AboutPage": {
+    "metaTitle": "Par mums",
+    "metaDescription": "My Energy ir Eiropas B2B platforma aukstumaģentiem: F-Gas prasībām atbilstoša tirdzniecība, drošības datu lapas un bīstamo kravu piegāde saskaņā ar ADR.",
+    "kicker": "Par My Energy",
+    "title": "Aukstumaģenti un atbilstība Eiropas HVAC/R speciālistiem",
+    "intro": "My Energy ir specializēta B2B platforma aukstumaģentiem un HVAC/R piegādes ķēdei. Katalogs, atbilstības dokumenti un bīstamo kravu piegāde ir vienā kontā, kas izveidots uzstādītājiem, servisa uzņēmumiem un izplatītājiem.",
+    "pillarsTitle": "Kā mēs strādājam",
+    "purityTitle": "Dokumentēta tīrība",
+    "purityBody": "Katras gāzes tīrība ir norādīta produkta lapā — vismaz 99,9 % visā katalogā — kopā ar GWP un drošības klasi. Katra aukstumaģenta drošības datu lapa ir pieejama SDS bibliotēkā.",
+    "fgasTitle": "ES F-Gas atbilstība",
+    "fgasBody": "Fluorētās gāzes tiek pārdotas tikai pircējiem ar derīgu F-Gas sertifikātu saskaņā ar Regulu (ES) 2024/573. Sertifikāts tiek pārbaudīts pirms apmaksas un reģistrēts pasūtījumā.",
+    "adrTitle": "Specializēta ADR loģistika",
+    "adrBody": "Aukstumaģenti tiek pārvadāti kā bīstamās kravas saskaņā ar ADR. Pārvadājuma izmaksas redzamas grozā pirms pasūtīšanas, un atgriežamie baloni tiek uzskaitīti jūsu kontā.",
+    "digitalTitle": "Digitāls B2B serviss",
+    "digitalBody": "PDF rēķins katram pasūtījumam, SEPA bankas pārskaitījums, aktuālie krājumi katram produktam un tirgus centrs ar cenu indeksiem un gāzu salīdzinājumiem.",
+    "companyTitle": "Uzņēmuma rekvizīti",
+    "companyLegal": "Juridiskā persona",
+    "companyVat": "PVN {vat}",
+    "companyContact": "Pasūtījumi un jautājumi",
+    "ctaTitle": "Sāciet ar katalogu",
+    "ctaBody": "Pārlūkojiet aukstumaģentus pēc gāzes un iepakojuma lieluma vai salīdziniet gāzes un cenas tirgus centrā.",
+    "ctaCatalog": "Produktu katalogs",
+    "ctaHub": "Tirgus centrs",
+    "devNote": "Platformu izstrādāja <link>{name}</link>"
   }
 }

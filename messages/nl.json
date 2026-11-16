@@ -255,7 +255,16 @@
     "linkOrderHistory": "Bestelgeschiedenis",
     "linkSdsFgas": "Veiligheidsinformatiebladen & F-gas",
     "toastSubscribed": "Je krijgt voorraadmeldingen op {email}.",
-    "toastInvalidEmail": "Voer een geldig e-mailadres in."
+    "toastInvalidEmail": "Voer een geldig e-mailadres in.",
+    "companyHeading": "Bedrijf & account",
+    "linkCategories": "Koudemiddelen & B2B-levering",
+    "linkHub": "Markt- & engineeringhub",
+    "linkAbout": "Over ons",
+    "badgesAria": "Compliance",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR-logistiek",
+    "badgePurity": "Zuiverheid ≥ 99,9%",
+    "devCredit": "Ontwikkeling: {name}"
   },
   "Pdp": {
     "addToCart": "Toevoegen aan winkelwagen",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Cilinderretour geaccepteerd ({count})",
     "return_COLLECTED": "Cilinders ontvangen in het magazijn ({count})",
     "return_CANCELLED": "Cilinderretour geannuleerd"
+  },
+  "AboutPage": {
+    "metaTitle": "Over ons",
+    "metaDescription": "My Energy is een Europees B2B-platform voor koudemiddelen: F-Gas-conforme verkoop, veiligheidsinformatiebladen en ADR-levering van gevaarlijke stoffen.",
+    "kicker": "Over My Energy",
+    "title": "Koudemiddelen en compliance voor Europese HVAC/R-professionals",
+    "intro": "My Energy is een gespecialiseerd B2B-platform voor koudemiddelen en de HVAC/R-toeleveringsketen. De catalogus, de compliancedocumenten en de levering van gevaarlijke stoffen zitten in één account, gebouwd voor installateurs, servicebedrijven en distributeurs.",
+    "pillarsTitle": "Hoe wij werken",
+    "purityTitle": "Gedocumenteerde zuiverheid",
+    "purityBody": "Elk gas vermeldt zijn zuiverheid op de productpagina — minimaal 99,9% in de hele catalogus — samen met de GWP en de veiligheidsklasse. Het veiligheidsinformatieblad van elk koudemiddel staat in de SDS-bibliotheek.",
+    "fgasTitle": "EU F-Gas-compliance",
+    "fgasBody": "Gefluoreerde gassen worden alleen verkocht aan kopers met een geldig F-Gas-certificaat volgens Verordening (EU) 2024/573. Het certificaat wordt vóór het afrekenen gecontroleerd en bij de bestelling vastgelegd.",
+    "adrTitle": "Gespecialiseerde ADR-logistiek",
+    "adrBody": "Koudemiddelen worden vervoerd als gevaarlijke stoffen volgens ADR. De vrachtkosten staan in de winkelwagen voordat je bestelt, en retourcilinders worden in je account bijgehouden.",
+    "digitalTitle": "Digitale B2B-service",
+    "digitalBody": "Een PDF-factuur bij elke bestelling, SEPA-overboeking, actuele voorraad bij elk product en een markthub met prijsindexen en gasvergelijkingen.",
+    "companyTitle": "Bedrijfsgegevens",
+    "companyLegal": "Rechtspersoon",
+    "companyVat": "btw {vat}",
+    "companyContact": "Bestellingen en vragen",
+    "ctaTitle": "Begin met de catalogus",
+    "ctaBody": "Bekijk koudemiddelen per gas en verpakkingsgrootte, of vergelijk gassen en prijzen in de markthub.",
+    "ctaCatalog": "Productcatalogus",
+    "ctaHub": "Markthub",
+    "devNote": "Platform ontwikkeld door <link>{name}</link>"
   }
 }

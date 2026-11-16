@@ -255,7 +255,16 @@
     "linkOrderHistory": "Sipariş Geçmişi",
     "linkSdsFgas": "Güvenlik Bilgi Formları ve F-Gaz",
     "toastSubscribed": "Stok bildirimlerini {email} adresine göndereceğiz.",
-    "toastInvalidEmail": "Geçerli bir e-posta adresi girin."
+    "toastInvalidEmail": "Geçerli bir e-posta adresi girin.",
+    "companyHeading": "Şirket ve hesap",
+    "linkCategories": "Soğutucu akışkanlar ve B2B tedarik",
+    "linkHub": "Piyasa ve mühendislik merkezi",
+    "linkAbout": "Hakkımızda",
+    "badgesAria": "Uyumluluk",
+    "badgeFgas": "AB F-Gas (2024/573)",
+    "badgeAdr": "ADR lojistiği",
+    "badgePurity": "Saflık ≥ %99,9",
+    "devCredit": "Geliştirme: {name}"
   },
   "Pdp": {
     "addToCart": "Sepete Ekle",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Tüp iade kabul edildi ({count})",
     "return_COLLECTED": "Tüpler depoda alındı ({count})",
     "return_CANCELLED": "Tüp iade iptal edildi"
+  },
+  "AboutPage": {
+    "metaTitle": "Hakkımızda",
+    "metaDescription": "My Energy, soğutucu akışkanlar için Avrupalı bir B2B platformudur: F-Gas'a uygun satış, güvenlik bilgi formları ve ADR kapsamında tehlikeli madde teslimatı.",
+    "kicker": "My Energy hakkında",
+    "title": "Avrupalı HVAC/R profesyonelleri için soğutucu akışkanlar ve mevzuata uyum",
+    "intro": "My Energy, soğutucu akışkanlar ve HVAC/R tedarik zinciri için uzmanlaşmış bir B2B platformudur. Katalog, uyumluluk belgeleri ve tehlikeli madde teslimatı; montajcılar, servis şirketleri ve distribütörler için tasarlanmış tek bir hesapta bir arada.",
+    "pillarsTitle": "Nasıl çalışıyoruz",
+    "purityTitle": "Belgelenmiş saflık",
+    "purityBody": "Her gazın saflığı ürün sayfasında belirtilir — kataloğun tamamında en az %99,9 — GWP değeri ve güvenlik sınıfıyla birlikte. Her soğutucu akışkanın güvenlik bilgi formu SDS kütüphanesinde yer alır.",
+    "fgasTitle": "AB F-Gas uyumluluğu",
+    "fgasBody": "Florlu gazlar yalnızca (AB) 2024/573 sayılı Tüzük kapsamında geçerli bir F-Gas sertifikasına sahip alıcılara satılır. Sertifika ödeme adımından önce kontrol edilir ve siparişe kaydedilir.",
+    "adrTitle": "Uzmanlaşmış ADR lojistiği",
+    "adrBody": "Soğutucu akışkanlar ADR kapsamında tehlikeli madde olarak taşınır. Nakliye ücreti sipariş vermeden önce sepette gösterilir; iade edilebilir tüpler hesabınızda takip edilir.",
+    "digitalTitle": "Dijital B2B hizmeti",
+    "digitalBody": "Her siparişle birlikte PDF fatura, SEPA banka havalesi, her üründe güncel stok bilgisi ve fiyat endeksleri ile gaz karşılaştırmaları sunan bir piyasa merkezi.",
+    "companyTitle": "Şirket bilgileri",
+    "companyLegal": "Tüzel kişi",
+    "companyVat": "KDV No {vat}",
+    "companyContact": "Siparişler ve sorular",
+    "ctaTitle": "Katalogla başlayın",
+    "ctaBody": "Soğutucu akışkanlara gaza ve ambalaj boyutuna göre göz atın ya da gazları ve fiyatları piyasa merkezinde karşılaştırın.",
+    "ctaCatalog": "Ürün kataloğu",
+    "ctaHub": "Piyasa merkezi",
+    "devNote": "Platform geliştiricisi: <link>{name}</link>"
   }
 }

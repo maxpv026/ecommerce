@@ -255,7 +255,16 @@
     "linkOrderHistory": "Tilaushistoria",
     "linkSdsFgas": "Käyttöturvallisuustiedotteet ja F-kaasu",
     "toastSubscribed": "Saat saatavuusilmoitukset osoitteeseen {email}.",
-    "toastInvalidEmail": "Anna kelvollinen sähköpostiosoite."
+    "toastInvalidEmail": "Anna kelvollinen sähköpostiosoite.",
+    "companyHeading": "Yritys ja tili",
+    "linkCategories": "Kylmäaineet ja B2B-toimitukset",
+    "linkHub": "Markkina- ja tekniikkakeskus",
+    "linkAbout": "Tietoa meistä",
+    "badgesAria": "Vaatimustenmukaisuus",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR-logistiikka",
+    "badgePurity": "Puhtaus ≥ 99,9 %",
+    "devCredit": "Kehitys: {name}"
   },
   "Pdp": {
     "addToCart": "Lisää ostoskoriin",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Pullon palautus hyväksytty ({count})",
     "return_COLLECTED": "Pullot vastaanotettu varastoon ({count})",
     "return_CANCELLED": "Pullon palautus peruttu"
+  },
+  "AboutPage": {
+    "metaTitle": "Tietoa meistä",
+    "metaDescription": "My Energy on eurooppalainen B2B-alusta kylmäaineille: F-Gas-säännösten mukainen myynti, käyttöturvallisuustiedotteet ja vaarallisten aineiden toimitukset ADR:n mukaisesti.",
+    "kicker": "Tietoa My Energystä",
+    "title": "Kylmäaineet ja vaatimustenmukaisuus eurooppalaisille HVAC/R-ammattilaisille",
+    "intro": "My Energy on kylmäaineisiin ja HVAC/R-toimitusketjuun erikoistunut B2B-alusta. Tuoteluettelo, vaatimustenmukaisuusasiakirjat ja vaarallisten aineiden toimitukset ovat yhdellä tilillä, joka on suunniteltu asentajille, huoltoyrityksille ja jakelijoille.",
+    "pillarsTitle": "Miten toimimme",
+    "purityTitle": "Dokumentoitu puhtaus",
+    "purityBody": "Jokaisen kaasun puhtaus on ilmoitettu tuotesivulla — koko tuoteluettelossa vähintään 99,9 % — yhdessä GWP-arvon ja turvallisuusluokan kanssa. Jokaisen kylmäaineen käyttöturvallisuustiedote löytyy SDS-kirjastosta.",
+    "fgasTitle": "EU:n F-Gas-vaatimustenmukaisuus",
+    "fgasBody": "Fluorattuja kaasuja myydään vain ostajille, joilla on voimassa oleva asetuksen (EU) 2024/573 mukainen F-Gas-todistus. Todistus tarkistetaan ennen kassalle siirtymistä ja kirjataan tilaukseen.",
+    "adrTitle": "Erikoistunut ADR-logistiikka",
+    "adrBody": "Kylmäaineet kuljetetaan vaarallisina aineina ADR:n mukaisesti. Rahtihinta näkyy ostoskorissa ennen tilaamista, ja palautettavia pulloja seurataan tililläsi.",
+    "digitalTitle": "Digitaalinen B2B-palvelu",
+    "digitalBody": "PDF-lasku jokaisesta tilauksesta, SEPA-tilisiirto, ajantasainen varastosaldo jokaisessa tuotteessa sekä markkinakeskus hintaindekseineen ja kaasuvertailuineen.",
+    "companyTitle": "Yrityksen tiedot",
+    "companyLegal": "Oikeushenkilö",
+    "companyVat": "ALV-nro {vat}",
+    "companyContact": "Tilaukset ja kysymykset",
+    "ctaTitle": "Aloita tuoteluettelosta",
+    "ctaBody": "Selaa kylmäaineita kaasun ja pakkauskoon mukaan tai vertaa kaasuja ja hintoja markkinakeskuksessa.",
+    "ctaCatalog": "Tuoteluettelo",
+    "ctaHub": "Markkinakeskus",
+    "devNote": "Alustan kehitys: <link>{name}</link>"
   }
 }

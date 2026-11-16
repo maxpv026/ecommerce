@@ -255,7 +255,16 @@
     "linkOrderHistory": "Istoric comenzi",
     "linkSdsFgas": "Fișe cu date de securitate și F-Gas",
     "toastSubscribed": "Vom trimite alerte de stoc la {email}.",
-    "toastInvalidEmail": "Introduceți o adresă de e-mail validă."
+    "toastInvalidEmail": "Introduceți o adresă de e-mail validă.",
+    "companyHeading": "Companie și cont",
+    "linkCategories": "Agenți frigorifici și aprovizionare B2B",
+    "linkHub": "Hub de piață și inginerie",
+    "linkAbout": "Despre noi",
+    "badgesAria": "Conformitate",
+    "badgeFgas": "UE F-Gas (2024/573)",
+    "badgeAdr": "Logistică ADR",
+    "badgePurity": "Puritate ≥ 99,9 %",
+    "devCredit": "Dezvoltare: {name}"
   },
   "Pdp": {
     "addToCart": "Adaugă în coș",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Returnare butelie acceptată ({count})",
     "return_COLLECTED": "Butelii primite la depozit ({count})",
     "return_CANCELLED": "Returnare butelie anulată"
+  },
+  "AboutPage": {
+    "metaTitle": "Despre noi",
+    "metaDescription": "My Energy este o platformă B2B europeană pentru agenți frigorifici: vânzări conforme F-Gas, fișe cu date de securitate și livrare de mărfuri periculoase conform ADR.",
+    "kicker": "Despre My Energy",
+    "title": "Agenți frigorifici și conformitate pentru profesioniștii HVAC/R din Europa",
+    "intro": "My Energy este o platformă B2B specializată în agenți frigorifici și lanțul de aprovizionare HVAC/R. Catalogul, documentele de conformitate și livrarea mărfurilor periculoase sunt reunite într-un singur cont, creat pentru instalatori, firme de service și distribuitori.",
+    "pillarsTitle": "Cum lucrăm",
+    "purityTitle": "Puritate documentată",
+    "purityBody": "Fiecare gaz își declară puritatea pe pagina produsului — cel puțin 99,9 % în tot catalogul — împreună cu GWP și clasa de siguranță. Fișa cu date de securitate pentru fiecare agent frigorific se află în biblioteca SDS.",
+    "fgasTitle": "Conformitate cu F-Gas UE",
+    "fgasBody": "Gazele fluorurate se vând doar cumpărătorilor cu un certificat F-Gas valabil conform Regulamentului (UE) 2024/573. Certificatul este verificat înainte de finalizarea comenzii și înregistrat în comandă.",
+    "adrTitle": "Logistică ADR specializată",
+    "adrBody": "Agenții frigorifici sunt transportați ca mărfuri periculoase conform ADR. Costul transportului este afișat în coș înainte de a comanda, iar buteliile returnabile sunt urmărite în contul dvs.",
+    "digitalTitle": "Serviciu B2B digital",
+    "digitalBody": "Factură PDF la fiecare comandă, transfer bancar SEPA, stocul actual pentru fiecare produs și un hub de piață cu indici de preț și comparații între gaze.",
+    "companyTitle": "Datele companiei",
+    "companyLegal": "Entitate juridică",
+    "companyVat": "Cod TVA {vat}",
+    "companyContact": "Comenzi și întrebări",
+    "ctaTitle": "Începeți cu catalogul",
+    "ctaBody": "Răsfoiți agenții frigorifici după gaz și mărimea ambalajului sau comparați gazele și prețurile în hubul de piață.",
+    "ctaCatalog": "Catalog de produse",
+    "ctaHub": "Hub de piață",
+    "devNote": "Platformă dezvoltată de <link>{name}</link>"
   }
 }

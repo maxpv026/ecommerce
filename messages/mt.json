@@ -255,7 +255,16 @@
     "linkOrderHistory": "Storja tal-Ordnijiet",
     "linkSdsFgas": "Skedi ta' Data dwar is-Sigurtà u F-Gas",
     "toastSubscribed": "Tirċievi avviżi tal-istokk fuq {email}.",
-    "toastInvalidEmail": "Daħħal indirizz elettroniku validu."
+    "toastInvalidEmail": "Daħħal indirizz elettroniku validu.",
+    "companyHeading": "Kumpanija u kont",
+    "linkCategories": "Refriġeranti u provvista B2B",
+    "linkHub": "Ċentru tas-suq u l-inġinerija",
+    "linkAbout": "Dwarna",
+    "badgesAria": "Konformità",
+    "badgeFgas": "F-Gas tal-UE (2024/573)",
+    "badgeAdr": "Loġistika ADR",
+    "badgePurity": "Purità ≥ 99.9%",
+    "devCredit": "Żvilupp: {name}"
   },
   "Pdp": {
     "addToCart": "Żid mal-Karrettun",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Ċilindru ritornat aċċettat ({count})",
     "return_COLLECTED": "Ċilindri rċevew fil-maħżen ({count})",
     "return_CANCELLED": "Ritorn tal-ċilindru annullat"
+  },
+  "AboutPage": {
+    "metaTitle": "Dwarna",
+    "metaDescription": "My Energy hija pjattaforma B2B Ewropea għar-refriġeranti: bejgħ konformi mal-F-Gas, skedi ta' data ta' sigurtà u kunsinna ta' oġġetti perikolużi skont l-ADR.",
+    "kicker": "Dwar My Energy",
+    "title": "Refriġeranti u konformità għall-professjonisti Ewropej tal-HVAC/R",
+    "intro": "My Energy hija pjattaforma B2B speċjalizzata għar-refriġeranti u l-katina tal-provvista tal-HVAC/R. Il-katalgu, id-dokumentazzjoni tal-konformità u l-kunsinna ta' oġġetti perikolużi jinsabu f'kont wieħed, iddisinjat għall-installaturi, il-kumpaniji tas-servizz u d-distributuri.",
+    "pillarsTitle": "Kif naħdmu",
+    "purityTitle": "Purità dokumentata",
+    "purityBody": "Kull gass juri l-purità tiegħu fil-paġna tal-prodott — mill-inqas 99.9% fil-katalgu kollu — flimkien mal-GWP u l-klassi tas-sigurtà tiegħu. L-iskeda ta' data ta' sigurtà għal kull refriġerant tinsab fil-librerija SDS.",
+    "fgasTitle": "Konformità mal-F-Gas tal-UE",
+    "fgasBody": "Il-gassijiet fluworinati jinbiegħu biss lil xerrejja b'ċertifikat F-Gas validu skont ir-Regolament (UE) 2024/573. Iċ-ċertifikat jiġi vverifikat qabel il-checkout u jiġi rreġistrat fuq l-ordni.",
+    "adrTitle": "Loġistika ADR speċjalizzata",
+    "adrBody": "Ir-refriġeranti jinġarru bħala oġġetti perikolużi skont l-ADR. Il-kost tat-trasport jidher fil-basket qabel ma tordna, u ċ-ċilindri li jintraddu lura jiġu segwiti fil-kont tiegħek.",
+    "digitalTitle": "Servizz B2B diġitali",
+    "digitalBody": "Fattura PDF ma' kull ordni, trasferiment bankarju SEPA, stokk kurrenti fuq kull prodott, u ċentru tas-suq b'indiċijiet tal-prezzijiet u paraguni bejn il-gassijiet.",
+    "companyTitle": "Dettalji tal-kumpanija",
+    "companyLegal": "Entità legali",
+    "companyVat": "VAT {vat}",
+    "companyContact": "Ordnijiet u mistoqsijiet",
+    "ctaTitle": "Ibda mill-katalgu",
+    "ctaBody": "Ibbrawżja r-refriġeranti skont il-gass u d-daqs tal-pakkett, jew qabbel il-gassijiet u l-prezzijiet fiċ-ċentru tas-suq.",
+    "ctaCatalog": "Katalgu tal-prodotti",
+    "ctaHub": "Ċentru tas-suq",
+    "devNote": "Pjattaforma żviluppata minn <link>{name}</link>"
   }
 }

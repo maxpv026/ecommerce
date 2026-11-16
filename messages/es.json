@@ -255,7 +255,16 @@
     "linkOrderHistory": "Historial de pedidos",
     "linkSdsFgas": "Fichas de datos de seguridad y F-Gas",
     "toastSubscribed": "Recibirás avisos de stock en {email}.",
-    "toastInvalidEmail": "Introduce una dirección de correo válida."
+    "toastInvalidEmail": "Introduce una dirección de correo válida.",
+    "companyHeading": "Empresa y cuenta",
+    "linkCategories": "Refrigerantes y suministro B2B",
+    "linkHub": "Centro de mercado e ingeniería",
+    "linkAbout": "Sobre nosotros",
+    "badgesAria": "Cumplimiento normativo",
+    "badgeFgas": "UE F-Gas (2024/573)",
+    "badgeAdr": "Logística ADR",
+    "badgePurity": "Pureza ≥ 99,9 %",
+    "devCredit": "Desarrollo: {name}"
   },
   "Pdp": {
     "addToCart": "Añadir al carrito",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Devolución de cilindro aceptada ({count})",
     "return_COLLECTED": "Cilindros recibidos en el almacén ({count})",
     "return_CANCELLED": "Devolución de cilindro cancelada"
+  },
+  "AboutPage": {
+    "metaTitle": "Sobre nosotros",
+    "metaDescription": "My Energy es una plataforma B2B europea de refrigerantes: venta conforme a F-Gas, fichas de datos de seguridad y entrega de mercancías peligrosas según el ADR.",
+    "kicker": "Sobre My Energy",
+    "title": "Refrigerantes y cumplimiento normativo para profesionales HVAC/R en Europa",
+    "intro": "My Energy es una plataforma B2B especializada en refrigerantes y en la cadena de suministro HVAC/R. El catálogo, la documentación de cumplimiento y la entrega de mercancías peligrosas están en una sola cuenta, pensada para instaladores, empresas de servicio técnico y distribuidores.",
+    "pillarsTitle": "Cómo trabajamos",
+    "purityTitle": "Pureza documentada",
+    "purityBody": "Cada gas indica su pureza en la página del producto —al menos 99,9 % en todo el catálogo—, junto con su GWP y su clase de seguridad. La ficha de datos de seguridad de cada refrigerante está en la biblioteca SDS.",
+    "fgasTitle": "Cumplimiento F-Gas de la UE",
+    "fgasBody": "Los gases fluorados se venden solo a compradores con un certificado F-Gas válido conforme al Reglamento (UE) 2024/573. El certificado se verifica antes del pago y queda registrado en el pedido.",
+    "adrTitle": "Logística ADR especializada",
+    "adrBody": "Los refrigerantes se transportan como mercancías peligrosas según el ADR. El porte se calcula en el carrito antes de hacer el pedido, y las botellas retornables se controlan en tu cuenta.",
+    "digitalTitle": "Servicio B2B digital",
+    "digitalBody": "Factura en PDF con cada pedido, transferencia bancaria SEPA, stock actualizado en cada producto y un centro de mercado con índices de precios y comparativas de gases.",
+    "companyTitle": "Datos de la empresa",
+    "companyLegal": "Entidad jurídica",
+    "companyVat": "NIF-IVA {vat}",
+    "companyContact": "Pedidos y consultas",
+    "ctaTitle": "Empieza por el catálogo",
+    "ctaBody": "Explora los refrigerantes por gas y tamaño de envase, o compara gases y precios en el centro de mercado.",
+    "ctaCatalog": "Catálogo de productos",
+    "ctaHub": "Centro de mercado",
+    "devNote": "Plataforma desarrollada por <link>{name}</link>"
   }
 }

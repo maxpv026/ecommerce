@@ -255,7 +255,16 @@
     "linkOrderHistory": "Rendelési előzmények",
     "linkSdsFgas": "Biztonsági adatlapok és F-gáz",
     "toastSubscribed": "Készlet-értesítéseket küldünk ide: {email}.",
-    "toastInvalidEmail": "Adjon meg érvényes e-mail-címet."
+    "toastInvalidEmail": "Adjon meg érvényes e-mail-címet.",
+    "companyHeading": "Cég és fiók",
+    "linkCategories": "Hűtőközegek és B2B ellátás",
+    "linkHub": "Piaci és műszaki központ",
+    "linkAbout": "Rólunk",
+    "badgesAria": "Megfelelőség",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR logisztika",
+    "badgePurity": "Tisztaság ≥ 99,9%",
+    "devCredit": "Fejlesztés: {name}"
   },
   "Pdp": {
     "addToCart": "Kosárba",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Palack visszaküldés elfogadva ({count})",
     "return_COLLECTED": "Palackok megérkeztek a raktárba ({count})",
     "return_CANCELLED": "Palack visszaküldés törölve"
+  },
+  "AboutPage": {
+    "metaTitle": "Rólunk",
+    "metaDescription": "A My Energy európai B2B platform hűtőközegekhez: F-Gas-megfelelő értékesítés, biztonsági adatlapok és veszélyes áruk ADR szerinti szállítása.",
+    "kicker": "A My Energyről",
+    "title": "Hűtőközegek és megfelelőség európai HVAC/R szakembereknek",
+    "intro": "A My Energy hűtőközegekre és a HVAC/R ellátási láncra szakosodott B2B platform. A katalógus, a megfelelőségi dokumentáció és a veszélyes áruk szállítása egyetlen fiókban érhető el, telepítőknek, szervizcégeknek és forgalmazóknak.",
+    "pillarsTitle": "Hogyan dolgozunk",
+    "purityTitle": "Dokumentált tisztaság",
+    "purityBody": "Minden gáz tisztasága fel van tüntetve a termékoldalon — a teljes katalógusban legalább 99,9% — a GWP-érték és a biztonsági osztály mellett. Minden hűtőközeg biztonsági adatlapja megtalálható az SDS-könyvtárban.",
+    "fgasTitle": "EU F-Gas megfelelőség",
+    "fgasBody": "Fluortartalmú gázokat csak az (EU) 2024/573 rendelet szerinti érvényes F-Gas tanúsítvánnyal rendelkező vevők vásárolhatnak. A tanúsítványt a pénztár előtt ellenőrizzük, és a rendeléshez rögzítjük.",
+    "adrTitle": "Szakosodott ADR logisztika",
+    "adrBody": "A hűtőközegek veszélyes áruként, ADR szerint utaznak. A szállítási díj rendelés előtt látható a kosárban, a visszaváltható palackokat pedig a fiókjában követjük.",
+    "digitalTitle": "Digitális B2B szolgáltatás",
+    "digitalBody": "PDF számla minden rendeléshez, SEPA banki átutalás, aktuális készlet minden terméknél, valamint piaci központ árindexekkel és gázösszehasonlításokkal.",
+    "companyTitle": "Cégadatok",
+    "companyLegal": "Jogi személy",
+    "companyVat": "Közösségi adószám: {vat}",
+    "companyContact": "Rendelések és kérdések",
+    "ctaTitle": "Kezdje a katalógussal",
+    "ctaBody": "Böngésszen a hűtőközegek között gáz és kiszerelés szerint, vagy hasonlítsa össze a gázokat és árakat a piaci központban.",
+    "ctaCatalog": "Termékkatalógus",
+    "ctaHub": "Piaci központ",
+    "devNote": "A platformot fejlesztette: <link>{name}</link>"
   }
 }

@@ -25,6 +25,9 @@ const NAV_HIDDEN_PREFIXES = [
   "/legal",
 ];
 
+/** Whether a phone shows the bottom dock on this (locale-less) path. */
+export const isMobileNavVisible = (pathname: string) => !NAV_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
 interface MobileAppShellProps {
   children: ReactNode;
 }
@@ -32,18 +35,13 @@ interface MobileAppShellProps {
 export default function MobileAppShell({ children }: MobileAppShellProps) {
   const pathname = usePathname();
   const { cartCount } = useCartCount();
-  const navVisible = !NAV_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const navVisible = isMobileNavVisible(pathname);
 
   return (
     <>
-      <main
-        className={`flex flex-1 flex-col ${
-          // The dock is 64 px + the safe area (MobileBottomNav MOBILE_NAV_HEIGHT); 12 px of air above it.
-          navVisible ? "pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0" : ""
-        }`}
-      >
-        {children}
-      </main>
+      {/* No dock clearance here: wherever the dock shows, the footer follows
+          <main> on phones and carries it (components/Footer). */}
+      <main className="flex flex-1 flex-col">{children}</main>
       {navVisible && <MobileBottomNav cartCount={cartCount} />}
     </>
   );

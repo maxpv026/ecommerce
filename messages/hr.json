@@ -255,7 +255,16 @@
     "linkOrderHistory": "Povijest narudžbi",
     "linkSdsFgas": "Sigurnosno-tehnički listovi i F-plinovi",
     "toastSubscribed": "Obavijesti o zalihama slat ćemo na {email}.",
-    "toastInvalidEmail": "Unesite valjanu e-adresu."
+    "toastInvalidEmail": "Unesite valjanu e-adresu.",
+    "companyHeading": "Tvrtka i račun",
+    "linkCategories": "Rashladna sredstva i B2B opskrba",
+    "linkHub": "Tržišni i inženjerski centar",
+    "linkAbout": "O nama",
+    "badgesAria": "Usklađenost",
+    "badgeFgas": "EU F-Gas (2024/573)",
+    "badgeAdr": "ADR logistika",
+    "badgePurity": "Čistoća ≥ 99,9 %",
+    "devCredit": "Razvoj: {name}"
   },
   "Pdp": {
     "addToCart": "Dodaj u košaricu",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Prihvaćen povrat boce ({count})",
     "return_COLLECTED": "Boce primljene u skladištu ({count})",
     "return_CANCELLED": "Povrat boce otkazan"
+  },
+  "AboutPage": {
+    "metaTitle": "O nama",
+    "metaDescription": "My Energy je europska B2B platforma za rashladna sredstva: prodaja u skladu s F-Gas propisima, sigurnosno-tehnički listovi i ADR dostava opasnih tvari.",
+    "kicker": "O tvrtki My Energy",
+    "title": "Rashladna sredstva i usklađenost za europske HVAC/R stručnjake",
+    "intro": "My Energy je specijalizirana B2B platforma za rashladna sredstva i HVAC/R opskrbni lanac. Katalog, dokumentacija o usklađenosti i dostava opasnih tvari nalaze se na jednom računu, izrađenom za instalatere, servisne tvrtke i distributere.",
+    "pillarsTitle": "Kako radimo",
+    "purityTitle": "Dokumentirana čistoća",
+    "purityBody": "Za svaki plin čistoća je navedena na stranici proizvoda — najmanje 99,9 % u cijelom katalogu — uz GWP i sigurnosnu klasu. Sigurnosno-tehnički list svakog rashladnog sredstva nalazi se u SDS biblioteci.",
+    "fgasTitle": "Usklađenost s EU F-Gas propisima",
+    "fgasBody": "Fluorirani plinovi prodaju se samo kupcima s važećim F-Gas certifikatom prema Uredbi (EU) 2024/573. Certifikat se provjerava prije plaćanja i bilježi uz narudžbu.",
+    "adrTitle": "Specijalizirana ADR logistika",
+    "adrBody": "Rashladna sredstva prevoze se kao opasne tvari prema ADR-u. Trošak prijevoza prikazan je u košarici prije narudžbe, a povratne boce prate se na vašem računu.",
+    "digitalTitle": "Digitalna B2B usluga",
+    "digitalBody": "PDF račun uz svaku narudžbu, SEPA bankovna uplata, trenutačna zaliha za svaki proizvod te tržišni centar s cjenovnim indeksima i usporedbama plinova.",
+    "companyTitle": "Podaci o tvrtki",
+    "companyLegal": "Pravna osoba",
+    "companyVat": "PDV ID {vat}",
+    "companyContact": "Narudžbe i pitanja",
+    "ctaTitle": "Započnite s katalogom",
+    "ctaBody": "Pregledajte rashladna sredstva prema plinu i veličini pakiranja ili usporedite plinove i cijene u tržišnom centru.",
+    "ctaCatalog": "Katalog proizvoda",
+    "ctaHub": "Tržišni centar",
+    "devNote": "Platformu razvio <link>{name}</link>"
   }
 }

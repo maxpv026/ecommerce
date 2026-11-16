@@ -255,7 +255,16 @@
     "linkOrderHistory": "História objednávok",
     "linkSdsFgas": "Karty bezpečnostných údajov a F-plyny",
     "toastSubscribed": "Upozornenia na naskladnenie pošleme na {email}.",
-    "toastInvalidEmail": "Zadajte platnú e-mailovú adresu."
+    "toastInvalidEmail": "Zadajte platnú e-mailovú adresu.",
+    "companyHeading": "Spoločnosť a účet",
+    "linkCategories": "Chladivá a B2B dodávky",
+    "linkHub": "Trhový a inžiniersky hub",
+    "linkAbout": "O nás",
+    "badgesAria": "Súlad s predpismi",
+    "badgeFgas": "EÚ F-Gas (2024/573)",
+    "badgeAdr": "Logistika ADR",
+    "badgePurity": "Čistota ≥ 99,9 %",
+    "devCredit": "Vývoj: {name}"
   },
   "Pdp": {
     "addToCart": "Pridať do košíka",
@@ -3272,5 +3281,30 @@
     "return_SCHEDULED": "Prijatie vrátenia fľaše ({count})",
     "return_COLLECTED": "Fľaše prijaté na sklade ({count})",
     "return_CANCELLED": "Zrušenie vrátenia fľaše"
+  },
+  "AboutPage": {
+    "metaTitle": "O nás",
+    "metaDescription": "My Energy je európska B2B platforma pre chladivá: predaj v súlade s F-Gas, karty bezpečnostných údajov a doprava nebezpečného tovaru podľa ADR.",
+    "kicker": "O My Energy",
+    "title": "Chladivá a súlad s predpismi pre odborníkov v HVAC/R v Európe",
+    "intro": "My Energy je špecializovaná B2B platforma pre chladivá a dodávateľský reťazec HVAC/R. Katalóg, dokumentácia o súlade a doprava nebezpečného tovaru sú v jednom účte, vytvorenom pre inštalatérov, servisné firmy a distribútorov.",
+    "pillarsTitle": "Ako pracujeme",
+    "purityTitle": "Zdokumentovaná čistota",
+    "purityBody": "Čistota každého plynu je uvedená na stránke produktu — najmenej 99,9 % v celom katalógu — spolu s GWP a bezpečnostnou triedou. Karta bezpečnostných údajov každého chladiva je v knižnici SDS.",
+    "fgasTitle": "Súlad s nariadením EÚ F-Gas",
+    "fgasBody": "Fluórované plyny predávame iba kupujúcim s platným certifikátom F-Gas podľa nariadenia (EÚ) 2024/573. Certifikát sa overuje pred dokončením objednávky a zaznamenáva sa v objednávke.",
+    "adrTitle": "Špecializovaná logistika ADR",
+    "adrBody": "Chladivá sa prepravujú ako nebezpečný tovar podľa ADR. Cena prepravy sa zobrazí v košíku ešte pred objednaním a vratné fľaše sa evidujú vo vašom účte.",
+    "digitalTitle": "Digitálny B2B servis",
+    "digitalBody": "Faktúra vo formáte PDF ku každej objednávke, bankový prevod SEPA, aktuálny stav zásob pri každom produkte a trhový hub s cenovými indexmi a porovnaním plynov.",
+    "companyTitle": "Údaje o spoločnosti",
+    "companyLegal": "Právnická osoba",
+    "companyVat": "IČ DPH {vat}",
+    "companyContact": "Objednávky a otázky",
+    "ctaTitle": "Začnite katalógom",
+    "ctaBody": "Prezerajte chladivá podľa plynu a veľkosti balenia alebo porovnajte plyny a ceny v trhovom hube.",
+    "ctaCatalog": "Katalóg produktov",
+    "ctaHub": "Trhový hub",
+    "devNote": "Vývoj platformy: <link>{name}</link>"
   }
 }
