@@ -598,7 +598,8 @@ export default function AdminInventoryManager({ families, archived = [], canEdit
             />
           </label>
           <div className="flex flex-wrap items-center gap-2">
-            <div role="radiogroup" aria-label={t("filterLabel")} className="flex rounded-[12px] border border-slate-900/[.1] bg-white/70 p-0.5 dark:border-white/[.12] dark:bg-white/[.04]">
+            {/* max-w-full + its own horizontal scroll: three nowrap filters are wider than a phone. */}
+            <div role="radiogroup" aria-label={t("filterLabel")} className="flex max-w-full overflow-x-auto rounded-[12px] border border-slate-900/[.1] bg-white/70 p-0.5 [scrollbar-width:none] dark:border-white/[.12] dark:bg-white/[.04]">
               {(
                 [
                   ["all", t("filterAll"), families.length],

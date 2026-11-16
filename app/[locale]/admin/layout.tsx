@@ -18,9 +18,14 @@ export default async function AdminLayout({ children, params }: { children: Reac
   // Admin screens read namespaces the storefront never ships (lib/i18n/clientMessages).
   return (
     <FullMessagesProvider locale={locale}>
-      <div className="flex flex-1 flex-col bg-slate-50 md:flex-row dark:bg-canvas" data-admin-shell>
+      {/* A full-viewport app: at least one screen tall and nothing after it (the
+          storefront footer is skipped on /admin), so the sticky sidebar's
+          containing block always reaches the bottom of the page and the
+          sidebar never scrolls away. The window stays the scroller, so sticky
+          table headers and scroll restoration in admin pages work as before. */}
+      <div className="flex min-h-[100dvh] flex-1 flex-col bg-slate-50 md:flex-row dark:bg-canvas" data-admin-shell>
         <AdminNav role={role} />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1" data-admin-main>{children}</main>
       </div>
     </FullMessagesProvider>
   );

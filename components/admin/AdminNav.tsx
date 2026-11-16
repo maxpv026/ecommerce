@@ -85,7 +85,7 @@ export default function AdminNav({ role }: { role: AppRole }) {
       </div>
 
       {/* Sections — a horizontal scroller on phones, a column from md up. */}
-      <div className="flex gap-1 overflow-x-auto px-3 pb-3 [scrollbar-width:none] md:flex-1 md:flex-col md:gap-5 md:overflow-visible md:px-3 md:pb-0">
+      <div className="flex gap-1 overflow-x-auto px-3 pb-3 [scrollbar-width:none] md:min-h-0 md:flex-1 md:flex-col md:gap-5 md:overflow-y-auto md:overflow-x-hidden md:px-3 md:pb-3" data-admin-nav-list>
         {sections.map((section) => (
           <div key={section.key} className="flex gap-1 md:flex-col md:gap-0.5">
             <div className="hidden px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[.12em] text-slate-500 md:block">{t(section.key)}</div>

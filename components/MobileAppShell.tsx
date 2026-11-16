@@ -23,6 +23,9 @@ const NAV_HIDDEN_PREFIXES = [
   // on "Catalog" mid-checkout loses the sale.
   "/checkout",
   "/legal",
+  // The admin panel has its own navigation (components/admin/AdminNav); the
+  // storefront dock (and with it the phone footer) doesn't belong there.
+  "/admin",
 ];
 
 /** Whether a phone shows the bottom dock on this (locale-less) path. */

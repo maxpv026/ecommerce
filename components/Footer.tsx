@@ -75,6 +75,9 @@ export default function Footer() {
   const t = useTranslations("Footer");
   const pathname = usePathname();
   const onPhone = isMobileNavVisible(pathname);
+  // The admin panel is its own full-viewport app (app/[locale]/admin/layout):
+  // a storefront footer under it also unpinned the sticky admin sidebar.
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <footer
