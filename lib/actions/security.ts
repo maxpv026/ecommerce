@@ -104,9 +104,17 @@ export async function revokeDeviceSession(id: unknown): Promise<SecurityResult> 
   if (typeof id !== "string" || id.length > 64) return { ok: false, code: "INVALID" };
   const denied = await gate(c.userId, c.sid, false);
   if (denied) return denied;
+  // The listed row stands for its device: end every live row of that device
+  // (lib/deviceSessions lists one per deviceKey).
+  const row = await prisma.userSession.findFirst({ where: { id, userId: c.userId }, select: { deviceKey: true } });
   const { count } = await prisma.userSession.updateMany({
     // Never this device — that is "sign out", not "end a session".
-    where: { id, userId: c.userId, revokedAt: null, ...(c.sid ? { NOT: { sessionTokenId: c.sid } } : {}) },
+    where: {
+      userId: c.userId,
+      revokedAt: null,
+      ...(row?.deviceKey ? { OR: [{ id }, { deviceKey: row.deviceKey }] } : { id }),
+      ...(c.sid ? { NOT: { sessionTokenId: c.sid } } : {}),
+    },
     data: { revokedAt: new Date() },
   });
   if (count === 0) return { ok: false, code: "NOT_FOUND" };

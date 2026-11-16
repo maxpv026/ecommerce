@@ -79,7 +79,7 @@ export const sessionAnchor = cache(async (userId: string, sid?: string | null) =
       // Locked accounts are signed out on their next request (auth.ts).
       lockedAt: true,
       // This device's row (lib/deviceSessions) — same query, no extra round trip.
-      deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true, country: true, city: true }, take: 1 } : false,
+      deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true, country: true, city: true, deviceKey: true }, take: 1 } : false,
     },
   })
 );

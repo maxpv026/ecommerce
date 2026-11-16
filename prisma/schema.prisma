@@ -1269,6 +1269,11 @@ model UserSession {
   os             String?
   /// desktop | mobile | tablet
   deviceType     String?
+  /// One physical browser: HMAC of the long-lived `me_did` cookie
+  /// (lib/deviceId), or — when a request carried none — a fingerprint of
+  /// browser + OS + IP. A new sign-in from the same browser supersedes that
+  /// browser's older rows instead of adding another (lib/deviceSessions).
+  deviceKey      String?
   ipAddress      String?
   city           String?
   country        String?
@@ -1277,6 +1282,7 @@ model UserSession {
   revokedAt      DateTime?
 
   @@index([userId, revokedAt])
+  @@index([userId, deviceKey])
 }
 
 /// Content-hash cache of model responses (lib/ai/cache): the same request to

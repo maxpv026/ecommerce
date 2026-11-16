@@ -152,6 +152,17 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       },
     }),
   ],
+  events: {
+    // Signing out ends this device's row too; otherwise it stayed listed in
+    // "Active sessions" for 30 days as a device that no longer exists.
+    async signOut(message) {
+      const sid = "token" in message ? message.token?.sid : undefined;
+      if (typeof sid !== "string") return;
+      await prisma.userSession
+        .updateMany({ where: { sessionTokenId: sid, revokedAt: null }, data: { revokedAt: new Date() } })
+        .catch((error) => console.error("auth: could not end the device session on sign-out:", error));
+    },
+  },
   callbacks: {
     async signIn({ account, profile, user }) {
       if (account?.provider !== "google") return true;

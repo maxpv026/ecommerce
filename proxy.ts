@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import NextAuth from "next-auth";
 import createIntlMiddleware from "next-intl/middleware";
+import { DEVICE_COOKIE, deviceCookieOptions, isValidDeviceId, newDeviceId } from "@/lib/deviceId";
 import { authConfig } from "./auth.config";
 import { routing } from "./i18n/routing";
 import { checkRateLimit, clientIp, ruleFor } from "./lib/rateLimit";
@@ -80,6 +81,11 @@ export default auth((req) => {
   // goes through here so a rule added for a non-API path keeps reporting.
   const finish = (res: NextResponse) => {
     if (budget) for (const [key, value] of Object.entries(budget)) res.headers.set(key, value);
+    // Every browser gets a device id before it ever signs in, so a later
+    // sign-in from it is recognised as the same device (lib/deviceId).
+    if (!isValidDeviceId(req.cookies.get(DEVICE_COOKIE)?.value)) {
+      res.cookies.set(DEVICE_COOKIE, newDeviceId(), deviceCookieOptions(origin.startsWith("https:")));
+    }
     // Our own redirects (next-intl's locale redirect included) stay on the
     // visitor's domain. Only a Location on the app's own (possibly AUTH_URL-
     // rewritten) origin is re-based; anything else is left alone.

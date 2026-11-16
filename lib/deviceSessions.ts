@@ -1,7 +1,8 @@
 import "server-only";
 
 import { createHmac } from "node:crypto";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { DEVICE_COOKIE, deviceCookieOptions, isValidDeviceId, newDeviceId } from "@/lib/deviceId";
 import prisma from "@/lib/prisma";
 import { countryFromGeoHeader } from "@/lib/country";
 import { refreshUserCountry } from "@/lib/userCountry";
@@ -79,6 +80,37 @@ export function legacySessionId(userId: string, authTime: number): string {
   return `legacy_${createHmac("sha256", secret).update(`sid:${userId}:${authTime}`).digest("base64url").slice(0, 32)}`;
 }
 
+const hmac = (value: string) => createHmac("sha256", process.env.AUTH_SECRET ?? "").update(value).digest("base64url").slice(0, 32);
+
+/**
+ * Which physical browser this request comes from (UserSession.deviceKey).
+ *
+ * `d_…` — from the me_did cookie (lib/deviceId): certain, so a new sign-in
+ * may retire that browser's older rows. When the request carried no cookie
+ * (proxy.ts normally set it on an earlier page view), one is set here if
+ * the context allows (sign-in runs in a route handler) and the key falls
+ * back to `f_…`, a fingerprint of browser + OS + IP — used to collapse the
+ * LIST only, never to sign anything out: two colleagues' identical laptops
+ * behind one office IP would share it.
+ */
+async function currentDeviceKey(agent: ParsedAgent, ip: string | null): Promise<{ key: string; certain: boolean }> {
+  try {
+    const jar = await cookies();
+    const id = jar.get(DEVICE_COOKIE)?.value;
+    if (isValidDeviceId(id)) return { key: `d_${hmac(`device:${id}`)}`, certain: true };
+    const fresh = newDeviceId();
+    try {
+      jar.set(DEVICE_COOKIE, fresh, deviceCookieOptions(process.env.NODE_ENV === "production"));
+      return { key: `d_${hmac(`device:${fresh}`)}`, certain: true };
+    } catch {
+      // A server component can't write cookies; the proxy sets it on the next page view.
+    }
+  } catch {
+    // Outside a request.
+  }
+  return { key: `f_${hmac(`fingerprint:${agent.browser ?? "?"}|${agent.os ?? "?"}|${ip ?? "?"}`)}`, certain: false };
+}
+
 /**
  * UA, IP and place of the current request — empty outside a request.
  *
@@ -112,10 +144,17 @@ const safeDecode = (value: string) => {
   }
 };
 
-/** Creates the row for a session if it has none (idempotent on the sid). */
+/**
+ * Creates the row for a session if it has none (idempotent on the sid), and
+ * retires the same browser's older sessions: that browser's cookie jar now
+ * holds this token, so its earlier rows can only be dead tokens — listing
+ * them is what made one laptop show up as fifty "devices". Retired =
+ * revoked, not deleted, so an old token copied elsewhere stays refused.
+ */
 export async function registerSession(userId: string, sessionTokenId: string): Promise<void> {
   const ctx = await requestContext();
   const agent = parseUserAgent(ctx.ua);
+  const device = await currentDeviceKey(agent, ctx.ip);
   // A page's first parallel requests (document, RSC, /api/auth/session) can
   // all find no row and race to create it; the loser's unique violation
   // means the row exists, which is all this wants.
@@ -129,6 +168,7 @@ export async function registerSession(userId: string, sessionTokenId: string): P
         browser: agent.browser,
         os: agent.os,
         deviceType: agent.deviceType,
+        deviceKey: device.key,
         ipAddress: ctx.ip,
         city: ctx.city,
         country: ctx.country,
@@ -138,6 +178,12 @@ export async function registerSession(userId: string, sessionTokenId: string): P
     .catch((error: unknown) => {
       if ((error as { code?: string }).code !== "P2002") throw error;
     });
+  if (device.certain) {
+    await prisma.userSession.updateMany({
+      where: { userId, deviceKey: device.key, revokedAt: null, NOT: { sessionTokenId } },
+      data: { revokedAt: new Date() },
+    });
+  }
   // A sign-in is the freshest location there is (User.countryCode).
   await refreshUserCountry(userId).catch((error) => console.error("deviceSessions: country refresh failed:", error));
 }
@@ -150,15 +196,22 @@ export async function registerSession(userId: string, sessionTokenId: string): P
 export async function touchSession(
   userId: string,
   sessionTokenId: string,
-  device: { lastActiveAt: Date; country: string | null; city: string | null }
+  device: { lastActiveAt: Date; country: string | null; city: string | null; deviceKey?: string | null }
 ): Promise<void> {
   const due = Date.now() - device.lastActiveAt.getTime() >= TOUCH_INTERVAL_MS;
   const ctx = await requestContext();
   const moved = ctx.country !== null && (ctx.country !== device.country || ctx.city !== device.city);
   if (!due && !moved) return;
+  // Rows from before device keys get theirs on the next touch.
+  const deviceKey = device.deviceKey ? null : (await currentDeviceKey(parseUserAgent(ctx.ua), ctx.ip)).key;
   await prisma.userSession.updateMany({
     where: { sessionTokenId, revokedAt: null },
-    data: { lastActiveAt: new Date(), ...(ctx.ip ? { ipAddress: ctx.ip } : {}), ...(ctx.country ? { country: ctx.country, city: ctx.city } : {}) },
+    data: {
+      lastActiveAt: new Date(),
+      ...(ctx.ip ? { ipAddress: ctx.ip } : {}),
+      ...(ctx.country ? { country: ctx.country, city: ctx.city } : {}),
+      ...(deviceKey ? { deviceKey } : {}),
+    },
   });
   if (moved) await refreshUserCountry(userId).catch((error) => console.error("deviceSessions: country refresh failed:", error));
 }
@@ -177,16 +230,29 @@ export interface DeviceSessionView {
   current: boolean;
 }
 
-/** The account's live sessions, the current one first. */
+/**
+ * The account's live sessions — ONE per device, the current one first.
+ * Rows sharing a deviceKey are the same browser: the current session wins,
+ * otherwise the most recently active. (registerSession already retires a
+ * browser's older rows; this keeps the list honest for anything that
+ * slipped through, e.g. fingerprint-keyed rows.)
+ */
 export async function listDeviceSessions(userId: string, currentSid: string | null): Promise<DeviceSessionView[]> {
   const rows = await prisma.userSession.findMany({
     // A JWT lives 30 days (Auth.js default); a row unseen for longer is a
     // cookie that no longer works, not a signed-in device.
     where: { userId, revokedAt: null, lastActiveAt: { gte: new Date(Date.now() - SESSION_MAX_AGE_MS) } },
     orderBy: { lastActiveAt: "desc" },
-    take: 50,
+    take: 200,
   });
-  return rows
+  const byDevice = new Map<string, (typeof rows)[number]>();
+  for (const r of rows) {
+    const key = r.deviceKey ?? `row_${r.id}`;
+    const kept = byDevice.get(key);
+    if (!kept || r.sessionTokenId === currentSid) byDevice.set(key, r);
+  }
+  return [...byDevice.values()]
+    .slice(0, 50)
     .map((r) => ({
       id: r.id,
       deviceName: r.deviceName,
