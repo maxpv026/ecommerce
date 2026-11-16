@@ -225,9 +225,14 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
                       onChange={(e) => handleDigitChange(idx, e.target.value)}
                       onKeyDown={(e) => handleDigitKeyDown(idx, e)}
                       inputMode="numeric"
-                      maxLength={1}
+                      // 6, not 1: the phone's code autofill and a digit typed over a digit
+                      // arrive as several characters; useAuthFlow keeps the right one.
+                      maxLength={6}
+                      autoComplete={idx === 0 ? "one-time-code" : "off"}
+                      disabled={verifying}
+                      aria-invalid={error ? true : undefined}
                       aria-label={tAuth("digitAriaLabel", { position: idx + 1 })}
-                      className={`h-[58px] w-[46px] rounded-[15px] border-[1.5px] bg-white/70 text-center text-[22px] font-semibold text-slate-900 transition-[border-color,box-shadow] duration-200 focus:outline-none dark:bg-white/[.05] dark:text-slate-50 ${
+                      className={`h-[58px] w-[46px] rounded-[15px] border-[1.5px] bg-white/70 text-center text-[22px] font-semibold text-slate-900 transition-[border-color,box-shadow,opacity] duration-200 focus:outline-none dark:bg-white/[.05] dark:text-slate-50 ${verifying ? "opacity-60" : ""} ${
                         error
                           ? "border-red-500/70 focus:border-red-500 focus:ring-[3.5px] focus:ring-red-500/[.14]"
                           : "border-slate-900/[.14] focus:border-blue-700 focus:ring-[3.5px] focus:ring-blue-700/[.14] focus:shadow-[0_0_18px_-4px_rgba(29,78,216,0.45)] dark:border-white/[.14]"

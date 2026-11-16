@@ -260,9 +260,14 @@ export default function MobileAuthLayout() {
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleDigitKeyDown(idx, e)}
                     inputMode="numeric"
-                    maxLength={1}
+                    // 6, not 1: the phone's code autofill and a digit typed over a digit
+                    // arrive as several characters; useAuthFlow keeps the right one.
+                    maxLength={6}
+                    autoComplete={idx === 0 ? "one-time-code" : "off"}
+                    disabled={verifying}
+                    aria-invalid={error ? true : undefined}
                     aria-label={t("digitAriaLabel", { position: idx + 1 })}
-                    className="h-[58px] w-[46px] rounded-2xl border-[1.5px] border-slate-900/[.14] bg-white text-center text-[22px] font-semibold text-slate-900 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:border-white/[.14] dark:bg-slate-900 dark:text-slate-50"
+                    className={`h-[58px] w-[46px] rounded-2xl border-[1.5px] bg-white text-center text-[22px] font-semibold text-slate-900 transition-[border-color,opacity] focus:outline-none focus:ring-2 focus:ring-blue-700/20 dark:bg-slate-900 dark:text-slate-50 ${verifying ? "opacity-60" : ""} ${error ? "border-red-500/70 focus:border-red-500 focus:ring-red-500/[.14] dark:border-red-500/70" : "border-slate-900/[.14] focus:border-blue-700 dark:border-white/[.14]"}`}
                   />
                 ))}
               </div>

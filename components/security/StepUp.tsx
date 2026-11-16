@@ -105,6 +105,8 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
   }, [usingPhrase, phraseChallenge]);
 
   const switchTo = (next: { tab?: Tab; kind?: "password" | "phrase" }) => {
+    if (autoTimer.current !== null) window.clearTimeout(autoTimer.current);
+    autoTimer.current = null;
     setValue("");
     setPhraseWords([]);
     setError(null);
@@ -132,13 +134,38 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
 
   const secret = method === "phrase" ? recoveryAnswer(phraseChallenge, phraseWords, value) : value.trim() ? value : null;
 
-  const submit = async () => {
-    if (!secret || busy) return;
+  // Six-digit codes submit themselves: the emailed code at once (it can only
+  // be six digits); the authenticator field after a 700 ms pause, because
+  // it also takes an 8-character recovery code that may start with six
+  // digits — the next keystroke cancels the timer. One request at a time;
+  // a rejected code empties the field and puts the cursor back in it.
+  const submitLock = useRef(false);
+  const autoTimer = useRef<number | null>(null);
+  const refocusInput = useRef(false);
+  const onCodeInput = (next: string) => {
+    setValue(next);
+    if (error) setError(null);
+    if (autoTimer.current !== null) window.clearTimeout(autoTimer.current);
+    autoTimer.current = null;
+    if (!/^\d{6}$/.test(next)) return;
+    if (tab === "email") void submit(next);
+    else if (tab === "totp") autoTimer.current = window.setTimeout(() => void submit(next), 700);
+  };
+
+  const submit = async (typed?: string) => {
+    const s = typed ?? secret;
+    if (!s || busy || submitLock.current) return;
+    submitLock.current = true;
     setBusy(true);
     setError(null);
-    const result = await verifyStepUp({ method, secret }).catch(() => null);
+    const result = await verifyStepUp({ method, secret: s }).catch(() => null);
+    submitLock.current = false;
     setBusy(false);
     if (result?.ok) return onVerified();
+    if (method === "totp" || method === "email") {
+      setValue("");
+      refocusInput.current = true; // the effect below, once the field is enabled again
+    }
     setError(
       result?.code === "LOCKED"
         ? t("errLocked", { minutes: result.retryAfterMinutes ?? 15 })
@@ -147,6 +174,18 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
           : t("errInvalid")
     );
   };
+
+  // A disabled field can't take focus: refocus only after `busy` clears.
+  useEffect(() => {
+    if (!busy && refocusInput.current) {
+      refocusInput.current = false;
+      inputRef.current?.focus();
+    }
+  }, [busy]);
+  // A pending auto-submit must not fire after the dialog closes.
+  useEffect(() => () => {
+    if (autoTimer.current !== null) window.clearTimeout(autoTimer.current);
+  }, []);
 
   return (
     <div
@@ -222,7 +261,7 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
             >
               {tab === "totp" && (
                 <Field label={t("totpLabel")} hint={t("totpHint")}>
-                  <input ref={inputRef} value={value} onChange={(e) => setValue(e.target.value.replace(/\s/g, "").slice(0, 8))} inputMode="text" autoComplete="one-time-code" placeholder="123 456" data-step-up-input className={`${INPUT} font-mono tracking-[.3em]`} />
+                  <input ref={inputRef} value={value} onChange={(e) => onCodeInput(e.target.value.replace(/\s/g, "").slice(0, 8))} disabled={busy} aria-invalid={error ? true : undefined} inputMode="text" autoComplete="one-time-code" placeholder="123 456" data-step-up-input className={`${INPUT} font-mono tracking-[.3em] disabled:opacity-60 ${error ? "border-red-500/70 dark:border-red-500/70" : ""}`} />
                 </Field>
               )}
               {tab === "email" && (
@@ -233,7 +272,7 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
                   </button>
                   {sent && (
                     <Field label={t("emailCodeLabel")} hint={t("emailSentTo", { email: options.email ?? "" })}>
-                      <input ref={inputRef} value={value} onChange={(e) => setValue(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="••••••" data-step-up-input className={`${INPUT} font-mono tracking-[.3em]`} />
+                      <input ref={inputRef} value={value} onChange={(e) => onCodeInput(e.target.value.replace(/\D/g, "").slice(0, 6))} disabled={busy} aria-invalid={error ? true : undefined} inputMode="numeric" autoComplete="one-time-code" placeholder="••••••" data-step-up-input className={`${INPUT} font-mono tracking-[.3em] disabled:opacity-60 ${error ? "border-red-500/70 dark:border-red-500/70" : ""}`} />
                     </Field>
                   )}
                 </>

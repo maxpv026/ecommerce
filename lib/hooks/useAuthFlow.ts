@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent, ClipboardEvent } from "react";
 import { z } from "zod";
 import { useTranslations, useLocale } from "next-intl";
@@ -231,10 +231,44 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     });
   };
 
+  // ── Six-digit code: submits itself ──
+  // The moment the sixth digit lands — typed, pasted, or filled by the
+  // phone's one-time-code autofill — the code is verified; no button. One
+  // request at a time (inFlight), and a rejected code clears the boxes and
+  // puts the cursor back in the first one, which can only happen once the
+  // boxes are enabled again (focusFirstAfterVerify → the effect below).
+  const inFlight = useRef(false);
+  const focusFirstAfterVerify = useRef(false);
+  useEffect(() => {
+    if (!verifying && focusFirstAfterVerify.current) {
+      focusFirstAfterVerify.current = false;
+      boxRefs.current[0]?.focus();
+    }
+  }, [verifying]);
+
+  /** Fills the boxes from `idx` with `chars`; verifies when all six are set. */
+  const fillDigits = (idx: number, chars: string) => {
+    const next = [...digits];
+    for (let i = 0; i < chars.length && idx + i < 6; i++) next[idx + i] = chars[i];
+    setDigits(next);
+    if (error) setError(null);
+    const code = next.join("");
+    if (code.length === 6 && /^\d{6}$/.test(code)) {
+      boxRefs.current[5]?.blur();
+      void verify(code);
+    } else {
+      boxRefs.current[Math.min(idx + chars.length, 5)]?.focus();
+    }
+  };
+
   const handleDigitChange = (idx: number, raw: string) => {
-    const value = raw.replace(/\D/g, "").slice(-1);
-    setDigitAt(idx, value);
-    if (value && idx < 5) boxRefs.current[idx + 1]?.focus();
+    const typed = raw.replace(/\D/g, "");
+    if (!typed) return setDigitAt(idx, "");
+    // The phone's one-time-code autofill drops the whole code into one box:
+    // spread it from the first box. Otherwise it's one keystroke — a box that
+    // already held a digit receives "old+new", and the new digit wins.
+    if (typed.length >= 6) return fillDigits(0, typed.slice(0, 6));
+    fillDigits(idx, typed.slice(-1));
   };
 
   const handleDigitKeyDown = (idx: number, e: KeyboardEvent<HTMLInputElement>) => {
@@ -247,14 +281,27 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (!pasted) return;
     e.preventDefault();
+    // A pasted code always starts over at the first box.
     const next = ["", "", "", "", "", ""];
     for (let i = 0; i < pasted.length; i++) next[i] = pasted[i];
     setDigits(next);
-    boxRefs.current[Math.min(pasted.length, 5)]?.focus();
+    if (error) setError(null);
+    if (pasted.length === 6) {
+      boxRefs.current[5]?.blur();
+      void verify(pasted);
+    } else {
+      boxRefs.current[Math.min(pasted.length, 5)]?.focus();
+    }
   };
 
-  const handleVerify = async (e: FormEvent) => {
+  /** The form's submit — still how the recovery code and the phrase are sent. */
+  const handleVerify = (e: FormEvent) => {
     e.preventDefault();
+    void verify();
+  };
+
+  const verify = async (typedCode?: string) => {
+    if (inFlight.current) return;
 
     // One field is live at a time, and each has its own completeness rule.
     // auth.ts tells the two apart by shape (six digits vs eight hex), so the
@@ -262,7 +309,7 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     // spend one of the account's five attempts before the lockout, which is
     // why both lengths are enforced here first.
     const answer = codeMode === "phrase" ? recoveryAnswer(phraseChallenge, phraseWords, phrase) : null;
-    const code = codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? (answer ?? "") : digits.join("");
+    const code = codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? (answer ?? "") : (typedCode ?? digits.join(""));
     if (codeMode === "phrase") {
       if (!answer) {
         setError(t(phraseChallenge?.type === "SEED_12" ? "errorIncompleteWords" : "errorIncompletePhrase"));
@@ -278,11 +325,20 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
       return;
     }
     setError(null);
+    inFlight.current = true;
     setVerifying(true);
+    // A rejected six-digit code: empty the boxes, cursor back to the first.
+    const rejectDigits = () => {
+      if (codeMode !== "totp") return;
+      setDigits(["", "", "", "", "", ""]);
+      focusFirstAfterVerify.current = true;
+    };
 
     if (googlePending) {
       const result = await completeGoogleTwoFactor(code).catch(() => null);
       if (!result?.ok) {
+        inFlight.current = false;
+        rejectDigits();
         setVerifying(false);
         if (result?.code === "EXPIRED") {
           // The five-minute window passed: start the Google step again.
@@ -301,8 +357,10 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
       }
       setGooglePending(false);
     } else {
-      const result = await signIn("credentials", { email, password, code, redirect: false });
+      const result = await signIn("credentials", { email, password, code, redirect: false }).catch(() => ({ error: "network" }) as const);
       if (result?.error) {
+        inFlight.current = false;
+        rejectDigits();
         setVerifying(false);
         const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode";
         setError(t(key));
@@ -317,6 +375,8 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     // callbacks read it from the DB on sign-in) — if it differs from the
     // locale they're currently browsing in, send them to their saved one.
     const session = await getSession();
+    // The modal's hook outlives this sign-in (it is reopened later), so the lock is released here too.
+    inFlight.current = false;
     setVerifying(false);
     options.onSuccess?.();
     if (callbackUrl !== null) {

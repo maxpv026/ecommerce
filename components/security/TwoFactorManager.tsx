@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useFormatter, useTranslations } from "next-intl";
@@ -76,13 +76,23 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
     else setError(t("errGeneric"));
   };
 
-  const confirmSetup = async () => {
+  // Submits itself on the sixth digit (typed, pasted or autofilled); one
+  // request at a time; a rejected code empties the field and refocuses it.
+  const enableLock = useRef(false);
+  const codeRef = useRef<HTMLInputElement | null>(null);
+  const refocusCode = useRef(false);
+  const confirmSetup = async (typed: string = code) => {
+    if (enableLock.current || typed.length !== 6) return;
+    enableLock.current = true;
     setBusy("enable");
     setError(null);
-    const result = await enableTwoFactor({ code }).catch(() => null);
+    const result = await enableTwoFactor({ code: typed }).catch(() => null);
+    enableLock.current = false;
     setBusy(null);
     if (!result?.ok) {
       setError(result?.code === "LOCKED" ? t("errLocked", { minutes: 15 }) : t("errInvalid"));
+      setCode("");
+      refocusCode.current = true; // done by the effect below, once the field is enabled again
       return;
     }
     setSetup(null);
@@ -91,6 +101,13 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
     after({ ...state, twoFactor: true, recoveryCodesLeft: result.recoveryCodes?.length ?? 0 });
     toast.success(t("twoFaEnabled"));
   };
+  // A disabled field can't take focus: refocus only after `busy` clears.
+  useEffect(() => {
+    if (busy === null && refocusCode.current) {
+      refocusCode.current = false;
+      codeRef.current?.focus();
+    }
+  }, [busy]);
 
   const disable = async (thenSetup: boolean) => {
     setBusy(thenSetup ? "rotate" : "disable");
@@ -238,8 +255,25 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
                     </button>
                   </div>
                   <div className="mt-2.5 flex gap-2">
-                    <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" placeholder="123456" aria-label={t("totpLabel")} data-2fa-code className={`${INPUT} max-w-[140px] font-mono tracking-[.3em]`} />
-                    <button type="button" onClick={confirmSetup} disabled={code.length !== 6 || busy !== null} className={PRIMARY} data-2fa-enable>
+                    <input
+                      ref={codeRef}
+                      value={code}
+                      onChange={(e) => {
+                        const next = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        setCode(next);
+                        if (error) setError(null);
+                        if (next.length === 6) void confirmSetup(next);
+                      }}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      disabled={busy === "enable"}
+                      aria-invalid={error ? true : undefined}
+                      placeholder="123456"
+                      aria-label={t("totpLabel")}
+                      data-2fa-code
+                      className={`${INPUT} max-w-[140px] font-mono tracking-[.3em] disabled:opacity-60 ${error ? "border-red-500/70 dark:border-red-500/70" : ""}`}
+                    />
+                    <button type="button" onClick={() => void confirmSetup()} disabled={code.length !== 6 || busy !== null} className={PRIMARY} data-2fa-enable>
                       {busy === "enable" && <Loader2 size={14} className="animate-spin" />}
                       {t("enable")}
                     </button>
