@@ -78,6 +78,9 @@ export const sessionAnchor = cache(async (userId: string, sid?: string | null) =
       email: true,
       // Locked accounts are signed out on their next request (auth.ts).
       lockedAt: true,
+      // The admin gate's "second factor enrolled": authenticator OR passkey (lib/authStrength).
+      isTwoFactorEnabled: true,
+      _count: { select: { passkeys: true } },
       // This device's row (lib/deviceSessions) — same query, no extra round trip.
       deviceSessions: sid ? { where: { sessionTokenId: sid }, select: { revokedAt: true, lastActiveAt: true, country: true, city: true, deviceKey: true }, take: 1 } : false,
     },

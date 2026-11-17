@@ -27,6 +27,9 @@ export const authConfig = {
         // carries no 2FA claim on the Edge, the gate reads undefined, and
         // every admin — enrolled or not — is bounced out of /admin.
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled === true;
+        // proxy.ts's admin gate (lib/authStrength): enrolled factor + how this session proved it.
+        session.user.amr = typeof token.amr === "string" ? token.amr : undefined;
+        session.user.secondFactor = token.secondFactor === true || token.isTwoFactorEnabled === true;
       }
       return session;
     },

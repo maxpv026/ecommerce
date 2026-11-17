@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Confirmer avec Face ID / Touch ID",
     "stepUpHint": "Votre appareil vous demandera votre visage, votre empreinte digitale ou votre code PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Sécurisez votre compte",
+    "subtitle": "Ajoutez une deuxième étape de connexion — cela prend une minute, et vous pouvez aussi le faire plus tard.",
+    "recommended": "Recommandé",
+    "passkeyTitle": "Connexion biométrique",
+    "passkeyBody": "Face ID, Touch ID ou Windows Hello — confirmez vos connexions d'une simple touche au lieu d'un code.",
+    "passkeyButton": "Activer Face ID / Touch ID",
+    "passkeyDone": "Connecté ✓",
+    "passkeyUnsupported": "Cet appareil ne dispose pas de Face ID, Touch ID ni Windows Hello.",
+    "totpTitle": "Authentification à deux facteurs",
+    "totpBody": "Un code à 6 chiffres d'une application d'authentification à chaque connexion.",
+    "totpButton": "Configurer une app 2FA (Google Authenticator / Authy)",
+    "totpScan": "Scannez le code QR dans l'application, puis saisissez le code à 6 chiffres affiché.",
+    "totpManual": "Ou saisissez cette clé manuellement :",
+    "totpCodeLabel": "Code de l'application",
+    "totpDone": "Activé ✓",
+    "totpInvalid": "Ce code ne correspond pas. Vérifiez l'application et réessayez.",
+    "recoveryTitle": "Codes de récupération",
+    "recoveryBody": "Conservez-les en lieu sûr — chacun fonctionne une fois si votre téléphone n'est pas disponible.",
+    "copy": "Copier",
+    "copied": "Copié",
+    "continue": "Continuer",
+    "skip": "Ignorer pour l'instant (activable plus tard dans Paramètres)",
+    "failed": "Cela n'a pas fonctionné. Veuillez réessayer."
+  },
+  "AdminUnlock": {
+    "title": "Confirmez votre identité",
+    "body": "Le panneau d'administration nécessite Face ID / Touch ID ou votre code d'authentification pour cette session.",
+    "passkeyButton": "Confirmer la connexion avec Face ID / Touch ID",
+    "or": "ou saisissez le code d'authentification",
+    "codeLabel": "Code d'authentification",
+    "invalid": "Cela ne correspond pas. Réessayez.",
+    "locked": "Trop de tentatives. Réessayez dans {minutes} min.",
+    "elsewhere": "Votre Face ID / Touch ID a été ajouté sur un autre site — ouvrez-y le panneau d'administration, ou utilisez votre application d'authentification.",
+    "unlocked": "Déverrouillé",
+    "back": "Retour à la vitrine"
   }
 }

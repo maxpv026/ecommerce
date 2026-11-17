@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Megerősítés Face ID / Touch ID-val",
     "stepUpHint": "Az eszköze az arcát, az ujjlenyomatát vagy a PIN-kódját fogja kérni."
+  },
+  "SecurityOnboarding": {
+    "title": "Védje meg fiókját",
+    "subtitle": "Adjon hozzá egy második bejelentkezési lépést — egy percig tart, és később is megteheti.",
+    "recommended": "Ajánlott",
+    "passkeyTitle": "Biometrikus bejelentkezés",
+    "passkeyBody": "Face ID, Touch ID vagy Windows Hello — kód helyett egyetlen érintéssel erősítse meg a bejelentkezéseket.",
+    "passkeyButton": "Face ID / Touch ID bekapcsolása",
+    "passkeyDone": "Csatlakoztatva ✓",
+    "passkeyUnsupported": "Ezen az eszközön nincs Face ID, Touch ID vagy Windows Hello.",
+    "totpTitle": "Kétfaktoros hitelesítés",
+    "totpBody": "6 jegyű kód egy autentikátor alkalmazásból minden bejelentkezéskor.",
+    "totpButton": "2FA alkalmazás beállítása (Google Authenticator / Authy)",
+    "totpScan": "Olvassa be a QR-kódot az alkalmazásban, majd adja meg a megjelenített 6 jegyű kódot.",
+    "totpManual": "Vagy adja meg kézzel ezt a kulcsot:",
+    "totpCodeLabel": "Kód az alkalmazásból",
+    "totpDone": "Bekapcsolva ✓",
+    "totpInvalid": "A kód nem egyezik. Ellenőrizze az alkalmazást, és próbálja újra.",
+    "recoveryTitle": "Helyreállítási kódok",
+    "recoveryBody": "Tárolja őket biztonságos helyen — mindegyik egyszer használható, ha a telefonja nem elérhető.",
+    "copy": "Másolás",
+    "copied": "Másolva",
+    "continue": "Tovább",
+    "skip": "Most kihagyom (később a Beállításokban bekapcsolhatja)",
+    "failed": "Nem sikerült. Kérjük, próbálja újra."
+  },
+  "AdminUnlock": {
+    "title": "Erősítse meg, hogy Ön az",
+    "body": "Az admin panel ehhez a munkamenethez Face ID / Touch ID-t vagy az autentikátor kódját kéri.",
+    "passkeyButton": "Bejelentkezés megerősítése Face ID / Touch ID-val",
+    "or": "vagy adja meg az autentikátor kódot",
+    "codeLabel": "Autentikátor kód",
+    "invalid": "Ez nem egyezik. Próbálja újra.",
+    "locked": "Túl sok próbálkozás. Próbálja újra {minutes} perc múlva.",
+    "elsewhere": "A Face ID / Touch ID-t egy másik oldalon adta hozzá — ott nyissa meg az admin panelt, vagy használja az autentikátort.",
+    "unlocked": "Feloldva",
+    "back": "Vissza az áruházhoz"
   }
 }

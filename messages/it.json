@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Conferma con Face ID / Touch ID",
     "stepUpHint": "Il dispositivo ti chiederà il volto, l'impronta digitale o il PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Proteggi il tuo account",
+    "subtitle": "Aggiungi un secondo passaggio di accesso — richiede un minuto e puoi farlo anche più tardi.",
+    "recommended": "Consigliato",
+    "passkeyTitle": "Accesso biometrico",
+    "passkeyBody": "Face ID, Touch ID o Windows Hello — conferma gli accessi con un tocco invece che con un codice.",
+    "passkeyButton": "Attiva Face ID / Touch ID",
+    "passkeyDone": "Collegato ✓",
+    "passkeyUnsupported": "Questo dispositivo non ha Face ID, Touch ID né Windows Hello.",
+    "totpTitle": "Autenticazione a due fattori",
+    "totpBody": "Un codice a 6 cifre da un'app di autenticazione a ogni accesso.",
+    "totpButton": "Configura un'app 2FA (Google Authenticator / Authy)",
+    "totpScan": "Scansiona il codice QR nell'app, poi inserisci il codice a 6 cifre che mostra.",
+    "totpManual": "Oppure inserisci questa chiave manualmente:",
+    "totpCodeLabel": "Codice dall'app",
+    "totpDone": "Attivo ✓",
+    "totpInvalid": "Il codice non corrisponde. Controlla l'app e riprova.",
+    "recoveryTitle": "Codici di recupero",
+    "recoveryBody": "Salvali in un posto sicuro — ognuno funziona una volta se il telefono non è disponibile.",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "continue": "Continua",
+    "skip": "Salta per ora (puoi attivarlo più tardi nelle Impostazioni)",
+    "failed": "Non ha funzionato. Riprova."
+  },
+  "AdminUnlock": {
+    "title": "Conferma che sei tu",
+    "body": "Per questa sessione il pannello di amministrazione richiede Face ID / Touch ID o il codice dell'autenticatore.",
+    "passkeyButton": "Conferma l'accesso con Face ID / Touch ID",
+    "or": "oppure inserisci il codice dell'autenticatore",
+    "codeLabel": "Codice dell'autenticatore",
+    "invalid": "Non corrisponde. Riprova.",
+    "locked": "Troppi tentativi. Riprova tra {minutes} min.",
+    "elsewhere": "Il tuo Face ID / Touch ID è stato aggiunto su un altro sito — apri lì il pannello di amministrazione oppure usa l'autenticatore.",
+    "unlocked": "Sbloccato",
+    "back": "Torna al negozio"
   }
 }

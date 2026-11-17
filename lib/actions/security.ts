@@ -298,6 +298,14 @@ export async function removeRecoveryPhrase(): Promise<SecurityResult> {
 
 // ── Passkeys (Face ID / Touch ID / Windows Hello) ──
 
+/** Window after sign-up in which the first passkey needs no identity check (onboarding). */
+const FRESH_ACCOUNT_MS = 10 * 60 * 1000;
+
+async function freshAccountFirstPasskey(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true, _count: { select: { passkeys: true } } } });
+  return Boolean(user) && Date.now() - user!.createdAt.getTime() < FRESH_ACCOUNT_MS && user!._count.passkeys === 0;
+}
+
 export type PasskeyEnrolStart = { ok: true; options: PublicKeyCredentialCreationOptionsJSON } | Fail;
 
 /**
@@ -308,7 +316,11 @@ export type PasskeyEnrolStart = { ok: true; options: PublicKeyCredentialCreation
 export async function startPasskeyEnrolment(): Promise<PasskeyEnrolStart> {
   const c = await caller();
   if (!c) return { ok: false, code: "UNAUTHENTICATED" };
-  const denied = await gate(c.userId, c.sid, true);
+  // The account was created minutes ago in this very session and has no
+  // passkey yet: its first one is set up from the post-registration
+  // onboarding without an identity check (there is nothing older to protect).
+  // Every other account keeps the strong check.
+  const denied = (await freshAccountFirstPasskey(c.userId)) ? null : await gate(c.userId, c.sid, true);
   if (denied) return denied;
   if (!checkRateLimit(`passkey-enrol:${c.userId}`, { limit: 10, windowMs: 10 * 60_000 }).success) return { ok: false, code: "RATE_LIMITED" };
   const start = await startRegistration(c.userId);

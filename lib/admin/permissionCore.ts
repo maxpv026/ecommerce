@@ -18,14 +18,15 @@ export type GuardResult = { ok: true; value: { id: string; email: string | null;
 
 export async function requirePermission(userId: string | null | undefined, permission: Permission): Promise<GuardResult> {
   if (!userId) return { ok: false, code: "UNAUTHENTICATED" };
-  const row = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, role: true, isTwoFactorEnabled: true } });
+  const row = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, role: true, isTwoFactorEnabled: true, _count: { select: { passkeys: true } } } });
   if (!row) return { ok: false, code: "UNAUTHENTICATED" };
   const role = effectiveRole(row.email, row.role);
   if (!isStaffRole(role) || !can(role, permission)) {
     console.warn(`[rbac] ${role} ${row.id} refused "${permission}"`);
     return { ok: false, code: "FORBIDDEN" };
   }
-  if (!row.isTwoFactorEnabled) return { ok: false, code: "TWO_FACTOR_REQUIRED" };
+  // A second factor enrolled: the authenticator app OR a passkey (Face ID / Touch ID).
+  if (!row.isTwoFactorEnabled && row._count.passkeys === 0) return { ok: false, code: "TWO_FACTOR_REQUIRED" };
   return { ok: true, value: { id: row.id, email: row.email, role } };
 }
 

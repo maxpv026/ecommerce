@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Potvrdiť cez Face ID / Touch ID",
     "stepUpHint": "Zariadenie si vyžiada tvár, odtlačok prsta alebo PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Zabezpečte svoj účet",
+    "subtitle": "Pridajte druhý krok prihlásenia — trvá to minútu a môžete to urobiť aj neskôr.",
+    "recommended": "Odporúčané",
+    "passkeyTitle": "Biometrické prihlásenie",
+    "passkeyBody": "Face ID, Touch ID alebo Windows Hello — potvrdzujte prihlásenia jedným dotykom namiesto kódu.",
+    "passkeyButton": "Zapnúť Face ID / Touch ID",
+    "passkeyDone": "Pripojené ✓",
+    "passkeyUnsupported": "Toto zariadenie nemá Face ID, Touch ID ani Windows Hello.",
+    "totpTitle": "Dvojfaktorová autentifikácia",
+    "totpBody": "6-miestny kód z autentifikačnej aplikácie pri každom prihlásení.",
+    "totpButton": "Nastaviť 2FA aplikáciu (Google Authenticator / Authy)",
+    "totpScan": "Naskenujte QR kód v aplikácii a potom zadajte 6-miestny kód, ktorý zobrazí.",
+    "totpManual": "Alebo zadajte tento kľúč ručne:",
+    "totpCodeLabel": "Kód z aplikácie",
+    "totpDone": "Zapnuté ✓",
+    "totpInvalid": "Kód sa nezhoduje. Skontrolujte aplikáciu a skúste to znova.",
+    "recoveryTitle": "Obnovovacie kódy",
+    "recoveryBody": "Uložte si ich na bezpečné miesto — každý funguje raz, ak telefón nebude k dispozícii.",
+    "copy": "Kopírovať",
+    "copied": "Skopírované",
+    "continue": "Pokračovať",
+    "skip": "Zatiaľ preskočiť (zapnúť to môžete neskôr v Nastaveniach)",
+    "failed": "Nepodarilo sa. Skúste to znova."
+  },
+  "AdminUnlock": {
+    "title": "Potvrďte, že ste to vy",
+    "body": "Admin panel vyžaduje pre túto reláciu Face ID / Touch ID alebo autentifikačný kód.",
+    "passkeyButton": "Potvrdiť prihlásenie cez Face ID / Touch ID",
+    "or": "alebo zadajte autentifikačný kód",
+    "codeLabel": "Autentifikačný kód",
+    "invalid": "Nezhoduje sa. Skúste to znova.",
+    "locked": "Príliš veľa pokusov. Skúste znova o {minutes} min.",
+    "elsewhere": "Vaše Face ID / Touch ID bolo pridané na inej stránke — otvorte admin panel tam alebo použite autentifikačnú aplikáciu.",
+    "unlocked": "Odomknuté",
+    "back": "Späť na obchod"
   }
 }

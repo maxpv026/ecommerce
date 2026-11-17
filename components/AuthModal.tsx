@@ -1,5 +1,6 @@
 "use client";
 
+import SecurityOnboarding from "@/components/auth/SecurityOnboarding";
 import PasskeyLoginButton from "@/components/auth/PasskeyLoginButton";
 import RecoveryPhraseInput from "@/components/security/RecoveryPhraseInput";
 import { useEffect, useState } from "react";
@@ -131,6 +132,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    finishOnboarding,
     passkeyAvailable,
     passkeyBusy,
     verifyWithPasskey,
@@ -164,7 +166,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#090A0C]/80 p-4 backdrop-blur-md"
-      onClick={onClose}
+      onClick={step === "secure" ? finishOnboarding : onClose}
     >
       <div
         role="dialog"
@@ -175,7 +177,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
       >
         <button
           type="button"
-          onClick={onClose}
+          onClick={step === "secure" ? finishOnboarding : onClose}
           aria-label={t("close")}
           className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-slate-900/5 text-slate-600 transition-colors hover:bg-slate-900/[.11] dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
         >
@@ -187,7 +189,10 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
           <span className="text-[16px] font-semibold tracking-[-.035em]">My Energy</span>
         </div>
 
-        {onCodeStep ? (
+        {step === "secure" ? (
+          /* ---- Just registered: offer Face ID / Touch ID and the authenticator ---- */
+          <SecurityOnboarding onDone={finishOnboarding} />
+        ) : onCodeStep ? (
           /* ---- Step 2: enter the emailed verification code, in place ---- */
           <>
             <h2 className="m-0 text-[25px] font-semibold tracking-[-.035em]">

@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Face ID / Touch ID로 확인",
     "stepUpHint": "기기에서 얼굴, 지문 또는 PIN을 요청합니다."
+  },
+  "SecurityOnboarding": {
+    "title": "계정 보호하기",
+    "subtitle": "로그인 2단계를 추가하세요 — 1분이면 되며, 나중에 해도 됩니다.",
+    "recommended": "권장",
+    "passkeyTitle": "생체 인식 로그인",
+    "passkeyBody": "Face ID, Touch ID 또는 Windows Hello — 코드 대신 한 번의 터치로 로그인을 확인하세요.",
+    "passkeyButton": "Face ID / Touch ID 켜기",
+    "passkeyDone": "연결됨 ✓",
+    "passkeyUnsupported": "이 기기에는 Face ID, Touch ID 또는 Windows Hello가 없습니다.",
+    "totpTitle": "이중 인증",
+    "totpBody": "로그인할 때마다 인증 앱의 6자리 코드를 사용합니다.",
+    "totpButton": "2FA 앱 설정 (Google Authenticator / Authy)",
+    "totpScan": "앱에서 QR 코드를 스캔한 다음 표시된 6자리 코드를 입력하세요.",
+    "totpManual": "또는 이 키를 직접 입력하세요:",
+    "totpCodeLabel": "앱의 코드",
+    "totpDone": "켜짐 ✓",
+    "totpInvalid": "코드가 일치하지 않습니다. 앱을 확인하고 다시 시도하세요.",
+    "recoveryTitle": "복구 코드",
+    "recoveryBody": "안전한 곳에 저장하세요 — 휴대폰을 사용할 수 없을 때 각 코드를 한 번씩 사용할 수 있습니다.",
+    "copy": "복사",
+    "copied": "복사됨",
+    "continue": "계속",
+    "skip": "지금은 건너뛰기 (나중에 설정에서 켤 수 있습니다)",
+    "failed": "실패했습니다. 다시 시도하세요."
+  },
+  "AdminUnlock": {
+    "title": "본인 확인",
+    "body": "이 세션에서 관리자 패널을 사용하려면 Face ID / Touch ID 또는 인증 코드가 필요합니다.",
+    "passkeyButton": "Face ID / Touch ID로 로그인 확인",
+    "or": "또는 인증 코드 입력",
+    "codeLabel": "인증 코드",
+    "invalid": "일치하지 않습니다. 다시 시도하세요.",
+    "locked": "시도 횟수가 너무 많습니다. {minutes}분 후에 다시 시도하세요.",
+    "elsewhere": "Face ID / Touch ID가 다른 사이트에서 추가되었습니다 — 해당 사이트에서 관리자 패널을 열거나 인증 앱을 사용하세요.",
+    "unlocked": "잠금 해제됨",
+    "back": "스토어로 돌아가기"
   }
 }

@@ -17,7 +17,8 @@ import { recoveryAnswer, type RecoveryChallenge } from "@/lib/recoveryPhraseForm
 import { callbackPath } from "@/lib/callbackPath";
 
 export type AuthMode = "signin" | "register";
-export type AuthStep = "credentials" | "code";
+/** "secure": the post-registration "Secure your account" step (components/auth/SecurityOnboarding). */
+export type AuthStep = "credentials" | "code" | "secure";
 /**
  * Which second factor the user is typing.
  *
@@ -434,12 +435,31 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     // The modal's hook outlives this sign-in (it is reopened later), so the lock is released here too.
     inFlight.current = false;
     setVerifying(false);
+    // A brand-new account: offer Face ID / Touch ID and the authenticator
+    // before leaving — the modal stays open on the "secure" step and the
+    // usual completion runs when they continue or skip.
+    if (mode === "register") {
+      pendingLocale.current = session?.user?.locale ?? null;
+      setStep("secure");
+      return;
+    }
+    complete(session?.user?.locale ?? null);
+  };
+
+  const pendingLocale = useRef<string | null>(null);
+  /** "Continue" / "Skip for now" on the onboarding step. */
+  const finishOnboarding = () => {
+    // The modal's hook is reused on its next opening: start that one fresh.
+    setStep("credentials");
+    complete(pendingLocale.current);
+  };
+
+  const complete = (targetLocale: string | null) => {
     options.onSuccess?.();
     if (callbackUrl !== null) {
       // Locale-free and same-site only: the next-intl router adds the
       // locale itself (see lib/callbackPath).
       const destination = callbackPath(callbackUrl);
-      const targetLocale = session?.user?.locale;
       if (targetLocale && targetLocale !== activeLocale) {
         router.push(destination, { locale: targetLocale });
         router.refresh();
@@ -508,6 +528,7 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    finishOnboarding,
     passkeyAvailable: passkeyOptions !== null,
     passkeyBusy,
     verifyWithPasskey,

@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Vahvista Face ID:llä / Touch ID:llä",
     "stepUpHint": "Laitteesi pyytää kasvojasi, sormenjälkeäsi tai PIN-koodia."
+  },
+  "SecurityOnboarding": {
+    "title": "Suojaa tilisi",
+    "subtitle": "Lisää kirjautumiseen toinen vaihe — se vie minuutin, ja voit tehdä sen myös myöhemmin.",
+    "recommended": "Suositeltu",
+    "passkeyTitle": "Biometrinen kirjautuminen",
+    "passkeyBody": "Face ID, Touch ID tai Windows Hello — vahvista kirjautumiset yhdellä kosketuksella koodin sijaan.",
+    "passkeyButton": "Ota Face ID / Touch ID käyttöön",
+    "passkeyDone": "Yhdistetty ✓",
+    "passkeyUnsupported": "Tässä laitteessa ei ole Face ID:tä, Touch ID:tä eikä Windows Helloa.",
+    "totpTitle": "Kaksivaiheinen tunnistautuminen",
+    "totpBody": "6-numeroinen koodi todennussovelluksesta jokaisella kirjautumiskerralla.",
+    "totpButton": "Määritä 2FA-sovellus (Google Authenticator / Authy)",
+    "totpScan": "Skannaa QR-koodi sovelluksessa ja anna sitten sen näyttämä 6-numeroinen koodi.",
+    "totpManual": "Tai anna tämä avain manuaalisesti:",
+    "totpCodeLabel": "Koodi sovelluksesta",
+    "totpDone": "Päällä ✓",
+    "totpInvalid": "Koodi ei täsmännyt. Tarkista sovellus ja yritä uudelleen.",
+    "recoveryTitle": "Palautuskoodit",
+    "recoveryBody": "Tallenna ne turvalliseen paikkaan — kukin toimii kerran, jos puhelimesi ei ole saatavilla.",
+    "copy": "Kopioi",
+    "copied": "Kopioitu",
+    "continue": "Jatka",
+    "skip": "Ohita nyt (voit ottaa sen käyttöön myöhemmin Asetuksissa)",
+    "failed": "Se ei onnistunut. Yritä uudelleen."
+  },
+  "AdminUnlock": {
+    "title": "Vahvista, että se olet sinä",
+    "body": "Ylläpitopaneeli vaatii tälle istunnolle Face ID:n / Touch ID:n tai todennuskoodisi.",
+    "passkeyButton": "Vahvista kirjautuminen Face ID:llä / Touch ID:llä",
+    "or": "tai anna todennuskoodi",
+    "codeLabel": "Todennuskoodi",
+    "invalid": "Ei täsmännyt. Yritä uudelleen.",
+    "locked": "Liian monta yritystä. Yritä uudelleen {minutes} min kuluttua.",
+    "elsewhere": "Face ID / Touch ID on lisätty toisella sivustolla — avaa ylläpitopaneeli siellä tai käytä todennussovellustasi.",
+    "unlocked": "Avattu",
+    "back": "Takaisin kauppaan"
   }
 }

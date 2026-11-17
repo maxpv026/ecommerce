@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Mit Face ID / Touch ID bestätigen",
     "stepUpHint": "Ihr Gerät fragt nach Gesicht, Fingerabdruck oder PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Schützen Sie Ihr Konto",
+    "subtitle": "Fügen Sie einen zweiten Anmeldeschritt hinzu — das dauert eine Minute, und Sie können es auch später erledigen.",
+    "recommended": "Empfohlen",
+    "passkeyTitle": "Biometrische Anmeldung",
+    "passkeyBody": "Face ID, Touch ID oder Windows Hello — Anmeldungen mit einer Berührung statt mit einem Code bestätigen.",
+    "passkeyButton": "Face ID / Touch ID aktivieren",
+    "passkeyDone": "Verbunden ✓",
+    "passkeyUnsupported": "Dieses Gerät hat kein Face ID, Touch ID oder Windows Hello.",
+    "totpTitle": "Zwei-Faktor-Authentifizierung",
+    "totpBody": "Ein 6-stelliger Code aus einer Authentifikator-App bei jeder Anmeldung.",
+    "totpButton": "2FA-App einrichten (Google Authenticator / Authy)",
+    "totpScan": "Scannen Sie den QR-Code in der App und geben Sie dann den angezeigten 6-stelligen Code ein.",
+    "totpManual": "Oder geben Sie diesen Schlüssel manuell ein:",
+    "totpCodeLabel": "Code aus der App",
+    "totpDone": "Aktiviert ✓",
+    "totpInvalid": "Der Code stimmt nicht. Prüfen Sie die App und versuchen Sie es erneut.",
+    "recoveryTitle": "Wiederherstellungscodes",
+    "recoveryBody": "Bewahren Sie sie an einem sicheren Ort auf — jeder funktioniert einmal, falls Ihr Telefon nicht verfügbar ist.",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "continue": "Weiter",
+    "skip": "Vorerst überspringen (später in den Einstellungen aktivierbar)",
+    "failed": "Das hat nicht geklappt. Bitte versuchen Sie es erneut."
+  },
+  "AdminUnlock": {
+    "title": "Bestätigen Sie, dass Sie es sind",
+    "body": "Der Admin-Bereich erfordert für diese Sitzung Face ID / Touch ID oder Ihren Authentifikator-Code.",
+    "passkeyButton": "Anmeldung mit Face ID / Touch ID bestätigen",
+    "or": "oder geben Sie den Authentifikator-Code ein",
+    "codeLabel": "Authentifikator-Code",
+    "invalid": "Das stimmt nicht. Versuchen Sie es erneut.",
+    "locked": "Zu viele Versuche. Versuchen Sie es in {minutes} Min. erneut.",
+    "elsewhere": "Ihr Face ID / Touch ID wurde auf einer anderen Website hinzugefügt — öffnen Sie den Admin-Bereich dort oder verwenden Sie Ihren Authentifikator.",
+    "unlocked": "Entsperrt",
+    "back": "Zurück zum Shop"
   }
 }

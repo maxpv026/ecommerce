@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Potwierdź przez Face ID / Touch ID",
     "stepUpHint": "Urządzenie poprosi o skan twarzy, odcisk palca lub PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Zabezpiecz swoje konto",
+    "subtitle": "Dodaj drugi krok logowania — zajmie to minutę, możesz też zrobić to później.",
+    "recommended": "Zalecane",
+    "passkeyTitle": "Logowanie biometryczne",
+    "passkeyBody": "Face ID, Touch ID lub Windows Hello — potwierdzaj logowanie jednym dotknięciem zamiast kodu.",
+    "passkeyButton": "Włącz Face ID / Touch ID",
+    "passkeyDone": "Połączono ✓",
+    "passkeyUnsupported": "To urządzenie nie ma Face ID, Touch ID ani Windows Hello.",
+    "totpTitle": "Uwierzytelnianie dwuskładnikowe",
+    "totpBody": "6-cyfrowy kod z aplikacji uwierzytelniającej przy każdym logowaniu.",
+    "totpButton": "Skonfiguruj aplikację 2FA (Google Authenticator / Authy)",
+    "totpScan": "Zeskanuj kod QR w aplikacji, a następnie wpisz wyświetlony 6-cyfrowy kod.",
+    "totpManual": "Lub wpisz ten klucz ręcznie:",
+    "totpCodeLabel": "Kod z aplikacji",
+    "totpDone": "Włączone ✓",
+    "totpInvalid": "Kod się nie zgadza. Sprawdź aplikację i spróbuj ponownie.",
+    "recoveryTitle": "Kody odzyskiwania",
+    "recoveryBody": "Zapisz je w bezpiecznym miejscu — każdy zadziała jeden raz, jeśli telefon będzie niedostępny.",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano",
+    "continue": "Dalej",
+    "skip": "Pomiń na razie (możesz włączyć później w Ustawieniach)",
+    "failed": "Nie udało się. Spróbuj ponownie."
+  },
+  "AdminUnlock": {
+    "title": "Potwierdź, że to Ty",
+    "body": "Panel administracyjny wymaga w tej sesji Face ID / Touch ID lub kodu uwierzytelniającego.",
+    "passkeyButton": "Potwierdź logowanie przez Face ID / Touch ID",
+    "or": "lub wpisz kod uwierzytelniający",
+    "codeLabel": "Kod uwierzytelniający",
+    "invalid": "Nie pasuje. Spróbuj ponownie.",
+    "locked": "Zbyt wiele prób. Spróbuj ponownie za {minutes} min.",
+    "elsewhere": "Twoje Face ID / Touch ID zostało dodane na innej stronie — otwórz tam panel administracyjny lub użyj aplikacji uwierzytelniającej.",
+    "unlocked": "Odblokowano",
+    "back": "Powrót do sklepu"
   }
 }

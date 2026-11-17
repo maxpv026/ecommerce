@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Bevestigen met Face ID / Touch ID",
     "stepUpHint": "Uw apparaat vraagt om uw gezicht, vingerafdruk of PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Beveilig uw account",
+    "subtitle": "Voeg een tweede inlogstap toe — het duurt een minuut, en u kunt het ook later doen.",
+    "recommended": "Aanbevolen",
+    "passkeyTitle": "Biometrisch inloggen",
+    "passkeyBody": "Face ID, Touch ID of Windows Hello — bevestig inloggen met één aanraking in plaats van een code.",
+    "passkeyButton": "Face ID / Touch ID inschakelen",
+    "passkeyDone": "Gekoppeld ✓",
+    "passkeyUnsupported": "Dit apparaat heeft geen Face ID, Touch ID of Windows Hello.",
+    "totpTitle": "Tweefactorauthenticatie",
+    "totpBody": "Een 6-cijferige code uit een authenticator-app bij elke keer inloggen.",
+    "totpButton": "2FA-app instellen (Google Authenticator / Authy)",
+    "totpScan": "Scan de QR-code in de app en voer daarna de 6-cijferige code in die wordt weergegeven.",
+    "totpManual": "Of voer deze sleutel handmatig in:",
+    "totpCodeLabel": "Code uit de app",
+    "totpDone": "Aan ✓",
+    "totpInvalid": "Die code klopt niet. Controleer de app en probeer het opnieuw.",
+    "recoveryTitle": "Herstelcodes",
+    "recoveryBody": "Bewaar ze op een veilige plek — elke code werkt één keer als uw telefoon niet beschikbaar is.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "continue": "Doorgaan",
+    "skip": "Nu overslaan (u kunt het later inschakelen in Instellingen)",
+    "failed": "Dat is niet gelukt. Probeer het opnieuw."
+  },
+  "AdminUnlock": {
+    "title": "Bevestig dat u het bent",
+    "body": "Het beheerpaneel vereist voor deze sessie Face ID / Touch ID of uw authenticatiecode.",
+    "passkeyButton": "Inloggen bevestigen met Face ID / Touch ID",
+    "or": "of voer de authenticatiecode in",
+    "codeLabel": "Authenticatiecode",
+    "invalid": "Dat kwam niet overeen. Probeer het opnieuw.",
+    "locked": "Te veel pogingen. Probeer het opnieuw over {minutes} min.",
+    "elsewhere": "Uw Face ID / Touch ID is op een andere site toegevoegd — open daar het beheerpaneel, of gebruik uw authenticator.",
+    "unlocked": "Ontgrendeld",
+    "back": "Terug naar winkel"
   }
 }

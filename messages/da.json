@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Bekræft med Face ID / Touch ID",
     "stepUpHint": "Din enhed vil bede om dit ansigt, fingeraftryk eller PIN-kode."
+  },
+  "SecurityOnboarding": {
+    "title": "Beskyt din konto",
+    "subtitle": "Tilføj et andet login-trin — det tager et minut, og du kan også gøre det senere.",
+    "recommended": "Anbefalet",
+    "passkeyTitle": "Biometrisk login",
+    "passkeyBody": "Face ID, Touch ID eller Windows Hello — bekræft login med ét tryk i stedet for en kode.",
+    "passkeyButton": "Slå Face ID / Touch ID til",
+    "passkeyDone": "Tilknyttet ✓",
+    "passkeyUnsupported": "Denne enhed har ikke Face ID, Touch ID eller Windows Hello.",
+    "totpTitle": "Tofaktorgodkendelse",
+    "totpBody": "En 6-cifret kode fra en autentifikatorapp ved hvert login.",
+    "totpButton": "Opsæt en 2FA-app (Google Authenticator / Authy)",
+    "totpScan": "Scan QR-koden i appen, og indtast derefter den 6-cifrede kode, den viser.",
+    "totpManual": "Eller indtast denne nøgle manuelt:",
+    "totpCodeLabel": "Kode fra appen",
+    "totpDone": "Til ✓",
+    "totpInvalid": "Koden matchede ikke. Tjek appen, og prøv igen.",
+    "recoveryTitle": "Gendannelseskoder",
+    "recoveryBody": "Gem dem et sikkert sted — hver virker én gang, hvis din telefon ikke er tilgængelig.",
+    "copy": "Kopiér",
+    "copied": "Kopieret",
+    "continue": "Fortsæt",
+    "skip": "Spring over for nu (du kan slå det til senere i Indstillinger)",
+    "failed": "Det virkede ikke. Prøv venligst igen."
+  },
+  "AdminUnlock": {
+    "title": "Bekræft, at det er dig",
+    "body": "Adminpanelet kræver Face ID / Touch ID eller din autentifikatorkode for denne session.",
+    "passkeyButton": "Bekræft login med Face ID / Touch ID",
+    "or": "eller indtast autentifikatorkoden",
+    "codeLabel": "Autentifikatorkode",
+    "invalid": "Det matchede ikke. Prøv igen.",
+    "locked": "For mange forsøg. Prøv igen om {minutes} min.",
+    "elsewhere": "Dit Face ID / Touch ID blev tilføjet på et andet websted — åbn adminpanelet der, eller brug din autentifikator.",
+    "unlocked": "Låst op",
+    "back": "Tilbage til butikken"
   }
 }

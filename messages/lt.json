@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Patvirtinti su Face ID / Touch ID",
     "stepUpHint": "Įrenginys paprašys jūsų veido, piršto atspaudo arba PIN kodo."
+  },
+  "SecurityOnboarding": {
+    "title": "Apsaugokite savo paskyrą",
+    "subtitle": "Pridėkite antrą prisijungimo žingsnį — tai užtruks minutę, be to, galite tai padaryti ir vėliau.",
+    "recommended": "Rekomenduojama",
+    "passkeyTitle": "Biometrinis prisijungimas",
+    "passkeyBody": "Face ID, Touch ID arba Windows Hello — patvirtinkite prisijungimus vienu prisilietimu vietoj kodo.",
+    "passkeyButton": "Įjungti Face ID / Touch ID",
+    "passkeyDone": "Prijungta ✓",
+    "passkeyUnsupported": "Šiame įrenginyje nėra Face ID, Touch ID ar Windows Hello.",
+    "totpTitle": "Dviejų veiksnių autentifikavimas",
+    "totpBody": "6 skaitmenų kodas iš autentifikatoriaus programėlės kiekvieną kartą prisijungiant.",
+    "totpButton": "Nustatyti 2FA programėlę (Google Authenticator / Authy)",
+    "totpScan": "Nuskaitykite QR kodą programėlėje, tada įveskite jos rodomą 6 skaitmenų kodą.",
+    "totpManual": "Arba įveskite šį raktą rankiniu būdu:",
+    "totpCodeLabel": "Kodas iš programėlės",
+    "totpDone": "Įjungta ✓",
+    "totpInvalid": "Kodas neatitinka. Patikrinkite programėlę ir bandykite dar kartą.",
+    "recoveryTitle": "Atkūrimo kodai",
+    "recoveryBody": "Išsaugokite juos saugioje vietoje — kiekvienas veikia vieną kartą, jei telefonas nepasiekiamas.",
+    "copy": "Kopijuoti",
+    "copied": "Nukopijuota",
+    "continue": "Tęsti",
+    "skip": "Kol kas praleisti (vėliau galėsite įjungti Nustatymuose)",
+    "failed": "Nepavyko. Bandykite dar kartą."
+  },
+  "AdminUnlock": {
+    "title": "Patvirtinkite, kad tai jūs",
+    "body": "Šiai sesijai administratoriaus skydeliui reikia Face ID / Touch ID arba jūsų autentifikatoriaus kodo.",
+    "passkeyButton": "Patvirtinti prisijungimą su Face ID / Touch ID",
+    "or": "arba įveskite autentifikatoriaus kodą",
+    "codeLabel": "Autentifikatoriaus kodas",
+    "invalid": "Neatitinka. Bandykite dar kartą.",
+    "locked": "Per daug bandymų. Bandykite dar kartą po {minutes} min.",
+    "elsewhere": "Jūsų Face ID / Touch ID pridėtas kitoje svetainėje — atidarykite administratoriaus skydelį ten arba naudokite autentifikatorių.",
+    "unlocked": "Atrakinta",
+    "back": "Atgal į parduotuvę"
   }
 }

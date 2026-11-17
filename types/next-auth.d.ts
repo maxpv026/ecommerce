@@ -34,7 +34,15 @@ declare module "next-auth" {
       role?: "USER" | "ADMIN" | "ACCOUNTANT" | "SUPER_ADMIN";
       /** This device's UserSession.sessionTokenId — an identifier, not a credential. */
       sessionId?: string;
+      /** How this session's second factor was proven (lib/authStrength). */
+      amr?: string;
+      /** The account has a second factor enrolled: the authenticator app OR a passkey. */
+      secondFactor?: boolean;
     };
+  }
+  interface User {
+    /** Set by authorize(): the second factor it verified (lib/authStrength). */
+    amr?: string;
   }
 }
 
@@ -53,5 +61,9 @@ declare module "next-auth/jwt" {
     authTime?: number;
     /** UserSession.sessionTokenId of this device (lib/deviceSessions). */
     sid?: string;
+    /** How the second factor was proven at sign-in, or upgraded at /admin-unlock (lib/authStrength). */
+    amr?: string;
+    /** Authenticator app OR passkey enrolled — re-read on every request (sessionAnchor). */
+    secondFactor?: boolean;
   }
 }

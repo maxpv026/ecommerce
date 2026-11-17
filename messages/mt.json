@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Ikkonferma b'Face ID / Touch ID",
     "stepUpHint": "L-apparat tiegħek se jitlob wiċċek, il-marka tas-saba' jew il-PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Ipproteġi l-kont tiegħek",
+    "subtitle": "Żid it-tieni pass tad-dħul — jieħu minuta, u tista' tagħmlu wkoll aktar tard.",
+    "recommended": "Rakkomandat",
+    "passkeyTitle": "Dħul bijometriku",
+    "passkeyBody": "Face ID, Touch ID jew Windows Hello — ikkonferma d-dħul b'mess wieħed minflok kodiċi.",
+    "passkeyButton": "Ixgħel Face ID / Touch ID",
+    "passkeyDone": "Konness ✓",
+    "passkeyUnsupported": "Dan l-apparat m'għandux Face ID, Touch ID jew Windows Hello.",
+    "totpTitle": "Awtentikazzjoni b'żewġ fatturi",
+    "totpBody": "Kodiċi ta' 6 ċifri minn app tal-awtentikatur f'kull dħul.",
+    "totpButton": "Issettja app 2FA (Google Authenticator / Authy)",
+    "totpScan": "Skennja l-kodiċi QR fl-app, imbagħad daħħal il-kodiċi ta' 6 ċifri li turi.",
+    "totpManual": "Jew daħħal dan il-muftieħ manwalment:",
+    "totpCodeLabel": "Kodiċi mill-app",
+    "totpDone": "Mixgħul ✓",
+    "totpInvalid": "Dak il-kodiċi ma jaqbilx. Iċċekkja l-app u erġa' pprova.",
+    "recoveryTitle": "Kodiċijiet ta' rkupru",
+    "recoveryBody": "Issejvjahom f'post sigur — kull wieħed jaħdem darba jekk it-telefon tiegħek ma jkunx disponibbli.",
+    "copy": "Kopja",
+    "copied": "Ikopjat",
+    "continue": "Kompli",
+    "skip": "Aqbeż għalissa (tista' tixgħlu aktar tard fl-Issettjar)",
+    "failed": "Ma rnexxiex. Jekk jogħġbok erġa' pprova."
+  },
+  "AdminUnlock": {
+    "title": "Ikkonferma li int",
+    "body": "Il-pannell tal-amministrazzjoni jeħtieġ Face ID / Touch ID jew il-kodiċi tal-awtentikatur tiegħek għal din is-sessjoni.",
+    "passkeyButton": "Ikkonferma d-dħul b'Face ID / Touch ID",
+    "or": "jew daħħal il-kodiċi tal-awtentikatur",
+    "codeLabel": "Kodiċi tal-awtentikatur",
+    "invalid": "Dak ma jaqbilx. Erġa' pprova.",
+    "locked": "Wisq tentattivi. Erġa' pprova fi {minutes} min.",
+    "elsewhere": "Il-Face ID / Touch ID tiegħek ġie miżjud fuq sit ieħor — iftaħ il-pannell tal-amministrazzjoni hemmhekk, jew uża l-awtentikatur tiegħek.",
+    "unlocked": "Miftuħ",
+    "back": "Lura għall-ħanut"
   }
 }

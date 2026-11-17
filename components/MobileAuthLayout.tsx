@@ -1,5 +1,6 @@
 "use client";
 
+import SecurityOnboarding from "@/components/auth/SecurityOnboarding";
 import PasskeyLoginButton from "@/components/auth/PasskeyLoginButton";
 import RecoveryPhraseInput from "@/components/security/RecoveryPhraseInput";
 import { useSearchParams } from "next/navigation";
@@ -53,6 +54,7 @@ export default function MobileAuthLayout() {
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    finishOnboarding,
     passkeyAvailable,
     passkeyBusy,
     verifyWithPasskey,
@@ -75,7 +77,7 @@ export default function MobileAuthLayout() {
 
         <div className="relative flex flex-col items-center px-6 pb-8 pt-[calc(4rem+env(safe-area-inset-top))] text-center">
           <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-slate-900 dark:border-slate-50" />
-          {step === "credentials" ? (
+          {step === "secure" ? null : step === "credentials" ? (
             <>
               <h1 className="m-0 text-[24px] font-semibold tracking-[-.035em]">{t("welcomeTitle")}</h1>
               <p className="mt-2 text-[13.5px] text-slate-500 dark:text-slate-400">{t("welcomeSubtitle")}</p>
@@ -113,7 +115,9 @@ export default function MobileAuthLayout() {
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-[calc(100px+env(safe-area-inset-bottom))]">
-        {step === "credentials" ? (
+        {step === "secure" ? (
+          <SecurityOnboarding onDone={finishOnboarding} />
+        ) : step === "credentials" ? (
           <>
             <div className="relative mb-5 grid grid-cols-2 rounded-full bg-slate-900/5 p-[3px] dark:bg-white/5">
               <div

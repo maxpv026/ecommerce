@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Deimhnigh le Face ID / Touch ID",
     "stepUpHint": "Iarrfaidh do ghléas d'aghaidh, do mhéarlorg nó PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Cosain do chuntas",
+    "subtitle": "Cuir an dara céim síniú isteach leis — tógann sé nóiméad, agus is féidir leat é a dhéanamh níos déanaí freisin.",
+    "recommended": "Molta",
+    "passkeyTitle": "Síniú isteach bithmhéadrach",
+    "passkeyBody": "Face ID, Touch ID nó Windows Hello — deimhnigh síniú isteach le teagmháil amháin in ionad cóid.",
+    "passkeyButton": "Cas air Face ID / Touch ID",
+    "passkeyDone": "Ceangailte ✓",
+    "passkeyUnsupported": "Níl Face ID, Touch ID ná Windows Hello ar an ngléas seo.",
+    "totpTitle": "Fíordheimhniú dhá fhachtóir",
+    "totpBody": "Cód 6 dhigit ó aip fíordheimhnitheora ag gach síniú isteach.",
+    "totpButton": "Socraigh aip 2FA (Google Authenticator / Authy)",
+    "totpScan": "Scan an cód QR san aip, ansin cuir isteach an cód 6 dhigit a thaispeánann sí.",
+    "totpManual": "Nó cuir isteach an eochair seo de láimh:",
+    "totpCodeLabel": "Cód ón aip",
+    "totpDone": "Ar siúl ✓",
+    "totpInvalid": "Níor mheaitseáil an cód sin. Seiceáil an aip agus bain triail eile as.",
+    "recoveryTitle": "Cóid aisghabhála",
+    "recoveryBody": "Sábháil iad in áit shábháilte — oibríonn gach ceann uair amháin mura bhfuil do ghuthán ar fáil.",
+    "copy": "Cóipeáil",
+    "copied": "Cóipeáilte",
+    "continue": "Ar aghaidh",
+    "skip": "Scipeáil go fóill (is féidir é a chasadh air níos déanaí sna Socruithe)",
+    "failed": "Níor oibrigh sé sin. Bain triail eile as."
+  },
+  "AdminUnlock": {
+    "title": "Deimhnigh gur tusa atá ann",
+    "body": "Teastaíonn Face ID / Touch ID nó do chód fíordheimhnitheora ón bpainéal riaracháin don seisiún seo.",
+    "passkeyButton": "Deimhnigh síniú isteach le Face ID / Touch ID",
+    "or": "nó cuir isteach an cód fíordheimhnitheora",
+    "codeLabel": "Cód fíordheimhnitheora",
+    "invalid": "Ní hionann sin. Bain triail eile as.",
+    "locked": "Ró-iarrachtaí. Bain triail eile as i {minutes} nóim.",
+    "elsewhere": "Cuireadh do Face ID / Touch ID leis ar shuíomh eile — oscail an painéal riaracháin ansin, nó úsáid d'fhíordheimhnitheoir.",
+    "unlocked": "Díghlasáilte",
+    "back": "Ar ais go dtí an siopa"
   }
 }

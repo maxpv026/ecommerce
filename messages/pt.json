@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Confirmar com Face ID / Touch ID",
     "stepUpHint": "O seu dispositivo vai pedir o rosto, a impressão digital ou o PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Proteja a sua conta",
+    "subtitle": "Adicione um segundo passo de início de sessão — demora um minuto e também pode fazê-lo mais tarde.",
+    "recommended": "Recomendado",
+    "passkeyTitle": "Início de sessão biométrico",
+    "passkeyBody": "Face ID, Touch ID ou Windows Hello — confirme os inícios de sessão com um toque em vez de um código.",
+    "passkeyButton": "Ativar Face ID / Touch ID",
+    "passkeyDone": "Conectado ✓",
+    "passkeyUnsupported": "Este dispositivo não tem Face ID, Touch ID nem Windows Hello.",
+    "totpTitle": "Autenticação de dois fatores",
+    "totpBody": "Um código de 6 dígitos de uma app de autenticação em cada início de sessão.",
+    "totpButton": "Configurar app 2FA (Google Authenticator / Authy)",
+    "totpScan": "Leia o código QR na app e, em seguida, introduza o código de 6 dígitos apresentado.",
+    "totpManual": "Ou introduza esta chave manualmente:",
+    "totpCodeLabel": "Código da app",
+    "totpDone": "Ligado ✓",
+    "totpInvalid": "O código não corresponde. Verifique a app e tente novamente.",
+    "recoveryTitle": "Códigos de recuperação",
+    "recoveryBody": "Guarde-os num local seguro — cada um funciona uma vez se o seu telefone não estiver disponível.",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "continue": "Continuar",
+    "skip": "Saltar por agora (pode ativar mais tarde nas Definições)",
+    "failed": "Não funcionou. Tente novamente."
+  },
+  "AdminUnlock": {
+    "title": "Confirme que é você",
+    "body": "O painel de administração precisa de Face ID / Touch ID ou do código do autenticador para esta sessão.",
+    "passkeyButton": "Confirmar início de sessão com Face ID / Touch ID",
+    "or": "ou introduza o código do autenticador",
+    "codeLabel": "Código do autenticador",
+    "invalid": "Não corresponde. Tente novamente.",
+    "locked": "Demasiadas tentativas. Tente novamente dentro de {minutes} min.",
+    "elsewhere": "O seu Face ID / Touch ID foi adicionado noutro site — abra lá o painel de administração ou use o seu autenticador.",
+    "unlocked": "Desbloqueado",
+    "back": "Voltar à loja"
   }
 }

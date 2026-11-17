@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Apstiprināt ar Face ID / Touch ID",
     "stepUpHint": "Ierīce pieprasīs jūsu seju, pirksta nospiedumu vai PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Aizsargājiet savu kontu",
+    "subtitle": "Pievienojiet otru pieteikšanās soli — tas aizņem minūti, un to var izdarīt arī vēlāk.",
+    "recommended": "Ieteicams",
+    "passkeyTitle": "Biometriskā pieteikšanās",
+    "passkeyBody": "Face ID, Touch ID vai Windows Hello — apstipriniet pieteikšanos ar vienu pieskārienu koda vietā.",
+    "passkeyButton": "Ieslēgt Face ID / Touch ID",
+    "passkeyDone": "Pievienots ✓",
+    "passkeyUnsupported": "Šajā ierīcē nav Face ID, Touch ID vai Windows Hello.",
+    "totpTitle": "Divu faktoru autentifikācija",
+    "totpBody": "6 ciparu kods no autentifikatora lietotnes katrā pieteikšanās reizē.",
+    "totpButton": "Iestatīt 2FA lietotni (Google Authenticator / Authy)",
+    "totpScan": "Skenējiet QR kodu lietotnē, pēc tam ievadiet tās rādīto 6 ciparu kodu.",
+    "totpManual": "Vai ievadiet šo atslēgu manuāli:",
+    "totpCodeLabel": "Kods no lietotnes",
+    "totpDone": "Ieslēgts ✓",
+    "totpInvalid": "Kods nesakrīt. Pārbaudiet lietotni un mēģiniet vēlreiz.",
+    "recoveryTitle": "Atkopšanas kodi",
+    "recoveryBody": "Saglabājiet tos drošā vietā — katrs darbojas vienu reizi, ja tālrunis nav pieejams.",
+    "copy": "Kopēt",
+    "copied": "Nokopēts",
+    "continue": "Turpināt",
+    "skip": "Pagaidām izlaist (vēlāk varat ieslēgt Iestatījumos)",
+    "failed": "Neizdevās. Lūdzu, mēģiniet vēlreiz."
+  },
+  "AdminUnlock": {
+    "title": "Apstipriniet, ka tas esat jūs",
+    "body": "Administrācijas panelim šai sesijai nepieciešams Face ID / Touch ID vai jūsu autentifikatora kods.",
+    "passkeyButton": "Apstiprināt pieteikšanos ar Face ID / Touch ID",
+    "or": "vai ievadiet autentifikatora kodu",
+    "codeLabel": "Autentifikatora kods",
+    "invalid": "Nesakrīt. Mēģiniet vēlreiz.",
+    "locked": "Pārāk daudz mēģinājumu. Mēģiniet vēlreiz pēc {minutes} min.",
+    "elsewhere": "Jūsu Face ID / Touch ID tika pievienots citā vietnē — atveriet administrācijas paneli tur vai izmantojiet autentifikatoru.",
+    "unlocked": "Atbloķēts",
+    "back": "Atpakaļ uz veikalu"
   }
 }

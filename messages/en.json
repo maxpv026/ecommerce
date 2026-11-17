@@ -3374,5 +3374,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Confirm with Face ID / Touch ID",
     "stepUpHint": "Your device will ask for your face, fingerprint or PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Secure your account",
+    "subtitle": "Add a second sign-in step — it takes a minute, and you can also do it later.",
+    "recommended": "Recommended",
+    "passkeyTitle": "Biometric sign-in",
+    "passkeyBody": "Face ID, Touch ID or Windows Hello — confirm sign-ins with one touch instead of a code.",
+    "passkeyButton": "Turn on Face ID / Touch ID",
+    "passkeyDone": "Connected ✓",
+    "passkeyUnsupported": "This device has no Face ID, Touch ID or Windows Hello.",
+    "totpTitle": "Two-factor authentication",
+    "totpBody": "A 6-digit code from an authenticator app at every sign-in.",
+    "totpButton": "Set up a 2FA app (Google Authenticator / Authy)",
+    "totpScan": "Scan the QR code in the app, then enter the 6-digit code it shows.",
+    "totpManual": "Or enter this key manually:",
+    "totpCodeLabel": "Code from the app",
+    "totpDone": "On ✓",
+    "totpInvalid": "That code didn't match. Check the app and try again.",
+    "recoveryTitle": "Recovery codes",
+    "recoveryBody": "Save them somewhere safe — each one works once if your phone isn't available.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "continue": "Continue",
+    "skip": "Skip for now (you can turn it on later in Settings)",
+    "failed": "That didn't work. Please try again."
+  },
+  "AdminUnlock": {
+    "title": "Confirm it's you",
+    "body": "The admin panel needs Face ID / Touch ID or your authenticator code for this session.",
+    "passkeyButton": "Confirm sign-in with Face ID / Touch ID",
+    "or": "or enter the authenticator code",
+    "codeLabel": "Authenticator code",
+    "invalid": "That didn't match. Try again.",
+    "locked": "Too many attempts. Try again in {minutes} min.",
+    "elsewhere": "Your Face ID / Touch ID was added on another site — open the admin panel there, or use your authenticator.",
+    "unlocked": "Unlocked",
+    "back": "Back to the store"
   }
 }

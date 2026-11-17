@@ -10,6 +10,7 @@ import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { looksLikePhrase, verifyRecoveryForUser } from "@/lib/recoveryPhrase";
 import { isPasskeyCode, verifyAssertion } from "@/lib/passkeys";
+import { readElevation } from "@/lib/authStrength";
 import { ADMIN_LEGAL_NAME, effectiveRole, isRole } from "@/lib/rbac";
 import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
 import { legacySessionId, registerSession, touchSession } from "@/lib/deviceSessions";
@@ -78,8 +79,12 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
             return null;
           }
           if (!user.emailVerified) await prisma.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
-          return { id: user.id, email: user.email, name: user.name };
+          return { id: user.id, email: user.email, name: user.name, amr: "passkey" };
         }
+
+        // Which second factor this sign-in proves (lib/authStrength): the
+        // admin area needs a strong one, an emailed code is not.
+        let amr = "email";
 
         // Which second factor applies is a property of the account, not of
         // the request: an authenticator beats an emailed code, so a user who
@@ -93,6 +98,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           // …and a recovery phrase (lib/recoveryPhrase) is anything else of 12+
           // characters — a passphrase can't be mistaken for either.
           const usingRecovery = looksLikeRecoveryCode(code);
+          amr = usingRecovery ? "recovery" : looksLikePhrase(code) ? "phrase" : "totp";
           const totp = usingRecovery
             ? await consumeRecoveryCode(prisma, user, code)
             : looksLikePhrase(code)
@@ -119,7 +125,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           await prisma.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
         }
 
-        return { id: user.id, email: user.email, name: user.name };
+        return { id: user.id, email: user.email, name: user.name, amr };
       },
     }),
     // Step 2 of a Google sign-in on an account with an authenticator — the
@@ -166,7 +172,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           })
           .catch((error) => console.error("auth: could not link the Google account after 2FA:", error));
 
-        return { id: user.id, email: user.email, name: user.name };
+        const amr = isPasskeyCode(code) ? "passkey" : looksLikeRecoveryCode(code) ? "recovery" : looksLikePhrase(code) ? "phrase" : "totp";
+        return { id: user.id, email: user.email, name: user.name, amr };
       },
     }),
   ],
@@ -247,6 +254,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // sessions" lists and what revoking one device switches off.
         const sid = randomUUID();
         token.sid = sid;
+        // What this sign-in proved (lib/authStrength). A plain Google
+        // sign-in (no 2FA pause) and an emailed code are not strong.
+        token.amr = user.amr ?? (account?.provider === "google" ? "google" : "email");
         if (user.id) {
           await registerSession(user.id, sid).catch((error) => console.error("auth: could not register the device session:", error));
         }
@@ -285,6 +295,9 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           // Locked by the owner: this session ends now (null clears the cookie).
           if (anchor?.lockedAt) return null;
           if (anchor) token.role = effectiveRole(anchor.email, anchor.role);
+          // Authenticator OR passkey enrolled — re-read per request, so adding
+          // or removing one reaches the admin gate at once (lib/authStrength).
+          if (anchor) token.secondFactor = anchor.isTwoFactorEnabled || anchor._count.passkeys > 0;
           // ── Revocation of this one device ──
           const device = anchor?.deviceSessions?.[0];
           if (device?.revokedAt) return null;
@@ -321,6 +334,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         token.epaVerified = dbUser?.epaVerified ?? false;
         token.fGasStatus = dbUser?.fGasStatus ?? "NONE";
         token.isTwoFactorEnabled = dbUser?.isTwoFactorEnabled ?? false;
+        token.secondFactor = Boolean(dbUser?.isTwoFactorEnabled) || (dbUser ? (await prisma.passkey.count({ where: { userId: dbUser.id } }).catch(() => 0)) > 0 : false);
         token.locale = dbUser?.locale ?? "en";
         token.theme = dbUser?.themePreference ?? "SYSTEM";
         // Profile photo for the header and app bar, which only have the session.
@@ -362,6 +376,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       // are re-read from the row so the session reflects them without a
       // fresh sign-in — the JWT is otherwise only populated at sign-in.
       if (trigger === "update") {
+        // /admin-unlock verified Face ID / Touch ID or the authenticator for
+        // this session: only a proof the server signed upgrades `amr`.
+        const elevated = await readElevation((session as { elevate?: unknown } | undefined)?.elevate, token.sub);
+        if (elevated) token.amr = elevated;
         const where = token.sub ? { id: token.sub } : token.email ? { email: token.email } : null;
         const dbUser = where
           ? await prisma.user
@@ -433,6 +451,8 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // Absent role (pre-RBAC session tokens) fails closed to USER.
         session.user.role = isRole(token.role) ? token.role : "USER";
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled === true;
+        session.user.amr = typeof token.amr === "string" ? token.amr : undefined;
+        session.user.secondFactor = token.secondFactor === true || token.isTwoFactorEnabled === true;
         session.user.sessionId = typeof token.sid === "string" ? token.sid : undefined;
       }
       return session;

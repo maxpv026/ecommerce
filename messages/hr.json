@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Potvrdi putem Face ID / Touch ID",
     "stepUpHint": "Vaš će uređaj zatražiti lice, otisak prsta ili PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Zaštitite svoj račun",
+    "subtitle": "Dodajte drugi korak prijave — traje minutu, a možete to učiniti i kasnije.",
+    "recommended": "Preporučeno",
+    "passkeyTitle": "Biometrijska prijava",
+    "passkeyBody": "Face ID, Touch ID ili Windows Hello — potvrdite prijave jednim dodirom umjesto kodom.",
+    "passkeyButton": "Uključi Face ID / Touch ID",
+    "passkeyDone": "Povezano ✓",
+    "passkeyUnsupported": "Ovaj uređaj nema Face ID, Touch ID ni Windows Hello.",
+    "totpTitle": "Dvofaktorska autentifikacija",
+    "totpBody": "6-znamenkasti kod iz autentifikacijske aplikacije pri svakoj prijavi.",
+    "totpButton": "Postavi 2FA aplikaciju (Google Authenticator / Authy)",
+    "totpScan": "Skenirajte QR kod u aplikaciji, zatim unesite 6-znamenkasti kod koji se prikazuje.",
+    "totpManual": "Ili ručno unesite ovaj ključ:",
+    "totpCodeLabel": "Kod iz aplikacije",
+    "totpDone": "Uključeno ✓",
+    "totpInvalid": "Taj se kod ne podudara. Provjerite aplikaciju i pokušajte ponovno.",
+    "recoveryTitle": "Kodovi za oporavak",
+    "recoveryBody": "Spremite ih na sigurno mjesto — svaki vrijedi jednom ako vam telefon nije dostupan.",
+    "copy": "Kopiraj",
+    "copied": "Kopirano",
+    "continue": "Nastavi",
+    "skip": "Preskoči zasad (možete je uključiti kasnije u Postavkama)",
+    "failed": "Nije uspjelo. Pokušajte ponovno."
+  },
+  "AdminUnlock": {
+    "title": "Potvrdite da ste to vi",
+    "body": "Administratorski panel za ovu sesiju zahtijeva Face ID / Touch ID ili vaš autentifikacijski kod.",
+    "passkeyButton": "Potvrdi prijavu putem Face ID / Touch ID",
+    "or": "ili unesite autentifikacijski kod",
+    "codeLabel": "Autentifikacijski kod",
+    "invalid": "To se ne podudara. Pokušajte ponovno.",
+    "locked": "Previše pokušaja. Pokušajte ponovno za {minutes} min.",
+    "elsewhere": "Vaš Face ID / Touch ID dodan je na drugom web-mjestu — ondje otvorite administratorski panel ili upotrijebite autentifikator.",
+    "unlocked": "Otključano",
+    "back": "Povratak na trgovinu"
   }
 }

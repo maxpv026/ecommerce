@@ -1,5 +1,6 @@
 "use client";
 
+import SecurityOnboarding from "@/components/auth/SecurityOnboarding";
 import PasskeyLoginButton from "@/components/auth/PasskeyLoginButton";
 import RecoveryPhraseInput from "@/components/security/RecoveryPhraseInput";
 import { useSearchParams } from "next/navigation";
@@ -53,6 +54,7 @@ export default function DesktopAuthCard() {
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    finishOnboarding,
     passkeyAvailable,
     passkeyBusy,
     verifyWithPasskey,
@@ -80,7 +82,9 @@ export default function DesktopAuthCard() {
           <span className="text-[16px] font-semibold tracking-[-.035em]">My Energy</span>
         </div>
 
-        {step === "credentials" ? (
+        {step === "secure" ? (
+          <SecurityOnboarding onDone={finishOnboarding} />
+        ) : step === "credentials" ? (
           <>
             <h1 className="m-0 text-[25px] font-semibold tracking-[-.035em]">{t("welcomeTitle")}</h1>
             <p className="mb-[22px] mt-[7px] text-[13.5px] leading-[1.5] text-slate-500 dark:text-slate-400">

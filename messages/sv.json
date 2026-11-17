@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Bekräfta med Face ID / Touch ID",
     "stepUpHint": "Din enhet ber om ditt ansikte, fingeravtryck eller PIN-kod."
+  },
+  "SecurityOnboarding": {
+    "title": "Skydda ditt konto",
+    "subtitle": "Lägg till ett andra inloggningssteg — det tar en minut, och du kan också göra det senare.",
+    "recommended": "Rekommenderas",
+    "passkeyTitle": "Biometrisk inloggning",
+    "passkeyBody": "Face ID, Touch ID eller Windows Hello — bekräfta inloggningar med en beröring istället för en kod.",
+    "passkeyButton": "Aktivera Face ID / Touch ID",
+    "passkeyDone": "Ansluten ✓",
+    "passkeyUnsupported": "Den här enheten har inte Face ID, Touch ID eller Windows Hello.",
+    "totpTitle": "Tvåfaktorsautentisering",
+    "totpBody": "En 6-siffrig kod från en autentiseringsapp vid varje inloggning.",
+    "totpButton": "Konfigurera en 2FA-app (Google Authenticator / Authy)",
+    "totpScan": "Skanna QR-koden i appen och ange sedan den 6-siffriga koden som visas.",
+    "totpManual": "Eller ange den här nyckeln manuellt:",
+    "totpCodeLabel": "Kod från appen",
+    "totpDone": "På ✓",
+    "totpInvalid": "Koden stämde inte. Kontrollera appen och försök igen.",
+    "recoveryTitle": "Återställningskoder",
+    "recoveryBody": "Spara dem på ett säkert ställe — var och en fungerar en gång om din telefon inte är tillgänglig.",
+    "copy": "Kopiera",
+    "copied": "Kopierad",
+    "continue": "Fortsätt",
+    "skip": "Hoppa över nu (du kan aktivera det senare i Inställningar)",
+    "failed": "Det fungerade inte. Försök igen."
+  },
+  "AdminUnlock": {
+    "title": "Bekräfta att det är du",
+    "body": "Administrationspanelen kräver Face ID / Touch ID eller din autentiseringskod för den här sessionen.",
+    "passkeyButton": "Bekräfta inloggning med Face ID / Touch ID",
+    "or": "eller ange autentiseringskoden",
+    "codeLabel": "Autentiseringskod",
+    "invalid": "Det stämde inte. Försök igen.",
+    "locked": "För många försök. Försök igen om {minutes} min.",
+    "elsewhere": "Ditt Face ID / Touch ID lades till på en annan webbplats — öppna administrationspanelen där eller använd din autentiseringsapp.",
+    "unlocked": "Upplåst",
+    "back": "Tillbaka till butiken"
   }
 }

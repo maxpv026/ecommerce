@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "使用 Face ID / Touch ID 确认",
     "stepUpHint": "您的设备将要求验证面容、指纹或 PIN。"
+  },
+  "SecurityOnboarding": {
+    "title": "保护您的账户",
+    "subtitle": "添加第二个登录步骤 — 只需一分钟，您也可以稍后再做。",
+    "recommended": "推荐",
+    "passkeyTitle": "生物识别登录",
+    "passkeyBody": "Face ID、Touch ID 或 Windows Hello — 轻触一下即可确认登录，无需输入代码。",
+    "passkeyButton": "开启 Face ID / Touch ID",
+    "passkeyDone": "已连接 ✓",
+    "passkeyUnsupported": "此设备没有 Face ID、Touch ID 或 Windows Hello。",
+    "totpTitle": "双因素认证",
+    "totpBody": "每次登录时输入认证器应用中的 6 位数代码。",
+    "totpButton": "设置 2FA 应用（Google Authenticator / Authy）",
+    "totpScan": "在应用中扫描 QR 码，然后输入应用显示的 6 位数代码。",
+    "totpManual": "或手动输入此密钥：",
+    "totpCodeLabel": "应用中的代码",
+    "totpDone": "已开启 ✓",
+    "totpInvalid": "代码不匹配。请检查应用后重试。",
+    "recoveryTitle": "恢复代码",
+    "recoveryBody": "请将其保存在安全的地方 — 手机无法使用时，每个代码可使用一次。",
+    "copy": "复制",
+    "copied": "已复制",
+    "continue": "继续",
+    "skip": "暂时跳过（稍后可在设置中开启）",
+    "failed": "操作未成功，请重试。"
+  },
+  "AdminUnlock": {
+    "title": "确认是您本人",
+    "body": "本次会话需要 Face ID / Touch ID 或认证器代码才能进入管理面板。",
+    "passkeyButton": "使用 Face ID / Touch ID 确认登录",
+    "or": "或输入认证器代码",
+    "codeLabel": "认证器代码",
+    "invalid": "不匹配，请重试。",
+    "locked": "尝试次数过多。请在 {minutes} 分钟后重试。",
+    "elsewhere": "您的 Face ID / Touch ID 是在另一个网站上添加的 — 请在该网站打开管理面板，或使用您的认证器。",
+    "unlocked": "已解锁",
+    "back": "返回店面"
   }
 }

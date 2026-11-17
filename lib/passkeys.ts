@@ -51,7 +51,7 @@ const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 /** Prefix of a passkey assertion carried in the sign-in `code` field. */
 export const PASSKEY_CODE_PREFIX = "pk:";
 
-export type ChallengePurpose = "register" | "login" | "step-up";
+export type ChallengePurpose = "register" | "login" | "step-up" | "unlock";
 
 export interface RelyingParty {
   rpID: string;
@@ -223,7 +223,7 @@ export async function finishRegistration(userId: string, response: unknown): Pro
 export type AssertionStart = { ok: true; options: PublicKeyCredentialRequestOptionsJSON } | { ok: false; code: "UNSUPPORTED_HOST" | "NONE" };
 
 /** Options for this user's passkeys on this domain — none when they have no passkey here. */
-export async function startAssertion(userId: string, purpose: "login" | "step-up"): Promise<AssertionStart> {
+export async function startAssertion(userId: string, purpose: "login" | "step-up" | "unlock"): Promise<AssertionStart> {
   const rp = await currentRelyingParty();
   if (!rp) return { ok: false, code: "UNSUPPORTED_HOST" };
   const keys = await prisma.passkey.findMany({ where: { userId, rpId: rp.rpID }, select: { credentialId: true, transports: true } });
@@ -247,7 +247,7 @@ export async function hasPasskeyHere(userId: string): Promise<boolean> {
 export type AssertionCheck = { ok: true; passkeyId: string } | { ok: false; reason: "UNSUPPORTED_HOST" | "EXPIRED" | "UNKNOWN_KEY" | "REPLAYED" | "INVALID" };
 
 /** Verifies an assertion (the response JSON, or the sign-in `pk:` code) and records its use. */
-export async function verifyAssertion(userId: string, raw: unknown, purpose: "login" | "step-up"): Promise<AssertionCheck> {
+export async function verifyAssertion(userId: string, raw: unknown, purpose: "login" | "step-up" | "unlock"): Promise<AssertionCheck> {
   const rp = await currentRelyingParty();
   if (!rp) return { ok: false, reason: "UNSUPPORTED_HOST" };
   const response = decodeAssertion(raw);

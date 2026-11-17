@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Potrdi s Face ID / Touch ID",
     "stepUpHint": "Naprava bo zahtevala obraz, prstni odtis ali PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Zaščitite svoj račun",
+    "subtitle": "Dodajte drugi korak prijave — vzame minuto, lahko pa to storite tudi pozneje.",
+    "recommended": "Priporočeno",
+    "passkeyTitle": "Biometrična prijava",
+    "passkeyBody": "Face ID, Touch ID ali Windows Hello — prijave potrjujte z enim dotikom namesto s kodo.",
+    "passkeyButton": "Vklopi Face ID / Touch ID",
+    "passkeyDone": "Povezano ✓",
+    "passkeyUnsupported": "Ta naprava nima Face ID, Touch ID ali Windows Hello.",
+    "totpTitle": "Dvofaktorska avtentikacija",
+    "totpBody": "6-mestna koda iz aplikacije za avtentikacijo ob vsaki prijavi.",
+    "totpButton": "Nastavi aplikacijo 2FA (Google Authenticator / Authy)",
+    "totpScan": "V aplikaciji skenirajte QR kodo, nato vnesite 6-mestno kodo, ki jo prikaže.",
+    "totpManual": "Ali pa ta ključ vnesite ročno:",
+    "totpCodeLabel": "Koda iz aplikacije",
+    "totpDone": "Vklopljeno ✓",
+    "totpInvalid": "Koda se ne ujema. Preverite aplikacijo in poskusite znova.",
+    "recoveryTitle": "Obnovitvene kode",
+    "recoveryBody": "Shranite jih na varno mesto — vsaka deluje enkrat, če telefon ni na voljo.",
+    "copy": "Kopiraj",
+    "copied": "Kopirano",
+    "continue": "Nadaljuj",
+    "skip": "Zaenkrat preskoči (vklopite lahko pozneje v Nastavitvah)",
+    "failed": "Ni uspelo. Poskusite znova."
+  },
+  "AdminUnlock": {
+    "title": "Potrdite, da ste to vi",
+    "body": "Skrbniška plošča za to sejo zahteva Face ID / Touch ID ali kodo avtentikatorja.",
+    "passkeyButton": "Potrdi prijavo s Face ID / Touch ID",
+    "or": "ali vnesite kodo avtentikatorja",
+    "codeLabel": "Koda avtentikatorja",
+    "invalid": "Ne ujema se. Poskusite znova.",
+    "locked": "Preveč poskusov. Poskusite znova čez {minutes} min.",
+    "elsewhere": "Vaš Face ID / Touch ID je bil dodan na drugem spletnem mestu — tam odprite skrbniško ploščo ali uporabite aplikacijo za avtentikacijo.",
+    "unlocked": "Odklenjeno",
+    "back": "Nazaj na prodajno stran"
   }
 }

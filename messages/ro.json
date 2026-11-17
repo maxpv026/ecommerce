@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Confirmați cu Face ID / Touch ID",
     "stepUpHint": "Dispozitivul vă va cere fața, amprenta sau codul PIN."
+  },
+  "SecurityOnboarding": {
+    "title": "Securizați-vă contul",
+    "subtitle": "Adăugați un al doilea pas de conectare — durează un minut și îl puteți face și mai târziu.",
+    "recommended": "Recomandat",
+    "passkeyTitle": "Conectare biometrică",
+    "passkeyBody": "Face ID, Touch ID sau Windows Hello — confirmați conectările cu o singură atingere în loc de cod.",
+    "passkeyButton": "Activați Face ID / Touch ID",
+    "passkeyDone": "Conectat ✓",
+    "passkeyUnsupported": "Acest dispozitiv nu are Face ID, Touch ID sau Windows Hello.",
+    "totpTitle": "Autentificare în doi pași",
+    "totpBody": "Un cod de 6 cifre dintr-o aplicație de autentificare la fiecare conectare.",
+    "totpButton": "Configurați o aplicație 2FA (Google Authenticator / Authy)",
+    "totpScan": "Scanați codul QR în aplicație, apoi introduceți codul de 6 cifre afișat.",
+    "totpManual": "Sau introduceți manual această cheie:",
+    "totpCodeLabel": "Codul din aplicație",
+    "totpDone": "Activat ✓",
+    "totpInvalid": "Codul nu se potrivește. Verificați aplicația și încercați din nou.",
+    "recoveryTitle": "Coduri de recuperare",
+    "recoveryBody": "Păstrați-le într-un loc sigur — fiecare funcționează o singură dată dacă telefonul nu vă este disponibil.",
+    "copy": "Copiați",
+    "copied": "Copiat",
+    "continue": "Continuă",
+    "skip": "Omiteți deocamdată (o puteți activa mai târziu în Setări)",
+    "failed": "Nu a funcționat. Încercați din nou."
+  },
+  "AdminUnlock": {
+    "title": "Confirmați că sunteți dvs.",
+    "body": "Panoul administrativ necesită Face ID / Touch ID sau codul de autentificare pentru această sesiune.",
+    "passkeyButton": "Confirmați conectarea cu Face ID / Touch ID",
+    "or": "sau introduceți codul de autentificare",
+    "codeLabel": "Cod de autentificare",
+    "invalid": "Nu se potrivește. Încercați din nou.",
+    "locked": "Prea multe încercări. Încercați din nou în {minutes} min.",
+    "elsewhere": "Face ID / Touch ID-ul dvs. a fost adăugat pe alt site — deschideți panoul administrativ acolo sau folosiți aplicația de autentificare.",
+    "unlocked": "Deblocat",
+    "back": "Înapoi la magazin"
   }
 }

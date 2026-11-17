@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Face ID / Touch ID ile onayla",
     "stepUpHint": "Cihazınız yüzünüzü, parmak izinizi veya PIN kodunuzu isteyecek."
+  },
+  "SecurityOnboarding": {
+    "title": "Hesabınızı güvence altına alın",
+    "subtitle": "İkinci bir giriş adımı ekleyin — bir dakika sürer, bunu daha sonra da yapabilirsiniz.",
+    "recommended": "Önerilen",
+    "passkeyTitle": "Biyometrik giriş",
+    "passkeyBody": "Face ID, Touch ID veya Windows Hello — girişleri kod yerine tek dokunuşla onaylayın.",
+    "passkeyButton": "Face ID / Touch ID'yi aç",
+    "passkeyDone": "Bağlandı ✓",
+    "passkeyUnsupported": "Bu cihazda Face ID, Touch ID veya Windows Hello yok.",
+    "totpTitle": "İki faktörlü kimlik doğrulama",
+    "totpBody": "Her girişte kimlik doğrulayıcı uygulamadan 6 haneli bir kod.",
+    "totpButton": "2FA uygulaması kur (Google Authenticator / Authy)",
+    "totpScan": "Uygulamada QR kodunu tarayın, ardından gösterdiği 6 haneli kodu girin.",
+    "totpManual": "Veya bu anahtarı elle girin:",
+    "totpCodeLabel": "Uygulamadaki kod",
+    "totpDone": "Açık ✓",
+    "totpInvalid": "Kod eşleşmedi. Uygulamayı kontrol edip tekrar deneyin.",
+    "recoveryTitle": "Kurtarma kodları",
+    "recoveryBody": "Bunları güvenli bir yerde saklayın — telefonunuz kullanılamıyorsa her biri bir kez çalışır.",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "continue": "Devam et",
+    "skip": "Şimdilik atla (daha sonra Ayarlar'dan açabilirsiniz)",
+    "failed": "Bu işe yaramadı. Lütfen tekrar deneyin."
+  },
+  "AdminUnlock": {
+    "title": "Siz olduğunuzu doğrulayın",
+    "body": "Yönetici paneli bu oturum için Face ID / Touch ID veya kimlik doğrulayıcı kodunuzu gerektiriyor.",
+    "passkeyButton": "Girişi Face ID / Touch ID ile onayla",
+    "or": "veya kimlik doğrulayıcı kodunu girin",
+    "codeLabel": "Kimlik doğrulayıcı kodu",
+    "invalid": "Eşleşmedi. Tekrar deneyin.",
+    "locked": "Çok fazla deneme. {minutes} dk sonra tekrar deneyin.",
+    "elsewhere": "Face ID / Touch ID'niz başka bir sitede eklendi — yönetici panelini orada açın veya kimlik doğrulayıcınızı kullanın.",
+    "unlocked": "Kilit açıldı",
+    "back": "Mağazaya dön"
   }
 }

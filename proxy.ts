@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import NextAuth from "next-auth";
 import createIntlMiddleware from "next-intl/middleware";
 import { DEVICE_COOKIE, deviceCookieOptions, isValidDeviceId, newDeviceId } from "@/lib/deviceId";
+import { strongSession } from "@/lib/authStrength";
 import { authConfig } from "./auth.config";
 import { routing } from "./i18n/routing";
 import { checkRateLimit, clientIp, ruleFor } from "./lib/rateLimit";
@@ -26,6 +27,8 @@ const PROTECTED_SEGMENTS = [
   "/profile/security",
   "/profile/support",
   "/notifications",
+  // The staff "confirm with Face ID / Touch ID" step before /admin (lib/authStrength).
+  "/admin-unlock",
 ];
 
 const LOCALE_PREFIX_PATTERN = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
@@ -110,8 +113,13 @@ export default auth((req) => {
     if (!req.auth?.user || !can(req.auth.user.role, permissionForAdminApi(pathname))) {
       return finish(NextResponse.json({ ok: false, code: "FORBIDDEN" }, { status: 403 }));
     }
-    if (req.auth.user.isTwoFactorEnabled !== true) {
+    // A second factor enrolled — the authenticator OR a passkey — and this
+    // session signed in with a strong one (lib/authStrength).
+    if (req.auth.user.secondFactor !== true) {
       return finish(NextResponse.json({ ok: false, code: "TWO_FACTOR_REQUIRED" }, { status: 403 }));
+    }
+    if (!strongSession(req.auth.user)) {
+      return finish(NextResponse.json({ ok: false, code: "ADMIN_UNLOCK_REQUIRED" }, { status: 403 }));
     }
   }
 
@@ -153,10 +161,19 @@ export default auth((req) => {
   // session claim because middleware runs on the Edge with no database — the
   // real gate is requireAdmin(), which re-reads the row on every admin
   // action. A stale claim can therefore delay access but never grant it.
-  if (isAdminRoute && req.auth?.user?.isTwoFactorEnabled !== true) {
+  // "Second factor" = the authenticator app OR a passkey (Face ID / Touch ID).
+  if (isAdminRoute && req.auth?.user?.secondFactor !== true) {
     const setup = new URL(`/${locale}/profile`, origin);
     setup.searchParams.set("notice", "admin-2fa-required");
     return finish(NextResponse.redirect(setup));
+  }
+  // Enrolled, but this session signed in with something weaker (an emailed
+  // code, Google without a pause): confirm with Face ID / Touch ID or the
+  // authenticator first. /admin-unlock upgrades the session (lib/authStrength).
+  if (isAdminRoute && !strongSession(req.auth?.user)) {
+    const unlock = new URL(`/${locale}/admin-unlock`, origin);
+    unlock.searchParams.set("callbackUrl", pathWithoutLocale + req.nextUrl.search);
+    return finish(NextResponse.redirect(unlock));
   }
 
   if (isProtected && !req.auth) {

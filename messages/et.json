@@ -3375,5 +3375,42 @@
     "stepUpTab": "Face ID",
     "stepUpButton": "Kinnita Face ID / Touch ID-ga",
     "stepUpHint": "Seade küsib teie nägu, sõrmejälge või PIN-koodi."
+  },
+  "SecurityOnboarding": {
+    "title": "Kaitske oma kontot",
+    "subtitle": "Lisage sisselogimisele teine samm — see võtab minuti ja saate seda teha ka hiljem.",
+    "recommended": "Soovitatav",
+    "passkeyTitle": "Biomeetriline sisselogimine",
+    "passkeyBody": "Face ID, Touch ID või Windows Hello — kinnitage sisselogimisi ühe puudutusega koodi asemel.",
+    "passkeyButton": "Lülita Face ID / Touch ID sisse",
+    "passkeyDone": "Ühendatud ✓",
+    "passkeyUnsupported": "Selles seadmes pole Face ID-d, Touch ID-d ega Windows Hello't.",
+    "totpTitle": "Kaheastmeline autentimine",
+    "totpBody": "6-kohaline kood autentimisrakendusest iga sisselogimise korral.",
+    "totpButton": "Seadista 2FA-rakendus (Google Authenticator / Authy)",
+    "totpScan": "Skaneerige QR-kood rakenduses, seejärel sisestage kuvatud 6-kohaline kood.",
+    "totpManual": "Või sisestage see võti käsitsi:",
+    "totpCodeLabel": "Kood rakendusest",
+    "totpDone": "Sees ✓",
+    "totpInvalid": "Kood ei sobinud. Kontrollige rakendust ja proovige uuesti.",
+    "recoveryTitle": "Taastekoodid",
+    "recoveryBody": "Hoidke neid turvalises kohas — iga kood töötab ühe korra, kui telefon pole saadaval.",
+    "copy": "Kopeeri",
+    "copied": "Kopeeritud",
+    "continue": "Jätka",
+    "skip": "Jäta praegu vahele (saate selle hiljem Seadetes sisse lülitada)",
+    "failed": "See ei õnnestunud. Palun proovige uuesti."
+  },
+  "AdminUnlock": {
+    "title": "Kinnitage, et olete teie",
+    "body": "Administraatori paneel vajab selle seansi jaoks Face ID / Touch ID-d või teie autentimiskoodi.",
+    "passkeyButton": "Kinnita sisselogimine Face ID / Touch ID-ga",
+    "or": "või sisestage autentimiskood",
+    "codeLabel": "Autentimiskood",
+    "invalid": "Ei sobinud. Proovige uuesti.",
+    "locked": "Liiga palju katseid. Proovige uuesti {minutes} minuti pärast.",
+    "elsewhere": "Teie Face ID / Touch ID lisati teisel saidil — avage administraatori paneel seal või kasutage oma autentimisrakendust.",
+    "unlocked": "Lukust avatud",
+    "back": "Tagasi poodi"
   }
 }
