@@ -3350,5 +3350,30 @@
     "addedToast": "{name} agregado al carrito",
     "deposit": "+ {amount} de depósito reembolsable por la botella",
     "unavailable": "Está en nuestro catálogo, pero ahora mismo no se puede pedir. Contacta con el equipo para consultar la disponibilidad."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Confirma los inicios de sesión con el escaneo facial o de huella dactilar de tu dispositivo en lugar de un código.",
+    "add": "Añadir Face ID / Touch ID",
+    "adding": "Esperando a tu dispositivo…",
+    "added": "Face ID / Touch ID añadido",
+    "remove": "Eliminar",
+    "removed": "Eliminado",
+    "empty": "Todavía no se ha añadido Face ID / Touch ID.",
+    "createdAt": "Añadido el {date}",
+    "lastUsed": "Último uso el {date}",
+    "neverUsed": "Aún no se ha usado",
+    "otherDomain": "Funciona en {domain}",
+    "domainNote": "Face ID / Touch ID funciona en el sitio donde se añadió — aquí: {domain}.",
+    "unsupported": "Este navegador o dispositivo no admite el inicio de sesión con Face ID / Touch ID.",
+    "cancelled": "Cancelado — no se ha cambiado nada.",
+    "duplicate": "Este dispositivo ya está añadido.",
+    "failed": "No se pudo verificar. Inténtalo de nuevo o usa tu código.",
+    "loginButton": "Confirmar con Face ID / Touch ID",
+    "loginOr": "o introduce el código",
+    "verifying": "Verificando…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Confirmar con Face ID / Touch ID",
+    "stepUpHint": "Tu dispositivo te pedirá tu cara, tu huella dactilar o tu PIN."
   }
 }

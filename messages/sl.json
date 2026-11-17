@@ -3350,5 +3350,30 @@
     "addedToast": "Dodano v košarico: {name}",
     "deposit": "+ {amount} vračljiva kavcija za jeklenko",
     "unavailable": "V našem katalogu, vendar trenutno ni na voljo za naročilo. Glede razpoložljivosti se obrnite na ekipo."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Prijave potrjujte s skeniranjem obraza ali prstnega odtisa na napravi namesto s kodo.",
+    "add": "Dodaj Face ID / Touch ID",
+    "adding": "Čakanje na napravo…",
+    "added": "Face ID / Touch ID dodan",
+    "remove": "Odstrani",
+    "removed": "Odstranjeno",
+    "empty": "Face ID / Touch ID še ni dodan.",
+    "createdAt": "Dodano {date}",
+    "lastUsed": "Nazadnje uporabljeno {date}",
+    "neverUsed": "Še ni bilo uporabljeno",
+    "otherDomain": "Deluje na {domain}",
+    "domainNote": "Face ID / Touch ID deluje na spletnem mestu, kjer je bil dodan — tukaj: {domain}.",
+    "unsupported": "Ta brskalnik ali naprava ne podpira prijave s Face ID / Touch ID.",
+    "cancelled": "Preklicano — nič ni bilo spremenjeno.",
+    "duplicate": "Ta naprava je že dodana.",
+    "failed": "Preverjanje ni uspelo. Poskusite znova ali uporabite kodo.",
+    "loginButton": "Potrdi s Face ID / Touch ID",
+    "loginOr": "ali vnesite kodo",
+    "verifying": "Preverjanje…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Potrdi s Face ID / Touch ID",
+    "stepUpHint": "Naprava bo zahtevala obraz, prstni odtis ali PIN."
   }
 }

@@ -9,6 +9,7 @@ import { readRestamp, revokedBefore, sessionAnchor, sessionStillValid } from "@/
 import { verifyAndConsumeOtp } from "@/lib/otp";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { looksLikePhrase, verifyRecoveryForUser } from "@/lib/recoveryPhrase";
+import { isPasskeyCode, verifyAssertion } from "@/lib/passkeys";
 import { ADMIN_LEGAL_NAME, effectiveRole, isRole } from "@/lib/rbac";
 import { createGoogleTwoFactorChallenge, verifyGoogleTwoFactorChallenge } from "@/lib/googleTwoFactor";
 import { legacySessionId, registerSession, touchSession } from "@/lib/deviceSessions";
@@ -65,6 +66,20 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         // Same per-account lockout as step 1 (lib/loginThrottle): this
         // endpoint is reachable directly, so it must count guesses too.
         if ((await checkPassword(user, password)) !== "ok") return null;
+
+        // A passkey (Face ID / Touch ID / Windows Hello, lib/passkeys) is the
+        // second factor when one comes: it answers this domain's signed,
+        // single-use challenge with user verification, which no code beats.
+        // Valid for any account that enrolled one, authenticator or not.
+        if (isPasskeyCode(code)) {
+          const check = await verifyAssertion(user.id, code, "login");
+          if (!check.ok) {
+            console.warn(`auth: passkey refused for ${email}: ${check.reason}`);
+            return null;
+          }
+          if (!user.emailVerified) await prisma.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
+          return { id: user.id, email: user.email, name: user.name };
+        }
 
         // Which second factor applies is a property of the account, not of
         // the request: an authenticator beats an emailed code, so a user who
@@ -127,7 +142,10 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         if (!user || !user.isTwoFactorEnabled || !user.twoFactorSecret) return null;
         if (user.lockedAt) return null;
 
-        const check = looksLikeRecoveryCode(code)
+        // A passkey stands in for the code here too (lib/passkeys).
+        const check = isPasskeyCode(code)
+          ? await verifyAssertion(user.id, code, "login").then((r) => (r.ok ? ({ ok: true } as const) : ({ ok: false, reason: r.reason } as const)))
+          : looksLikeRecoveryCode(code)
           ? await consumeRecoveryCode(prisma, user, code)
           : looksLikePhrase(code)
             ? await verifyRecoveryForUser(prisma, user, code, "login")

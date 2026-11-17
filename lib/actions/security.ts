@@ -10,6 +10,8 @@ import { mintRestamp } from "@/lib/sessionRevocation";
 import { readStepUp, satisfies } from "@/lib/stepUp";
 import { randomUUID } from "node:crypto";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { currentRelyingParty, finishRegistration, startRegistration } from "@/lib/passkeys";
+import type { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/server";
 import {
   MAX_HINT_LENGTH,
   MAX_PHRASE_LENGTH,
@@ -42,11 +44,25 @@ export interface SecurityState {
   twoFactor: boolean;
   recoveryCodesLeft: number;
   phrase: { set: boolean; type: RecoveryPhraseType | null; hint: string | null; setAt: string | null };
+  /** Face ID / Touch ID / Windows Hello passkeys (lib/passkeys). */
+  passkeys: PasskeyView[];
+  /** The rp id passkeys are made for on this domain ("myeenergy.com"), or null where they aren't offered. */
+  passkeyDomain: string | null;
+}
+
+export interface PasskeyView {
+  id: string;
+  name: string;
+  rpId: string;
+  /** Usable on the domain this page is on. */
+  here: boolean;
+  createdAt: string;
+  lastUsedAt: string | null;
 }
 
 type Fail = {
   ok: false;
-  code: "UNAUTHENTICATED" | "STEP_UP_REQUIRED" | "STEP_UP_STRONG_REQUIRED" | "NOT_FOUND" | "INVALID" | "HINT_REVEALS" | "WRONG_WORDS" | "EXPIRED" | "RATE_LIMITED" | "FAILED";
+  code: "UNAUTHENTICATED" | "STEP_UP_REQUIRED" | "STEP_UP_STRONG_REQUIRED" | "NOT_FOUND" | "INVALID" | "HINT_REVEALS" | "WRONG_WORDS" | "EXPIRED" | "RATE_LIMITED" | "FAILED" | "UNSUPPORTED_HOST" | "DUPLICATE";
 };
 export type SecurityResult = { ok: true; state: SecurityState } | Fail;
 
@@ -63,14 +79,18 @@ export async function getSecurityState(): Promise<SecurityState | null> {
 }
 
 async function securityState(userId: string, sid: string | null): Promise<SecurityState> {
-  const [user, sessions] = await Promise.all([
+  const [user, sessions, keys, rp] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { isTwoFactorEnabled: true, recoveryCodes: true, recoveryPhraseHash: true, recoveryPhraseHint: true, recoveryPhraseSetAt: true, recoveryPhraseType: true, recoveryPhraseSalt: true },
     }),
     listDeviceSessions(userId, sid),
+    prisma.passkey.findMany({ where: { userId }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, rpId: true, createdAt: true, lastUsedAt: true } }),
+    currentRelyingParty(),
   ]);
   return {
+    passkeys: keys.map((k) => ({ id: k.id, name: k.name, rpId: k.rpId, here: k.rpId === rp?.rpID, createdAt: k.createdAt.toISOString(), lastUsedAt: k.lastUsedAt?.toISOString() ?? null })),
+    passkeyDomain: rp?.rpID ?? null,
     sessions,
     twoFactor: Boolean(user?.isTwoFactorEnabled),
     recoveryCodesLeft: user?.recoveryCodes.length ?? 0,
@@ -272,6 +292,54 @@ export async function removeRecoveryPhrase(): Promise<SecurityResult> {
   const denied = await gate(c.userId, c.sid, true);
   if (denied) return denied;
   await prisma.user.update({ where: { id: c.userId }, data: { ...CLEAR_SEED, recoveryPhraseHash: null, recoveryPhraseHint: null, recoveryPhraseSetAt: null } });
+  refresh();
+  return { ok: true, state: await securityState(c.userId, c.sid ?? null) };
+}
+
+// ── Passkeys (Face ID / Touch ID / Windows Hello) ──
+
+export type PasskeyEnrolStart = { ok: true; options: PublicKeyCredentialCreationOptionsJSON } | Fail;
+
+/**
+ * Step 1 of adding a passkey. A STRONG check first when 2FA is on: a passkey
+ * is itself a strong method (it can turn 2FA off), so adding one must not be
+ * possible with only an emailed code or the password.
+ */
+export async function startPasskeyEnrolment(): Promise<PasskeyEnrolStart> {
+  const c = await caller();
+  if (!c) return { ok: false, code: "UNAUTHENTICATED" };
+  const denied = await gate(c.userId, c.sid, true);
+  if (denied) return denied;
+  if (!checkRateLimit(`passkey-enrol:${c.userId}`, { limit: 10, windowMs: 10 * 60_000 }).success) return { ok: false, code: "RATE_LIMITED" };
+  const start = await startRegistration(c.userId);
+  if (!start.ok) return { ok: false, code: start.code === "UNSUPPORTED_HOST" ? "UNSUPPORTED_HOST" : "FAILED" };
+  return { ok: true, options: start.options };
+}
+
+/** Step 2: the browser's registration response, verified against the challenge from step 1. */
+export async function finishPasskeyEnrolment(response: unknown): Promise<SecurityResult> {
+  const c = await caller();
+  if (!c) return { ok: false, code: "UNAUTHENTICATED" };
+  try {
+    const done = await finishRegistration(c.userId, response);
+    if (!done.ok) return { ok: false, code: done.code };
+  } catch (error) {
+    console.error("finishPasskeyEnrolment failed:", error);
+    return { ok: false, code: "FAILED" };
+  }
+  refresh();
+  return { ok: true, state: await securityState(c.userId, c.sid ?? null) };
+}
+
+/** Removes one of the caller's passkeys — behind the same strong check as adding one. */
+export async function removePasskey(id: unknown): Promise<SecurityResult> {
+  const c = await caller();
+  if (!c) return { ok: false, code: "UNAUTHENTICATED" };
+  if (typeof id !== "string" || id.length > 64) return { ok: false, code: "INVALID" };
+  const denied = await gate(c.userId, c.sid, true);
+  if (denied) return denied;
+  const { count } = await prisma.passkey.deleteMany({ where: { id, userId: c.userId } });
+  if (count === 0) return { ok: false, code: "NOT_FOUND" };
   refresh();
   return { ok: true, state: await securityState(c.userId, c.sid ?? null) };
 }

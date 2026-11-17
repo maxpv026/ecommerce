@@ -3350,5 +3350,30 @@
     "addedToast": "Přidáno do košíku: {name}",
     "deposit": "+ {amount} vratná záloha na lahev",
     "unavailable": "Je v našem katalogu, ale momentálně ho nelze objednat. Ohledně dostupnosti kontaktujte tým."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Potvrzujte přihlášení skenem obličeje nebo otisku prstu na svém zařízení místo kódu.",
+    "add": "Přidat Face ID / Touch ID",
+    "adding": "Čekáme na vaše zařízení…",
+    "added": "Face ID / Touch ID přidáno",
+    "remove": "Odstranit",
+    "removed": "Odstraněno",
+    "empty": "Zatím není přidáno žádné Face ID / Touch ID.",
+    "createdAt": "Přidáno {date}",
+    "lastUsed": "Naposledy použito {date}",
+    "neverUsed": "Zatím nepoužito",
+    "otherDomain": "Funguje na {domain}",
+    "domainNote": "Face ID / Touch ID funguje na webu, kde bylo přidáno — zde: {domain}.",
+    "unsupported": "Tento prohlížeč nebo zařízení nepodporuje přihlášení přes Face ID / Touch ID.",
+    "cancelled": "Zrušeno — nic se nezměnilo.",
+    "duplicate": "Toto zařízení je již přidáno.",
+    "failed": "Nepodařilo se ověřit. Zkuste to znovu nebo použijte svůj kód.",
+    "loginButton": "Potvrdit přes Face ID / Touch ID",
+    "loginOr": "nebo zadejte kód",
+    "verifying": "Ověřování…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Potvrdit přes Face ID / Touch ID",
+    "stepUpHint": "Zařízení vás požádá o obličej, otisk prstu nebo PIN."
   }
 }

@@ -3350,5 +3350,30 @@
     "addedToast": "{name} adicionado ao carrinho",
     "deposit": "+ {amount} depósito reembolsável do cilindro",
     "unavailable": "Consta do nosso catálogo, mas não está disponível para encomenda neste momento. Contacte a equipa sobre a disponibilidade."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Confirme os inícios de sessão com o reconhecimento facial ou a impressão digital do seu dispositivo em vez de um código.",
+    "add": "Adicionar Face ID / Touch ID",
+    "adding": "A aguardar o seu dispositivo…",
+    "added": "Face ID / Touch ID adicionado",
+    "remove": "Remover",
+    "removed": "Removido",
+    "empty": "Ainda não foi adicionado Face ID / Touch ID.",
+    "createdAt": "Adicionado em {date}",
+    "lastUsed": "Usado pela última vez em {date}",
+    "neverUsed": "Ainda não utilizado",
+    "otherDomain": "Funciona em {domain}",
+    "domainNote": "O Face ID / Touch ID funciona no site onde foi adicionado — aqui: {domain}.",
+    "unsupported": "Este navegador ou dispositivo não suporta o início de sessão com Face ID / Touch ID.",
+    "cancelled": "Cancelado — nada foi alterado.",
+    "duplicate": "Este dispositivo já foi adicionado.",
+    "failed": "Não foi possível verificar. Tente novamente ou use o seu código.",
+    "loginButton": "Confirmar com Face ID / Touch ID",
+    "loginOr": "ou introduza o código",
+    "verifying": "A verificar…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Confirmar com Face ID / Touch ID",
+    "stepUpHint": "O seu dispositivo vai pedir o rosto, a impressão digital ou o PIN."
   }
 }

@@ -3350,5 +3350,30 @@
     "addedToast": "{name} pievienots grozam",
     "deposit": "+ {amount} atmaksājams balona depozīts",
     "unavailable": "Ir mūsu katalogā, bet pašlaik nav pieejams pasūtīšanai. Par pieejamību sazinieties ar komandu."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Apstipriniet pieteikšanos ar ierīces sejas vai pirksta nospieduma skenēšanu koda vietā.",
+    "add": "Pievienot Face ID / Touch ID",
+    "adding": "Gaida jūsu ierīci…",
+    "added": "Face ID / Touch ID pievienots",
+    "remove": "Noņemt",
+    "removed": "Noņemts",
+    "empty": "Face ID / Touch ID vēl nav pievienots.",
+    "createdAt": "Pievienots {date}",
+    "lastUsed": "Pēdējoreiz izmantots {date}",
+    "neverUsed": "Vēl nav izmantots",
+    "otherDomain": "Darbojas vietnē {domain}",
+    "domainNote": "Face ID / Touch ID darbojas vietnē, kurā tas tika pievienots, — šeit: {domain}.",
+    "unsupported": "Šī pārlūkprogramma vai ierīce neatbalsta pieteikšanos ar Face ID / Touch ID.",
+    "cancelled": "Atcelts — nekas netika mainīts.",
+    "duplicate": "Šī ierīce jau ir pievienota.",
+    "failed": "Neizdevās pārbaudīt. Mēģiniet vēlreiz vai izmantojiet kodu.",
+    "loginButton": "Apstiprināt ar Face ID / Touch ID",
+    "loginOr": "vai ievadiet kodu",
+    "verifying": "Pārbauda…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Apstiprināt ar Face ID / Touch ID",
+    "stepUpHint": "Ierīce pieprasīs jūsu seju, pirksta nospiedumu vai PIN."
   }
 }

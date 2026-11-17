@@ -10,6 +10,7 @@ import { useRouter } from "@/i18n/navigation";
 import { enableTwoFactor, generateTwoFactorSecret } from "@/lib/actions/twoFactor";
 import { confirmSeedPhrase, disableTwoFactorWithStepUp, removeRecoveryPhrase, setCustomRecoveryPhrase, startSeedPhrase, type SecurityState } from "@/lib/actions/security";
 import { useStepUp } from "./StepUp";
+import PasskeysSection from "./PasskeysSection";
 
 /**
  * Settings → "Manage 2FA": the authenticator app and the recovery phrase.
@@ -305,6 +306,9 @@ export default function TwoFactorManager({ state, email, onClose, onChange }: { 
               </div>
             )}
           </Section>
+
+          {/* ── Face ID / Touch ID passkeys ── */}
+          <PasskeysSection state={state} run={run} onState={after} />
 
           {/* ── Recovery phrase ── */}
           <Section

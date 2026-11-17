@@ -246,6 +246,8 @@ model User {
   chatSessions         ChatSession[]
   savedCart            SavedCart?
   deviceSessions       UserSession[]
+  /// WebAuthn passkeys (Face ID / Touch ID / Windows Hello) — a second factor (lib/passkeys).
+  passkeys             Passkey[]
 
   /// Where the account is, resolved by lib/userCountry from the best signal
   /// on file and kept current when one changes: the latest session's IP
@@ -1427,4 +1429,37 @@ model SiteAnnouncement {
   updatedById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+/// A WebAuthn credential — a platform authenticator (Face ID, Touch ID,
+/// Windows Hello, an Android fingerprint) the user enrolled from Settings.
+/// It is a SECOND factor: sign-in still needs the password first; then a
+/// passkey stands in for the 6-digit code (lib/passkeys, auth.ts).
+model Passkey {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// base64url credential id, as the browser reports it.
+  credentialId  String    @unique
+  /// COSE public key.
+  publicKey     Bytes
+  /// Signature counter (uint32; most synced passkeys always report 0).
+  counter       BigInt    @default(0)
+  /// singleDevice | multiDevice (synced, e.g. iCloud Keychain).
+  deviceType    String
+  backedUp      Boolean   @default(false)
+  transports    String[]
+  /// The relying-party id it was created for — "myeenergy.com",
+  /// "myeenergy.eu" or "localhost". A passkey only works on its own RP id,
+  /// so each domain offers only its own.
+  rpId          String
+  /// "macOS · Touch ID", "iPhone · Face ID" — editable label.
+  name          String
+  /// sha256 of the last challenge it answered: a replayed assertion is refused
+  /// even when the authenticator's counter stays at 0.
+  lastChallenge String?
+  createdAt     DateTime  @default(now())
+  lastUsedAt    DateTime?
+
+  @@index([userId, rpId])
 }

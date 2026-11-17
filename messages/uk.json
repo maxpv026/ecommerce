@@ -3350,5 +3350,30 @@
     "addedToast": "{name} додано до кошика",
     "deposit": "+ {amount} зворотна застава за балон",
     "unavailable": "Є в нашому каталозі, але зараз недоступний для замовлення. Зверніться до команди щодо наявності."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Підтверджуйте вхід скануванням обличчя чи відбитка пальця на пристрої замість коду.",
+    "add": "Додати Face ID / Touch ID",
+    "adding": "Очікуємо на пристрій…",
+    "added": "Face ID / Touch ID додано",
+    "remove": "Видалити",
+    "removed": "Видалено",
+    "empty": "Face ID / Touch ID ще не додано.",
+    "createdAt": "Додано {date}",
+    "lastUsed": "Востаннє {date}",
+    "neverUsed": "Ще не використовувався",
+    "otherDomain": "Працює на {domain}",
+    "domainNote": "Face ID / Touch ID працює на тому сайті, де його додано, — тут: {domain}.",
+    "unsupported": "Цей браузер або пристрій не підтримує вхід через Face ID / Touch ID.",
+    "cancelled": "Скасовано — нічого не змінено.",
+    "duplicate": "Цей пристрій уже додано.",
+    "failed": "Не вдалося перевірити. Спробуйте ще раз або введіть код.",
+    "loginButton": "Підтвердити через Face ID / Touch ID",
+    "loginOr": "або введіть код",
+    "verifying": "Перевіряємо…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Підтвердити через Face ID / Touch ID",
+    "stepUpHint": "Пристрій попросить обличчя, відбиток пальця або PIN-код."
   }
 }

@@ -3350,5 +3350,30 @@
     "addedToast": "Dodano {name} do koszyka",
     "deposit": "+ {amount} zwrotna kaucja za butlę",
     "unavailable": "W naszym katalogu, ale obecnie niedostępny do zamówienia. Skontaktuj się z zespołem w sprawie dostępności."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Potwierdzaj logowanie skanem twarzy lub odcisku palca na urządzeniu zamiast kodu.",
+    "add": "Dodaj Face ID / Touch ID",
+    "adding": "Oczekiwanie na urządzenie…",
+    "added": "Dodano Face ID / Touch ID",
+    "remove": "Usuń",
+    "removed": "Usunięto",
+    "empty": "Nie dodano jeszcze Face ID / Touch ID.",
+    "createdAt": "Dodano {date}",
+    "lastUsed": "Ostatnio użyto {date}",
+    "neverUsed": "Jeszcze nie używano",
+    "otherDomain": "Działa na {domain}",
+    "domainNote": "Face ID / Touch ID działa na stronie, na której zostało dodane — tutaj: {domain}.",
+    "unsupported": "Ta przeglądarka lub urządzenie nie obsługuje logowania przez Face ID / Touch ID.",
+    "cancelled": "Anulowano — nic nie zostało zmienione.",
+    "duplicate": "To urządzenie jest już dodane.",
+    "failed": "Nie udało się zweryfikować. Spróbuj ponownie lub użyj kodu.",
+    "loginButton": "Potwierdź przez Face ID / Touch ID",
+    "loginOr": "lub wpisz kod",
+    "verifying": "Weryfikacja…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Potwierdź przez Face ID / Touch ID",
+    "stepUpHint": "Urządzenie poprosi o skan twarzy, odcisk palca lub PIN."
   }
 }

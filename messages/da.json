@@ -3350,5 +3350,30 @@
     "addedToast": "{name} lagt i kurven",
     "deposit": "+ {amount} refunderbart flaskepant",
     "unavailable": "I vores katalog, men kan ikke bestilles lige nu. Kontakt teamet om tilgængelighed."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Bekræft login med din enheds ansigts- eller fingeraftryksscanning i stedet for en kode.",
+    "add": "Tilføj Face ID / Touch ID",
+    "adding": "Venter på din enhed…",
+    "added": "Face ID / Touch ID tilføjet",
+    "remove": "Fjern",
+    "removed": "Fjernet",
+    "empty": "Ingen Face ID / Touch ID tilføjet endnu.",
+    "createdAt": "Tilføjet {date}",
+    "lastUsed": "Sidst brugt {date}",
+    "neverUsed": "Ikke brugt endnu",
+    "otherDomain": "Virker på {domain}",
+    "domainNote": "Face ID / Touch ID virker på det websted, hvor det blev tilføjet — her: {domain}.",
+    "unsupported": "Denne browser eller enhed understøtter ikke login med Face ID / Touch ID.",
+    "cancelled": "Annulleret — intet blev ændret.",
+    "duplicate": "Denne enhed er allerede tilføjet.",
+    "failed": "Kunne ikke bekræfte. Prøv igen, eller brug din kode.",
+    "loginButton": "Bekræft med Face ID / Touch ID",
+    "loginOr": "eller indtast koden",
+    "verifying": "Bekræfter…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Bekræft med Face ID / Touch ID",
+    "stepUpHint": "Din enhed vil bede om dit ansigt, fingeraftryk eller PIN-kode."
   }
 }

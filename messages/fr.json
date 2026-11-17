@@ -3350,5 +3350,30 @@
     "addedToast": "{name} ajouté au panier",
     "deposit": "+ {amount} de consigne remboursable pour la bouteille",
     "unavailable": "Dans notre catalogue, mais pas disponible à la commande pour le moment. Contactez l'équipe pour connaître la disponibilité."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Confirmez vos connexions par un scan du visage ou de l'empreinte digitale sur votre appareil, au lieu d'un code.",
+    "add": "Ajouter Face ID / Touch ID",
+    "adding": "En attente de votre appareil…",
+    "added": "Face ID / Touch ID ajouté",
+    "remove": "Supprimer",
+    "removed": "Supprimé",
+    "empty": "Aucun Face ID / Touch ID ajouté pour l'instant.",
+    "createdAt": "Ajouté le {date}",
+    "lastUsed": "Dernière utilisation le {date}",
+    "neverUsed": "Pas encore utilisé",
+    "otherDomain": "Fonctionne sur {domain}",
+    "domainNote": "Face ID / Touch ID fonctionne sur le site où il a été ajouté — ici : {domain}.",
+    "unsupported": "Ce navigateur ou cet appareil ne prend pas en charge la connexion avec Face ID / Touch ID.",
+    "cancelled": "Annulé — rien n'a été modifié.",
+    "duplicate": "Cet appareil est déjà ajouté.",
+    "failed": "Impossible de vérifier. Réessayez ou utilisez votre code.",
+    "loginButton": "Confirmer avec Face ID / Touch ID",
+    "loginOr": "ou saisissez le code",
+    "verifying": "Vérification…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Confirmer avec Face ID / Touch ID",
+    "stepUpHint": "Votre appareil vous demandera votre visage, votre empreinte digitale ou votre code PIN."
   }
 }

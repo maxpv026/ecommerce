@@ -1,5 +1,6 @@
 "use client";
 
+import PasskeyLoginButton from "@/components/auth/PasskeyLoginButton";
 import RecoveryPhraseInput from "@/components/security/RecoveryPhraseInput";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
@@ -52,6 +53,9 @@ export default function MobileAuthLayout() {
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    passkeyAvailable,
+    passkeyBusy,
+    verifyWithPasskey,
     handleGoogle,
     resendCode,
     goBackToCredentials,
@@ -248,6 +252,7 @@ export default function MobileAuthLayout() {
           </>
         ) : (
           <form onSubmit={handleVerify} className="flex flex-col gap-5">
+            {passkeyAvailable && codeMode === "totp" && <PasskeyLoginButton onClick={verifyWithPasskey} busy={passkeyBusy || verifying} />}
             {codeMode === "totp" ? (
               <div className="flex justify-center gap-2.5" onPaste={handlePaste}>
                 {digits.map((digit, idx) => (

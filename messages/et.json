@@ -3350,5 +3350,30 @@
     "addedToast": "{name} lisatud ostukorvi",
     "deposit": "+ {amount} tagastatav ballooni tagatisraha",
     "unavailable": "Meie kataloogis olemas, kuid praegu ei saa tellida. Saadavuse osas võtke ühendust meeskonnaga."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Kinnitage sisselogimisi oma seadme näo- või sõrmejäljeskanniga koodi asemel.",
+    "add": "Lisa Face ID / Touch ID",
+    "adding": "Ootame teie seadet…",
+    "added": "Face ID / Touch ID lisatud",
+    "remove": "Eemalda",
+    "removed": "Eemaldatud",
+    "empty": "Face ID / Touch ID pole veel lisatud.",
+    "createdAt": "Lisatud {date}",
+    "lastUsed": "Viimati kasutatud {date}",
+    "neverUsed": "Pole veel kasutatud",
+    "otherDomain": "Töötab domeenil {domain}",
+    "domainNote": "Face ID / Touch ID töötab saidil, kus see lisati — siin: {domain}.",
+    "unsupported": "See brauser või seade ei toeta Face ID / Touch ID-ga sisselogimist.",
+    "cancelled": "Tühistatud — midagi ei muudetud.",
+    "duplicate": "See seade on juba lisatud.",
+    "failed": "Kinnitamine ei õnnestunud. Proovige uuesti või kasutage oma koodi.",
+    "loginButton": "Kinnita Face ID / Touch ID-ga",
+    "loginOr": "või sisestage kood",
+    "verifying": "Kinnitamine…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Kinnita Face ID / Touch ID-ga",
+    "stepUpHint": "Seade küsib teie nägu, sõrmejälge või PIN-koodi."
   }
 }

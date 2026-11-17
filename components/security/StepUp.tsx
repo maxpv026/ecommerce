@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { KeyRound, Loader2, Lock, Mail, ShieldCheck, X } from "lucide-react";
-import { getStepUpOptions, getStepUpPhraseChallenge, sendStepUpEmailCode, verifyStepUp, type StepUpOptions } from "@/lib/actions/stepUp";
+import { KeyRound, Loader2, Lock, Mail, ScanFace, ShieldCheck, X } from "lucide-react";
+import { getStepUpOptions, getStepUpPasskeyOptions, getStepUpPhraseChallenge, sendStepUpEmailCode, verifyStepUp, type StepUpOptions } from "@/lib/actions/stepUp";
+import { passkeysSupported, runPasskeyAssertion } from "@/lib/passkeyClient";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { recoveryAnswer, type RecoveryChallenge } from "@/lib/recoveryPhraseFormat";
 import RecoveryPhraseInput from "./RecoveryPhraseInput";
 import type { StepUpMethod } from "@/lib/stepUp";
@@ -49,13 +51,14 @@ export function useStepUp() {
   return { run, dialog };
 }
 
-type Tab = "totp" | "email" | "secret";
+type Tab = "passkey" | "totp" | "email" | "secret";
 
 const INPUT =
   "h-11 w-full rounded-[12px] border border-slate-900/[.1] bg-white px-3.5 text-[14px] text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-600/50 focus:ring-2 focus:ring-blue-600/10 dark:border-white/[.1] dark:bg-white/[.03] dark:text-slate-100 dark:placeholder:text-slate-600";
 
 export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean; onClose: () => void; onVerified: () => void }) {
   const t = useTranslations("SecurityCenter");
+  const tPasskey = useTranslations("Passkeys");
   const [options, setOptions] = useState<StepUpOptions | null>(null);
   const [tab, setTab] = useState<Tab>("email");
   const [secretKind, setSecretKind] = useState<"password" | "phrase">("password");
@@ -73,7 +76,8 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
       if (!alive || !o) return;
       setOptions(o);
       // Strong checks offer only the factors that prove the second factor.
-      setTab(o.totp ? "totp" : strong ? "secret" : "email");
+      // Face ID / Touch ID first when this domain has one: one tap, and strong.
+      setTab(o.passkey && passkeysSupported() ? "passkey" : o.totp ? "totp" : strong ? "secret" : "email");
       setSecretKind(strong || !o.password ? "phrase" : "password");
     });
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -115,13 +119,47 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
   };
 
   const tabs: Array<{ key: Tab; label: string; icon: typeof Mail; show: boolean }> = [
+    { key: "passkey", label: tPasskey("stepUpTab"), icon: ScanFace, show: Boolean(options?.passkey) && passkeysSupported() },
     { key: "totp", label: t("tabTotp"), icon: KeyRound, show: Boolean(options?.totp) },
     { key: "email", label: t("tabEmail"), icon: Mail, show: Boolean(options?.email) && !strong },
     { key: "secret", label: strong ? t("tabPhrase") : t("tabSecret"), icon: Lock, show: Boolean(options && ((options.password && !strong) || options.phrase)) },
   ];
   const visible = tabs.filter((x) => x.show);
 
-  const method: StepUpMethod = tab === "totp" ? "totp" : tab === "email" ? "email" : secretKind;
+  const method: StepUpMethod = tab === "passkey" ? "passkey" : tab === "totp" ? "totp" : tab === "email" ? "email" : secretKind;
+
+  // ── Face ID / Touch ID ── options fetched when the tab opens (and after each
+  // attempt: the challenge is single-use), so the tap starts the prompt at once.
+  const [passkeyOptions, setPasskeyOptions] = useState<PublicKeyCredentialRequestOptionsJSON | null>(null);
+  const [passkeyRound, setPasskeyRound] = useState(0);
+  useEffect(() => {
+    if (tab !== "passkey") return;
+    let alive = true;
+    getStepUpPasskeyOptions()
+      .catch(() => null)
+      .then((o) => alive && setPasskeyOptions(o));
+    return () => {
+      alive = false;
+    };
+  }, [tab, passkeyRound]);
+  const confirmWithPasskey = async () => {
+    if (!passkeyOptions || busy) return;
+    setBusy(true);
+    setError(null);
+    const outcome = await runPasskeyAssertion(passkeyOptions);
+    setPasskeyOptions(null);
+    if (!outcome.ok) {
+      setBusy(false);
+      setError(outcome.cancelled ? tPasskey("cancelled") : tPasskey("failed"));
+      setPasskeyRound((n) => n + 1);
+      return;
+    }
+    const result = await verifyStepUp({ method: "passkey", secret: outcome.json }).catch(() => null);
+    setBusy(false);
+    if (result?.ok) return onVerified();
+    setError(result?.code === "RATE_LIMITED" ? t("errRateLimited") : tPasskey("failed"));
+    setPasskeyRound((n) => n + 1);
+  };
 
   const sendCode = async () => {
     setBusy(true);
@@ -259,6 +297,21 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
                 void submit();
               }}
             >
+              {tab === "passkey" && (
+                <div className="flex flex-col gap-2" data-step-up-passkey>
+                  <button
+                    type="button"
+                    onClick={confirmWithPasskey}
+                    disabled={busy || !passkeyOptions}
+                    data-step-up-passkey-button
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-[14px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  >
+                    {busy || !passkeyOptions ? <Loader2 size={16} className="flex-none animate-spin" /> : <ScanFace size={17} className="flex-none" />}
+                    <span className="truncate">{busy ? tPasskey("verifying") : tPasskey("stepUpButton")}</span>
+                  </button>
+                  <p className="m-0 text-[11.5px] leading-[1.45] text-slate-500 dark:text-ink-muted">{tPasskey("stepUpHint")}</p>
+                </div>
+              )}
               {tab === "totp" && (
                 <Field label={t("totpLabel")} hint={t("totpHint")}>
                   <input ref={inputRef} value={value} onChange={(e) => onCodeInput(e.target.value.replace(/\s/g, "").slice(0, 8))} disabled={busy} aria-invalid={error ? true : undefined} inputMode="text" autoComplete="one-time-code" placeholder="123 456" data-step-up-input className={`${INPUT} font-mono tracking-[.3em] disabled:opacity-60 ${error ? "border-red-500/70 dark:border-red-500/70" : ""}`} />
@@ -304,7 +357,7 @@ export function StepUpDialog({ strong, onClose, onVerified }: { strong: boolean;
                 </p>
               )}
 
-              {(tab !== "email" || sent) && (
+              {tab !== "passkey" && (tab !== "email" || sent) && (
                 <button type="submit" disabled={busy || !secret} data-step-up-submit className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-[14px] font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-50">
                   {busy && <Loader2 size={15} className="animate-spin" />}
                   {t("verify")}

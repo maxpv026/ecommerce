@@ -3350,5 +3350,30 @@
     "addedToast": "{name} 已加入购物车",
     "deposit": "+ {amount} 可退还钢瓶押金",
     "unavailable": "已收录于我们的目录，但目前无法订购。如需了解供货情况，请联系团队。"
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "使用设备的面容或指纹扫描代替验证码来确认登录。",
+    "add": "添加 Face ID / Touch ID",
+    "adding": "正在等待您的设备…",
+    "added": "已添加 Face ID / Touch ID",
+    "remove": "移除",
+    "removed": "已移除",
+    "empty": "尚未添加 Face ID / Touch ID。",
+    "createdAt": "添加于 {date}",
+    "lastUsed": "上次使用：{date}",
+    "neverUsed": "尚未使用",
+    "otherDomain": "适用于 {domain}",
+    "domainNote": "Face ID / Touch ID 在添加它的网站上有效——此处为：{domain}。",
+    "unsupported": "此浏览器或设备不支持通过 Face ID / Touch ID 登录。",
+    "cancelled": "已取消——未做任何更改。",
+    "duplicate": "此设备已添加。",
+    "failed": "无法验证。请重试，或使用您的验证码。",
+    "loginButton": "使用 Face ID / Touch ID 确认",
+    "loginOr": "或输入验证码",
+    "verifying": "正在验证…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "使用 Face ID / Touch ID 确认",
+    "stepUpHint": "您的设备将要求验证面容、指纹或 PIN。"
   }
 }

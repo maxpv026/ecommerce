@@ -3350,5 +3350,30 @@
     "addedToast": "{name} miżjud fil-karrett",
     "deposit": "+ {amount} depożitu taċ-ċilindru rimborżabbli",
     "unavailable": "Fil-katalgu tagħna, iżda bħalissa ma jistax jiġi ordnat. Ikkuntattja lit-tim dwar id-disponibbiltà."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Ikkonferma d-dħul bl-iskenjar tal-wiċċ jew tal-marka tas-saba' fuq l-apparat tiegħek minflok kodiċi.",
+    "add": "Żid Face ID / Touch ID",
+    "adding": "Qed nistennew l-apparat tiegħek…",
+    "added": "Face ID / Touch ID miżjud",
+    "remove": "Neħħi",
+    "removed": "Imneħħi",
+    "empty": "Għadu ma ġie miżjud l-ebda Face ID / Touch ID.",
+    "createdAt": "Miżjud {date}",
+    "lastUsed": "L-aħħar użu {date}",
+    "neverUsed": "Għadu ma ntużax",
+    "otherDomain": "Jaħdem fuq {domain}",
+    "domainNote": "Face ID / Touch ID jaħdem fuq is-sit fejn ġie miżjud — hawn: {domain}.",
+    "unsupported": "Dan il-browser jew apparat ma jappoġġjax id-dħul b'Face ID / Touch ID.",
+    "cancelled": "Ikkanċellat — ma nbidel xejn.",
+    "duplicate": "Dan l-apparat diġà miżjud.",
+    "failed": "Ma setax jiġi vverifikat. Erġa' pprova, jew uża l-kodiċi tiegħek.",
+    "loginButton": "Ikkonferma b'Face ID / Touch ID",
+    "loginOr": "jew daħħal il-kodiċi",
+    "verifying": "Qed jiġi vverifikat…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Ikkonferma b'Face ID / Touch ID",
+    "stepUpHint": "L-apparat tiegħek se jitlob wiċċek, il-marka tas-saba' jew il-PIN."
   }
 }

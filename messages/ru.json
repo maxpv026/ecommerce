@@ -3350,5 +3350,30 @@
     "addedToast": "Добавлено в корзину: {name}",
     "deposit": "+ {amount} возвратный залог за баллон",
     "unavailable": "Есть в нашем каталоге, но сейчас недоступен для заказа. Обратитесь к команде, чтобы уточнить наличие."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Подтверждайте вход сканированием лица или отпечатка пальца на устройстве вместо кода.",
+    "add": "Добавить Face ID / Touch ID",
+    "adding": "Ожидаем устройство…",
+    "added": "Face ID / Touch ID добавлен",
+    "remove": "Удалить",
+    "removed": "Удалено",
+    "empty": "Face ID / Touch ID ещё не добавлен.",
+    "createdAt": "Добавлено {date}",
+    "lastUsed": "Последнее использование: {date}",
+    "neverUsed": "Ещё не использовался",
+    "otherDomain": "Работает на {domain}",
+    "domainNote": "Face ID / Touch ID работает на том сайте, где его добавили, — здесь: {domain}.",
+    "unsupported": "Этот браузер или устройство не поддерживает вход через Face ID / Touch ID.",
+    "cancelled": "Отменено — ничего не изменено.",
+    "duplicate": "Это устройство уже добавлено.",
+    "failed": "Не удалось проверить. Попробуйте ещё раз или введите код.",
+    "loginButton": "Подтвердить через Face ID / Touch ID",
+    "loginOr": "или введите код",
+    "verifying": "Проверяем…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Подтвердить через Face ID / Touch ID",
+    "stepUpHint": "Устройство запросит лицо, отпечаток пальца или PIN-код."
   }
 }

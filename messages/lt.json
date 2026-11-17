@@ -3350,5 +3350,30 @@
     "addedToast": "{name} pridėta į krepšelį",
     "deposit": "+ {amount} grąžinamas užstatas už balioną",
     "unavailable": "Yra mūsų kataloge, bet šiuo metu negalima užsakyti. Dėl prieinamumo susisiekite su komanda."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Patvirtinkite prisijungimus įrenginio veido arba piršto atspaudo skenavimu vietoj kodo.",
+    "add": "Pridėti Face ID / Touch ID",
+    "adding": "Laukiama įrenginio…",
+    "added": "Face ID / Touch ID pridėtas",
+    "remove": "Pašalinti",
+    "removed": "Pašalinta",
+    "empty": "Face ID / Touch ID dar nepridėtas.",
+    "createdAt": "Pridėta {date}",
+    "lastUsed": "Paskutinį kartą naudota {date}",
+    "neverUsed": "Dar nenaudota",
+    "otherDomain": "Veikia svetainėje {domain}",
+    "domainNote": "Face ID / Touch ID veikia toje svetainėje, kurioje buvo pridėtas, — čia: {domain}.",
+    "unsupported": "Ši naršyklė arba įrenginys nepalaiko prisijungimo su Face ID / Touch ID.",
+    "cancelled": "Atšaukta — niekas nepakeista.",
+    "duplicate": "Šis įrenginys jau pridėtas.",
+    "failed": "Nepavyko patvirtinti. Bandykite dar kartą arba naudokite kodą.",
+    "loginButton": "Patvirtinti su Face ID / Touch ID",
+    "loginOr": "arba įveskite kodą",
+    "verifying": "Tikrinama…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Patvirtinti su Face ID / Touch ID",
+    "stepUpHint": "Įrenginys paprašys jūsų veido, piršto atspaudo arba PIN kodo."
   }
 }

@@ -3350,5 +3350,30 @@
     "addedToast": "{name} aggiunto al carrello",
     "deposit": "+ {amount} di cauzione bombola rimborsabile",
     "unavailable": "Presente nel nostro catalogo, ma al momento non ordinabile. Contatta il team per la disponibilità."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Conferma gli accessi con la scansione del volto o dell'impronta digitale del tuo dispositivo invece che con un codice.",
+    "add": "Aggiungi Face ID / Touch ID",
+    "adding": "In attesa del dispositivo…",
+    "added": "Face ID / Touch ID aggiunto",
+    "remove": "Rimuovi",
+    "removed": "Rimosso",
+    "empty": "Nessun Face ID / Touch ID ancora aggiunto.",
+    "createdAt": "Aggiunto il {date}",
+    "lastUsed": "Ultimo utilizzo: {date}",
+    "neverUsed": "Non ancora utilizzato",
+    "otherDomain": "Funziona su {domain}",
+    "domainNote": "Face ID / Touch ID funziona sul sito in cui è stato aggiunto — qui: {domain}.",
+    "unsupported": "Questo browser o dispositivo non supporta l'accesso con Face ID / Touch ID.",
+    "cancelled": "Annullato — non è stato modificato nulla.",
+    "duplicate": "Questo dispositivo è già stato aggiunto.",
+    "failed": "Impossibile verificarlo. Riprova o usa il tuo codice.",
+    "loginButton": "Conferma con Face ID / Touch ID",
+    "loginOr": "oppure inserisci il codice",
+    "verifying": "Verifica in corso…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Conferma con Face ID / Touch ID",
+    "stepUpHint": "Il dispositivo ti chiederà il volto, l'impronta digitale o il PIN."
   }
 }

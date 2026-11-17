@@ -3350,5 +3350,30 @@
     "addedToast": "{name} a kosárba került",
     "deposit": "+ {amount} visszatéríthető palackletét",
     "unavailable": "Szerepel a katalógusunkban, de jelenleg nem rendelhető. Az elérhetőségről érdeklődjön a csapatnál."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Erősítse meg a bejelentkezéseket kód helyett az eszköze arc- vagy ujjlenyomat-szkennelésével.",
+    "add": "Face ID / Touch ID hozzáadása",
+    "adding": "Várakozás az eszközre…",
+    "added": "Face ID / Touch ID hozzáadva",
+    "remove": "Eltávolítás",
+    "removed": "Eltávolítva",
+    "empty": "Még nincs hozzáadva Face ID / Touch ID.",
+    "createdAt": "Hozzáadva: {date}",
+    "lastUsed": "Utoljára használva: {date}",
+    "neverUsed": "Még nem volt használatban",
+    "otherDomain": "Itt működik: {domain}",
+    "domainNote": "A Face ID / Touch ID azon az oldalon működik, ahol hozzáadta — itt: {domain}.",
+    "unsupported": "Ez a böngésző vagy eszköz nem támogatja a Face ID / Touch ID bejelentkezést.",
+    "cancelled": "Megszakítva — semmi sem változott.",
+    "duplicate": "Ez az eszköz már hozzá van adva.",
+    "failed": "Nem sikerült ellenőrizni. Próbálja újra, vagy használja a kódját.",
+    "loginButton": "Megerősítés Face ID / Touch ID-val",
+    "loginOr": "vagy adja meg a kódot",
+    "verifying": "Ellenőrzés…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Megerősítés Face ID / Touch ID-val",
+    "stepUpHint": "Az eszköze az arcát, az ujjlenyomatát vagy a PIN-kódját fogja kérni."
   }
 }

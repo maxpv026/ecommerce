@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getPasskeyLoginOptions } from "@/lib/actions/passkeyLogin";
+import { PASSKEY_CODE_PREFIX, passkeysSupported, runPasskeyAssertion } from "@/lib/passkeyClient";
+import type { PublicKeyCredentialRequestOptionsJSON as PasskeyRequestOptions } from "@simplewebauthn/browser";
 import type { FormEvent, KeyboardEvent, ClipboardEvent } from "react";
 import { z } from "zod";
 import { useTranslations, useLocale } from "next-intl";
@@ -100,6 +103,7 @@ const ERROR_MESSAGE_KEYS: Record<string, string> = {
  */
 export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions = {}) {
   const t = useTranslations("Auth");
+  const tPasskey = useTranslations("Passkeys");
   const router = useRouter();
   const activeLocale = useLocale();
 
@@ -294,6 +298,50 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     }
   };
 
+  // ── Face ID / Touch ID (lib/passkeys) ──
+  // Options are fetched ahead — when the code step opens and after every
+  // attempt (each challenge is single-use) — so the tap goes straight to the
+  // system prompt: Safari refuses one that follows a network round trip.
+  const [passkeyOptions, setPasskeyOptions] = useState<PasskeyRequestOptions | null>(null);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const refreshPasskeyOptions = async () => {
+    if (!passkeysSupported()) return setPasskeyOptions(null);
+    const next = await getPasskeyLoginOptions(googlePending ? { google: true } : { email, password }).catch(() => null);
+    setPasskeyOptions(next);
+  };
+  const passkeyFetchKey = step === "code" ? `${googlePending ? "g" : email}` : null;
+  useEffect(() => {
+    if (!passkeyFetchKey) return;
+    let alive = true;
+    // Deferred a tick: a state update from a timer, not from the effect body.
+    const id = window.setTimeout(() => {
+      if (!passkeysSupported()) return;
+      void getPasskeyLoginOptions(googlePending ? { google: true } : { email, password })
+        .catch(() => null)
+        .then((next) => alive && setPasskeyOptions(next));
+    }, 0);
+    return () => {
+      alive = false;
+      window.clearTimeout(id);
+    };
+    // Re-fetched per sign-in attempt (email) or paused Google sign-in; the password is read, not watched.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [passkeyFetchKey]);
+
+  const verifyWithPasskey = async () => {
+    if (!passkeyOptions || passkeyBusy || inFlight.current) return;
+    setPasskeyBusy(true);
+    setError(null);
+    const outcome = await runPasskeyAssertion(passkeyOptions);
+    setPasskeyBusy(false);
+    if (!outcome.ok) {
+      setError(outcome.cancelled ? tPasskey("cancelled") : tPasskey("failed"));
+      void refreshPasskeyOptions();
+      return;
+    }
+    await verify(outcome.code);
+  };
+
   /** The form's submit — still how the recovery code and the phrase are sent. */
   const handleVerify = (e: FormEvent) => {
     e.preventDefault();
@@ -302,6 +350,8 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
 
   const verify = async (typedCode?: string) => {
     if (inFlight.current) return;
+    // A Face ID / Touch ID assertion (`pk:…`) replaces whichever code this step asks for.
+    const viaPasskey = typeof typedCode === "string" && typedCode.startsWith(PASSKEY_CODE_PREFIX);
 
     // One field is live at a time, and each has its own completeness rule.
     // auth.ts tells the two apart by shape (six digits vs eight hex), so the
@@ -309,8 +359,10 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     // spend one of the account's five attempts before the lockout, which is
     // why both lengths are enforced here first.
     const answer = codeMode === "phrase" ? recoveryAnswer(phraseChallenge, phraseWords, phrase) : null;
-    const code = codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? (answer ?? "") : (typedCode ?? digits.join(""));
-    if (codeMode === "phrase") {
+    const code = viaPasskey ? typedCode : codeMode === "recovery" ? recoveryCode : codeMode === "phrase" ? (answer ?? "") : (typedCode ?? digits.join(""));
+    if (viaPasskey) {
+      // Nothing to check client-side: the server verifies the assertion.
+    } else if (codeMode === "phrase") {
       if (!answer) {
         setError(t(phraseChallenge?.type === "SEED_12" ? "errorIncompleteWords" : "errorIncompletePhrase"));
         return;
@@ -350,9 +402,12 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
         const message =
           result?.code === "LOCKED"
             ? t("errorTwoFactorLockedMinutes", { minutes: result.retryAfterMinutes ?? 15 })
-            : t(codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode");
+            : viaPasskey
+              ? tPasskey("failed")
+              : t(codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode");
         setError(message);
         toast.error(message);
+        void refreshPasskeyOptions();
         return;
       }
       setGooglePending(false);
@@ -362,9 +417,10 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
         inFlight.current = false;
         rejectDigits();
         setVerifying(false);
-        const key = codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode";
-        setError(t(key));
-        toast.error(t(key));
+        const message = viaPasskey ? tPasskey("failed") : t(codeMode === "recovery" ? "errorInvalidRecoveryCode" : codeMode === "phrase" ? "errorInvalidPhrase" : "errorInvalidCode");
+        setError(message);
+        toast.error(message);
+        void refreshPasskeyOptions();
         return;
       }
     }
@@ -452,6 +508,9 @@ export function useAuthFlow(callbackUrl: string | null, options: AuthFlowOptions
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    passkeyAvailable: passkeyOptions !== null,
+    passkeyBusy,
+    verifyWithPasskey,
     handleGoogle,
     resendCode,
     goBackToCredentials,

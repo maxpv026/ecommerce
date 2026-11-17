@@ -1,5 +1,6 @@
 "use client";
 
+import PasskeyLoginButton from "@/components/auth/PasskeyLoginButton";
 import RecoveryPhraseInput from "@/components/security/RecoveryPhraseInput";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -130,6 +131,9 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
     handleDigitKeyDown,
     handlePaste,
     handleVerify,
+    passkeyAvailable,
+    passkeyBusy,
+    verifyWithPasskey,
     handleGoogle,
     resendCode,
     goBackToCredentials,
@@ -213,6 +217,7 @@ export default function AuthModal({ isOpen, onClose, callbackUrl }: AuthModalPro
             </p>
 
             <form onSubmit={handleVerify} className="flex flex-col gap-5">
+              {passkeyAvailable && codeMode === "totp" && <PasskeyLoginButton onClick={verifyWithPasskey} busy={passkeyBusy || verifying} />}
               {codeMode === "totp" ? (
                 <div className="flex justify-center gap-2.5" onPaste={handlePaste}>
                   {digits.map((digit, idx) => (

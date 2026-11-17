@@ -3350,5 +3350,30 @@
     "addedToast": "{name} 장바구니에 추가됨",
     "deposit": "+ {amount} 환불 가능한 실린더 보증금",
     "unavailable": "당사 카탈로그에 있는 제품이지만 현재 주문할 수 없습니다. 구매 가능 여부는 팀에 문의해 주세요."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "코드 대신 기기의 얼굴 또는 지문 인식으로 로그인을 확인하세요.",
+    "add": "Face ID / Touch ID 추가",
+    "adding": "기기 응답 대기 중…",
+    "added": "Face ID / Touch ID 추가됨",
+    "remove": "제거",
+    "removed": "제거됨",
+    "empty": "아직 추가된 Face ID / Touch ID가 없습니다.",
+    "createdAt": "{date}에 추가됨",
+    "lastUsed": "마지막 사용: {date}",
+    "neverUsed": "아직 사용되지 않음",
+    "otherDomain": "{domain}에서 작동",
+    "domainNote": "Face ID / Touch ID는 추가한 사이트에서 작동합니다 — 여기서는 {domain}입니다.",
+    "unsupported": "이 브라우저 또는 기기는 Face ID / Touch ID 로그인을 지원하지 않습니다.",
+    "cancelled": "취소되었습니다 — 변경된 내용이 없습니다.",
+    "duplicate": "이 기기는 이미 추가되어 있습니다.",
+    "failed": "확인하지 못했습니다. 다시 시도하거나 코드를 사용하세요.",
+    "loginButton": "Face ID / Touch ID로 확인",
+    "loginOr": "또는 코드 입력",
+    "verifying": "확인 중…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Face ID / Touch ID로 확인",
+    "stepUpHint": "기기에서 얼굴, 지문 또는 PIN을 요청합니다."
   }
 }

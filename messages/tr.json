@@ -3350,5 +3350,30 @@
     "addedToast": "{name} sepete eklendi",
     "deposit": "+ {amount} iade edilebilir tüp depozitosu",
     "unavailable": "Kataloğumuzda var, ancak şu anda sipariş verilemiyor. Stok durumu için ekiple iletişime geçin."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Girişleri kod yerine cihazınızın yüz veya parmak izi taramasıyla onaylayın.",
+    "add": "Face ID / Touch ID ekle",
+    "adding": "Cihazınız bekleniyor…",
+    "added": "Face ID / Touch ID eklendi",
+    "remove": "Kaldır",
+    "removed": "Kaldırıldı",
+    "empty": "Henüz Face ID / Touch ID eklenmedi.",
+    "createdAt": "{date} tarihinde eklendi",
+    "lastUsed": "Son kullanım: {date}",
+    "neverUsed": "Henüz kullanılmadı",
+    "otherDomain": "{domain} üzerinde çalışır",
+    "domainNote": "Face ID / Touch ID, eklendiği sitede çalışır — burada: {domain}.",
+    "unsupported": "Bu tarayıcı veya cihaz Face ID / Touch ID ile girişi desteklemiyor.",
+    "cancelled": "İptal edildi — hiçbir şey değiştirilmedi.",
+    "duplicate": "Bu cihaz zaten eklendi.",
+    "failed": "Doğrulanamadı. Tekrar deneyin veya kodunuzu kullanın.",
+    "loginButton": "Face ID / Touch ID ile onayla",
+    "loginOr": "veya kodu girin",
+    "verifying": "Doğrulanıyor…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Face ID / Touch ID ile onayla",
+    "stepUpHint": "Cihazınız yüzünüzü, parmak izinizi veya PIN kodunuzu isteyecek."
   }
 }

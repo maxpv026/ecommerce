@@ -3349,5 +3349,30 @@
     "addedToast": "{name} added to cart",
     "deposit": "+ {amount} refundable cylinder deposit",
     "unavailable": "In our catalogue, but not available to order right now. Contact the team for availability."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Confirm sign-ins with your device's face or fingerprint scan instead of a code.",
+    "add": "Add Face ID / Touch ID",
+    "adding": "Waiting for your device…",
+    "added": "Face ID / Touch ID added",
+    "remove": "Remove",
+    "removed": "Removed",
+    "empty": "No Face ID / Touch ID added yet.",
+    "createdAt": "Added {date}",
+    "lastUsed": "Last used {date}",
+    "neverUsed": "Not used yet",
+    "otherDomain": "Works on {domain}",
+    "domainNote": "Face ID / Touch ID works on the site where it was added — here: {domain}.",
+    "unsupported": "This browser or device doesn't support Face ID / Touch ID sign-in.",
+    "cancelled": "Cancelled — nothing was changed.",
+    "duplicate": "This device is already added.",
+    "failed": "Couldn't verify it. Try again, or use your code.",
+    "loginButton": "Confirm with Face ID / Touch ID",
+    "loginOr": "or enter the code",
+    "verifying": "Verifying…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Confirm with Face ID / Touch ID",
+    "stepUpHint": "Your device will ask for your face, fingerprint or PIN."
   }
 }

@@ -3350,5 +3350,30 @@
     "addedToast": "Pridané do košíka: {name}",
     "deposit": "+ {amount} vratná záloha na fľašu",
     "unavailable": "Je v našom katalógu, ale momentálne sa nedá objednať. Ohľadom dostupnosti kontaktujte tím."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Potvrdzujte prihlásenia skenom tváre alebo odtlačku prsta na zariadení namiesto kódu.",
+    "add": "Pridať Face ID / Touch ID",
+    "adding": "Čaká sa na zariadenie…",
+    "added": "Face ID / Touch ID pridané",
+    "remove": "Odstrániť",
+    "removed": "Odstránené",
+    "empty": "Zatiaľ nie je pridané Face ID / Touch ID.",
+    "createdAt": "Pridané {date}",
+    "lastUsed": "Naposledy použité {date}",
+    "neverUsed": "Zatiaľ nepoužité",
+    "otherDomain": "Funguje na {domain}",
+    "domainNote": "Face ID / Touch ID funguje na stránke, kde bolo pridané — tu: {domain}.",
+    "unsupported": "Tento prehliadač alebo zariadenie nepodporuje prihlásenie cez Face ID / Touch ID.",
+    "cancelled": "Zrušené — nič sa nezmenilo.",
+    "duplicate": "Toto zariadenie už je pridané.",
+    "failed": "Overenie sa nepodarilo. Skúste to znova alebo použite kód.",
+    "loginButton": "Potvrdiť cez Face ID / Touch ID",
+    "loginOr": "alebo zadajte kód",
+    "verifying": "Overuje sa…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Potvrdiť cez Face ID / Touch ID",
+    "stepUpHint": "Zariadenie si vyžiada tvár, odtlačok prsta alebo PIN."
   }
 }

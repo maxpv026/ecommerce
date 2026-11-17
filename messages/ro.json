@@ -3350,5 +3350,30 @@
     "addedToast": "{name} a fost adăugat în coș",
     "deposit": "+ {amount} depozit rambursabil pentru butelie",
     "unavailable": "În catalogul nostru, dar momentan indisponibil pentru comandă. Contactați echipa pentru disponibilitate."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Confirmați conectările prin scanarea feței sau a amprentei pe dispozitiv, în loc de cod.",
+    "add": "Adăugați Face ID / Touch ID",
+    "adding": "Se așteaptă dispozitivul…",
+    "added": "Face ID / Touch ID a fost adăugat",
+    "remove": "Eliminați",
+    "removed": "Eliminat",
+    "empty": "Încă nu ați adăugat Face ID / Touch ID.",
+    "createdAt": "Adăugat la {date}",
+    "lastUsed": "Ultima utilizare: {date}",
+    "neverUsed": "Neutilizat încă",
+    "otherDomain": "Funcționează pe {domain}",
+    "domainNote": "Face ID / Touch ID funcționează pe site-ul pe care a fost adăugat — aici: {domain}.",
+    "unsupported": "Acest browser sau dispozitiv nu acceptă conectarea cu Face ID / Touch ID.",
+    "cancelled": "Anulat — nu s-a modificat nimic.",
+    "duplicate": "Acest dispozitiv este deja adăugat.",
+    "failed": "Verificarea nu a reușit. Încercați din nou sau folosiți codul.",
+    "loginButton": "Confirmați cu Face ID / Touch ID",
+    "loginOr": "sau introduceți codul",
+    "verifying": "Se verifică…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Confirmați cu Face ID / Touch ID",
+    "stepUpHint": "Dispozitivul vă va cere fața, amprenta sau codul PIN."
   }
 }

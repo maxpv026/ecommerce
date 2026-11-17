@@ -3350,5 +3350,30 @@
     "addedToast": "{name} curtha leis an gcart",
     "deposit": "+ {amount} éarlais sorcóra in-aisíoctha",
     "unavailable": "Inár gcatalóg, ach níl sé ar fáil le hordú faoi láthair. Déan teagmháil leis an bhfoireann faoi infhaighteacht."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Deimhnigh síniú isteach le scanadh aghaidhe nó méarloirg ar do ghléas in ionad cóid.",
+    "add": "Cuir Face ID / Touch ID leis",
+    "adding": "Ag fanacht ar do ghléas…",
+    "added": "Cuireadh Face ID / Touch ID leis",
+    "remove": "Bain",
+    "removed": "Bainte",
+    "empty": "Níor cuireadh Face ID / Touch ID leis fós.",
+    "createdAt": "Curtha leis {date}",
+    "lastUsed": "Úsáidte go deireanach {date}",
+    "neverUsed": "Níor úsáideadh fós",
+    "otherDomain": "Oibríonn sé ar {domain}",
+    "domainNote": "Oibríonn Face ID / Touch ID ar an suíomh inar cuireadh leis é — anseo: {domain}.",
+    "unsupported": "Ní thacaíonn an brabhsálaí ná an gléas seo le síniú isteach le Face ID / Touch ID.",
+    "cancelled": "Cealaithe — níor athraíodh aon rud.",
+    "duplicate": "Tá an gléas seo curtha leis cheana.",
+    "failed": "Níorbh fhéidir é a fhíorú. Bain triail eile as, nó úsáid do chód.",
+    "loginButton": "Deimhnigh le Face ID / Touch ID",
+    "loginOr": "nó cuir isteach an cód",
+    "verifying": "Á fhíorú…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Deimhnigh le Face ID / Touch ID",
+    "stepUpHint": "Iarrfaidh do ghléas d'aghaidh, do mhéarlorg nó PIN."
   }
 }

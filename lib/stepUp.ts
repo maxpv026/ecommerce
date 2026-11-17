@@ -19,8 +19,9 @@ import { cookies } from "next/headers";
  * 2FA is on: the authenticator (or a recovery code) or the recovery phrase.
  */
 
-export type StepUpMethod = "totp" | "email" | "password" | "phrase";
-export const STRONG_METHODS: readonly StepUpMethod[] = ["totp", "phrase"];
+export type StepUpMethod = "totp" | "email" | "password" | "phrase" | "passkey";
+// A passkey requires the device's biometrics / PIN (lib/passkeys), so it is as strong as the authenticator.
+export const STRONG_METHODS: readonly StepUpMethod[] = ["totp", "phrase", "passkey"];
 export const STEP_UP_TTL_MS = 5 * 60 * 1000;
 const COOKIE = "me_stepup";
 
@@ -53,7 +54,7 @@ export async function readStepUp(userId: string, sid: string | undefined): Promi
   const [expRaw, method, given] = raw.split(".");
   const exp = Number(expRaw);
   if (!Number.isSafeInteger(exp) || exp < Date.now() || !given) return null;
-  if (!["totp", "email", "password", "phrase"].includes(method)) return null;
+  if (!["totp", "email", "password", "phrase", "passkey"].includes(method)) return null;
   const expected = Buffer.from(mac(userId, sid, method as StepUpMethod, exp));
   const actual = Buffer.from(given);
   return expected.length === actual.length && timingSafeEqual(expected, actual) ? (method as StepUpMethod) : null;

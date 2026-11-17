@@ -3350,5 +3350,30 @@
     "addedToast": "{name} har lagts i kundvagnen",
     "deposit": "+ {amount} återbetalbar cylinderdeposition",
     "unavailable": "Finns i vår katalog, men går inte att beställa just nu. Kontakta teamet om tillgänglighet."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Bekräfta inloggningar med enhetens ansikts- eller fingeravtrycksskanning istället för en kod.",
+    "add": "Lägg till Face ID / Touch ID",
+    "adding": "Väntar på din enhet…",
+    "added": "Face ID / Touch ID tillagt",
+    "remove": "Ta bort",
+    "removed": "Borttaget",
+    "empty": "Inget Face ID / Touch ID har lagts till än.",
+    "createdAt": "Tillagt {date}",
+    "lastUsed": "Senast använt {date}",
+    "neverUsed": "Inte använt än",
+    "otherDomain": "Fungerar på {domain}",
+    "domainNote": "Face ID / Touch ID fungerar på den webbplats där det lades till — här: {domain}.",
+    "unsupported": "Den här webbläsaren eller enheten stöder inte inloggning med Face ID / Touch ID.",
+    "cancelled": "Avbrutet — inget har ändrats.",
+    "duplicate": "Den här enheten är redan tillagd.",
+    "failed": "Det gick inte att verifiera. Försök igen eller använd din kod.",
+    "loginButton": "Bekräfta med Face ID / Touch ID",
+    "loginOr": "eller ange koden",
+    "verifying": "Verifierar…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Bekräfta med Face ID / Touch ID",
+    "stepUpHint": "Din enhet ber om ditt ansikte, fingeravtryck eller PIN-kod."
   }
 }

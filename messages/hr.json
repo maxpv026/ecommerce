@@ -3350,5 +3350,30 @@
     "addedToast": "{name} dodano u košaricu",
     "deposit": "+ {amount} povratni polog za bocu",
     "unavailable": "Nalazi se u našem katalogu, ali trenutačno nije dostupno za narudžbu. Kontaktirajte tim radi dostupnosti."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Potvrdite prijave skeniranjem lica ili otiska prsta na svom uređaju umjesto kodom.",
+    "add": "Dodaj Face ID / Touch ID",
+    "adding": "Čekanje na uređaj…",
+    "added": "Face ID / Touch ID dodan",
+    "remove": "Ukloni",
+    "removed": "Uklonjeno",
+    "empty": "Face ID / Touch ID još nije dodan.",
+    "createdAt": "Dodano {date}",
+    "lastUsed": "Zadnje korištenje: {date}",
+    "neverUsed": "Još nije korišteno",
+    "otherDomain": "Radi na {domain}",
+    "domainNote": "Face ID / Touch ID radi na web-mjestu na kojem je dodan — ovdje: {domain}.",
+    "unsupported": "Ovaj preglednik ili uređaj ne podržava prijavu putem Face ID / Touch ID.",
+    "cancelled": "Otkazano — ništa nije promijenjeno.",
+    "duplicate": "Ovaj uređaj je već dodan.",
+    "failed": "Provjera nije uspjela. Pokušajte ponovno ili upotrijebite svoj kod.",
+    "loginButton": "Potvrdi putem Face ID / Touch ID",
+    "loginOr": "ili unesite kod",
+    "verifying": "Provjera…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Potvrdi putem Face ID / Touch ID",
+    "stepUpHint": "Vaš će uređaj zatražiti lice, otisak prsta ili PIN."
   }
 }

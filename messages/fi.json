@@ -3350,5 +3350,30 @@
     "addedToast": "{name} lisätty ostoskoriin",
     "deposit": "+ {amount} palautettava pullopantti",
     "unavailable": "Luettelossamme, mutta ei tilattavissa juuri nyt. Ota yhteyttä tiimiin saatavuuden selvittämiseksi."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Vahvista kirjautumiset laitteesi kasvo- tai sormenjälkiskannauksella koodin sijaan.",
+    "add": "Lisää Face ID / Touch ID",
+    "adding": "Odotetaan laitettasi…",
+    "added": "Face ID / Touch ID lisätty",
+    "remove": "Poista",
+    "removed": "Poistettu",
+    "empty": "Face ID:tä / Touch ID:tä ei ole vielä lisätty.",
+    "createdAt": "Lisätty {date}",
+    "lastUsed": "Viimeksi käytetty {date}",
+    "neverUsed": "Ei vielä käytetty",
+    "otherDomain": "Toimii sivustolla {domain}",
+    "domainNote": "Face ID / Touch ID toimii sillä sivustolla, jolla se lisättiin – tässä: {domain}.",
+    "unsupported": "Tämä selain tai laite ei tue kirjautumista Face ID:llä / Touch ID:llä.",
+    "cancelled": "Peruutettu – mitään ei muutettu.",
+    "duplicate": "Tämä laite on jo lisätty.",
+    "failed": "Vahvistus epäonnistui. Yritä uudelleen tai käytä koodiasi.",
+    "loginButton": "Vahvista Face ID:llä / Touch ID:llä",
+    "loginOr": "tai anna koodi",
+    "verifying": "Vahvistetaan…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Vahvista Face ID:llä / Touch ID:llä",
+    "stepUpHint": "Laitteesi pyytää kasvojasi, sormenjälkeäsi tai PIN-koodia."
   }
 }

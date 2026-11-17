@@ -3350,5 +3350,30 @@
     "addedToast": "{name} in den Warenkorb gelegt",
     "deposit": "+ {amount} erstattbares Flaschenpfand",
     "unavailable": "In unserem Katalog, aber derzeit nicht bestellbar. Kontaktieren Sie das Team zur Verfügbarkeit."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Bestätigen Sie Anmeldungen mit dem Gesichts- oder Fingerabdruckscan Ihres Geräts statt mit einem Code.",
+    "add": "Face ID / Touch ID hinzufügen",
+    "adding": "Warten auf Ihr Gerät…",
+    "added": "Face ID / Touch ID hinzugefügt",
+    "remove": "Entfernen",
+    "removed": "Entfernt",
+    "empty": "Noch kein Face ID / Touch ID hinzugefügt.",
+    "createdAt": "Hinzugefügt am {date}",
+    "lastUsed": "Zuletzt verwendet am {date}",
+    "neverUsed": "Noch nicht verwendet",
+    "otherDomain": "Funktioniert auf {domain}",
+    "domainNote": "Face ID / Touch ID funktioniert auf der Website, auf der es hinzugefügt wurde – hier: {domain}.",
+    "unsupported": "Dieser Browser oder dieses Gerät unterstützt die Anmeldung mit Face ID / Touch ID nicht.",
+    "cancelled": "Abgebrochen – es wurde nichts geändert.",
+    "duplicate": "Dieses Gerät ist bereits hinzugefügt.",
+    "failed": "Die Überprüfung ist fehlgeschlagen. Versuchen Sie es erneut oder verwenden Sie Ihren Code.",
+    "loginButton": "Mit Face ID / Touch ID bestätigen",
+    "loginOr": "oder geben Sie den Code ein",
+    "verifying": "Wird überprüft…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Mit Face ID / Touch ID bestätigen",
+    "stepUpHint": "Ihr Gerät fragt nach Gesicht, Fingerabdruck oder PIN."
   }
 }

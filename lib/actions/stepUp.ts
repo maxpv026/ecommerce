@@ -10,6 +10,8 @@ import { checkPassword } from "@/lib/loginThrottle";
 import { consumeRecoveryCode, looksLikeRecoveryCode, verifyTotpForUser } from "@/lib/twoFactor";
 import { phraseTypeOf, recoveryChallengeFor, verifyRecoveryForUser, type RecoveryChallenge } from "@/lib/recoveryPhrase";
 import { grantStepUp, readStepUp, type StepUpMethod } from "@/lib/stepUp";
+import { hasPasskeyHere, startAssertion, verifyAssertion } from "@/lib/passkeys";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/server";
 
 /**
  * Step-up verification (see lib/stepUp). Any method the account actually
@@ -24,6 +26,8 @@ export interface StepUpOptions {
   email: string | null;
   password: boolean;
   phrase: boolean;
+  /** A Face ID / Touch ID passkey usable on this domain (lib/passkeys). */
+  passkey: boolean;
   /** The method of a proof still valid on this device, if any. */
   active: StepUpMethod | null;
 }
@@ -65,6 +69,7 @@ export async function getStepUpOptions(): Promise<StepUpOptions | null> {
     email: c.user.email,
     password: Boolean(c.user.password),
     phrase: phraseTypeOf(c.user) !== null,
+    passkey: await hasPasskeyHere(c.user.id),
     active: await readStepUp(c.user.id, c.sid),
   };
 }
@@ -87,8 +92,12 @@ export async function sendStepUpEmailCode(): Promise<SendStepUpCodeResult> {
   }
 }
 
-// 600: a word-challenge answer carries its signed token (lib/recoveryPhrase).
-const Input = z.object({ method: z.enum(["totp", "email", "password", "phrase"]), secret: z.string().min(1).max(600) });
+// 600: a word-challenge answer carries its signed token (lib/recoveryPhrase);
+// a passkey assertion (JSON) is longer, so it gets its own bound.
+const Input = z.union([
+  z.object({ method: z.enum(["totp", "email", "password", "phrase"]), secret: z.string().min(1).max(600) }),
+  z.object({ method: z.literal("passkey"), secret: z.string().min(1).max(16_000) }),
+]);
 
 export type VerifyStepUpResult =
   | { ok: true; method: StepUpMethod; expiresAt: number }
@@ -105,7 +114,11 @@ export async function verifyStepUp(raw: unknown): Promise<VerifyStepUpResult> {
   const locked = (ms?: number) => ({ ok: false as const, code: "LOCKED" as const, retryAfterMinutes: Math.ceil((ms ?? 15 * 60_000) / 60_000) });
 
   let passed = false;
-  if (method === "totp") {
+  if (method === "passkey") {
+    const check = await verifyAssertion(user.id, secret, "step-up");
+    if (!check.ok && check.reason === "UNSUPPORTED_HOST") return { ok: false, code: "UNAVAILABLE" };
+    passed = check.ok;
+  } else if (method === "totp") {
     if (!user.isTwoFactorEnabled || !user.twoFactorSecret) return { ok: false, code: "UNAVAILABLE" };
     // A printed recovery code is the authenticator's own fallback.
     const check = looksLikeRecoveryCode(secret) ? await consumeRecoveryCode(prisma, user, secret) : await verifyTotpForUser(prisma, user, secret.trim());
@@ -139,4 +152,12 @@ export async function verifyStepUp(raw: unknown): Promise<VerifyStepUpResult> {
 export async function getStepUpPhraseChallenge(): Promise<RecoveryChallenge | null> {
   const c = await caller();
   return c ? recoveryChallengeFor(c.user, "step-up") : null;
+}
+
+/** Options for confirming with Face ID / Touch ID — null when there's no passkey on this domain. */
+export async function getStepUpPasskeyOptions(): Promise<PublicKeyCredentialRequestOptionsJSON | null> {
+  const c = await caller();
+  if (!c) return null;
+  const start = await startAssertion(c.user.id, "step-up");
+  return start.ok ? start.options : null;
 }

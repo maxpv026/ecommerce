@@ -25,7 +25,9 @@ export async function completeGoogleTwoFactor(code: unknown): Promise<GoogleTwoF
     jar.delete(GOOGLE_2FA_COOKIE);
     return { ok: false, code: "EXPIRED" };
   }
-  if (typeof code !== "string" || code.trim().length < 6 || code.length > 200) return { ok: false, code: "INVALID" };
+  // A passkey assertion (`pk:…`, lib/passkeys) is far longer than any code.
+  const maxLength = typeof code === "string" && code.startsWith("pk:") ? 16_000 : 200;
+  if (typeof code !== "string" || code.trim().length < 6 || code.length > maxLength) return { ok: false, code: "INVALID" };
 
   try {
     await signIn("google-2fa", { challenge, code: code.trim(), redirect: false });

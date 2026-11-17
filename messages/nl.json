@@ -3350,5 +3350,30 @@
     "addedToast": "{name} toegevoegd aan winkelwagen",
     "deposit": "+ {amount} terugbetaalbaar cilinderstatiegeld",
     "unavailable": "Staat in onze catalogus, maar is nu niet te bestellen. Neem contact op met het team voor beschikbaarheid."
+  },
+  "Passkeys": {
+    "title": "Face ID / Touch ID",
+    "subtitle": "Bevestig inloggen met een gezichts- of vingerafdrukscan op uw apparaat in plaats van een code.",
+    "add": "Face ID / Touch ID toevoegen",
+    "adding": "Wachten op uw apparaat…",
+    "added": "Face ID / Touch ID toegevoegd",
+    "remove": "Verwijderen",
+    "removed": "Verwijderd",
+    "empty": "Nog geen Face ID / Touch ID toegevoegd.",
+    "createdAt": "Toegevoegd op {date}",
+    "lastUsed": "Laatst gebruikt op {date}",
+    "neverUsed": "Nog niet gebruikt",
+    "otherDomain": "Werkt op {domain}",
+    "domainNote": "Face ID / Touch ID werkt op de site waar het is toegevoegd — hier: {domain}.",
+    "unsupported": "Deze browser of dit apparaat ondersteunt inloggen met Face ID / Touch ID niet.",
+    "cancelled": "Geannuleerd — er is niets gewijzigd.",
+    "duplicate": "Dit apparaat is al toegevoegd.",
+    "failed": "Verifiëren is niet gelukt. Probeer het opnieuw of gebruik uw code.",
+    "loginButton": "Bevestigen met Face ID / Touch ID",
+    "loginOr": "of voer de code in",
+    "verifying": "Verifiëren…",
+    "stepUpTab": "Face ID",
+    "stepUpButton": "Bevestigen met Face ID / Touch ID",
+    "stepUpHint": "Uw apparaat vraagt om uw gezicht, vingerafdruk of PIN."
   }
 }
